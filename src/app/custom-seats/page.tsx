@@ -78,7 +78,6 @@ const CustomSeatsPage = () => {
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Header />
-      
       {/* Hero Section */}
       <Box
         sx={{
@@ -145,9 +144,9 @@ const CustomSeatsPage = () => {
           >
             Choose Your Seat Type
           </Typography>
-          <Grid container spacing={4}>
+          <Grid columns={12} columnSpacing={4} rowSpacing={4}>
             {seatTypes.map((seat, index) => (
-              <Grid item xs={12} md={4} key={index}>
+              <Grid key={index} sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
                 <Card
                   sx={{
                     height: '100%',
@@ -216,9 +215,9 @@ const CustomSeatsPage = () => {
           >
             Comfort options in your new seat can make a big difference when you spend most of your day in it!
           </Typography>
-          <Grid container spacing={4}>
+          <Grid columns={12} columnSpacing={4} rowSpacing={4}>
             {seatOptions.map((option) => (
-              <Grid item xs={12} sm={6} md={3} key={option.id}>
+              <Grid key={option.id} sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 3' } }}>
                 <Card
                   sx={{
                     height: '100%',

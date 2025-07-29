@@ -49,9 +49,9 @@ const HeroSection = () => {
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4} alignItems="center">
+        <Grid columns={12} columnSpacing={4} rowSpacing={4} alignItems="center">
           {/* Hero Content */}
-          <Grid item xs={12} md={6}>
+          <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
             <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
               <Typography
                 variant="h1"
@@ -102,10 +102,10 @@ const HeroSection = () => {
           </Grid>
 
           {/* Features Grid */}
-          <Grid item xs={12} md={6}>
-            <Grid container spacing={3}>
+          <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
+            <Grid columns={12} columnSpacing={3} rowSpacing={3}>
               {features.map((feature, index) => (
-                <Grid item xs={12} sm={4} key={index}>
+                <Grid key={index} sx={{ gridColumn: { xs: 'span 12', sm: 'span 4' } }}>
                   <Card
                     sx={{
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
