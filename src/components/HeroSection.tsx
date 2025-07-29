@@ -47,7 +47,7 @@ const HeroSection = () => {
         alignItems: 'center',
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 4 } }}>
         <Box
           sx={{
             display: 'grid',
