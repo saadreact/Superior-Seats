@@ -73,31 +73,33 @@ const HomePage = () => {
       {/* Stats Section */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: 'background.default' }}>
         <Container maxWidth="lg">
-          <Grid columns={12} columnSpacing={4} rowSpacing={4}>
+          <Grid
+            display="grid"
+            gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }}
+            gap={4}
+          >
             {stats.map((stat, index) => (
-              <Grid key={index} sx={{ gridColumn: { xs: 'span 6', md: 'span 3' } }}>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 'bold',
-                      color: 'primary.main',
-                      fontSize: { xs: '2rem', md: '3rem' },
-                    }}
-                  >
-                    {stat.number}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'text.secondary',
-                      fontSize: { xs: '0.875rem', md: '1rem' },
-                    }}
-                  >
-                    {stat.label}
-                  </Typography>
-                </Box>
-              </Grid>
+              <Box key={index} sx={{ textAlign: 'center', width: '100%' }}>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    fontWeight: 'bold',
+                    color: 'primary.main',
+                    fontSize: { xs: '2rem', md: '3rem' },
+                  }}
+                >
+                  {stat.number}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                  }}
+                >
+                  {stat.label}
+                </Typography>
+              </Box>
             ))}
           </Grid>
         </Container>
@@ -130,76 +132,76 @@ const HomePage = () => {
             </Typography>
           </Box>
 
-          <Grid columns={12} columnSpacing={4} rowSpacing={4}>
+          <Grid
+            display="grid"
+            gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
+            gap={4}
+          >
             {products.map((product) => (
-              <Grid key={product.id} sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 4' } }}>
-                <Card
+              <Card
+                key={product.id}
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <CardMedia
+                  component="div"
                   sx={{
-                    height: '100%',
+                    height: 200,
+                    backgroundColor: 'grey.200',
                     display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                    },
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
-                  <CardMedia
-                    component="div"
-                    sx={{
-                      height: 200,
-                      backgroundColor: 'grey.200',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Chair sx={{ fontSize: 60, color: 'primary.main' }} />
-                  </CardMedia>
-                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                        {product.name}
-                      </Typography>
-                      <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-                        {product.price}
-                      </Typography>
-                    </Box>
-                    
-                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-                      {product.description}
+                  <Chair sx={{ fontSize: 60, color: 'primary.main' }} />
+                </CardMedia>
+                <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      {product.name}
                     </Typography>
-                    
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                      {product.features.map((feature) => (
-                        <Chip
-                          key={feature}
-                          label={feature}
-                          size="small"
-                          sx={{ backgroundColor: 'primary.light', color: 'white' }}
-                        />
-                      ))}
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Star sx={{ fontSize: 16, color: 'warning.main' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                          {product.rating}
-                        </Typography>
-                      </Box>
-                      <Button
-                        variant="contained"
+                    <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                      {product.price}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                    {product.description}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                    {product.features.map((feature) => (
+                      <Chip
+                        key={feature}
+                        label={feature}
                         size="small"
-                        endIcon={<ArrowForward />}
-                      >
-                        View Details
-                      </Button>
+                        sx={{ backgroundColor: 'primary.light', color: 'white' }}
+                      />
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Star sx={{ fontSize: 16, color: 'warning.main' }} />
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        {product.rating}
+                      </Typography>
                     </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      endIcon={<ArrowForward />}
+                    >
+                      View Details
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
           </Grid>
         </Container>
