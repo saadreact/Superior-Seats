@@ -3,16 +3,28 @@
 import React from 'react';
 import { Box, Button } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+
+const MotionButton = motion(Button);
 
 const LogoButton = () => {
   return (
-    <Button
+    <MotionButton
       variant="contained"
       size="large"
       endIcon={<ArrowForward />}
+      whileHover={{ 
+        scale: 1.1,
+        rotate: 5,
+        transition: { duration: 0.3 }
+      }}
+      whileTap={{ 
+        scale: 0.95,
+        transition: { duration: 0.1 }
+      }}
       sx={{
         backgroundColor: 'white',
-        color: 'primary.main',
+        color: '#DA291C', // Pantone 485C
         borderRadius: '50%',
         width: 80,
         height: 80,
@@ -21,7 +33,6 @@ const LogoButton = () => {
         overflow: 'hidden',
         '&:hover': {
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          transform: 'scale(1.05)',
         },
         transition: 'all 0.3s ease-in-out',
         boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
@@ -35,13 +46,13 @@ const LogoButton = () => {
           transform: 'translate(-50%, -50%)',
           fontSize: '2rem',
           fontWeight: 'bold',
-          color: 'primary.main',
+          color: '#DA291C', // Pantone 485C
           textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
         }}
       >
         S
       </Box>
-    </Button>
+    </MotionButton>
   );
 };
 

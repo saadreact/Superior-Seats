@@ -16,7 +16,6 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { ArrowForward } from '@mui/icons-material';
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -37,9 +36,15 @@ const Header = () => {
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        Superior Seats
-      </Typography>
+      <Box sx={{ my: 2, display: 'flex', justifyContent: 'center' }}>
+        <Image
+          src="/white-logo.png"
+          alt="Superior Seating LLC"
+          width={200}
+          height={60}
+          style={{ objectFit: 'contain' }}
+        />
+      </Box>
       <List>
         {menuItems.map((item) => (
           <ListItem key={item.text} component="a" href={item.href}>
@@ -70,42 +75,20 @@ const Header = () => {
   return (
     <>
       <AppBar position="static" elevation={0}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* Left side - Logo and Navigation */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ 
-                fontWeight: 'bold',
-                color: 'primary.main',
-                fontSize: { xs: '1.1rem', md: '1.25rem' }
-              }}
-            >
-              Superior Seating LLC
-            </Typography>
-            
-            {!isMobile && (
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                {menuItems.map((item) => (
-                  <Button
-                    key={item.text}
-                    color="inherit"
-                    href={item.href}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      },
-                    }}
-                  >
-                    {item.text}
-                  </Button>
-                ))}
-              </Box>
-            )}
-          </Box>
+        <Toolbar>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ 
+              flexGrow: 1, 
+              fontWeight: 'bold',
+              color: 'primary.main',
+              fontSize: { xs: '1.1rem', md: '1.25rem' }
+            }}
+          >
+            Superior Seating LLC
+          </Typography>
           
-          {/* Right side - Start Customizing Button */}
           {isMobile ? (
             <IconButton
               color="inherit"
@@ -116,21 +99,22 @@ const Header = () => {
               <MenuIcon />
             </IconButton>
           ) : (
-            <Button
-              variant="contained"
-              endIcon={<ArrowForward />}
-              href="/shop"
-              sx={{
-                backgroundColor: '#d32f2f',
-                color: 'white',
-                px: 3,
-                '&:hover': {
-                  backgroundColor: '#9a0007',
-                },
-              }}
-            >
-              Start Customizing
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {menuItems.map((item) => (
+                <Button
+                  key={item.text}
+                  color="inherit"
+                  href={item.href}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  {item.text}
+                </Button>
+              ))}
+            </Box>
           )}
         </Toolbar>
       </AppBar>
@@ -147,6 +131,8 @@ const Header = () => {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: 240,
+            backgroundColor: 'white',
+            color: '#DA291C',
           },
         }}
       >

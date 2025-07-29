@@ -13,6 +13,41 @@ import {
 } from '@mui/material';
 import { ArrowForward, Star, TrendingUp, Security } from '@mui/icons-material';
 import LogoButton from './LogoButton';
+import { motion } from 'framer-motion';
+
+const MotionBox = motion(Box);
+const MotionTypography = motion(Typography);
+const MotionCard = motion(Card);
+
+const leftColVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.7,
+    },
+  },
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+};
+
+const featuresContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.18,
+    },
+  },
+};
+
+const featureCard = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+};
 
 const HeroSection = () => {
   const theme = useTheme();
@@ -20,17 +55,17 @@ const HeroSection = () => {
 
   const features = [
     {
-      icon: <Star sx={{ fontSize: 40, color: 'primary.main' }} />,
+      icon: <Star sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Custom Seating',
       description: 'Build your perfect seat with our customization wizard.',
     },
     {
-      icon: <TrendingUp sx={{ fontSize: 40, color: 'primary.main' }} />,
+      icon: <TrendingUp sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Premium Quality',
       description: 'Superior craftsmanship for truck, RV, and van seating.',
     },
     {
-      icon: <Security sx={{ fontSize: 40, color: 'primary.main' }} />,
+      icon: <Security sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Warranty Protected',
       description: 'Comprehensive warranty coverage for peace of mind.',
     },
@@ -39,7 +74,7 @@ const HeroSection = () => {
   return (
     <Box
       sx={{
-        background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+        background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
         color: 'white',
         py: { xs: 8, md: 12 },
         minHeight: { xs: '60vh', md: '80vh' },
@@ -47,19 +82,26 @@ const HeroSection = () => {
         alignItems: 'center',
       }}
     >
-      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 4 } }}>
+      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
         <Box
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
             gap: { xs: 6, md: 8 },
             alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {/* Left: Headline, Description, Buttons */}
-          <Box sx={{ textAlign: { xs: 'center', md: 'left' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-            <Typography
-              variant="h1"
+          <MotionBox
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.7 }}
+            variants={leftColVariants}
+            sx={{ textAlign: { xs: 'center', md: 'left' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+          >
+            <MotionTypography
+              variants={fadeInUp}
               sx={{
                 fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
                 fontWeight: 'bold',
@@ -68,9 +110,9 @@ const HeroSection = () => {
               }}
             >
               Superior Seating LLC
-            </Typography>
-            <Typography
-              variant="h5"
+            </MotionTypography>
+            <MotionTypography
+              variants={fadeInUp}
               sx={{
                 mb: 3,
                 opacity: 0.9,
@@ -78,55 +120,91 @@ const HeroSection = () => {
               }}
             >
               Premium truck, RV, and van seating with custom options and superior craftsmanship
-            </Typography>
-            <Box
+            </MotionTypography>
+            <MotionBox
+              variants={fadeInUp}
               sx={{
                 display: 'flex',
-                gap: 2,
+                gap: { xs: 3, sm: 2 },
                 flexDirection: { xs: 'column', sm: 'row' },
                 justifyContent: { xs: 'center', md: 'flex-start' },
                 alignItems: 'center',
                 mt: 2,
+                width: '100%',
               }}
             >
-              <LogoButton />
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  borderColor: 'white',
-                  color: 'white',
-                  '&:hover': {
-                    borderColor: 'white',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
+              <motion.div
+                animate={{
+                  y: [-10, 10, -10],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
                 }}
               >
-                Learn More
-              </Button>
-            </Box>
-          </Box>
+                <LogoButton />
+              </motion.div>
+              <motion.div
+                animate={{
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    borderColor: 'white',
+                    color: 'white',
+                    '&:hover': {
+                      borderColor: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  Learn More
+                </Button>
+              </motion.div>
+            </MotionBox>
+          </MotionBox>
 
           {/* Right: Features */}
-          <Box
+          <MotionBox
+            variants={featuresContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
             sx={{
               display: 'flex',
               flexDirection: { xs: 'column', sm: 'row' },
-              gap: 3,
+              gap: { xs: 4, sm: 3 },
               justifyContent: 'center',
-              alignItems: 'stretch',
+              alignItems: { xs: 'center', sm: 'stretch' },
+              width: '100%',
+              mt: { xs: 2, sm: 0 },
             }}
           >
             {features.map((feature, index) => (
-              <Card
+              <MotionCard
                 key={index}
+                variants={featureCard}
+                whileHover={{ 
+                  scale: 1.05,
+                  rotateY: 5,
+                  transition: { duration: 0.3 }
+                }}
                 sx={{
                   backgroundColor: 'rgba(255, 255, 255, 0.12)',
                   backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   color: 'white',
                   minWidth: 0,
-                  flex: 1,
+                  flex: { xs: 'none', sm: 1 },
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -134,12 +212,12 @@ const HeroSection = () => {
                   boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10)',
                   borderRadius: 3,
                   transition: 'transform 0.3s',
-                  mx: { xs: 0, sm: 1 },
+                  mx: { xs: 'auto', sm: 1 },
                   my: { xs: 1.5, sm: 0 },
                   p: 3,
                   minHeight: { xs: 150, sm: 180 },
-                  maxWidth: 260,
-                  width: '100%',
+                  maxWidth: { xs: 280, sm: 260 },
+                  width: { xs: '100%', sm: 'auto' },
                   textAlign: 'center',
                   '&:hover': {
                     transform: 'translateY(-8px) scale(1.03)',
@@ -169,9 +247,9 @@ const HeroSection = () => {
                 >
                   {feature.description}
                 </Typography>
-              </Card>
+              </MotionCard>
             ))}
-          </Box>
+          </MotionBox>
         </Box>
       </Container>
     </Box>
