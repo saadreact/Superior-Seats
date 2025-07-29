@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
+import TruckCarousel from '@/components/TruckCarousel';
 import { motion } from 'framer-motion';
 import { 
   Chair, 
@@ -131,30 +132,30 @@ const HomePage = () => {
   const products = [
     {
       id: 1,
-      name: 'Truck Seats',
+      title: 'Truck Seats',
       description: 'Premium truck seating with custom options and superior comfort.',
       price: 'Custom',
       rating: 4.9,
-      image: '/api/placeholder/300/200',
       features: ['Custom', 'Comfort', 'Durable'],
+      icon: <Chair sx={{ fontSize: 60, color: 'primary.main' }} />,
     },
     {
       id: 2,
-      name: 'RV Seats',
+      title: 'RV Seats',
       description: 'Luxury RV seating designed for long-haul comfort and style.',
       price: 'Custom',
       rating: 4.8,
-      image: '/api/placeholder/300/200',
       features: ['Luxury', 'Comfort', 'Custom'],
+      icon: <EventSeat sx={{ fontSize: 60, color: 'primary.main' }} />,
     },
     {
       id: 3,
-      name: 'Van Seats',
+      title: 'Van Seats',
       description: 'Professional van seating with integrated safety features.',
       price: 'Custom',
       rating: 4.7,
-      image: '/api/placeholder/300/200',
       features: ['Professional', 'Safety', 'Custom'],
+      icon: <AirlineSeatReclineNormal sx={{ fontSize: 60, color: 'primary.main' }} />,
     },
   ];
 
@@ -236,9 +237,9 @@ const HomePage = () => {
               gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
               gap={4}
             >
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <MotionCard
-                  key={product.id}
+                  key={`product-${index}`}
                   variants={productCardVariants}
                   sx={{
                     height: '100%',
@@ -255,18 +256,18 @@ const HomePage = () => {
                     component="div"
                     sx={{
                       height: 200,
-                      backgroundColor: 'grey.200',
+                      backgroundColor: 'grey.100',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <Chair sx={{ fontSize: 60, color: 'primary.main' }} />
+                    {product.icon}
                   </CardMedia>
                   <CardContent sx={{ flexGrow: 1, p: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                        {product.name}
+                        {product.title}
                       </Typography>
                       <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
                         {product.price}
@@ -276,9 +277,9 @@ const HomePage = () => {
                       {product.description}
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                      {product.features.map((feature) => (
+                      {product.features.map((feature, featureIndex) => (
                         <Chip
-                          key={feature}
+                          key={`feature-${index}-${featureIndex}`}
                           label={feature}
                           size="small"
                           sx={{ backgroundColor: 'primary.light', color: 'white' }}
@@ -308,8 +309,15 @@ const HomePage = () => {
         </Container>
       </Box>
 
+      {/* Truck Carousel Section */}
+      <TruckCarousel />
+
       {/* CTA Section */}
-      <Box
+      <MotionBox
+        initial="hidden"
+        whileInView="visible"
+        variants={ctaVariants}
+        viewport={{ once: true }}
         sx={{
           py: { xs: 8, md: 12 },
           background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
@@ -373,7 +381,7 @@ const HomePage = () => {
             </motion.div>
           </MotionBox>
         </Container>
-      </Box>
+      </MotionBox>
     </Box>
   );
 };
