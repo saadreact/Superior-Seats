@@ -74,15 +74,19 @@ const HeroSection = () => {
   return (
     <Box
       sx={{
-        background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
+        background: `linear-gradient(135deg, rgba(218, 41, 28, 0.8) 0%, rgba(183, 28, 28, 0.8) 100%), url('/Hero Section BG.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         color: 'white',
         py: { xs: 8, md: 12 },
         minHeight: { xs: '60vh', md: '80vh' },
         display: 'flex',
         alignItems: 'center',
+        position: 'relative',
       }}
     >
-      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, px: { xs: 2, md: 3 } }}>
         <Box
           sx={{
             display: 'grid',
