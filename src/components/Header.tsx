@@ -16,6 +16,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { ArrowForward } from '@mui/icons-material';
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -24,12 +25,8 @@ const Header = () => {
 
   const menuItems = [
     { text: 'Home', href: '/' },
-    { text: 'Build Your Custom Seats', href: '/custom-seats' },
-    { text: 'Seating Products', href: '/products' },
-    { text: 'Shop Specials', href: '/specials' },
-    { text: 'Upholstery Services', href: '/upholstery' },
-    { text: 'Other Products', href: '/other-products' },
-    { text: 'Gallery', href: '/gallery' },
+    { text: 'Shop', href: '/shop' },
+    { text: 'Customize', href: '/custom-seats' },
     { text: 'About', href: '/about' },
     { text: 'Contact', href: '/contact' },
   ];
@@ -50,26 +47,65 @@ const Header = () => {
           </ListItem>
         ))}
       </List>
+      <Box sx={{ p: 2 }}>
+        <Button
+          variant="contained"
+          fullWidth
+          endIcon={<ArrowForward />}
+          href="/shop"
+          sx={{
+            backgroundColor: '#d32f2f',
+            color: 'white',
+            '&:hover': {
+              backgroundColor: '#9a0007',
+            },
+          }}
+        >
+          Start Customizing
+        </Button>
+      </Box>
     </Box>
   );
 
   return (
     <>
       <AppBar position="static" elevation={0}>
-        <Toolbar>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ 
-              flexGrow: 1, 
-              fontWeight: 'bold',
-              color: 'primary.main',
-              fontSize: { xs: '1.1rem', md: '1.25rem' }
-            }}
-          >
-            Superior Seating LLC
-          </Typography>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Left side - Logo and Navigation */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ 
+                fontWeight: 'bold',
+                color: 'primary.main',
+                fontSize: { xs: '1.1rem', md: '1.25rem' }
+              }}
+            >
+              Superior Seating LLC
+            </Typography>
+            
+            {!isMobile && (
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                {menuItems.map((item) => (
+                  <Button
+                    key={item.text}
+                    color="inherit"
+                    href={item.href}
+                    sx={{
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                    }}
+                  >
+                    {item.text}
+                  </Button>
+                ))}
+              </Box>
+            )}
+          </Box>
           
+          {/* Right side - Start Customizing Button */}
           {isMobile ? (
             <IconButton
               color="inherit"
@@ -80,22 +116,21 @@ const Header = () => {
               <MenuIcon />
             </IconButton>
           ) : (
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              {menuItems.map((item) => (
-                <Button
-                  key={item.text}
-                  color="inherit"
-                  href={item.href}
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
-                >
-                  {item.text}
-                </Button>
-              ))}
-            </Box>
+            <Button
+              variant="contained"
+              endIcon={<ArrowForward />}
+              href="/shop"
+              sx={{
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                px: 3,
+                '&:hover': {
+                  backgroundColor: '#9a0007',
+                },
+              }}
+            >
+              Start Customizing
+            </Button>
           )}
         </Toolbar>
       </AppBar>
