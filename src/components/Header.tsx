@@ -25,7 +25,7 @@ const Header = () => {
 
   const menuItems = [
     { text: 'Home', href: '/' },
-    { text: 'Build Your Custom Seats', href: '/custom-seats' },
+    { text: 'Customize Your Seat', href: '/customize-your-seat' },
     { text: 'Seating Products', href: '/products' },
     { text: 'Shop Specials', href: '/specials' },
     { text: 'Upholstery Services', href: '/upholstery' },
