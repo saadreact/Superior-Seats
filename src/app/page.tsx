@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
+import { motion } from 'framer-motion';
 import { 
   Chair, 
   EventSeat, 
@@ -23,6 +24,105 @@ import {
   Star,
   ArrowForward 
 } from '@mui/icons-material';
+
+const MotionBox = motion(Box);
+const MotionTypography = motion(Typography);
+const MotionCard = motion(Card);
+
+// Custom hook for count-up animation
+const useCountUp = (end: number, duration: number = 2000) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number;
+    let animationFrame: number;
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      
+      setCount(Math.floor(progress * end));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [end, duration]);
+
+  return count;
+};
+
+// Animation variants
+const statsContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const statItemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.6
+    } 
+  },
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.8
+    } 
+  },
+};
+
+const productsContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const productCardVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.6
+    } 
+  },
+};
+
+const ctaVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.8,
+      staggerChildren: 0.2,
+    } 
+  },
+};
 
 const HomePage = () => {
   const theme = useTheme();
@@ -59,10 +159,10 @@ const HomePage = () => {
   ];
 
   const stats = [
-    { number: '1000+', label: 'Custom Seats Built' },
-    { number: '25+', label: 'Years Experience' },
-    { number: '50+', label: 'Seat Models' },
-    { number: '99%', label: 'Customer Satisfaction' },
+    { number: 1000, label: 'Custom Seats Built', suffix: '+' },
+    { number: 25, label: 'Years Experience', suffix: '+' },
+    { number: 50, label: 'Seat Models', suffix: '+' },
+    { number: 99, label: 'Customer Satisfaction', suffix: '%' },
   ];
 
   return (
@@ -73,42 +173,35 @@ const HomePage = () => {
       {/* Stats Section */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: 'background.default' }}>
         <Container maxWidth="lg">
-          <Grid
-            display="grid"
-            gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }}
-            gap={4}
+          <MotionBox
+            variants={statsContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
           >
-            {stats.map((stat, index) => (
-              <Box key={index} sx={{ textAlign: 'center', width: '100%' }}>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 'bold',
-                    color: 'primary.main',
-                    fontSize: { xs: '2rem', md: '3rem' },
-                  }}
-                >
-                  {stat.number}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: 'text.secondary',
-                    fontSize: { xs: '0.875rem', md: '1rem' },
-                  }}
-                >
-                  {stat.label}
-                </Typography>
-              </Box>
-            ))}
-          </Grid>
+            <Grid
+              display="grid"
+              gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }}
+              gap={4}
+            >
+              {stats.map((stat, index) => (
+                <StatItem key={index} stat={stat} />
+              ))}
+            </Grid>
+          </MotionBox>
         </Container>
       </Box>
 
       {/* Products Section */}
       <Box sx={{ py: { xs: 6, md: 8 } }}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <MotionBox
+            variants={sectionVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            sx={{ textAlign: 'center', mb: 6 }}
+          >
             <Typography
               variant="h2"
               sx={{
@@ -130,80 +223,88 @@ const HomePage = () => {
             >
               Premium truck, RV, and van seating with custom options and superior craftsmanship.
             </Typography>
-          </Box>
+          </MotionBox>
 
-          <Grid
-            display="grid"
-            gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
-            gap={4}
+          <MotionBox
+            variants={productsContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
           >
-            {products.map((product) => (
-              <Card
-                key={product.id}
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                  },
-                }}
-              >
-                <CardMedia
-                  component="div"
+            <Grid
+              display="grid"
+              gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
+              gap={4}
+            >
+              {products.map((product) => (
+                <MotionCard
+                  key={product.id}
+                  variants={productCardVariants}
                   sx={{
-                    height: 200,
-                    backgroundColor: 'grey.200',
+                    height: '100%',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                    },
                   }}
                 >
-                  <Chair sx={{ fontSize: 60, color: 'primary.main' }} />
-                </CardMedia>
-                <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      {product.name}
-                    </Typography>
-                    <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-                      {product.price}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-                    {product.description}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                    {product.features.map((feature) => (
-                      <Chip
-                        key={feature}
-                        label={feature}
-                        size="small"
-                        sx={{ backgroundColor: 'primary.light', color: 'white' }}
-                      />
-                    ))}
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Star sx={{ fontSize: 16, color: 'warning.main' }} />
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        {product.rating}
+                  <CardMedia
+                    component="div"
+                    sx={{
+                      height: 200,
+                      backgroundColor: 'grey.200',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Chair sx={{ fontSize: 60, color: 'primary.main' }} />
+                  </CardMedia>
+                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        {product.name}
+                      </Typography>
+                      <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                        {product.price}
                       </Typography>
                     </Box>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      endIcon={<ArrowForward />}
-                    >
-                      View Details
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
-          </Grid>
+                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                      {product.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                      {product.features.map((feature) => (
+                        <Chip
+                          key={feature}
+                          label={feature}
+                          size="small"
+                          sx={{ backgroundColor: 'primary.light', color: 'white' }}
+                        />
+                      ))}
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Star sx={{ fontSize: 16, color: 'warning.main' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {product.rating}
+                        </Typography>
+                      </Box>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        endIcon={<ArrowForward />}
+                      >
+                        View Details
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </MotionCard>
+              ))}
+            </Grid>
+          </MotionBox>
         </Container>
       </Box>
 
@@ -211,13 +312,20 @@ const HomePage = () => {
       <Box
         sx={{
           py: { xs: 8, md: 12 },
-          background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+          background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
           color: 'white',
         }}
       >
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography
+          <MotionBox
+            variants={ctaVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            sx={{ textAlign: 'center' }}
+          >
+            <MotionTypography
+              variants={sectionVariants}
               variant="h2"
               sx={{
                 mb: 3,
@@ -226,8 +334,9 @@ const HomePage = () => {
               }}
             >
               Ready to Build Your Custom Seat?
-            </Typography>
-            <Typography
+            </MotionTypography>
+            <MotionTypography
+              variants={sectionVariants}
               variant="h6"
               sx={{
                 mb: 4,
@@ -238,28 +347,68 @@ const HomePage = () => {
               }}
             >
               Join hundreds of satisfied customers who have transformed their vehicles with our premium seating.
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              endIcon={<ArrowForward />}
-              sx={{
-                backgroundColor: 'white',
-                color: 'primary.main',
-                px: 4,
-                py: 1.5,
-                fontSize: '1.1rem',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                },
-              }}
+            </MotionTypography>
+            <motion.div
+              variants={sectionVariants}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Build Your Custom Seat
-            </Button>
-          </Box>
+              <Button
+                variant="contained"
+                size="large"
+                endIcon={<ArrowForward />}
+                sx={{
+                  backgroundColor: 'white',
+                  color: 'primary.main',
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  },
+                }}
+              >
+                Build Your Custom Seat
+              </Button>
+            </motion.div>
+          </MotionBox>
         </Container>
       </Box>
     </Box>
+  );
+};
+
+// Stat Item Component with Count-up Animation
+const StatItem = ({ stat }: { stat: { number: number; label: string; suffix: string } }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const count = useCountUp(isVisible ? stat.number : 0, 2000);
+
+  return (
+    <MotionBox
+      variants={statItemVariants}
+      onAnimationStart={() => setIsVisible(true)}
+      sx={{ textAlign: 'center', width: '100%' }}
+    >
+      <Typography
+        variant="h3"
+        sx={{
+          fontWeight: 'bold',
+          color: 'primary.main',
+          fontSize: { xs: '2rem', md: '3rem' },
+        }}
+      >
+        {count}{stat.suffix}
+      </Typography>
+      <Typography
+        variant="body1"
+        sx={{
+          color: 'text.secondary',
+          fontSize: { xs: '0.875rem', md: '1rem' },
+        }}
+      >
+        {stat.label}
+      </Typography>
+    </MotionBox>
   );
 };
 

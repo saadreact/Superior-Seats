@@ -16,6 +16,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import Image from 'next/image';
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -40,9 +41,15 @@ const Header = () => {
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        Superior Seats
-      </Typography>
+      <Box sx={{ my: 2, display: 'flex', justifyContent: 'center' }}>
+        <Image
+          src="/white-logo.png"
+          alt="Superior Seating LLC"
+          width={200}
+          height={60}
+          style={{ objectFit: 'contain' }}
+        />
+      </Box>
       <List>
         {menuItems.map((item) => (
           <ListItem key={item.text} component="a" href={item.href}>
@@ -55,20 +62,39 @@ const Header = () => {
 
   return (
     <>
-      <AppBar position="static" elevation={0}>
+      <AppBar 
+        position="static" 
+        elevation={1}
+        sx={{ 
+          backgroundColor: 'white',
+          color: '#DA291C', // Pantone 485C
+        }}
+      >
         <Toolbar>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ 
-              flexGrow: 1, 
-              fontWeight: 'bold',
-              color: 'primary.main',
-              fontSize: { xs: '1.1rem', md: '1.25rem' }
-            }}
-          >
-            Superior Seating LLC
-          </Typography>
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            {/* Next.js Image Component */}
+            <Image
+              src="/white-logo.png"
+              alt="Superior Seating LLC"
+              width={isMobile ? 150 : 200}
+              height={isMobile ? 45 : 60}
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+            
+            {/* Fallback regular img tag - uncomment if Next.js Image doesn't work */}
+            {/* 
+            <img
+              src="/white-logo.png"
+              alt="Superior Seating LLC"
+              style={{
+                width: isMobile ? 150 : 200,
+                height: isMobile ? 45 : 60,
+                objectFit: 'contain'
+              }}
+            />
+            */}
+          </Box>
           
           {isMobile ? (
             <IconButton
@@ -76,6 +102,7 @@ const Header = () => {
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
+              sx={{ color: '#DA291C' }}
             >
               <MenuIcon />
             </IconButton>
@@ -87,8 +114,11 @@ const Header = () => {
                   color="inherit"
                   href={item.href}
                   sx={{
+                    color: '#DA291C', // Pantone 485C
+                    fontWeight: 500,
                     '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                      color: '#DA291C',
                     },
                   }}
                 >
@@ -112,6 +142,8 @@ const Header = () => {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: 240,
+            backgroundColor: 'white',
+            color: '#DA291C',
           },
         }}
       >
