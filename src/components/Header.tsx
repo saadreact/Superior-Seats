@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import {
   AppBar,
   Toolbar,
@@ -17,7 +16,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { ArrowForward } from '@mui/icons-material';
+import Image from 'next/image';
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -26,8 +25,12 @@ const Header = () => {
 
   const menuItems = [
     { text: 'Home', href: '/' },
-    { text: 'Shop', href: '/shop' },
-    { text: 'Customize', href: '/custom-seats' },
+    { text: 'Build Your Custom Seats', href: '/custom-seats' },
+    { text: 'Seating Products', href: '/products' },
+    { text: 'Shop Specials', href: '/specials' },
+    { text: 'Upholstery Services', href: '/upholstery' },
+    { text: 'Other Products', href: '/other-products' },
+    { text: 'Gallery', href: '/gallery' },
     { text: 'About', href: '/about' },
     { text: 'Contact', href: '/contact' },
   ];
@@ -54,42 +57,44 @@ const Header = () => {
           </ListItem>
         ))}
       </List>
-      <Box sx={{ p: 2 }}>
-        <Button
-          variant="contained"
-          fullWidth
-          endIcon={<ArrowForward />}
-          href="/shop"
-          sx={{
-            backgroundColor: '#d32f2f',
-            color: 'white',
-            '&:hover': {
-              backgroundColor: '#9a0007',
-            },
-          }}
-        >
-          Start Customizing
-        </Button>
-      </Box>
     </Box>
   );
 
   return (
     <>
-      <AppBar position="static" elevation={0}>
+      <AppBar 
+        position="static" 
+        elevation={1}
+        sx={{ 
+          backgroundColor: 'white',
+          color: '#DA291C', // Pantone 485C
+        }}
+      >
         <Toolbar>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ 
-              flexGrow: 1, 
-              fontWeight: 'bold',
-              color: 'primary.main',
-              fontSize: { xs: '1.1rem', md: '1.25rem' }
-            }}
-          >
-            Superior Seating LLC
-          </Typography>
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            {/* Next.js Image Component */}
+            <Image
+              src="/white-logo.png"
+              alt="Superior Seating LLC"
+              width={isMobile ? 150 : 200}
+              height={isMobile ? 45 : 60}
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+            
+            {/* Fallback regular img tag - uncomment if Next.js Image doesn't work */}
+            {/* 
+            <img
+              src="/white-logo.png"
+              alt="Superior Seating LLC"
+              style={{
+                width: isMobile ? 150 : 200,
+                height: isMobile ? 45 : 60,
+                objectFit: 'contain'
+              }}
+            />
+            */}
+          </Box>
           
           {isMobile ? (
             <IconButton
@@ -97,6 +102,7 @@ const Header = () => {
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
+              sx={{ color: '#DA291C' }}
             >
               <MenuIcon />
             </IconButton>
@@ -108,8 +114,11 @@ const Header = () => {
                   color="inherit"
                   href={item.href}
                   sx={{
+                    color: '#DA291C', // Pantone 485C
+                    fontWeight: 500,
                     '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                      color: '#DA291C',
                     },
                   }}
                 >
