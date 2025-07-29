@@ -7,6 +7,7 @@ import { textures } from '@/data/textures';
 import { colors } from '@/data/colors';
 import { testimonials } from '@/data/testimonials';
 import Header from '@/components/Header';
+import Chair3DModel from '@/components/Chair3DModel';
 
 import {
   Box,
@@ -64,11 +65,22 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   // State for customization options
   const [selectedTexture, setSelectedTexture] = useState('leather');
   const [selectedColor, setSelectedColor] = useState('black');
-  const [basePrice] = useState(1299);
+  const [currentObjectIndex, setCurrentObjectIndex] = useState(0);
+
+  // Different objects to display
+  const objects = [
+    { id: 'sofa', name: 'Car Seat', icon: '🛋️', price: 899 },
+    { id: 'car', name: 'Back Double Seat', icon: '🚗', price: 1299 },
+    { id: 'truck', name: 'Truck Seat', icon: '🚛', price: 1499 },
+    { id: 'racing', name: 'Van Seat', icon: '🏎️', price: 1899 },
+    { id: 'office', name: 'Ship Seats', icon: '💺', price: 699 },
+   
+  ];
 
   const calculateTotalPrice = () => {
+    const currentObject = objects[currentObjectIndex];
     const texturePrice = textures.find(t => t.id === selectedTexture)?.price || 0;
-    return basePrice + texturePrice;
+    return currentObject.price + texturePrice;
   };
 
   const totalPrice = calculateTotalPrice();
@@ -137,6 +149,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               >
                 {/* Left Arrow */}
                 <IconButton
+                  onClick={() => setCurrentObjectIndex(prev => prev === 0 ? objects.length - 1 : prev - 1)}
                   sx={{
                     position: 'absolute',
                     left: 20,
@@ -157,6 +170,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
                 {/* Right Arrow */}
                 <IconButton
+                  onClick={() => setCurrentObjectIndex(prev => prev === objects.length - 1 ? 0 : prev + 1)}
                   sx={{
                     position: 'absolute',
                     right: 20,
@@ -174,60 +188,54 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                 >
                   →
                 </IconButton>
-                {/* 3D Model Placeholder */}
-                <Box sx={{ textAlign: 'center' }}>
-                  <Box sx={{ 
-                    position: 'relative',
-                    display: 'inline-block',
-                    p: 4,
-                    borderRadius: 4,
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.2)'
+                {/* 3D Model Viewer */}
+                <Box sx={{ 
+                  height: '100%', 
+                  width: '100%',
+                  position: 'relative'
+                }}>
+                  <Chair3DModel 
+                    selectedTexture={selectedTexture}
+                    selectedColor={colors.find(c => c.id === selectedColor)?.hex || '#000000'}
+                    currentObjectIndex={currentObjectIndex}
+                  />
+                  
+                  {/* Object Name Display */}
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 20,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    bgcolor: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2,
+                    backdropFilter: 'blur(10px)'
                   }}>
-                    <Box sx={{ 
-                      position: 'relative',
-                      width: 140,
-                      height: 140,
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.2))',
-                      transition: 'all 0.3s ease'
-                    }}>
-                      <Image
-                        src={textures.find(t => t.id === selectedTexture)?.image || '/Textures/01.jpg'}
-                        alt="Selected Texture"
-                        fill
-                        style={{ 
-                          objectFit: 'cover',
-                          filter: `hue-rotate(${(() => {
-                            const color = colors.find(c => c.id === selectedColor);
-                            if (color && color.hex !== '#000000') {
-                              // Convert hex to hue rotation for color effect
-                              const hue = parseInt(color.hex.slice(1), 16);
-                              return (hue % 360) + 'deg';
-                            }
-                            return '0deg';
-                          })()})`
-                        }}
-                      />
-                      <Chair sx={{ 
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        fontSize: 140, 
-                        color: 'rgba(255,255,255,0.3)',
-                        zIndex: 1
-                      }} />
-                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      {objects[currentObjectIndex].name}
+                    </Typography>
                   </Box>
-                  <Typography variant="h5" sx={{ mt: 3, color: 'text.primary', fontWeight: 'bold' }}>
-                    3D Interactive Viewer
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'text.secondary', mt: 1 }}>
-                    Drag to rotate • Scroll to zoom • Click to select
-                  </Typography>
+                  
+                  {/* Instructions */}
+                  <Box sx={{
+                    position: 'absolute',
+                    bottom: 20,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    textAlign: 'center',
+                    bgcolor: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2,
+                    backdropFilter: 'blur(10px)'
+                  }}>
+                    <Typography variant="body2">
+                      Drag to rotate • Scroll to zoom • Use arrows to change seat type
+                    </Typography>
+                  </Box>
                 </Box>
                 
                 {/* Viewer Controls */}
@@ -468,7 +476,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>Base Price:</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>${basePrice}</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>${objects[currentObjectIndex].price}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>Material:</Typography>
