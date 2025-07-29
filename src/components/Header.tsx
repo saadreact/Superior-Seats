@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   AppBar,
   Toolbar,
@@ -16,6 +17,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { ArrowForward } from '@mui/icons-material';
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);

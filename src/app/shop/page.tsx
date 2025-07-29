@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Grid } from '@mui/material'; 
 import { textures } from '@/data/textures';
 import { colors } from '@/data/colors';
@@ -134,7 +135,10 @@ const ShopPage = () => {
                   }}>
                     <Chair sx={{ 
                       fontSize: 140, 
-                      color: selectedColor === 'red' ? '#d32f2f' : selectedColor === 'black' ? '#000' : '#8b4513',
+                      color: (() => {
+                        const color = colors.find(c => c.id === selectedColor);
+                        return color ? color.hex : '#8b4513';
+                      })(),
                       filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.2))',
                       transition: 'all 0.3s ease'
                     }} />
@@ -195,56 +199,74 @@ const ShopPage = () => {
                   <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold', color: 'text.primary' }}>
                     Choose Your Material
                   </Typography>
-                  <RadioGroup
-                    value={selectedTexture}
-                    onChange={(e) => setSelectedTexture(e.target.value)}
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-                  >
+                  
+                  {/* Selected Material Name */}
+                  {selectedTexture && (
+                    <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold', color: 'primary.main', textAlign: 'center' }}>
+                      {textures.find(t => t.id === selectedTexture)?.name}
+                    </Typography>
+                  )}
+                  
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                     {textures.map((texture) => (
-                      <FormControlLabel
-                        key={texture.id}
-                        value={texture.id}
-                        control={<Radio />}
-                        label={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                              <Box
+                          key={texture.id}
+                          onClick={() => setSelectedTexture(texture.id)}
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: 2,
+                            border: '3px solid',
+                            borderColor: selectedTexture === texture.id ? 'primary.main' : 'grey.300',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            '&:hover': {
+                              transform: 'scale(1.1)',
+                              borderColor: 'primary.main',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            }
+                          }}
+                        >
+                          <Image
+                            src={texture.image}
+                            alt={texture.name}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                          />
+                          {selectedTexture === texture.id && (
                             <Box
                               sx={{
-                                width: 60,
-                                height: 60,
-                                borderRadius: 1,
-                                backgroundColor: texture.id === 'leather' ? '#8b4513' : 
-                                               texture.id === 'fabric' ? '#f5f5dc' : '#d3d3d3',
-                                border: '2px solid',
-                                borderColor: selectedTexture === texture.id ? 'primary.main' : 'transparent',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: 'rgba(0,0,0,0.3)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                               }}
-                            />
-                            <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                {texture.name}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                {texture.price > 0 ? `+$${texture.price}` : 
-                                 texture.price < 0 ? `-$${Math.abs(texture.price)}` : 'Included'}
-                              </Typography>
+                            >
+                              <CheckCircle sx={{ color: 'white', fontSize: 24 }} />
                             </Box>
-                          </Box>
-                        }
-                        sx={{ 
-                          width: '100%',
-                          border: '2px solid',
-                          borderColor: selectedTexture === texture.id ? 'primary.main' : 'grey.200',
-                          borderRadius: 2,
-                          p: 2,
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            borderColor: 'primary.main',
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                          }
-                        }}
-                      />
+                          )}
+                        </Box>
                     ))}
-                  </RadioGroup>
+                  </Box>
+                  
+                  {/* Price Display */}
+                  <Box sx={{ mt: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {(() => {
+                        const texture = textures.find(t => t.id === selectedTexture);
+                        return texture && texture.price !== 0
+                          ? `${texture.price > 0 ? '+' : ''}$${texture.price}`
+                          : 'Included';
+                      })()}
+                    </Typography>
+                  </Box>
                 </CardContent>
               </Card>
 
@@ -254,14 +276,14 @@ const ShopPage = () => {
                   <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold', color: 'text.primary' }}>
                     Choose Your Color
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center', flex: 1, alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center', flex: 1, alignItems: 'center' }}>
                     {colors.map((color) => (
                       <Tooltip key={color.id} title={color.name}>
                         <Box
                           onClick={() => setSelectedColor(color.id)}
                           sx={{
-                            width: 60,
-                            height: 60,
+                            width: 50,
+                            height: 50,
                             borderRadius: '50%',
                             backgroundColor: color.hex,
                             border: '4px solid',
@@ -279,7 +301,7 @@ const ShopPage = () => {
                           }}
                         >
                           {selectedColor === color.id && (
-                            <CheckCircle sx={{ color: 'white', fontSize: 20 }} />
+                            <CheckCircle sx={{ color: 'white', fontSize: 18 }} />
                           )}
                         </Box>
                       </Tooltip>
