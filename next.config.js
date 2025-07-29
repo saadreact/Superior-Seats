@@ -2,6 +2,7 @@
 const nextConfig = {
   images: {
     domains: [],
+    unoptimized: true, // Allow all local images including those in subdirectories
   },
 }
 
