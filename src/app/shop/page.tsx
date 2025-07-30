@@ -3,8 +3,8 @@
 import React from 'react';
 import CustomizeYourSeat from '@/components/CustomizedSeat';
 
-const CustomSeatsPage = () => {
+const ShopPage = () => {
   return <CustomizeYourSeat />;
 };
 
-export default CustomSeatsPage; 
+export default ShopPage; 
