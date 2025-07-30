@@ -69,12 +69,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
   // Different objects to display
   const objects = [
-    { id: 'sofa', name: 'Car Seat', icon: '🛋️', price: 899 },
-    { id: 'car', name: 'Back Double Seat', icon: '🚗', price: 1299 },
-    { id: 'truck', name: 'Truck Seat', icon: '🚛', price: 1499 },
-    { id: 'racing', name: 'Van Seat', icon: '🏎️', price: 1899 },
-    { id: 'office', name: 'Ship Seats', icon: '💺', price: 699 },
-   
+    { id: 'sofa', name: 'Car Seat', price: 899 },
+    { id: 'car', name: 'Back Double Seat', price: 1299 },
+    { id: 'truck', name: 'Truck Seat', price: 1499 },
+    { id: 'racing', name: 'Van Seat', price: 1899 },
+    { id: 'office', name: 'Ship Seats', price: 699 },
   ];
 
   const calculateTotalPrice = () => {
@@ -113,7 +112,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             <Typography
               variant="h5"
               sx={{
-                mb: 3,
+                mb: 1,
                 opacity: 0.9,
                 maxWidth: 600,
                 mx: 'auto',
