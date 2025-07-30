@@ -163,19 +163,16 @@ const AboutPage = () => {
         alignItems: 'center'
       }}>
         <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Grid 
-            container 
-            spacing={4} 
-            sx={{ 
-              maxWidth: 1200,
-              justifyContent: 'center',
-              display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-              gap: 4
-            }}
-          >
+          <Box sx={{ 
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            gap: { xs: 2, md: 4 },
+            maxWidth: 1200,
+            width: '100%',
+            justifyContent: 'center'
+          }}>
             {stats.map((stat, index) => (
-              <Grid key={index} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box key={index} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Card sx={{ 
                   textAlign: 'center', 
                   p: 3, 
@@ -235,9 +232,9 @@ const AboutPage = () => {
                     {stat.label}
                   </Typography>
                 </Card>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Container>
       </Box>
 
@@ -286,19 +283,26 @@ const AboutPage = () => {
             Our Values
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1400 }}>
+            <Box sx={{ 
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: { xs: 3, md: 4 },
+              maxWidth: 1200,
+              width: '100%',
+              justifyContent: 'center'
+            }}>
               {values.map((value, index) => (
-                <Card
-                  key={index}
-                  sx={{
-                    width: 350,
-                    height: 200,
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    p: 1,
+                                 <Card
+                   key={index}
+                   sx={{
+                     width: '100%',
+                     height: 200,
+                     textAlign: 'center',
+                     display: 'flex',
+                     flexDirection: 'column',
+                     justifyContent: 'center',
+                     alignItems: 'center',
+                     p: 1,
                     boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     cursor: 'pointer',
@@ -362,14 +366,20 @@ const AboutPage = () => {
           <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mb: 6 }}>
             Our Process
           </Typography>
-                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
-             {/* First Row - 3 steps */}
-             <Box sx={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
-               {process.slice(0, 3).map((step, index) => (
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ 
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' },
+              gap: { xs: 3, md: 4 },
+              maxWidth: 1400,
+              width: '100%',
+              justifyContent: 'center'
+            }}>
+              {process.map((step, index) => (
                  <Card
                    key={index}
                    sx={{
-                     width: 280,
+                     width: '100%',
                      height: 220,
                      textAlign: 'center',
                      display: 'flex',
@@ -380,10 +390,10 @@ const AboutPage = () => {
                      boxShadow: '0 4px 20px rgba(179, 21, 21, 0.1)',
                      cursor: 'pointer',
                      '&:hover': {
-                       transform: 'translateY(1px) scale(0.95)',
+                       transform: 'translateY(-4px) scale(1.02)',
                        boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
                        '& .icon': {
-                         transform: 'rotate(360deg) scale(0.95)',
+                         transform: 'rotate(360deg) scale(1.1)',
                        },
                        '& .title': {
                          color: '#d32f2f',
@@ -407,64 +417,13 @@ const AboutPage = () => {
                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontSize: '1.1rem' }}>
                      {step.title}
                    </Typography>
-                   <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.5, fontSize: '0.9rem' }}>
+                                      <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.5, fontSize: '0.9rem' }}>
                      {step.description}
                    </Typography>
                  </Card>
                ))}
-             </Box>
-             
-             {/* Second Row - 2 steps */}
-             <Box sx={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
-               {process.slice(3, 5).map((step, index) => (
-                 <Card
-                   key={index + 3}
-                   sx={{
-                     width: 320,
-                     height: 220,
-                     textAlign: 'center',
-                     display: 'flex',
-                     flexDirection: 'column',
-                     justifyContent: 'center',
-                     alignItems: 'center',
-                     p: 3,
-                     boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                     cursor: 'pointer',
-                     '&:hover': {
-                       transform: 'translateY(-4px) scale(0.9)',
-                       boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                       '& .icon': {
-                         transform: 'rotate(360deg) scale(0.9)',
-                       },
-                       '& .title': {
-                         color: '#d32f2f',
-                       },
-                     },
-                   }}
-                 >
-                   <Chip
-                     label={step.step}
-                     sx={{
-                       backgroundColor: 'primary.main',
-                       color: 'white',
-                       fontSize: '1rem',
-                       fontWeight: 'bold',
-                       mb: 2,
-                       width: 45,
-                       height: 45,
-                       borderRadius: '50%',
-                     }}
-                   />
-                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontSize: '1.1rem' }}>
-                     {step.title}
-                   </Typography>
-                   <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.5, fontSize: '0.9rem' }}>
-                     {step.description}
-                   </Typography>
-                 </Card>
-               ))}
-             </Box>
-           </Box>
+            </Box>
+          </Box>
         </Container>
       </Box>
 
@@ -474,32 +433,39 @@ const AboutPage = () => {
            <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mb: 6 }}>
              Why Choose Superior Seats?
            </Typography>
-           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-             <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', flexWrap: 'wrap', maxWidth: 1400 }}>
-               {/* Custom Fit Design */}
-               <Card sx={{ 
-                 width: 200, 
-                 height: 180, 
-                 textAlign: 'center', 
-                 display: 'flex', 
-                 flexDirection: 'column', 
-                 justifyContent: 'center', 
-                 alignItems: 'center', 
-                 p: 2,
-                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                 cursor: 'pointer',
-                 '&:hover': {
-                   transform: 'translateY(-8px) scale(1.05)',
-                   boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                   '& .icon': {
-                     transform: 'rotate(360deg) scale(1.2)',
+                       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box sx={{ 
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(6, 1fr)' },
+                gap: { xs: 3, md: 4 },
+                maxWidth: 1400,
+                width: '100%',
+                justifyContent: 'center'
+              }}>
+                                 {/* Custom Fit Design */}
+                 <Card sx={{ 
+                   width: '100%', 
+                   height: 180, 
+                   textAlign: 'center', 
+                   display: 'flex', 
+                   flexDirection: 'column', 
+                   justifyContent: 'center', 
+                   alignItems: 'center', 
+                   p: 2,
+                   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                   transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                   cursor: 'pointer',
+                   '&:hover': {
+                     transform: 'translateY(-8px) scale(1.05)',
+                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
+                     '& .icon': {
+                       transform: 'rotate(360deg) scale(1.2)',
+                     },
+                     '& .title': {
+                       color: '#d32f2f',
+                     },
                    },
-                   '& .title': {
-                     color: '#d32f2f',
-                   },
-                 },
-               }}>
+                 }}>
                  <CheckCircle 
                    className="icon"
                    sx={{ 
@@ -517,16 +483,16 @@ const AboutPage = () => {
                  </Typography>
                </Card>
 
-               {/* Premium Materials */}
-               <Card sx={{ 
-                 width: 200, 
-                 height: 180, 
-                 textAlign: 'center', 
-                 display: 'flex', 
-                 flexDirection: 'column', 
-                 justifyContent: 'center', 
-                 alignItems: 'center', 
-                 p: 2,
+                                {/* Premium Materials */}
+                 <Card sx={{ 
+                   width: '100%', 
+                   height: 180, 
+                   textAlign: 'center', 
+                   display: 'flex', 
+                   flexDirection: 'column', 
+                   justifyContent: 'center', 
+                   alignItems: 'center', 
+                   p: 2,
                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                  transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                  cursor: 'pointer',
@@ -558,16 +524,16 @@ const AboutPage = () => {
                  </Typography>
                </Card>
 
-               {/* Expert Craftsmanship */}
-               <Card sx={{ 
-                 width: 200, 
-                 height: 180, 
-                 textAlign: 'center', 
-                 display: 'flex', 
-                 flexDirection: 'column', 
-                 justifyContent: 'center', 
-                 alignItems: 'center', 
-                 p: 2,
+                                {/* Expert Craftsmanship */}
+                 <Card sx={{ 
+                   width: '100%', 
+                   height: 180, 
+                   textAlign: 'center', 
+                   display: 'flex', 
+                   flexDirection: 'column', 
+                   justifyContent: 'center', 
+                   alignItems: 'center', 
+                   p: 2,
                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                  transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                  cursor: 'pointer',
@@ -599,16 +565,16 @@ const AboutPage = () => {
                  </Typography>
                </Card>
 
-               {/* Comprehensive Warranty */}
-               <Card sx={{ 
-                 width: 200, 
-                 height: 180, 
-                 textAlign: 'center', 
-                 display: 'flex', 
-                 flexDirection: 'column', 
-                 justifyContent: 'center', 
-                 alignItems: 'center', 
-                 p: 2,
+                                {/* Comprehensive Warranty */}
+                 <Card sx={{ 
+                   width: '100%', 
+                   height: 180, 
+                   textAlign: 'center', 
+                   display: 'flex', 
+                   flexDirection: 'column', 
+                   justifyContent: 'center', 
+                   alignItems: 'center', 
+                   p: 2,
                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                  transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                  cursor: 'pointer',
@@ -640,16 +606,16 @@ const AboutPage = () => {
                  </Typography>
                </Card>
 
-               {/* Professional Installation */}
-               <Card sx={{ 
-                 width: 200, 
-                 height: 180, 
-                 textAlign: 'center', 
-                 display: 'flex', 
-                 flexDirection: 'column', 
-                 justifyContent: 'center', 
-                 alignItems: 'center', 
-                 p: 2,
+                                {/* Professional Installation */}
+                 <Card sx={{ 
+                   width: '100%', 
+                   height: 180, 
+                   textAlign: 'center', 
+                   display: 'flex', 
+                   flexDirection: 'column', 
+                   justifyContent: 'center', 
+                   alignItems: 'center', 
+                   p: 2,
                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                  transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                  cursor: 'pointer',
@@ -681,16 +647,16 @@ const AboutPage = () => {
                  </Typography>
                </Card>
 
-               {/* Ongoing Support */}
-               <Card sx={{ 
-                 width: 200, 
-                 height: 180, 
-                 textAlign: 'center', 
-                 display: 'flex', 
-                 flexDirection: 'column', 
-                 justifyContent: 'center', 
-                 alignItems: 'center', 
-                 p: 2,
+                                {/* Ongoing Support */}
+                 <Card sx={{ 
+                   width: '100%', 
+                   height: 180, 
+                   textAlign: 'center', 
+                   display: 'flex', 
+                   flexDirection: 'column', 
+                   justifyContent: 'center', 
+                   alignItems: 'center', 
+                   p: 2,
                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                  transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                  cursor: 'pointer',
@@ -718,7 +684,7 @@ const AboutPage = () => {
                    Ongoing Support
                  </Typography>
                  <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.3, fontSize: '0.8rem' }}>
-                   We're here for you even after purchase.
+                   We&apos;re here for you even after purchase.
                  </Typography>
                </Card>
              </Box>
