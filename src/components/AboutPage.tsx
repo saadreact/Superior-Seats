@@ -50,20 +50,21 @@ const AboutPage = () => {
       {/* Hero Section */}
       <Box
         sx={{
+          height: '70vh',
           backgroundImage: 'url(../TruckImages/Seatset.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           color: 'white',
-          py: { xs: 8, md: 12 },
+          py: { xs: 6, md: 8 },
           px: { xs: 2, md: 4 },
           textAlign: 'center',
           position: 'relative',
-          mx: { xs: 2, md: 4 },
-          my: { xs: 2, md: 4 },
-          borderRadius: { xs: '16px', md: '24px' },
+          mx: { xs: 1, md: 2 },
+          my: { xs: 1, md: 2 },
+          borderRadius: { xs: '12px', md: '20px' },
           overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          boxShadow: '0 15px 40px rgba(0,0,0,0.25)',
           animation: 'heroPulse 3s ease-in-out infinite',
           '&::before': {
             content: '""',
@@ -110,9 +111,9 @@ const AboutPage = () => {
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '2.5rem', md: '4rem' },
+              fontSize: { xs: '2.2rem', md: '3.5rem' },
               fontWeight: 'bold',
-              mb: 3,
+              mb: 2,
               animation: 'textGlow 2s ease-in-out infinite',
               textShadow: '0 0 20px rgba(255,255,255,0.5)',
               '@keyframes textGlow': {
@@ -130,11 +131,11 @@ const AboutPage = () => {
           <Typography
             variant="h5"
             sx={{
-              mb: 2,
+              mb: 3,
               opacity: 0.9,
               maxWidth: 800,
               mx: 'auto',
-              lineHeight: 3.8,
+              lineHeight: 1.6,
               animation: 'fadeInUp 1s ease-out 0.5s both',
               '@keyframes fadeInUp': {
                 '0%': {
@@ -155,7 +156,7 @@ const AboutPage = () => {
 
       {/* Company Stats */}
       <Box sx={{ 
-        py: { xs: 4, md: 6 }, 
+        py: { xs: 3, md: 4 }, 
         backgroundColor: 'white',
         display: 'flex',
         justifyContent: 'center',
@@ -241,11 +242,11 @@ const AboutPage = () => {
       </Box>
 
       {/* Our Story */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fafafa' }}>
+      <Box sx={{ py: { xs: 6, md: 8 ,height: '70vh'}, backgroundColor: '#fafafa' }}>
         <Container maxWidth="lg">
           <Grid container spacing={6} alignItems="center">
             <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
-              <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 4 }}>
+              <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 4 ,justifyContent: 'center',alignItems: 'center',textAlign: 'center' }}>
                 Our Story
               </Typography>
               <Typography variant="h6" sx={{ mb: 3, color: 'text.secondary', lineHeight: 1.8 }}>
@@ -261,7 +262,7 @@ const AboutPage = () => {
             <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
               <Box
                 sx={{
-                  height: 400,
+                  height: 50,
                   background: 'linear-gradient(45deg, #f5f5f5 25%, transparent 25%), linear-gradient(-45deg, #f5f5f5 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f5f5f5 75%), linear-gradient(-45deg, transparent 75%, #f5f5f5 75%)',
                   backgroundSize: '20px 20px',
                   backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
@@ -271,9 +272,7 @@ const AboutPage = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                  Company Image Placeholder
-                </Typography>
+               
               </Box>
             </Grid>
           </Grid>
