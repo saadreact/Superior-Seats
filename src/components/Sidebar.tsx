@@ -1,0 +1,204 @@
+'use client';
+
+import React, { useState } from 'react';
+import {
+  Box,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Typography,
+  IconButton,
+  useTheme,
+  useMediaQuery,
+  Toolbar,
+} from '@mui/material';
+import {
+  Dashboard as DashboardIcon,
+  Category as CategoryIcon,
+  People as PeopleIcon,
+  ShoppingCart as OrderIcon,
+  Menu as MenuIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
+import { useRouter, usePathname } from 'next/navigation';
+
+const drawerWidth = 280;
+const mobileDrawerWidth = 280;
+
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const menuItems = [
+    {
+      text: 'Dashboard',
+      icon: <DashboardIcon />,
+      href: '/admin',
+    },
+    {
+      text: 'Customer Types',
+      icon: <CategoryIcon />,
+      href: '/admin/customer-types',
+    },
+    {
+      text: 'Customers',
+      icon: <PeopleIcon />,
+      href: '/admin/customers',
+    },
+    {
+      text: 'Orders',
+      icon: <OrderIcon />,
+      href: '/admin/orders',
+    },
+  ];
+
+  const handleNavigation = (href: string) => {
+    router.push(href);
+    if (isMobile) {
+      onClose();
+    }
+  };
+
+  const isActive = (href: string) => {
+    if (href === '/admin') {
+      return pathname === '/admin';
+    }
+    return pathname.startsWith(href);
+  };
+
+  const drawerContent = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <Box
+        sx={{
+          p: 2,
+          borderBottom: 1,
+          borderColor: 'divider',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+          Admin Panel
+        </Typography>
+        {isMobile && (
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        )}
+      </Box>
+
+      {/* Navigation */}
+      <List sx={{ flexGrow: 1, pt: 1 }}>
+        {menuItems.map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigation(item.href)}
+              selected={isActive(item.href)}
+              sx={{
+                mx: 1,
+                borderRadius: 1,
+                mb: 0.5,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                },
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 40,
+                  color: isActive(item.href) ? 'white' : 'inherit',
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.text}
+                primaryTypographyProps={{
+                  fontWeight: isActive(item.href) ? 600 : 400,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+
+      {/* Footer */}
+      <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+        <Typography variant="caption" color="text.secondary" align="center">
+          Superior Seats Admin
+        </Typography>
+      </Box>
+    </Box>
+  );
+
+  return (
+    <>
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <Drawer
+          variant="temporary"
+          open={open}
+          onClose={onClose}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: mobileDrawerWidth,
+              backgroundColor: 'background.paper',
+            },
+          }}
+        >
+          {drawerContent}
+        </Drawer>
+      )}
+
+      {/* Desktop Drawer */}
+      {!isMobile && (
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: 'background.paper',
+              borderRight: 1,
+              borderColor: 'divider',
+            },
+          }}
+          open
+        >
+          {drawerContent}
+        </Drawer>
+      )}
+    </>
+  );
+};
+
+export default Sidebar; 

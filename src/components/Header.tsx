@@ -12,6 +12,7 @@ import {
   ListItem,
   ListItemText,
   Box,
+  Divider,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -26,7 +27,6 @@ const Header = () => {
   const menuItems = [
     { text: 'Home', href: '/' },
     { text: 'Customize Your Seat', href: '/customize-your-seat' },
-   
     { text: 'Shop Specials', href: '/specials' },
     { text: 'Upholstery Services', href: '/upholstery' },
     { text: 'Other Products', href: '/other-products' },
@@ -34,6 +34,8 @@ const Header = () => {
     { text: 'About', href: '/about' },
     { text: 'Contact', href: '/contact' },
   ];
+
+  // Admin items moved to sidebar
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -56,6 +58,16 @@ const Header = () => {
             <ListItemText primary={item.text} />
           </ListItem>
         ))}
+        <Divider sx={{ my: 1 }} />
+        <ListItem component="a" href="/admin">
+          <ListItemText 
+            primary="Admin Panel" 
+            primaryTypographyProps={{ 
+              fontWeight: 'bold',
+              color: 'primary.main'
+            }} 
+          />
+        </ListItem>
       </List>
     </Box>
   );
@@ -125,6 +137,22 @@ const Header = () => {
                   {item.text}
                 </Button>
               ))}
+              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+              <Button
+                color="inherit"
+                href="/admin"
+                sx={{
+                  color: '#DA291C',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  '&:hover': {
+                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                    color: '#DA291C',
+                  },
+                }}
+              >
+                Admin
+              </Button>
             </Box>
           )}
         </Toolbar>
