@@ -161,19 +161,21 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Customer Classification
         </Typography>
-        <Grid container spacing={3}>
-          <Grid xs={12}>
-            <SelectField
-              name="customerTypeId"
-              label="Customer Type"
-              value={formData.customerTypeId}
-              onChange={(value) => handleFieldChange('customerTypeId', value)}
-              options={customerTypeOptions}
-              required
-              error={errors.customerTypeId}
-              disabled={isViewMode}
-            />
-          </Grid>
+        <Grid
+          display="grid"
+          gridTemplateColumns="1fr"
+          gap={3}
+        >
+          <SelectField
+            name="customerTypeId"
+            label="Customer Type"
+            value={formData.customerTypeId}
+            onChange={(value) => handleFieldChange('customerTypeId', value)}
+            options={customerTypeOptions}
+            required
+            error={errors.customerTypeId}
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
@@ -182,65 +184,64 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Personal Information
         </Typography>
-        <Grid container spacing={3}>
-          <Grid xs={12} sm={6}>
-            <FormField
-              name="firstName"
-              label="First Name"
-              value={formData.firstName}
-              onChange={(value) => handleFieldChange('firstName', value)}
-              required
-              error={errors.firstName}
-              disabled={isViewMode}
-            />
-          </Grid>
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }}
+          gap={3}
+          sx={{
+            '& > *:nth-of-type(5)': {
+              gridColumn: { xs: '1', sm: '1 / -1' }
+            }
+          }}
+        >
+          <FormField
+            name="firstName"
+            label="First Name"
+            value={formData.firstName}
+            onChange={(value) => handleFieldChange('firstName', value)}
+            required
+            error={errors.firstName}
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12} sm={6}>
-            <FormField
-              name="lastName"
-              label="Last Name"
-              value={formData.lastName}
-              onChange={(value) => handleFieldChange('lastName', value)}
-              required
-              error={errors.lastName}
-              disabled={isViewMode}
-            />
-          </Grid>
+          <FormField
+            name="lastName"
+            label="Last Name"
+            value={formData.lastName}
+            onChange={(value) => handleFieldChange('lastName', value)}
+            required
+            error={errors.lastName}
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12} sm={6}>
-            <FormField
-              name="email"
-              label="Email Address"
-              value={formData.email}
-              onChange={(value) => handleFieldChange('email', value)}
-              type="email"
-              required
-              error={errors.email}
-              disabled={isViewMode}
-            />
-          </Grid>
+          <FormField
+            name="email"
+            label="Email Address"
+            value={formData.email}
+            onChange={(value) => handleFieldChange('email', value)}
+            type="email"
+            required
+            error={errors.email}
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12} sm={6}>
-            <FormField
-              name="phone"
-              label="Phone Number"
-              value={formData.phone}
-              onChange={(value) => handleFieldChange('phone', value)}
-              required
-              error={errors.phone}
-              disabled={isViewMode}
-            />
-          </Grid>
+          <FormField
+            name="phone"
+            label="Phone Number"
+            value={formData.phone}
+            onChange={(value) => handleFieldChange('phone', value)}
+            required
+            error={errors.phone}
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12}>
-            <FormField
-              name="company"
-              label="Company Name (Optional)"
-              value={formData.company}
-              onChange={(value) => handleFieldChange('company', value)}
-              disabled={isViewMode}
-            />
-          </Grid>
+          <FormField
+            name="company"
+            label="Company Name (Optional)"
+            value={formData.company}
+            onChange={(value) => handleFieldChange('company', value)}
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
@@ -249,15 +250,17 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Address Information
         </Typography>
-        <Grid container spacing={3}>
-          <Grid xs={12}>
-            <AddressFields
-              prefix="address"
-              address={formData.address}
-              onChange={handleAddressChange}
-              disabled={isViewMode}
-            />
-          </Grid>
+        <Grid
+          display="grid"
+          gridTemplateColumns="1fr"
+          gap={3}
+        >
+          <AddressFields
+            prefix="address"
+            address={formData.address}
+            onChange={handleAddressChange}
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
@@ -266,35 +269,35 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Additional Information
         </Typography>
-        <Grid container spacing={3}>
-          <Grid xs={12}>
-            <FormField
-              name="notes"
-              label="Notes (Optional)"
-              value={formData.notes}
-              onChange={(value) => handleFieldChange('notes', value)}
-              multiline
-              rows={3}
+        <Grid
+          display="grid"
+          gridTemplateColumns="1fr"
+          gap={3}
+        >
+          <FormField
+            name="notes"
+            label="Notes (Optional)"
+            value={formData.notes}
+            onChange={(value) => handleFieldChange('notes', value)}
+            multiline
+            rows={3}
+            disabled={isViewMode}
+          />
+
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            pl: 2,
+            pt: 1
+          }}>
+            <SwitchField
+              name="isActive"
+              label="Active Customer"
+              checked={formData.isActive}
+              onChange={(checked) => handleFieldChange('isActive', checked)}
               disabled={isViewMode}
             />
-          </Grid>
-
-          <Grid xs={12}>
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center',
-              pl: 2,
-              pt: 1
-            }}>
-              <SwitchField
-                name="isActive"
-                label="Active Customer"
-                checked={formData.isActive}
-                onChange={(checked) => handleFieldChange('isActive', checked)}
-                disabled={isViewMode}
-              />
-            </Box>
-          </Grid>
+          </Box>
         </Grid>
       </Box>
 

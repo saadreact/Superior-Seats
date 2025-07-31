@@ -31,6 +31,7 @@ interface FormFieldProps {
   error?: string;
   disabled?: boolean;
   size?: 'small' | 'medium';
+  sx?: any;
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
@@ -45,6 +46,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   error,
   disabled = false,
   size = 'medium',
+  sx,
 }) => (
   <TextField
     fullWidth
@@ -84,6 +86,7 @@ export const FormField: React.FC<FormFieldProps> = ({
         marginLeft: 0,
         marginTop: 0.5,
       },
+      ...sx,
     }}
   />
 );
@@ -270,57 +273,52 @@ export const AddressFields: React.FC<AddressFieldsProps> = ({
   onChange,
   disabled = false,
 }) => (
-  <Grid container spacing={2}>
-    <Grid xs={12}>
-      <FormField
-        name={`${prefix}Street`}
-        label="Street Address"
-        value={address.street}
-        onChange={(value) => onChange('street', value)}
-        required
-        disabled={disabled}
-      />
-    </Grid>
-    <Grid xs={12} sm={6}>
-      <FormField
-        name={`${prefix}City`}
-        label="City"
-        value={address.city}
-        onChange={(value) => onChange('city', value)}
-        required
-        disabled={disabled}
-      />
-    </Grid>
-    <Grid xs={12} sm={6}>
-      <FormField
-        name={`${prefix}State`}
-        label="State/Province"
-        value={address.state}
-        onChange={(value) => onChange('state', value)}
-        required
-        disabled={disabled}
-      />
-    </Grid>
-    <Grid xs={12} sm={6}>
-      <FormField
-        name={`${prefix}ZipCode`}
-        label="ZIP/Postal Code"
-        value={address.zipCode}
-        onChange={(value) => onChange('zipCode', value)}
-        required
-        disabled={disabled}
-      />
-    </Grid>
-    <Grid xs={12} sm={6}>
-      <FormField
-        name={`${prefix}Country`}
-        label="Country"
-        value={address.country}
-        onChange={(value) => onChange('country', value)}
-        required
-        disabled={disabled}
-      />
-    </Grid>
+  <Grid
+    display="grid"
+    gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }}
+    gap={2}
+  >
+    <FormField
+      name={`${prefix}Street`}
+      label="Street Address"
+      value={address.street}
+      onChange={(value) => onChange('street', value)}
+      required
+      disabled={disabled}
+      sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}
+    />
+    <FormField
+      name={`${prefix}City`}
+      label="City"
+      value={address.city}
+      onChange={(value) => onChange('city', value)}
+      required
+      disabled={disabled}
+    />
+    <FormField
+      name={`${prefix}State`}
+      label="State/Province"
+      value={address.state}
+      onChange={(value) => onChange('state', value)}
+      required
+      disabled={disabled}
+    />
+    <FormField
+      name={`${prefix}ZipCode`}
+      label="ZIP/Postal Code"
+      value={address.zipCode}
+      onChange={(value) => onChange('zipCode', value)}
+      required
+      disabled={disabled}
+    />
+    <FormField
+      name={`${prefix}Country`}
+      label="Country"
+      value={address.country}
+      onChange={(value) => onChange('country', value)}
+      required
+      disabled={disabled}
+    />
   </Grid>
 );
 

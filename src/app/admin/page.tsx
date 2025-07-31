@@ -99,59 +99,63 @@ const AdminDashboard = () => {
             Welcome back! 👋
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Here's what's happening with your business today.
+            Here&apos;s what&apos;s happening with your business today.
           </Typography>
         </Box>
 
         {/* Stats Cards */}
-        <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}>
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }}
+          gap={{ xs: 2, sm: 3 }}
+          sx={{ mb: 4 }}
+        >
           {stats.map((stat, index) => (
-            <Grid xs={12} sm={6} md={3} key={stat.title}>
-              <MotionCard
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                sx={{
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: 3,
-                  },
-                  transition: 'all 0.3s ease-in-out',
-                }}
-              >
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar
-                      sx={{
-                        backgroundColor: stat.color,
-                        mr: 2,
-                      }}
-                    >
-                      {stat.icon}
-                    </Avatar>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {stat.title}
-                      </Typography>
-                      <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                        {stat.value}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Chip
-                      label={stat.change}
-                      size="small"
-                      color={stat.positive ? 'success' : 'error'}
-                      variant="outlined"
-                    />
-                    <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
-                      vs last month
+            <MotionCard
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              sx={{
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: 3,
+                },
+                transition: 'all 0.3s ease-in-out',
+              }}
+            >
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Avatar
+                    sx={{
+                      backgroundColor: stat.color,
+                      mr: 2,
+                    }}
+                  >
+                    {stat.icon}
+                  </Avatar>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {stat.title}
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                      {stat.value}
                     </Typography>
                   </Box>
-                </CardContent>
-              </MotionCard>
-            </Grid>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Chip
+                    label={stat.change}
+                    size="small"
+                    color={stat.positive ? 'success' : 'error'}
+                    variant="outlined"
+                  />
+                  <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                    vs last month
+                  </Typography>
+                </Box>
+              </CardContent>
+            </MotionCard>
           ))}
         </Grid>
 
@@ -160,10 +164,14 @@ const AdminDashboard = () => {
           <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
             Quick Actions
           </Typography>
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
+          <Grid
+            display="grid"
+            gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
+            gap={{ xs: 2, sm: 3 }}
+          >
             {adminModules.map((module, index) => (
-              <Grid xs={12} sm={6} md={4} key={module.title}>
                 <MotionCard
+                  key={module.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -218,7 +226,6 @@ const AdminDashboard = () => {
                     </Button>
                   </CardActions>
                 </MotionCard>
-              </Grid>
             ))}
           </Grid>
         </Box>

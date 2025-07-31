@@ -28,7 +28,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { Order, Customer, Product } from '@/data/types';
+import { Order, OrderItem, Customer, Product } from '@/data/types';
 import OrderForm from '@/components/admin/OrderForm';
 
 // Mock data - replace with API calls
@@ -265,11 +265,15 @@ const OrdersPage = () => {
     setOrderToDelete(null);
   };
 
-  const handleFormSubmit = (order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleFormSubmit = (order: Omit<Order, 'id' | 'createdAt' | 'updatedAt' | 'items'> & { items: Omit<OrderItem, 'id'>[] }) => {
     if (selectedOrder) {
       // Edit existing order
       const updatedOrder: Order = {
         ...order,
+        items: order.items.map((item, index) => ({
+          ...item,
+          id: selectedOrder.items[index]?.id || Date.now().toString() + index,
+        })),
         id: selectedOrder.id,
         createdAt: selectedOrder.createdAt,
         updatedAt: new Date(),
@@ -282,6 +286,10 @@ const OrdersPage = () => {
       // Add new order
       const newOrder: Order = {
         ...order,
+        items: order.items.map((item, index) => ({
+          ...item,
+          id: Date.now().toString() + index,
+        })),
         id: Date.now().toString(),
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -445,7 +453,7 @@ const OrdersPage = () => {
           <DialogTitle>Confirm Delete</DialogTitle>
           <DialogContent>
             <Typography>
-              Are you sure you want to delete order "{orderToDelete?.orderNumber}"? This action cannot be undone.
+              Are you sure you want to delete order &quot;{orderToDelete?.orderNumber}&quot;? This action cannot be undone.
             </Typography>
           </DialogContent>
           <DialogActions>

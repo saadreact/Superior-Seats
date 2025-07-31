@@ -80,30 +80,30 @@ const CustomerTypeForm: React.FC<CustomerTypeFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Basic Information
         </Typography>
-        <Grid container spacing={3}>
-          <Grid xs={12}>
-            <FormField
-              name="name"
-              label="Customer Type Name"
-              value={formData.name}
-              onChange={(value) => handleFieldChange('name', value)}
-              required
-              error={errors.name}
-              disabled={isViewMode}
-            />
-          </Grid>
+        <Grid
+          display="grid"
+          gridTemplateColumns="1fr"
+          gap={3}
+        >
+          <FormField
+            name="name"
+            label="Customer Type Name"
+            value={formData.name}
+            onChange={(value) => handleFieldChange('name', value)}
+            required
+            error={errors.name}
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12}>
-            <FormField
-              name="description"
-              label="Description"
-              value={formData.description}
-              onChange={(value) => handleFieldChange('description', value)}
-              multiline
-              rows={3}
-              disabled={isViewMode}
-            />
-          </Grid>
+          <FormField
+            name="description"
+            label="Description"
+            value={formData.description}
+            onChange={(value) => handleFieldChange('description', value)}
+            multiline
+            rows={3}
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
@@ -111,36 +111,36 @@ const CustomerTypeForm: React.FC<CustomerTypeFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Settings
         </Typography>
-        <Grid container spacing={3}>
-          <Grid xs={12} sm={6}>
-            <FormField
-              name="discountPercentage"
-              label="Discount Percentage"
-              value={formData.discountPercentage}
-              onChange={(value) => handleFieldChange('discountPercentage', parseFloat(value) || 0)}
-              type="number"
-              error={errors.discountPercentage}
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }}
+          gap={3}
+        >
+          <FormField
+            name="discountPercentage"
+            label="Discount Percentage"
+            value={formData.discountPercentage}
+            onChange={(value) => handleFieldChange('discountPercentage', parseFloat(value) || 0)}
+            type="number"
+            error={errors.discountPercentage}
+            disabled={isViewMode}
+          />
+
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            height: '100%',
+            pl: 2,
+            pt: 2
+          }}>
+            <SwitchField
+              name="isActive"
+              label="Active Status"
+              checked={formData.isActive}
+              onChange={(checked) => handleFieldChange('isActive', checked)}
               disabled={isViewMode}
             />
-          </Grid>
-
-          <Grid xs={12} sm={6}>
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              height: '100%',
-              pl: 2,
-              pt: 2
-            }}>
-              <SwitchField
-                name="isActive"
-                label="Active Status"
-                checked={formData.isActive}
-                onChange={(checked) => handleFieldChange('isActive', checked)}
-                disabled={isViewMode}
-              />
-            </Box>
-          </Grid>
+          </Box>
         </Grid>
       </Box>
 

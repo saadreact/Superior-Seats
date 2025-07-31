@@ -29,7 +29,7 @@ interface OrderFormProps {
   customers: Customer[];
   products: Product[];
   isViewMode?: boolean;
-  onSubmit: (order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (order: Omit<Order, 'id' | 'createdAt' | 'updatedAt' | 'items'> & { items: Omit<OrderItem, 'id'>[] }) => void;
   onCancel: () => void;
 }
 
@@ -41,10 +41,10 @@ const OrderForm: React.FC<OrderFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const [formData, setFormData] = useState<Omit<Order, 'id' | 'createdAt' | 'updatedAt'>>({
+  const [formData, setFormData] = useState<Omit<Order, 'id' | 'createdAt' | 'updatedAt' | 'items'> & { items: Omit<OrderItem, 'id'>[] }>({
     customerId: '',
     orderNumber: '',
-    orderDate: new Date().toISOString().split('T')[0],
+    orderDate: new Date(),
     status: 'pending',
     items: [],
     subtotal: 0,
@@ -78,7 +78,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       setFormData({
         customerId: order.customerId,
         orderNumber: order.orderNumber,
-        orderDate: order.orderDate.toISOString().split('T')[0],
+        orderDate: order.orderDate,
         status: order.status,
         items: order.items.map(item => ({
           productId: item.productId,
@@ -203,15 +203,19 @@ const OrderForm: React.FC<OrderFormProps> = ({
     }
   };
 
-  const handleFieldChange = (field: string, value: string | number | boolean) => {
+  const handleFieldChange = (field: string, value: string | number | boolean | Date) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleAddressChange = (prefix: string, field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [`${prefix}Address`]: { ...prev[`${prefix}Address` as keyof typeof prev], [field]: value }
-    }));
+    setFormData(prev => {
+      const addressKey = `${prefix}Address` as 'shippingAddress' | 'billingAddress';
+      const currentAddress = prev[addressKey];
+      return {
+        ...prev,
+        [addressKey]: { ...currentAddress, [field]: value }
+      };
+    });
   };
 
   const customerOptions = customers.map(c => ({
@@ -252,55 +256,52 @@ const OrderForm: React.FC<OrderFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Order Information
         </Typography>
-        <Grid container spacing={3} sx={{ width: '100%' }}>
-          <Grid xs={12} md={6} sx={{ width: '100%' }}>
-            <SelectField
-              name="customerId"
-              label="Customer"
-              value={formData.customerId}
-              onChange={(value) => handleFieldChange('customerId', value)}
-              options={customerOptions}
-              required
-              error={errors.customerId}
-              disabled={isViewMode}
-            />
-          </Grid>
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+          gap={3}
+          sx={{ width: '100%' }}
+        >
+          <SelectField
+            name="customerId"
+            label="Customer"
+            value={formData.customerId}
+            onChange={(value) => handleFieldChange('customerId', value)}
+            options={customerOptions}
+            required
+            error={errors.customerId}
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12} md={6}>
-            <FormField
-              name="orderNumber"
-              label="Order Number"
-              value={formData.orderNumber}
-              onChange={(value) => handleFieldChange('orderNumber', value)}
-              required
-              error={errors.orderNumber}
-              disabled={isViewMode}
-            />
-          </Grid>
+          <FormField
+            name="orderNumber"
+            label="Order Number"
+            value={formData.orderNumber}
+            onChange={(value) => handleFieldChange('orderNumber', value)}
+            required
+            error={errors.orderNumber}
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12} md={6}>
-            <FormField
-              name="orderDate"
-              label="Order Date"
-              value={formData.orderDate}
-              onChange={(value) => handleFieldChange('orderDate', value)}
-              type="date"
-              required
-              disabled={isViewMode}
-            />
-          </Grid>
+          <FormField
+            name="orderDate"
+            label="Order Date"
+            value={formData.orderDate.toISOString().split('T')[0]}
+            onChange={(value) => handleFieldChange('orderDate', new Date(value))}
+            type="date"
+            required
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12} md={6}>
-            <SelectField
-              name="status"
-              label="Order Status"
-              value={formData.status}
-              onChange={(value) => handleFieldChange('status', value)}
-              options={statusOptions}
-              required
-              disabled={isViewMode}
-            />
-          </Grid>
+          <SelectField
+            name="status"
+            label="Order Status"
+            value={formData.status}
+            onChange={(value) => handleFieldChange('status', value)}
+            options={statusOptions}
+            required
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
@@ -322,96 +323,99 @@ const OrderForm: React.FC<OrderFormProps> = ({
             </Button>
           )}
         </Box>
-        <Grid container spacing={3} sx={{ width: '100%' }}>
-          <Grid xs={12}>
-            {formData.items.length === 0 ? (
-              <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                No items added yet. Click "Add Item" to start.
-              </Typography>
-            ) : (
-              <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: 'auto', maxWidth: '100%' }}>
-                <Table sx={{ minWidth: 650 }}>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                      <TableCell sx={{ fontWeight: 600, minWidth: 200 }}>Product</TableCell>
-                      <TableCell sx={{ fontWeight: 600, minWidth: 120 }}>Quantity</TableCell>
-                      <TableCell sx={{ fontWeight: 600, minWidth: 120 }}>Unit Price</TableCell>
-                      <TableCell sx={{ fontWeight: 600, minWidth: 100 }}>Total</TableCell>
-                      {!isViewMode && <TableCell sx={{ fontWeight: 600, minWidth: 80 }}>Actions</TableCell>}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {formData.items.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
-                          {!isViewMode ? (
-                            <SelectField
-                              name={`product-${index}`}
-                              label=""
-                              value={item.productId}
-                              onChange={(value) => handleItemChange(index, 'productId', value)}
-                              options={productOptions}
-                              required
-                              disabled={isViewMode}
-                              size="small"
-                            />
-                          ) : (
-                            item.productName
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
-                          {!isViewMode ? (
-                            <FormField
-                              name={`quantity-${index}`}
-                              label=""
-                              value={item.quantity}
-                              onChange={(value) => handleItemChange(index, 'quantity', parseInt(value) || 0)}
-                              type="number"
-                              required
-                              disabled={isViewMode}
-                              size="small"
-                            />
-                          ) : (
-                            item.quantity
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
-                          {!isViewMode ? (
-                            <FormField
-                              name={`unitPrice-${index}`}
-                              label=""
-                              value={item.unitPrice}
-                              onChange={(value) => handleItemChange(index, 'unitPrice', parseFloat(value) || 0)}
-                              type="number"
-                              required
-                              disabled={isViewMode}
-                              size="small"
-                            />
-                          ) : (
-                            `$${item.unitPrice.toFixed(2)}`
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          ${item.totalPrice.toFixed(2)}
-                        </TableCell>
-                        {!isViewMode && (
-                          <TableCell>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleRemoveItem(index)}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
+        <Grid
+          display="grid"
+          gridTemplateColumns="1fr"
+          gap={3}
+          sx={{ width: '100%' }}
+        >
+          {formData.items.length === 0 ? (
+            <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+              No items added yet. Click &quot;Add Item&quot; to start.
+            </Typography>
+          ) : (
+            <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: 'auto', maxWidth: '100%' }}>
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                    <TableCell sx={{ fontWeight: 600, minWidth: 200 }}>Product</TableCell>
+                    <TableCell sx={{ fontWeight: 600, minWidth: 120 }}>Quantity</TableCell>
+                    <TableCell sx={{ fontWeight: 600, minWidth: 120 }}>Unit Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600, minWidth: 100 }}>Total</TableCell>
+                    {!isViewMode && <TableCell sx={{ fontWeight: 600, minWidth: 80 }}>Actions</TableCell>}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {formData.items.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+                        {!isViewMode ? (
+                          <SelectField
+                            name={`product-${index}`}
+                            label=""
+                            value={item.productId}
+                            onChange={(value) => handleItemChange(index, 'productId', value)}
+                            options={productOptions}
+                            required
+                            disabled={isViewMode}
+                            size="small"
+                          />
+                        ) : (
+                          item.productName
                         )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </Grid>
+                      </TableCell>
+                      <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+                        {!isViewMode ? (
+                          <FormField
+                            name={`quantity-${index}`}
+                            label=""
+                            value={item.quantity}
+                            onChange={(value) => handleItemChange(index, 'quantity', parseInt(value) || 0)}
+                            type="number"
+                            required
+                            disabled={isViewMode}
+                            size="small"
+                          />
+                        ) : (
+                          item.quantity
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+                        {!isViewMode ? (
+                          <FormField
+                            name={`unitPrice-${index}`}
+                            label=""
+                            value={item.unitPrice}
+                            onChange={(value) => handleItemChange(index, 'unitPrice', parseFloat(value) || 0)}
+                            type="number"
+                            required
+                            disabled={isViewMode}
+                            size="small"
+                          />
+                        ) : (
+                          `$${item.unitPrice.toFixed(2)}`
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        ${item.totalPrice.toFixed(2)}
+                      </TableCell>
+                      {!isViewMode && (
+                        <TableCell>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleRemoveItem(index)}
+                            color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </Grid>
       </Box>
 
@@ -420,46 +424,43 @@ const OrderForm: React.FC<OrderFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Order Totals
         </Typography>
-        <Grid container spacing={3} sx={{ width: '100%' }}>
-          <Grid xs={12} md={6}>
-            <FormField
-              name="subtotal"
-              label="Subtotal"
-              value={formData.subtotal.toFixed(2)}
-              onChange={() => {}} // Read-only
-              disabled={true}
-            />
-          </Grid>
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+          gap={3}
+          sx={{ width: '100%' }}
+        >
+          <FormField
+            name="subtotal"
+            label="Subtotal"
+            value={formData.subtotal.toFixed(2)}
+            onChange={() => {}} // Read-only
+            disabled={true}
+          />
 
-          <Grid xs={12} md={6}>
-            <FormField
-              name="tax"
-              label="Tax"
-              value={formData.tax.toFixed(2)}
-              onChange={() => {}} // Read-only
-              disabled={true}
-            />
-          </Grid>
+          <FormField
+            name="tax"
+            label="Tax"
+            value={formData.tax.toFixed(2)}
+            onChange={() => {}} // Read-only
+            disabled={true}
+          />
 
-          <Grid xs={12} md={6}>
-            <FormField
-              name="shipping"
-              label="Shipping"
-              value={formData.shipping.toFixed(2)}
-              onChange={() => {}} // Read-only
-              disabled={true}
-            />
-          </Grid>
+          <FormField
+            name="shipping"
+            label="Shipping"
+            value={formData.shipping.toFixed(2)}
+            onChange={() => {}} // Read-only
+            disabled={true}
+          />
 
-          <Grid xs={12} md={6}>
-            <FormField
-              name="total"
-              label="Total"
-              value={formData.total.toFixed(2)}
-              onChange={() => {}} // Read-only
-              disabled={true}
-            />
-          </Grid>
+          <FormField
+            name="total"
+            label="Total"
+            value={formData.total.toFixed(2)}
+            onChange={() => {}} // Read-only
+            disabled={true}
+          />
         </Grid>
       </Box>
 
@@ -468,31 +469,32 @@ const OrderForm: React.FC<OrderFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Payment Information
         </Typography>
-        <Grid container spacing={3} sx={{ width: '100%' }}>
-          <Grid xs={12} md={6} sx={{ width: '100%' }}>
-            <SelectField
-              name="paymentMethod"
-              label="Payment Method"
-              value={formData.paymentMethod}
-              onChange={(value) => handleFieldChange('paymentMethod', value)}
-              options={paymentMethodOptions}
-              required
-              error={errors.paymentMethod}
-              disabled={isViewMode}
-            />
-          </Grid>
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+          gap={3}
+          sx={{ width: '100%' }}
+        >
+          <SelectField
+            name="paymentMethod"
+            label="Payment Method"
+            value={formData.paymentMethod}
+            onChange={(value) => handleFieldChange('paymentMethod', value)}
+            options={paymentMethodOptions}
+            required
+            error={errors.paymentMethod}
+            disabled={isViewMode}
+          />
 
-          <Grid xs={12} md={6}>
-            <SelectField
-              name="paymentStatus"
-              label="Payment Status"
-              value={formData.paymentStatus}
-              onChange={(value) => handleFieldChange('paymentStatus', value)}
-              options={paymentStatusOptions}
-              required
-              disabled={isViewMode}
-            />
-          </Grid>
+          <SelectField
+            name="paymentStatus"
+            label="Payment Status"
+            value={formData.paymentStatus}
+            onChange={(value) => handleFieldChange('paymentStatus', value)}
+            options={paymentStatusOptions}
+            required
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
@@ -501,18 +503,21 @@ const OrderForm: React.FC<OrderFormProps> = ({
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
           Additional Information
         </Typography>
-        <Grid container spacing={3} sx={{ width: '100%' }}>
-          <Grid xs={12}>
-            <FormField
-              name="notes"
-              label="Notes (Optional)"
-              value={formData.notes}
-              onChange={(value) => handleFieldChange('notes', value)}
-              multiline
-              rows={3}
-              disabled={isViewMode}
-            />
-          </Grid>
+        <Grid
+          display="grid"
+          gridTemplateColumns="1fr"
+          gap={3}
+          sx={{ width: '100%' }}
+        >
+          <FormField
+            name="notes"
+            label="Notes (Optional)"
+            value={formData.notes || ''}
+            onChange={(value) => handleFieldChange('notes', value)}
+            multiline
+            rows={3}
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 

@@ -271,7 +271,7 @@ const CustomerTypesPage = () => {
           <DialogTitle>Confirm Delete</DialogTitle>
           <DialogContent>
             <Typography>
-              Are you sure you want to delete "{customerTypeToDelete?.name}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{customerTypeToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
           </DialogContent>
           <DialogActions>
