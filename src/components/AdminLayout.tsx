@@ -13,7 +13,6 @@ import {
 import {
   Menu as MenuIcon,
   AccountCircle as AccountIcon,
-  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import { useRouter } from 'next/navigation';
@@ -70,14 +69,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
           >
             <MenuIcon />
           </IconButton>
-          <IconButton
-            color="inherit"
-            onClick={() => router.push('/')}
-            sx={{ mr: 2 }}
-            title="Back to Website"
-          >
-            <ArrowBackIcon />
-          </IconButton>
+
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>

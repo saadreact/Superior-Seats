@@ -307,7 +307,14 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
       {/* Order Items */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: { xs: 2, sm: 0 },
+          mb: 2 
+        }}>
           <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
             Order Items
           </Typography>
@@ -317,7 +324,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
               onClick={handleAddItem}
               variant="outlined"
               size="small"
-              sx={{ borderRadius: 2 }}
+              sx={{ borderRadius: 2, alignSelf: { xs: 'stretch', sm: 'auto' } }}
             >
               Add Item
             </Button>
@@ -334,21 +341,101 @@ const OrderForm: React.FC<OrderFormProps> = ({
               No items added yet. Click &quot;Add Item&quot; to start.
             </Typography>
           ) : (
-            <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: 'auto', maxWidth: '100%' }}>
-              <Table sx={{ minWidth: 650 }}>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 600, minWidth: 200 }}>Product</TableCell>
-                    <TableCell sx={{ fontWeight: 600, minWidth: 120 }}>Quantity</TableCell>
-                    <TableCell sx={{ fontWeight: 600, minWidth: 120 }}>Unit Price</TableCell>
-                    <TableCell sx={{ fontWeight: 600, minWidth: 100 }}>Total</TableCell>
-                    {!isViewMode && <TableCell sx={{ fontWeight: 600, minWidth: 80 }}>Actions</TableCell>}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {formData.items.map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+            <>
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: 'auto', maxWidth: '100%' }}>
+                <Table sx={{ minWidth: 650 }}>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                      <TableCell sx={{ fontWeight: 600, minWidth: 200 }}>Product</TableCell>
+                      <TableCell sx={{ fontWeight: 600, minWidth: 120 }}>Quantity</TableCell>
+                      <TableCell sx={{ fontWeight: 600, minWidth: 120 }}>Unit Price</TableCell>
+                      <TableCell sx={{ fontWeight: 600, minWidth: 100 }}>Total</TableCell>
+                      {!isViewMode && <TableCell sx={{ fontWeight: 600, minWidth: 80 }}>Actions</TableCell>}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {formData.items.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+                          {!isViewMode ? (
+                            <SelectField
+                              name={`product-${index}`}
+                              label=""
+                              value={item.productId}
+                              onChange={(value) => handleItemChange(index, 'productId', value)}
+                              options={productOptions}
+                              required
+                              disabled={isViewMode}
+                              size="small"
+                            />
+                          ) : (
+                            item.productName
+                          )}
+                        </TableCell>
+                        <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+                          {!isViewMode ? (
+                            <FormField
+                              name={`quantity-${index}`}
+                              label=""
+                              value={item.quantity}
+                              onChange={(value) => handleItemChange(index, 'quantity', parseInt(value) || 0)}
+                              type="number"
+                              required
+                              disabled={isViewMode}
+                              size="small"
+                            />
+                          ) : (
+                            item.quantity
+                          )}
+                        </TableCell>
+                        <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+                          {!isViewMode ? (
+                            <FormField
+                              name={`unitPrice-${index}`}
+                              label=""
+                              value={item.unitPrice}
+                              onChange={(value) => handleItemChange(index, 'unitPrice', parseFloat(value) || 0)}
+                              type="number"
+                              required
+                              disabled={isViewMode}
+                              size="small"
+                            />
+                          ) : (
+                            `$${item.unitPrice.toFixed(2)}`
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          ${item.totalPrice.toFixed(2)}
+                        </TableCell>
+                        {!isViewMode && (
+                          <TableCell>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRemoveItem(index)}
+                              color="error"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+
+            {/* Mobile Card View */}
+            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+              <Box sx={{ display: 'grid', gap: 2 }}>
+                {formData.items.map((item, index) => (
+                  <Paper key={index} sx={{ p: 2, borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          Product
+                        </Typography>
                         {!isViewMode ? (
                           <SelectField
                             name={`product-${index}`}
@@ -361,10 +448,21 @@ const OrderForm: React.FC<OrderFormProps> = ({
                             size="small"
                           />
                         ) : (
-                          item.productName
+                          <Typography variant="body1">
+                            {item.productName}
+                          </Typography>
                         )}
-                      </TableCell>
-                      <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                        ${item.totalPrice.toFixed(2)}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Quantity
+                        </Typography>
                         {!isViewMode ? (
                           <FormField
                             name={`quantity-${index}`}
@@ -377,10 +475,15 @@ const OrderForm: React.FC<OrderFormProps> = ({
                             size="small"
                           />
                         ) : (
-                          item.quantity
+                          <Typography variant="body2">
+                            {item.quantity}
+                          </Typography>
                         )}
-                      </TableCell>
-                      <TableCell sx={{ padding: 1, verticalAlign: 'top' }}>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Unit Price
+                        </Typography>
                         {!isViewMode ? (
                           <FormField
                             name={`unitPrice-${index}`}
@@ -393,28 +496,29 @@ const OrderForm: React.FC<OrderFormProps> = ({
                             size="small"
                           />
                         ) : (
-                          `$${item.unitPrice.toFixed(2)}`
+                          <Typography variant="body2">
+                            ${item.unitPrice.toFixed(2)}
+                          </Typography>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        ${item.totalPrice.toFixed(2)}
-                      </TableCell>
-                      {!isViewMode && (
-                        <TableCell>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleRemoveItem(index)}
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                      </Box>
+                    </Box>
+
+                    {!isViewMode && (
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleRemoveItem(index)}
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    )}
+                  </Paper>
+                ))}
+              </Box>
+            </Box>
+            </>
           )}
         </Grid>
       </Box>

@@ -139,7 +139,14 @@ const CustomerTypesPage = () => {
   return (
     <AdminLayout title="Customer Types">
       <Box>
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ 
+          mb: 3, 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: { xs: 2, sm: 0 }
+        }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
             Customer Types
           </Typography>
@@ -147,6 +154,7 @@ const CustomerTypesPage = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
+            sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
           >
             Add Customer Type
           </Button>
@@ -162,74 +170,148 @@ const CustomerTypesPage = () => {
           </Alert>
         )}
 
-        <TableContainer component={Paper} sx={{ 
-          borderRadius: 2, 
-          overflow: 'auto',
-          maxWidth: '100%',
-          '& .MuiTable-root': {
-            minWidth: 650,
-          },
-        }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Discount %</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {customerTypes.map((customerType) => (
-                <TableRow key={customerType.id}>
-                  <TableCell>{customerType.name}</TableCell>
-                  <TableCell>{customerType.description}</TableCell>
-                  <TableCell>{customerType.discountPercentage}%</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={customerType.isActive ? 'Active' : 'Inactive'}
-                      color={customerType.isActive ? 'success' : 'default'}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {customerType.createdAt.toLocaleDateString()}
-                  </TableCell>
-                  <TableCell align="center" sx={{ minWidth: 120 }}>
-                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleView(customerType)}
-                        title="View"
-                        sx={{ color: 'primary.main' }}
-                      >
-                        <ViewIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(customerType)}
-                        title="Edit"
-                        sx={{ color: 'primary.main' }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(customerType)}
-                        title="Delete"
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
+        {/* Desktop Table View */}
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <TableContainer component={Paper} sx={{ 
+            borderRadius: 2, 
+            overflow: 'auto',
+            maxWidth: '100%',
+            '& .MuiTable-root': {
+              minWidth: 650,
+            },
+          }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                  <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Discount %</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {customerTypes.map((customerType) => (
+                  <TableRow key={customerType.id}>
+                    <TableCell>{customerType.name}</TableCell>
+                    <TableCell>{customerType.description}</TableCell>
+                    <TableCell>{customerType.discountPercentage}%</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={customerType.isActive ? 'Active' : 'Inactive'}
+                        color={customerType.isActive ? 'success' : 'default'}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {customerType.createdAt.toLocaleDateString()}
+                    </TableCell>
+                    <TableCell align="center" sx={{ minWidth: 120 }}>
+                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleView(customerType)}
+                          title="View"
+                          sx={{ color: 'primary.main' }}
+                        >
+                          <ViewIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEdit(customerType)}
+                          title="Edit"
+                          sx={{ color: 'primary.main' }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDelete(customerType)}
+                          title="Delete"
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+
+        {/* Mobile Card View */}
+        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+          <Box sx={{ display: 'grid', gap: 2 }}>
+            {customerTypes.map((customerType) => (
+              <Paper key={customerType.id} sx={{ p: 2, borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                      {customerType.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {customerType.description}
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={customerType.isActive ? 'Active' : 'Inactive'}
+                    color={customerType.isActive ? 'success' : 'default'}
+                    size="small"
+                  />
+                </Box>
+                
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2 }}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Discount
+                    </Typography>
+                    <Typography variant="body2">
+                      {customerType.discountPercentage}%
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Created
+                    </Typography>
+                    <Typography variant="body2">
+                      {customerType.createdAt.toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleView(customerType)}
+                    title="View"
+                    sx={{ color: 'primary.main' }}
+                  >
+                    <ViewIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleEdit(customerType)}
+                    title="Edit"
+                    sx={{ color: 'primary.main' }}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDelete(customerType)}
+                    title="Delete"
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              </Paper>
+            ))}
+          </Box>
+        </Box>
 
         {/* Form Dialog */}
         <Dialog
@@ -242,6 +324,8 @@ const CustomerTypesPage = () => {
               borderRadius: 2,
               maxHeight: '90vh',
               overflow: 'hidden',
+              margin: { xs: 2, sm: 'auto' },
+              width: { xs: 'calc(100% - 32px)', sm: 'auto' },
             },
           }}
         >
@@ -253,7 +337,13 @@ const CustomerTypesPage = () => {
           }}>
             {isViewMode ? 'View Customer Type' : selectedCustomerType ? 'Edit Customer Type' : 'Add Customer Type'}
           </DialogTitle>
-          <DialogContent sx={{ pt: 3, overflow: 'auto', maxHeight: 'calc(90vh - 140px)' }}>
+          <DialogContent sx={{ 
+            pt: 3, 
+            overflow: 'auto', 
+            maxHeight: 'calc(90vh - 140px)',
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 }
+          }}>
             <CustomerTypeForm
               customerType={selectedCustomerType}
               isViewMode={isViewMode}
