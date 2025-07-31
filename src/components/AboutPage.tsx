@@ -401,19 +401,45 @@ const AboutPage = () => {
                      },
                    }}
                  >
-                   <Chip
-                     label={step.step}
+                   <Box
                      sx={{
+                       width: 60,
+                       height: 60,
+                       borderRadius: '50%',
                        backgroundColor: 'primary.main',
                        color: 'white',
-                       fontSize: '1rem',
+                       display: 'flex',
+                       alignItems: 'center',
+                       justifyContent: 'center',
+                       fontSize: '1.2rem',
                        fontWeight: 'bold',
                        mb: 2,
-                       width: 45,
-                       height: 45,
-                       borderRadius: '50%',
+                       boxShadow: '0 6px 16px rgba(211, 47, 47, 0.4)',
+                       transition: 'all 0.3s ease',
+                       position: 'relative',
+                       '&::before': {
+                         content: '""',
+                         position: 'absolute',
+                         top: '-2px',
+                         left: '-2px',
+                         right: '-2px',
+                         bottom: '-2px',
+                         borderRadius: '50%',
+                         background: 'linear-gradient(45deg, #d32f2f, #b71c1c)',
+                         zIndex: -1,
+                         opacity: 0.3,
+                       },
+                       '&:hover': {
+                         transform: 'scale(1.1)',
+                         boxShadow: '0 8px 24px rgba(211, 47, 47, 0.5)',
+                         '&::before': {
+                           opacity: 0.5,
+                         },
+                       },
                      }}
-                   />
+                   >
+                     {step.step}
+                   </Box>
                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontSize: '1.1rem' }}>
                      {step.title}
                    </Typography>
