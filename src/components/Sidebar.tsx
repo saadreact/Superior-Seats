@@ -23,6 +23,7 @@ import {
   ShoppingCart as OrderIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
+  Storefront as StorefrontIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -144,6 +145,34 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           </ListItem>
         ))}
       </List>
+
+      {/* Customer View Section */}
+      <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+        <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
+          Customer View
+        </Typography>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => handleNavigation('/')}
+            sx={{
+              borderRadius: 1,
+              '&:hover': {
+                backgroundColor: 'action.hover',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <StorefrontIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Back to Website"
+              primaryTypographyProps={{
+                fontSize: '0.875rem',
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+      </Box>
 
       {/* Footer */}
       <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
