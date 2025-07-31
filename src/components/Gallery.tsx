@@ -1,14 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import {
   Box,
   Container,
   Typography,
-  Card,
-  CardMedia,
-  CardContent,
   Button,
   useTheme,
   useMediaQuery,
@@ -23,7 +20,7 @@ import {
   ArrowForward,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
-import { workPictures, WorkImage } from '@/data/Gallery';
+import { workPictures, workPicturesTruck, WorkImage } from '@/data/Gallery';
 
 const Gallery = () => {
   const theme = useTheme();
@@ -31,6 +28,32 @@ const Gallery = () => {
   
   const [selectedImage, setSelectedImage] = useState<WorkImage | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [animatedImages, setAnimatedImages] = useState<boolean[]>([]);
+  const [sliderIndex, setSliderIndex] = useState(0);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Initialize animation states
+  useEffect(() => {
+    const animationStates = workPictures.map(() => false);
+    setAnimatedImages(animationStates);
+    
+    // Animate images one by one with delay
+    const animateImages = () => {
+      workPictures.forEach((_, index) => {
+        setTimeout(() => {
+          setAnimatedImages(prev => {
+            const newStates = [...prev];
+            newStates[index] = true;
+            return newStates;
+          });
+        }, index * 200); // 200ms delay between each image
+      });
+    };
+
+    // Start animation after a short delay
+    const timer = setTimeout(animateImages, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
 
   const handleImageClick = (image: WorkImage, index: number) => {
@@ -53,6 +76,23 @@ const Gallery = () => {
     setSelectedImage(workPictures[prevIndex]);
     setCurrentImageIndex(prevIndex);
   };
+
+  const handleSliderNext = () => {
+    setSliderIndex((prev) => (prev + 1) % workPictures.length);
+  };
+
+  const handleSliderPrev = () => {
+    setSliderIndex((prev) => (prev - 1 + workPictures.length) % workPictures.length);
+  };
+
+  // Auto-slide effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleSliderNext();
+    }, 4000); // Change slide every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [sliderIndex]);
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
@@ -93,6 +133,212 @@ const Gallery = () => {
           </Typography>
         </Container>
       </Box>
+      {/* Horizontal Image Slider */}
+      <Box sx={{ 
+        backgroundColor: '#f8f9fa',
+        py: { xs: 4, md: 6 },
+        overflow: 'hidden',
+      }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h4"
+            sx={{
+              textAlign: 'center',
+              fontWeight: 'bold',
+              mb: 4,
+              color: 'text.primary',
+            }}
+          >
+            Our Workshop
+          </Typography>
+          
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              overflow: 'hidden',
+              '&::before, &::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                width: '100px',
+                zIndex: 2,
+                pointerEvents: 'none',
+              },
+              '&::before': {
+                left: 0,
+                background: 'linear-gradient(to right, #f8f9fa 0%, transparent 100%)',
+              },
+              '&::after': {
+                right: 0,
+                background: 'linear-gradient(to left, #f8f9fa 0%, transparent 100%)',
+              },
+            }}
+          >
+          {/* Continuous Sliding Images */}
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 3,
+              animation: 'slideLeft 30s linear infinite',
+              width: 'max-content',
+              animationPlayState: selectedImage ? 'paused' : 'running',
+              '@keyframes slideLeft': {
+                '0%': {
+                  transform: 'translateX(0)',
+                },
+                '100%': {
+                  transform: 'translateX(-50%)',
+                },
+              },
+              '&:hover': {
+                animationPlayState: 'paused',
+              },
+            }}
+          >
+            {/* First set of images */}
+            {workPicturesTruck.map((item, index) => (
+              <Box
+                key={`first-${item.id}`}
+                sx={{
+                  minWidth: 280,
+                  width: 280,
+                  height: 200,
+                  position: 'relative',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 8px 25px rgba(211, 47, 47, 0.3)',
+                    '& .image-overlay': {
+                      opacity: 1,
+                    },
+                  },
+                }}
+                onClick={() => handleImageClick(item, index)}
+              >
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  style={{
+                    objectFit: 'cover',
+                    backgroundColor: '#f5f5f5',
+                  }}
+                />
+                
+                {/* Hover Overlay */}
+                <Box
+                  className="image-overlay"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.8) 0%, rgba(0,0,0,0.6) 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                    p: 2,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      fontSize: '0.9rem',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                    }}
+                  >
+                    {item.title}
+                  </Typography>
+                  <ZoomIn sx={{ fontSize: 20, mt: 1 }} />
+                </Box>
+              </Box>
+            ))}
+            
+            {/* Duplicate set for seamless loop */}
+            {workPicturesTruck.map((item, index) => (
+              <Box
+                key={`second-${item.id}`}
+                sx={{
+                  minWidth: 280,
+                  width: 280,
+                  height: 200,
+                  position: 'relative',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 8px 25px rgba(211, 47, 47, 0.3)',
+                    '& .image-overlay': {
+                      opacity: 1,
+                    },
+                  },
+                }}
+                onClick={() => handleImageClick(item, index)}
+              >
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  style={{
+                    objectFit: 'cover',
+                    backgroundColor: '#f5f5f5',
+                  }}
+                />
+                
+                {/* Hover Overlay */}
+                <Box
+                  className="image-overlay"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.8) 0%, rgba(0,0,0,0.6) 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                    p: 2,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      fontSize: '0.9rem',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                    }}
+                  >
+                    {item.title}
+                  </Typography>
+                  <ZoomIn sx={{ fontSize: 20, mt: 1 }} />
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+        </Container>
+      </Box>
+
       {/* Our Work Pictures Section */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fafafa' }}>
         <Container maxWidth="lg">
@@ -122,14 +368,31 @@ const Gallery = () => {
                   cursor: 'pointer',
                   overflow: 'hidden',
                   borderRadius: 2,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  opacity: animatedImages[index] ? 1 : 0,
+                  transform: animatedImages[index] ? 'translateY(0) scale(1)' : 'translateY(50px) scale(0.8)',
+                  transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                  animation: animatedImages[index] ? 'imageFloat 3s ease-in-out infinite' : 'none',
+                  '@keyframes imageFloat': {
+                    '0%, 100%': {
+                      transform: 'translateY(0) scale(1)',
+                    },
+                    '50%': {
+                      transform: 'translateY(-5px) scale(1.02)',
+                    },
+                  },
                   '&:hover': {
-                    transform: 'scale(1.02)',
+                    transform: 'translateY(-8px) scale(1.05)',
+                    boxShadow: '0 20px 40px rgba(211, 47, 47, 0.3)',
                     '& .zoom-icon': {
                       opacity: 1,
+                      transform: 'translate(-50%, -50%) scale(1.1)',
                     },
                     '& .image-overlay': {
                       opacity: 1,
+                      transform: 'translateY(0)',
+                    },
+                    '& .gallery-image': {
+                      transform: 'scale(1.1)',
                     },
                   },
                 }}
@@ -139,7 +402,7 @@ const Gallery = () => {
                   sx={{
                     position: 'relative',
                     width: '100%',
-                    paddingTop: '75%', // 4:3 aspect ratio
+                    paddingTop: '75%', 
                     overflow: 'hidden',
                     borderRadius: 2,
                   }}
@@ -149,10 +412,11 @@ const Gallery = () => {
                     alt={item.title}
                     fill
                     style={{
-                      objectFit: 'cover',
-                      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      objectFit: 'contain',
+                      backgroundColor: '#f5f5f5',
+                      transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
-                    className="card-media"
+                    className="gallery-image"
                   />
                   
                   {/* Zoom Icon */}
@@ -164,15 +428,17 @@ const Gallery = () => {
                       left: '50%',
                       transform: 'translate(-50%, -50%)',
                       opacity: 0,
-                      transition: 'opacity 0.3s ease',
-                      backgroundColor: 'rgba(211, 47, 47, 0.9)',
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      backgroundColor: 'rgba(211, 47, 47, 0.95)',
                       borderRadius: '50%',
-                      p: 1,
+                      p: 1.5,
                       color: 'white',
                       zIndex: 2,
+                      backdropFilter: 'blur(10px)',
+                      border: '2px solid rgba(255,255,255,0.2)',
                     }}
                   >
-                    <ZoomIn />
+                    <ZoomIn sx={{ fontSize: 24 }} />
                   </Box>
                   
                   {/* Image Overlay with Title */}
@@ -183,19 +449,21 @@ const Gallery = () => {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+                      background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
                       color: 'white',
-                      p: 2,
+                      p: 3,
                       opacity: 0,
-                      transition: 'opacity 0.3s ease',
+                      transform: 'translateY(20px)',
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
                     <Typography
                       variant="h6"
                       sx={{
                         fontWeight: 'bold',
-                        fontSize: '1rem',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                        fontSize: '1.1rem',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                        mb: 1,
                       }}
                     >
                       {item.title}
@@ -204,8 +472,9 @@ const Gallery = () => {
                       variant="body2"
                       sx={{
                         opacity: 0.9,
-                        fontSize: '0.8rem',
+                        fontSize: '0.9rem',
                         textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                        lineHeight: 1.4,
                       }}
                     >
                       {item.description}
@@ -217,7 +486,7 @@ const Gallery = () => {
           </Box>
         </Container>
       </Box>
-
+          
       {/* Lightbox Dialog */}
       <Dialog
         open={!!selectedImage}
@@ -226,8 +495,10 @@ const Gallery = () => {
         fullWidth
         PaperProps={{
           sx: {
-            backgroundColor: 'rgba(0,0,0,0.95)',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
             color: 'white',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 20px 60px rgba(202, 38, 38, 0.4)',
           },
         }}
       >
@@ -242,7 +513,7 @@ const Gallery = () => {
               backgroundColor: 'rgba(0,0,0,0.5)',
               zIndex: 1,
               '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.7)',
+                backgroundColor: 'rgba(175, 40, 40, 0.7)',
               },
             }}
           >
@@ -263,60 +534,6 @@ const Gallery = () => {
                   objectFit: 'contain',
                 }}
               />
-              
-              {/* Navigation Arrows */}
-              <IconButton
-                onClick={handlePrevImage}
-                sx={{
-                  position: 'absolute',
-                  left: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                  },
-                }}
-              >
-                <ArrowBack />
-              </IconButton>
-              
-              <IconButton
-                onClick={handleNextImage}
-                sx={{
-                  position: 'absolute',
-                  right: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                  },
-                }}
-              >
-                <ArrowForward />
-              </IconButton>
-
-              {/* Project Info */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
-                  p: 3,
-                }}
-              >
-                <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  {selectedImage.title}
-                </Typography>
-                <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                  {selectedImage.description}
-                </Typography>
-              </Box>
             </Box>
           )}
         </DialogContent>
