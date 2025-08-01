@@ -102,7 +102,7 @@ const ContactPage = () => {
 
       {/* Contact Form */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fafafa' }}>
-        <Container maxWidth="sm">
+        <Container maxWidth="md">
           <Typography
             variant="h3"
             sx={{
@@ -115,100 +115,110 @@ const ContactPage = () => {
             Send Us a Message
           </Typography>
        
-          <Card
-            sx={{
-              p: { xs: 4, md: 6 },
-              boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
-              border: '1px solid rgba(211, 47, 47, 0.08)',
-              maxWidth: 500,
-              mx: 'auto',
-              position: 'relative',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 4,
-                background: 'linear-gradient(90deg, #d32f2f 0%, #9a0007 100%)',
-                borderRadius: '3px 3px 0 0',
-              },
-            }}
-          >
-            <form onSubmit={handleSubmit}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                     <Card
+             sx={{
+               p: { xs: 3, sm: 4, md: 6 },
+               boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+               borderRadius: { xs: 2, md: 3 },
+               background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
+               border: '1px solid rgba(211, 47, 47, 0.08)',
+               maxWidth: { xs: '100%', sm: 600, md: 800 },
+               mx: 'auto',
+               position: 'relative',
+               '&::before': {
+                 content: '""',
+                 position: 'absolute',
+                 top: 0,
+                 left: 0,
+                 right: 0,
+                 height: 4,
+                 background: 'linear-gradient(90deg, #d32f2f 0%, #9a0007 100%)',
+                 borderRadius: '3px 3px 0 0',
+               },
+             }}
+           >
+                         <form onSubmit={handleSubmit}>
+               <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
                 
 
-                {/* Name Fields */}
-                <Box sx={{ display: 'flex', gap: 3 }}>
-                  <TextField
-                    label="First Name"
-                    value={formData.firstName}
-                    onChange={handleInputChange('firstName')}
-                    required
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      flex: 1,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        backgroundColor: 'rgba(255,255,255,0.8)',
-                        '&:hover fieldset': {
-                          borderColor: 'primary.main',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'primary.main',
-                          borderWidth: 2,
-                        },
-                        '&.Mui-focused': {
-                          backgroundColor: 'white',
-                        },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'text.secondary',
-                        '&.Mui-focused': {
-                          color: 'primary.main',
-                        },
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="Last Name"
-                    value={formData.lastName}
-                    onChange={handleInputChange('lastName')}
-                    required
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      flex: 1,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        backgroundColor: 'rgba(255,255,255,0.8)',
-                        '&:hover fieldset': {
-                          borderColor: 'primary.main',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'primary.main',
-                          borderWidth: 2,
-                        },
-                        '&.Mui-focused': {
-                          backgroundColor: 'white',
-                        },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'text.secondary',
-                        '&.Mui-focused': {
-                          color: 'primary.main',
-                        },
-                      },
-                    }}
-                  />
-                </Box>
+                                 {/* Name Fields */}
+                 <Box sx={{ 
+                   display: 'flex', 
+                   gap: { xs: 2, sm: 3 },
+                   flexDirection: { xs: 'column', sm: 'row' }
+                 }}>
+                   <TextField
+                     label="First Name"
+                     value={formData.firstName}
+                     onChange={handleInputChange('firstName')}
+                     required
+                     variant="outlined"
+                     size="small"
+                     sx={{
+                       flex: 1,
+                       '& .MuiOutlinedInput-root': {
+                         borderRadius: 2,
+                         height: '50px',
+                         backgroundColor: 'rgba(255,255,255,0.8)',
+                         '&:hover fieldset': {
+                           borderColor: 'primary.main',
+                         },
+                         '&.Mui-focused fieldset': {
+                           borderColor: 'primary.main',
+                           borderWidth: 2,
+                         },
+                         '&.Mui-focused': {
+                           backgroundColor: 'white',
+                         },
+                       },
+                       '& .MuiInputLabel-root': {
+                         color: 'text.secondary',
+                         '&.Mui-focused': {
+                           color: 'primary.main',
+                         },
+                       },
+                     }}
+                   />
+                   <TextField
+                     label="Last Name"
+                     value={formData.lastName}
+                     onChange={handleInputChange('lastName')}
+                     required
+                     variant="outlined"
+                     size="small"
+                     sx={{
+                       flex: 1,
+                       '& .MuiOutlinedInput-root': {
+                         borderRadius: 2,
+                         height: '50px',
+                         backgroundColor: 'rgba(255,255,255,0.8)',
+                         '&:hover fieldset': {
+                           borderColor: 'primary.main',
+                         },
+                         '&.Mui-focused fieldset': {
+                           borderColor: 'primary.main',
+                           borderWidth: 2,
+                         },
+                         '&.Mui-focused': {
+                           backgroundColor: 'white',
+                         },
+                       },
+                       '& .MuiInputLabel-root': {
+                         color: 'text.secondary',
+                         '&.Mui-focused': {
+                           color: 'primary.main',
+                         },
+                       },
+                     }}
+                   />
+                 </Box>
 
-                {/* Contact Fields */}
-                <Box sx={{ display: 'flex', gap: 3,flexDirection: 'column' }}>
+                                 {/* Contact Fields */}
+                 <Box sx={{ 
+                   display: 'flex', 
+                   gap: { xs: 2, sm: 3 },
+                   flexDirection: { xs: 'column', md: 'row' }
+                 }}>
                   <TextField
                     label="Email"
                     type="email"
@@ -221,6 +231,7 @@ const ContactPage = () => {
                       flex: 1,
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,
+                        height: '50px',
                         backgroundColor: 'rgba(255,255,255,0.8)',
                         '&:hover fieldset': {
                           borderColor: 'primary.main',
@@ -252,6 +263,7 @@ const ContactPage = () => {
                       flex: 1,
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,
+                        height: '50px',
                         backgroundColor: 'rgba(255,255,255,0.8)',
                         '&:hover fieldset': {
                           borderColor: 'primary.main',
@@ -286,6 +298,7 @@ const ContactPage = () => {
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
+                      height: '50px',
                       backgroundColor: 'rgba(255,255,255,0.8)',
                       '&:hover fieldset': {
                         borderColor: 'primary.main',
@@ -319,6 +332,7 @@ const ContactPage = () => {
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
+                      height: '50px',
                       backgroundColor: 'rgba(255,255,255,0.8)',
                       '&:hover fieldset': {
                         borderColor: 'primary.main',
@@ -377,51 +391,53 @@ const ContactPage = () => {
                 />
 
                 {/* Submit Button */}
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  mt: 4,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 2,
-                }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    size="medium"
-                    startIcon={<Send />}
-                    sx={{
-                      background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-                      px: 6,
-                      py: 1.5,
-                      fontSize: '1rem',
-                      fontWeight: 'bold',
-                      borderRadius: 2,
-                      boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
-                      textTransform: 'none',
-                      letterSpacing: 0.5,
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #b71c1c 0%, #7b0000 100%)',
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 30px rgba(211, 47, 47, 0.4)',
-                      },
-                      transition: 'all 0.3s ease',
-                      minWidth: 180,
-                    }}
-                  >
-                    Send Message
-                  </Button>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'text.secondary',
-                      fontSize: '0.75rem',
-                      opacity: 0.7,
-                      textAlign: 'center',
-                    }}
-                  >
-                    We&apos;ll get back to you within 24 hours
-                  </Typography>
+                                 <Box sx={{ 
+                   textAlign: 'center', 
+                   mt: { xs: 3, sm: 4 },
+                   display: 'flex',
+                   flexDirection: 'column',
+                   alignItems: 'center',
+                   gap: { xs: 1.5, sm: 2 },
+                 }}>
+                   <Button
+                     type="submit"
+                     variant="contained"
+                     size="medium"
+                     startIcon={<Send />}
+                     sx={{
+                       background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+                       px: { xs: 4, sm: 6 },
+                       py: { xs: 1.2, sm: 1.5 },
+                       fontSize: { xs: '0.9rem', sm: '1rem' },
+                       fontWeight: 'bold',
+                       borderRadius: 2,
+                       boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
+                       textTransform: 'none',
+                       letterSpacing: 0.5,
+                       '&:hover': {
+                         background: 'linear-gradient(135deg, #b71c1c 0%, #7b0000 100%)',
+                         transform: 'translateY(-2px)',
+                         boxShadow: '0 8px 30px rgba(211, 47, 47, 0.4)',
+                       },
+                       transition: 'all 0.3s ease',
+                       minWidth: { xs: 160, sm: 180 },
+                       width: { xs: '100%', sm: 'auto' },
+                     }}
+                   >
+                     Send Message
+                   </Button>
+                                     <Typography
+                     variant="caption"
+                     sx={{
+                       color: 'text.secondary',
+                       fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                       opacity: 0.7,
+                       textAlign: 'center',
+                       px: { xs: 2, sm: 0 },
+                     }}
+                   >
+                     We&apos;ll get back to you within 24 hours
+                   </Typography>
                 </Box>
               </Box>
             </form>
@@ -442,25 +458,25 @@ const ContactPage = () => {
           >
             Contact Information
           </Typography>
-          <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: { xs: 3, md: 4 },
-            justifyContent: 'center',
-            maxWidth: 1200,
-            mx: 'auto',
-          }}>
+                     <Box sx={{ 
+             display: 'grid',
+             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+             gap: { xs: 2, sm: 3, md: 4 },
+             justifyContent: 'center',
+             maxWidth: 1200,
+             mx: 'auto',
+           }}>
             {contactInfo.map((info, index) => (
               <Card
                 key={index}
-                sx={{
-                  height: '100%',
-                  textAlign: 'center',
-                  p: 2,
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  borderRadius: 3,
-                  cursor: 'pointer',
+                                 sx={{
+                   height: '100%',
+                   textAlign: 'center',
+                   p: { xs: 1.5, sm: 2 },
+                   transition: 'all 0.3s ease',
+                   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                   borderRadius: { xs: 2, sm: 3 },
+                   cursor: 'pointer',
                   '&:hover': {
                     transform: 'translateY(-8px)',
                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
@@ -480,17 +496,17 @@ const ContactPage = () => {
               >
                 <Box 
                   className="icon-container"
-                  sx={{ 
-                    mb: 3,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 80,
-                    height: 80,
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(211, 47, 47, 0.05)',
-                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    position: 'relative',
+                                     sx={{ 
+                     mb: { xs: 2, sm: 3 },
+                     display: 'inline-flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     width: { xs: 60, sm: 80 },
+                     height: { xs: 60, sm: 80 },
+                     borderRadius: '50%',
+                     backgroundColor: 'rgba(211, 47, 47, 0.05)',
+                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                     position: 'relative',
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -520,39 +536,39 @@ const ContactPage = () => {
                   >
                     {(() => {
                       const IconComponent = getIcon(info.icon);
-                      return <IconComponent sx={{ 
-                        fontSize: 40,
-                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                      }} />;
+                                           return <IconComponent sx={{ 
+                       fontSize: { xs: 30, sm: 40 },
+                       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                     }} />;
                     })()}
                   </Box>
                 </Box>
                 <Box className="card-content" sx={{ transition: 'transform 0.3s ease' }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 'bold',
-                      mb: 3,
-                      color: 'text.primary',
-                      fontSize: '1.2rem',
-                    }}
-                  >
-                    {info.title}
-                  </Typography>
+                                     <Typography
+                     variant="h6"
+                     sx={{
+                       fontWeight: 'bold',
+                       mb: { xs: 2, sm: 3 },
+                       color: 'text.primary',
+                       fontSize: { xs: '1rem', sm: '1.2rem' },
+                     }}
+                   >
+                     {info.title}
+                   </Typography>
                   {info.details.map((detail, idx) => (
-                    <Typography
-                      key={idx}
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        lineHeight: 1.6,
-                        mb: 1,
-                        fontSize: '0.95rem',
-                        transition: 'color 0.3s ease',
-                      }}
-                    >
-                      {detail}
-                    </Typography>
+                                         <Typography
+                       key={idx}
+                       variant="body2"
+                       sx={{
+                         color: 'text.secondary',
+                         lineHeight: 1.6,
+                         mb: 1,
+                         fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                         transition: 'color 0.3s ease',
+                       }}
+                     >
+                       {detail}
+                     </Typography>
                   ))}
                 </Box>
               </Card>
@@ -574,17 +590,17 @@ const ContactPage = () => {
           >
             Find Us
           </Typography>
-          <Box
-            sx={{
-              height: 400,
-              backgroundColor: '#e0e0e0',
-              borderRadius: 2,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '2px dashed #ccc',
-            }}
-          >
+                     <Box
+             sx={{
+               height: { xs: 300, sm: 350, md: 400 },
+               backgroundColor: '#e0e0e0',
+               borderRadius: { xs: 1, sm: 2 },
+               display: 'flex',
+               alignItems: 'center',
+               justifyContent: 'center',
+               border: '2px dashed #ccc',
+             }}
+           >
             <Typography variant="h6" sx={{ color: 'text.secondary' }}>
               Map will be embedded here
             </Typography>
