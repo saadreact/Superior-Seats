@@ -17,7 +17,6 @@ import {
   CardContent,
   Divider,
 } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
 
 interface FormFieldProps {
   name: string;
@@ -243,14 +242,14 @@ export const FormActions: React.FC<FormActionsProps> = ({
     >
       {cancelText}
     </Button>
-    <LoadingButton
+    <Button
       variant="contained"
       onClick={onSave}
-      loading={loading}
+      disabled={loading}
       sx={{ borderRadius: 2 }}
     >
-      {saveText}
-    </LoadingButton>
+      {loading ? 'Saving...' : saveText}
+    </Button>
   </Box>
 );
 
