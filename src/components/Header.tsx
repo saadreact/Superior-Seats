@@ -17,10 +17,13 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
+import AuthModal from './AuthModal';
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -39,6 +42,10 @@ const Header = () => {
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleAuthClick = () => {
+    setAuthModalOpen(true);
   };
 
   const drawer = (
@@ -62,6 +69,16 @@ const Header = () => {
         <ListItem component="a" href="/admin">
           <ListItemText 
             primary="Admin Panel" 
+            primaryTypographyProps={{ 
+              fontWeight: 'bold',
+              color: 'primary.main'
+            }} 
+          />
+        </ListItem>
+        <Divider sx={{ my: 1 }} />
+        <ListItem component="button" onClick={handleAuthClick} sx={{ cursor: 'pointer' }}>
+          <ListItemText 
+            primary="Login / Sign Up" 
             primaryTypographyProps={{ 
               fontWeight: 'bold',
               color: 'primary.main'
@@ -153,6 +170,22 @@ const Header = () => {
               >
                 Admin
               </Button>
+              <Button
+                color="inherit"
+                onClick={handleAuthClick}
+                startIcon={<PersonIcon />}
+                sx={{
+                  color: '#DA291C',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  '&:hover': {
+                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                    color: '#DA291C',
+                  },
+                }}
+              >
+                Login
+              </Button>
             </Box>
           )}
         </Toolbar>
@@ -177,6 +210,11 @@ const Header = () => {
       >
         {drawer}
       </Drawer>
+
+      <AuthModal 
+        open={authModalOpen} 
+        onClose={() => setAuthModalOpen(false)} 
+      />
     </>
   );
 };
