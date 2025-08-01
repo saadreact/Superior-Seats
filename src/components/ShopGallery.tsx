@@ -328,28 +328,32 @@ const ShopGallery = () => {
         fullWidth
         PaperProps={{
           sx: {
-            backgroundColor: 'rgba(0,0,0,0.95)',
-            color: 'white',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)', // Changed to white background
+            color: 'black', // Changed text color to black
           },
         }}
       >
         <DialogContent sx={{ p: 0, position: 'relative' }}>
-          <IconButton
-            onClick={handleCloseLightbox}
-            sx={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              color: 'white',
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              zIndex: 1,
-              '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.7)',
-              },
-            }}
-          >
-            <Close />
-          </IconButton>
+                     <IconButton
+             onClick={handleCloseLightbox}
+             sx={{
+               position: 'absolute',
+               top: 16,
+               right: 16,
+               color: 'white',
+               backgroundColor: 'primary.main',
+               zIndex: 1,
+               boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+               '&:hover': {
+                 backgroundColor: 'primary.dark',
+                 boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                 transform: 'translateY(-1px)',
+               },
+               transition: 'all 0.2s ease',
+             }}
+           >
+             <Close />
+           </IconButton>
 
           {selectedImage && (
             <Box sx={{ position: 'relative' }}>
@@ -366,52 +370,60 @@ const ShopGallery = () => {
                 }}
               />
               
-              {/* Navigation Arrows */}
-              <IconButton
-                onClick={handlePrevImage}
-                sx={{
-                  position: 'absolute',
-                  left: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                  },
-                }}
-              >
-                <ArrowBack />
-              </IconButton>
-              
-              <IconButton
-                onClick={handleNextImage}
-                sx={{
-                  position: 'absolute',
-                  right: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                  },
-                }}
-              >
-                <ArrowForward />
-              </IconButton>
+                             {/* Navigation Arrows */}
+               <IconButton
+                 onClick={handlePrevImage}
+                 sx={{
+                   position: 'absolute',
+                   left: 16,
+                   top: '50%',
+                   transform: 'translateY(-50%)',
+                   color: 'white',
+                   backgroundColor: 'primary.main',
+                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                     transform: 'translateY(-50%) scale(1.1)',
+                   },
+                   transition: 'all 0.2s ease',
+                 }}
+               >
+                 <ArrowBack />
+               </IconButton>
+               
+               <IconButton
+                 onClick={handleNextImage}
+                 sx={{
+                   position: 'absolute',
+                   right: 16,
+                   top: '50%',
+                   transform: 'translateY(-50%)',
+                   color: 'white',
+                   backgroundColor: 'primary.main',
+                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                     transform: 'translateY(-50%) scale(1.1)',
+                   },
+                   transition: 'all 0.2s ease',
+                 }}
+               >
+                 <ArrowForward />
+               </IconButton>
 
-              {/* Image Info */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-                  p: 3,
-                }}
-              >
+                             {/* Image Info */}
+               <Box
+                 sx={{
+                   position: 'absolute',
+                   bottom: 0,
+                   left: 0,
+                   right: 0,
+                   background: 'linear-gradient(transparent, rgba(255,255,255,0.9))',
+                   p: 3,
+                 }}
+               >
                 <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
                   {selectedImage.title}
                 </Typography>

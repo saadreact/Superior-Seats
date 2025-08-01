@@ -46,15 +46,19 @@ const Header = () => {
   const menuItems = [
     { text: 'Home', href: '/' },
     { text: 'Customize Your Seat', href: '/custom-seats' },
-    { text: 'Shop Specials', href: '/gallery' },
-    { text: 'Upholstery Services', href: '/upholstery' },
-    { text: 'Other Products', href: '/other-products' },
+    { text: 'Shop Specials', href: '/ShopGallery' },
+    // { text: 'Upholstery Services', href: '/upholstery' },
+    // { text: 'Other Products', href: '/other-products' },
     { text: 'Gallery', href: '/gallery' },
     { text: 'About', href: '/about' },
     { text: 'Contact', href: '/contact' },
   ];
 
   // Admin items moved to sidebar
+
+  const handleAuthClick = () => {
+    setAuthModalOpen(true);
+  };
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
@@ -174,21 +178,6 @@ const Header = () => {
                 </Button>
               ))}
               <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-              <Button
-                color="inherit"
-                href="/admin"
-                sx={{
-                  color: '#DA291C',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  '&:hover': {
-                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                    color: '#DA291C',
-                  },
-                }}
-              >
-                Admin
-              </Button>
               <IconButton
                 color="inherit"
                 onClick={handleCartToggle}
@@ -204,6 +193,21 @@ const Header = () => {
                   <ShoppingCartIcon />
                 </Badge>
               </IconButton>
+              <Button
+                color="inherit"
+                href="/admin"
+                sx={{
+                  color: '#DA291C',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  '&:hover': {
+                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                    color: '#DA291C',
+                  },
+                }}
+              >
+                Admin
+              </Button>
               <Button
                 color="inherit"
                 onClick={handleAuthClick}
