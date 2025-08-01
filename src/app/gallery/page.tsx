@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import Gallery from '@/components/Gallery';
+import ShopGallery from '@/components/ShopGallery';
 
 export default function GalleryPage() {
-  return <Gallery />;
+  return <ShopGallery />;
 } 

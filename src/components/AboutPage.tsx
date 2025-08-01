@@ -12,6 +12,7 @@ import {
   Chip,
   Divider,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import {
   Business,
   Engineering,
@@ -26,6 +27,8 @@ import {
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import { stats, values, process } from '@/data/About';
+
+const MotionTypography = motion(Typography);
 
 const AboutPage = () => {
   // Icon mapping function
@@ -65,7 +68,6 @@ const AboutPage = () => {
           borderRadius: { xs: '12px', md: '20px' },
           overflow: 'hidden',
           boxShadow: '0 15px 40px rgba(0,0,0,0.25)',
-          animation: 'heroPulse 3s ease-in-out infinite',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -75,82 +77,40 @@ const AboutPage = () => {
             bottom: 0,
             background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(211, 47, 47, 0.3) 100%)',
             zIndex: 1,
-            animation: 'gradientShift 4s ease-in-out infinite',
           },
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            top: '-50%',
-            left: '-50%',
-            right: '-50%',
-            bottom: '-50%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-            zIndex: 1,
-            animation: 'lightSweep 6s ease-in-out infinite',
-          },
-          '@keyframes heroPulse': {
-            '0%, 100%': {
-              transform: 'scale(1)',
-            },
-            '50%': {
-              transform: 'scale(1.02)',
-            },
-          },
-          '@keyframes gradientShift': {
-            '0%, 100%': {
-              opacity: 0.8,
-            },
-            '50%': {
-              opacity: 0.95,
-            },
-          },
-       
         }}
       >
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
-          <Typography
+          <MotionTypography
             variant="h1"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             sx={{
               fontSize: { xs: '2.2rem', md: '3.5rem' },
               fontWeight: 'bold',
               mb: 2,
-              animation: 'textGlow 2s ease-in-out infinite',
-              textShadow: '0 0 20px rgba(255,255,255,0.5)',
-              '@keyframes textGlow': {
-                '0%, 100%': {
-                  textShadow: '0 0 20px rgba(255,255,255,0.5)',
-                },
-                '50%': {
-                  textShadow: '0 0 30px rgba(255,255,255,0.8), 0 0 40px rgba(211, 47, 47, 0.6)',
-                },
-              },
             }}
           >
-            About Superior Seats
-          </Typography>
-          <Typography
+            Superior Seating LLc
+          </MotionTypography>
+          <MotionTypography
             variant="h5"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             sx={{
               mb: 3,
               opacity: 0.9,
               maxWidth: 800,
               mx: 'auto',
               lineHeight: 1.6,
-              animation: 'fadeInUp 1s ease-out 0.5s both',
-              '@keyframes fadeInUp': {
-                '0%': {
-                  opacity: 0,
-                  transform: 'translateY(30px)',
-                },
-                '100%': {
-                  opacity: 0.9,
-                  transform: 'translateY(0)',
-                },
-              },
             }}
           >
             Crafting the perfect seat for every driver, ensuring comfort meets quality
-          </Typography>
+          </MotionTypography>
         </Container>
       </Box>
 
@@ -243,9 +203,16 @@ const AboutPage = () => {
         <Container maxWidth="lg">
           <Grid container spacing={6} alignItems="center">
             <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
-              <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 4 ,justifyContent: 'center',alignItems: 'center',textAlign: 'center' }}>
+              <MotionTypography 
+                variant="h3" 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                sx={{ fontWeight: 'bold', mb: 4 ,justifyContent: 'center',alignItems: 'center',textAlign: 'center' }}
+              >
                 Our Story
-              </Typography>
+              </MotionTypography>
               <Typography variant="h6" sx={{ mb: 3, color: 'text.secondary', lineHeight: 1.8 }}>
               At Superior Seating, every seat begins with your vision. We combine cutting-edge technology, timeless craftsmanship, and a deep passion for design to deliver seating solutions that are as unique as the people who use them.
               </Typography>
@@ -279,9 +246,16 @@ const AboutPage = () => {
       {/* Our Values */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: 'white' }}>
         <Container maxWidth="lg">
-          <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mb: 6 }}>
+          <MotionTypography 
+            variant="h3" 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            sx={{ textAlign: 'center', fontWeight: 'bold', mb: 6 }}
+          >
             Our Values
-          </Typography>
+          </MotionTypography>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Box sx={{ 
               display: 'grid',
@@ -360,105 +334,133 @@ const AboutPage = () => {
         </Container>
       </Box>
 
-          {/* Our Process */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fafafa' }}>
-        <Container maxWidth="lg">
-          <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mb: 6 }}>
-            Our Process
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Box sx={{ 
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' },
-              gap: { xs: 3, md: 4 },
-              maxWidth: 1400,
-              width: '100%',
-              justifyContent: 'center'
-            }}>
-              {process.map((step, index) => (
-                 <Card
-                   key={index}
-                   sx={{
-                     width: '100%',
-                     height: 220,
-                     textAlign: 'center',
-                     display: 'flex',
-                     flexDirection: 'column',
-                     justifyContent: 'center',
-                     alignItems: 'center',
-                     p: 3,
-                     boxShadow: '0 4px 20px rgba(179, 21, 21, 0.1)',
-                     cursor: 'pointer',
-                     '&:hover': {
-                       transform: 'translateY(-4px) scale(1.02)',
-                       boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                       '& .icon': {
-                         transform: 'rotate(360deg) scale(1.1)',
-                       },
-                       '& .title': {
-                         color: '#d32f2f',
-                       },
-                     },
-                   }}
-                 >
-                   <Box
-                     sx={{
-                       width: 60,
-                       height: 60,
-                       borderRadius: '50%',
-                       backgroundColor: 'primary.main',
-                       color: 'white',
-                       display: 'flex',
-                       alignItems: 'center',
-                       justifyContent: 'center',
-                       fontSize: '1.2rem',
-                       fontWeight: 'bold',
-                       mb: 2,
-                       boxShadow: '0 6px 16px rgba(211, 47, 47, 0.4)',
-                       transition: 'all 0.3s ease',
-                       position: 'relative',
-                       '&::before': {
-                         content: '""',
-                         position: 'absolute',
-                         top: '-2px',
-                         left: '-2px',
-                         right: '-2px',
-                         bottom: '-2px',
-                         borderRadius: '50%',
-                         background: 'linear-gradient(45deg, #d32f2f, #b71c1c)',
-                         zIndex: -1,
-                         opacity: 0.3,
-                       },
-                       '&:hover': {
-                         transform: 'scale(1.1)',
-                         boxShadow: '0 8px 24px rgba(211, 47, 47, 0.5)',
-                         '&::before': {
-                           opacity: 0.5,
-                         },
-                       },
-                     }}
-                   >
-                     {step.step}
-                   </Box>
-                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontSize: '1.1rem' }}>
-                     {step.title}
-                   </Typography>
-                                      <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.5, fontSize: '0.9rem' }}>
-                     {step.description}
-                   </Typography>
-                 </Card>
-               ))}
+    {/* Our Process */}
+<Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fafafa' }}>
+  <Container maxWidth="lg">
+    
+    {/* Section Title */}
+    <MotionTypography 
+      variant="h3"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, amount: 0.1 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      sx={{ textAlign: 'center', fontWeight: 'bold', mb: 6 }}
+    >
+      Our Process
+    </MotionTypography>
+
+    {/* Card Grid */}
+    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            md: 'repeat(3, 1fr)',
+            lg: 'repeat(5, 1fr)',
+          },
+          gap: { xs: 3, md: 4 },
+          width: '100%',
+          maxWidth: 1400,
+        }}
+      >
+        {process.map((step, index) => (
+          <Card
+            key={index}
+            sx={{
+              height: '100%', // Make card fill height of its grid cell
+              minHeight: 280, // Optional: makes heights more stable
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              textAlign: 'center',
+              p: 3,
+              boxShadow: '0 4px 20px rgba(0,0,0,0)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+              '&:hover': {
+                transform: 'translateY(-4px) scale(1.02)',
+                boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
+                '& .icon': {
+                  transform: 'rotate(360deg) scale(1.1)',
+                },
+                '& .title': {
+                  color: '#d32f2f',
+                },
+              },
+            }}
+          >
+            {/* Step Circle */}
+            <Box
+              className="icon"
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.3rem',
+                fontWeight: 'bold',
+                mb: 2,
+                boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              {String(step.step).padStart(2, '0')}
             </Box>
-          </Box>
-        </Container>
+
+            {/* Title */}
+            <Typography
+              className="title"
+              variant="h6"
+              sx={{
+                fontWeight: 'bold',
+                mb: 2,
+                fontSize: '1.1rem',
+                transition: 'color 0.3s ease',
+              }}
+            >
+              {step.title}
+            </Typography>
+
+            {/* Description */}
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+                fontSize: '0.9rem',
+                lineHeight: 1.5,
+                flexGrow: 1, // Push footer content if you add any
+              }}
+            >
+              {step.description}
+            </Typography>
+          </Card>
+        ))}
       </Box>
+    </Box>
+  </Container>
+</Box>
 
              {/* Why Choose Us */}
        <Box sx={{ py: { xs: 6, md: 8  }, backgroundColor: 'white' }}>
          <Container maxWidth="lg">
-           <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mb: 6 }}>
+           <MotionTypography 
+             variant="h3" 
+             initial={{ opacity: 0, y: 30 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: false, amount: 0.1 }}
+             transition={{ duration: 0.8, ease: "easeOut" }}
+             sx={{ textAlign: 'center', fontWeight: 'bold', mb: 6 }}
+           >
              Why Choose Superior Seats?
-           </Typography>
+           </MotionTypography>
                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <Box sx={{ 
                 display: 'grid',
@@ -722,9 +724,16 @@ const AboutPage = () => {
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: 'primary.main', color: 'white' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 3 }}>
+            <MotionTypography 
+              variant="h3" 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              sx={{ fontWeight: 'bold', mb: 3 }}
+            >
               Ready to Experience Superior Comfort?
-            </Typography>
+            </MotionTypography>
             <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
               Start customizing your perfect seat today with our interactive 3D configurator
             </Typography>
@@ -742,7 +751,7 @@ const AboutPage = () => {
                     backgroundColor: 'rgba(255,255,255,0.9)',
                   },
                 }}
-                onClick={() => window.location.href = '/customize-your-seat'}
+                onClick={() => window.location.href = '/custom-seats'}
               />
               <Chip
                 label="Contact Us"
@@ -758,6 +767,7 @@ const AboutPage = () => {
                     backgroundColor: 'rgba(255,255,255,0.1)',
                   },
                 }}
+                onClick={() => window.location.href = '/contact'}
               />
             </Box>
           </Box>

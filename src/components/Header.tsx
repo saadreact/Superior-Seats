@@ -6,28 +6,44 @@ import {
   Toolbar,
   Typography,
   Button,
-  IconButton,
+  Box,
+  useTheme,
+  useMediaQuery,
   Drawer,
   List,
   ListItem,
   ListItemText,
-  Box,
+  IconButton,
+  Badge,
   Divider,
-  useTheme,
-  useMediaQuery,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import {
+  Menu as MenuIcon,
+  ShoppingCart as ShoppingCartIcon,
+} from '@mui/icons-material';
 import Image from 'next/image';
+import { useCart } from '@/contexts/CartContext';
+import Cart from './Cart';
 
 const Header = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { state } = useCart();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const handleCartToggle = () => {
+    setCartOpen(!cartOpen);
+  };
 
   const menuItems = [
     { text: 'Home', href: '/' },
-    { text: 'Customize Your Seat', href: '/customize-your-seat' },
-    { text: 'Shop Specials', href: '/specials' },
+    { text: 'Customize Your Seat', href: '/custom-seats' },
+    { text: 'Shop Specials', href: '/gallery' },
     { text: 'Upholstery Services', href: '/upholstery' },
     { text: 'Other Products', href: '/other-products' },
     { text: 'Gallery', href: '/gallery' },
@@ -36,11 +52,6 @@ const Header = () => {
   ];
 
   // Admin items moved to sidebar
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Box sx={{ my: 2, display: 'flex', justifyContent: 'center' }}>
@@ -109,17 +120,28 @@ const Header = () => {
           </Box>
           
           {isMobile ? (
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ color: '#DA291C' }}
-            >
-              <MenuIcon />
-            </IconButton>
+            <>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleDrawerToggle}
+                sx={{ color: '#DA291C' }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <IconButton
+                color="inherit"
+                onClick={handleCartToggle}
+                sx={{ color: '#DA291C', ml: 1 }}
+              >
+                <Badge badgeContent={state.totalItems} color="primary">
+                  <ShoppingCartIcon />
+                </Badge>
+              </IconButton>
+            </>
           ) : (
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               {menuItems.map((item) => (
                 <Button
                   key={item.text}
@@ -153,6 +175,21 @@ const Header = () => {
               >
                 Admin
               </Button>
+              <IconButton
+                color="inherit"
+                onClick={handleCartToggle}
+                sx={{ 
+                  color: '#DA291C',
+                  ml: 1,
+                  '&:hover': {
+                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                  }
+                }}
+              >
+                <Badge badgeContent={state.totalItems} color="primary">
+                  <ShoppingCartIcon />
+                </Badge>
+              </IconButton>
             </Box>
           )}
         </Toolbar>
@@ -177,6 +214,8 @@ const Header = () => {
       >
         {drawer}
       </Drawer>
+
+      <Cart open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );
 };
