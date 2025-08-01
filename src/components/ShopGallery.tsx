@@ -190,17 +190,20 @@ const ShopGallery = () => {
                   onClick={() => handleImageClick(item, index)}
                 >
                   <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                    <CardMedia
-                      component="img"
-                      height="250"
-                      image={item.image}
-                      alt={item.title}
-                      className="card-media"
-                      sx={{
-                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        objectFit: 'cover',
-                      }}
-                    />
+                                         <CardMedia
+                       component="img"
+                       height="250"
+                       image={item.image}
+                       alt={item.title}
+                       className="card-media"
+                       sx={{
+                         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                         objectFit: 'contain',
+                         width: '100%',
+                         height: '250px',
+                         backgroundColor: '#f5f5f5',
+                       }}
+                     />
                     <Box
                       className="zoom-icon"
                       sx={{

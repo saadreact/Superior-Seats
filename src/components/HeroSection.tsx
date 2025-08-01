@@ -11,7 +11,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { ArrowForward, Star, TrendingUp, Security } from '@mui/icons-material';
+import { ArrowForward } from '@mui/icons-material';
 import LogoButton from './LogoButton';
 import { motion } from 'framer-motion';
 
@@ -20,154 +20,215 @@ const MotionTypography = motion(Typography);
 const MotionCard = motion(Card);
 
 const leftColVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 60, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
+    scale: 1,
     transition: {
-      duration: 0.7,
+      duration: 1.2,
+      ease: "easeOut",
+      staggerChildren: 0.2,
     },
   },
 };
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
-};
-
-const featuresContainer = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.18,
-    },
+  hidden: { opacity: 0, y: 50, scale: 0.9 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { 
+      duration: 1,
+      ease: "easeOut",
+    }
   },
 };
 
-const featureCard = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+const buttonVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.8 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { 
+      duration: 0.8,
+      ease: "easeOut",
+    }
+  },
 };
 
 const HeroSection = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const features = [
-    {
-      icon: <Star sx={{ fontSize: 40, color: 'white' }} />,
-      title: 'Custom Seating',
-      description: 'Build your perfect seat with our customization wizard.',
-    },
-    {
-      icon: <TrendingUp sx={{ fontSize: 40, color: 'white' }} />,
-      title: 'Premium Quality',
-      description: 'Superior craftsmanship for truck, RV, and van seating.',
-    },
-    {
-      icon: <Security sx={{ fontSize: 40, color: 'white' }} />,
-      title: 'Warranty Protected',
-      description: 'Comprehensive warranty coverage for peace of mind.',
-    },
+  // Background images for slider
+  const backgroundImages = [
+    '/Gallery/HeroSection/01.jpg',
+    '/Gallery/HeroSection/02.jpg',
+    '/Gallery/HeroSection/03.jpg',
+    '/Gallery/HeroSection/04.jpg',
+    '/Gallery/HeroSection/05.jpg',
   ];
 
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
+  const [isPaused, setIsPaused] = React.useState(false);
+
+  // Auto-slide background images with pause on hover
+  React.useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        (prevIndex + 1) % backgroundImages.length
+      );
+    }, 4000); // Change image every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [backgroundImages.length, isPaused]);
+
+  const handleImageChange = (index: number) => {
+    if (index === currentImageIndex) return;
+    setCurrentImageIndex(index);
+  };
+
+  const handleMouseEnter = () => setIsPaused(true);
+  const handleMouseLeave = () => setIsPaused(false);
+
   return (
-    <Box
-      sx={{
-        background: `linear-gradient(135deg, rgba(218, 41, 28, 0.8) 0%, rgba(183, 28, 28, 0.8) 100%), url('/Hero Section BG.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        color: 'white',
-        py: { xs: 8, md: 12 },
-        minHeight: { xs: '60vh', md: '80vh' },
-        display: 'flex',
-        alignItems: 'center',
-        position: 'relative',
-      }}
-    >
+         <Box
+       onMouseEnter={handleMouseEnter}
+       onMouseLeave={handleMouseLeave}
+               sx={{
+          background: `linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(185, 28, 28, 0.85) 100%), url('${backgroundImages[currentImageIndex]}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          color: 'white',
+          py: { xs: 8, md: 12 },
+          minHeight: { xs: '60vh', md: '80vh' },
+          display: 'flex',
+          alignItems: 'center',
+          position: 'relative',
+          transition: 'background 0.5s ease-in-out',
+          cursor: 'pointer',
+          overflow: 'hidden',
+        }}
+     >
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, px: { xs: 2, md: 3 } }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: { xs: 6, md: 8 },
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+                 <Box
+           sx={{
+             display: 'flex',
+             alignItems: 'center',
+             justifyContent: 'flex-start',
+           }}
+         >
           {/* Left: Headline, Description, Buttons */}
-          <MotionBox
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.7 }}
-            variants={leftColVariants}
-            sx={{ textAlign: { xs: 'center', md: 'left' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
-          >
-            <MotionTypography
-              variants={fadeInUp}
-              sx={{
-                fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
-                fontWeight: 'bold',
-                mb: 2,
-                lineHeight: 1.2,
-              }}
-            >
-              Superior Seating LLC
-            </MotionTypography>
-            <MotionTypography
-              variants={fadeInUp}
-              sx={{
-                mb: 3,
-                opacity: 0.9,
-                fontSize: { xs: '1.1rem', md: '1.25rem' },
-              }}
-            >
-              Premium truck, RV, and van seating with custom options and superior craftsmanship
-            </MotionTypography>
-            <MotionBox
-              variants={fadeInUp}
-              sx={{
-                display: 'flex',
-                gap: { xs: 3, sm: 2 },
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: { xs: 'center', md: 'flex-start' },
-                alignItems: 'center',
-                mt: 2,
-                width: '100%',
-              }}
-            >
-              <motion.div
-                animate={{
-                  y: [-10, 10, -10],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
+                     <MotionBox
+             initial={{ opacity: 0, y: 60, scale: 0.95 }}
+             whileInView={{ opacity: 1, y: 0, scale: 1 }}
+             viewport={{ once: true, amount: 0.7 }}
+             transition={{ duration: 1.2, ease: "easeOut" }}
+             sx={{ textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+           >
+                          <MotionTypography
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                sx={{
+                  fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
+                  fontWeight: 'bold',
+                  mb: 2,
+                  lineHeight: 1.2,
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  color: 'white',
                 }}
               >
-                <LogoButton />
-              </motion.div>
-              <motion.div
-                animate={{
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              >
+                Superior Seating LLC
+              </MotionTypography>
+             <MotionTypography
+               initial={{ opacity: 0, y: 50, scale: 0.9 }}
+               whileInView={{ opacity: 1, y: 0, scale: 1 }}
+               transition={{ duration: 1, ease: "easeOut" }}
+               sx={{
+                 mb: 3,
+                 opacity: 0.95,
+                 fontSize: { xs: '1.1rem', md: '1.25rem' },
+                 textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
+                 letterSpacing: '0.5px',
+                 fontWeight: 300,
+               }}
+             >
+               Premium truck, RV, and van seating with custom options and superior craftsmanship
+             </MotionTypography>
+             <MotionBox
+               initial={{ opacity: 0, y: 30, scale: 0.8 }}
+               whileInView={{ opacity: 1, y: 0, scale: 1 }}
+               transition={{ duration: 0.8, ease: "easeOut" }}
+               sx={{
+                 display: 'flex',
+                 gap: { xs: 3, sm: 2 },
+                 flexDirection: { xs: 'column', sm: 'row' },
+                 justifyContent: 'flex-start',
+                 alignItems: 'center',
+                 mt: 2,
+                 width: '100%',
+               }}
+             >
+                             <motion.div
+                 animate={{
+                   y: [-8, 8, -8],
+                   rotate: [0, 1, -1, 0],
+                 }}
+                 transition={{
+                   duration: 4,
+                   repeat: Infinity,
+                   ease: "easeInOut",
+                 }}
+                 style={{
+                   filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
+                 }}
+               >
+                 <LogoButton />
+               </motion.div>
+               <motion.div
+                 animate={{
+                   scale: [1, 1.05, 1],
+                 }}
+                 transition={{
+                   duration: 2,
+                   repeat: Infinity,
+                   ease: "easeInOut",
+                 }}
+                 whileHover={{
+                   scale: 1.1,
+                   transition: { duration: 0.2 },
+                 }}
+                 whileTap={{
+                   scale: 0.95,
+                   transition: { duration: 0.1 },
+                 }}
+               >
                 <Button
                   variant="outlined"
                   size="large"
                   sx={{
                     borderColor: 'white',
                     color: 'white',
+                    borderWidth: 2,
+                    fontWeight: 600,
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    backdropFilter: 'blur(10px)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                     '&:hover': {
                       borderColor: 'white',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
+                      transform: 'translateY(-2px)',
                     },
                   }}
                 >
@@ -177,85 +238,157 @@ const HeroSection = () => {
             </MotionBox>
           </MotionBox>
 
-          {/* Right: Features */}
-          <MotionBox
-            variants={featuresContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: { xs: 4, sm: 3 },
-              justifyContent: 'center',
-              alignItems: { xs: 'center', sm: 'stretch' },
-              width: '100%',
-              mt: { xs: 2, sm: 0 },
-            }}
-          >
-            {features.map((feature, index) => (
-              <MotionCard
-                key={index}
-                variants={featureCard}
-                whileHover={{ 
-                  scale: 1.05,
-                  rotateY: 5,
-                  transition: { duration: 0.3 }
-                }}
-                sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: 'white',
-                  minWidth: 0,
-                  flex: { xs: 'none', sm: 1 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10)',
-                  borderRadius: 3,
-                  transition: 'transform 0.3s',
-                  mx: { xs: 'auto', sm: 1 },
-                  my: { xs: 1.5, sm: 0 },
-                  p: 3,
-                  minHeight: { xs: 150, sm: 180 },
-                  maxWidth: { xs: 280, sm: 260 },
-                  width: { xs: '100%', sm: 'auto' },
-                  textAlign: 'center',
-                  '&:hover': {
-                    transform: 'translateY(-8px) scale(1.03)',
-                  },
-                }}
-              >
-                <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {React.cloneElement(feature.icon, { sx: { fontSize: 40, color: 'white' } })}
-                </Box>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mb: 1,
-                    fontWeight: 'bold',
-                    fontSize: { xs: '1rem', md: '1.1rem' },
-                  }}
-                >
-                  {feature.title}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    opacity: 0.85,
-                    fontSize: { xs: '0.95rem', md: '1rem' },
-                    textAlign: 'center',
-                  }}
-                >
-                  {feature.description}
-                </Typography>
-              </MotionCard>
-            ))}
-          </MotionBox>
+
         </Box>
       </Container>
+
+             {/* Enhanced Slide Indicators */}
+       <Box
+         sx={{
+           position: 'absolute',
+           bottom: 30,
+           left: '50%',
+           transform: 'translateX(-50%)',
+           display: 'flex',
+           gap: 2,
+           zIndex: 3,
+           alignItems: 'center',
+         }}
+       >
+         {backgroundImages.map((_, index) => (
+           <motion.div
+             key={index}
+             whileHover={{ scale: 1.3 }}
+             whileTap={{ scale: 0.9 }}
+             style={{
+               cursor: 'pointer',
+             }}
+           >
+             <Box
+               sx={{
+                 width: index === currentImageIndex ? 50 : 12,
+                 height: 12,
+                 borderRadius: index === currentImageIndex ? 6 : '50%',
+                 backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.4)',
+                 transition: 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                 position: 'relative',
+                 boxShadow: index === currentImageIndex 
+                   ? '0 0 20px rgba(255, 255, 255, 0.6)' 
+                   : '0 0 5px rgba(255, 255, 255, 0.2)',
+                 '&::before': {
+                   content: '""',
+                   position: 'absolute',
+                   top: '50%',
+                   left: '50%',
+                   transform: 'translate(-50%, -50%)',
+                   width: '100%',
+                   height: '100%',
+                   borderRadius: 'inherit',
+                   background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)',
+                   opacity: index === currentImageIndex ? 1 : 0,
+                   transition: 'opacity 0.4s ease',
+                 },
+                 '&::after': {
+                   content: '""',
+                   position: 'absolute',
+                   top: '-2px',
+                   left: '-2px',
+                   right: '-2px',
+                   bottom: '-2px',
+                   borderRadius: 'inherit',
+                   background: 'linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1))',
+                   opacity: index === currentImageIndex ? 1 : 0,
+                   transition: 'opacity 0.4s ease',
+                   zIndex: -1,
+                 },
+               }}
+               onClick={() => handleImageChange(index)}
+             />
+           </motion.div>
+         ))}
+       </Box>
+
+       {/* Enhanced Progress Bar */}
+       <Box
+         sx={{
+           position: 'absolute',
+           bottom: 0,
+           left: 0,
+           right: 0,
+           height: 4,
+           backgroundColor: 'rgba(255, 255, 255, 0.15)',
+           zIndex: 3,
+           overflow: 'hidden',
+           '&::before': {
+             content: '""',
+             position: 'absolute',
+             top: 0,
+             left: 0,
+             right: 0,
+             bottom: 0,
+             background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+             animation: 'shimmer 2s infinite',
+             '@keyframes shimmer': {
+               '0%': { transform: 'translateX(-100%)' },
+               '100%': { transform: 'translateX(100%)' },
+             },
+           },
+         }}
+       >
+         <motion.div
+           initial={{ width: 0 }}
+           animate={{ width: `${((currentImageIndex + 1) / backgroundImages.length) * 100}%` }}
+           transition={{ duration: 0.8, ease: "easeInOut" }}
+           style={{
+             height: '100%',
+             background: 'linear-gradient(90deg, #ffffff, #f0f0f0, #ffffff)',
+             boxShadow: '0 0 15px rgba(255, 255, 255, 0.8)',
+             borderRadius: '0 2px 2px 0',
+           }}
+         />
+       </Box>
+
+       {/* Enhanced Pause/Play Indicator */}
+       {isPaused && (
+         <motion.div
+           initial={{ opacity: 0, scale: 0.8, y: -20 }}
+           animate={{ opacity: 1, scale: 1, y: 0 }}
+           exit={{ opacity: 0, scale: 0.8, y: -20 }}
+           transition={{ duration: 0.3, ease: "easeOut" }}
+         >
+           <Box
+             sx={{
+               position: 'absolute',
+               top: 20,
+               right: 20,
+               background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6))',
+               color: 'white',
+               px: 3,
+               py: 1.5,
+               borderRadius: 3,
+               fontSize: '0.875rem',
+               fontWeight: 600,
+               zIndex: 3,
+               backdropFilter: 'blur(10px)',
+               border: '1px solid rgba(255, 255, 255, 0.2)',
+               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+               animation: 'pulse 2s ease-in-out infinite',
+               '@keyframes pulse': {
+                 '0%, 100%': { 
+                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                   transform: 'scale(1)',
+                 },
+                 '50%': { 
+                   boxShadow: '0 8px 32px rgba(220, 38, 38, 0.4)',
+                   transform: 'scale(1.05)',
+                 },
+               },
+             }}
+           >
+             ⏸️ Paused
+           </Box>
+         </motion.div>
+       )}
     </Box>
   );
 };
