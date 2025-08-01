@@ -21,11 +21,14 @@ import {
   Menu as MenuIcon,
   ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
+import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
 import { useCart } from '@/contexts/CartContext';
 import Cart from './Cart';
+import AuthModal from './AuthModal';
 
 const Header = () => {
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { state } = useCart();
@@ -52,6 +55,7 @@ const Header = () => {
   ];
 
   // Admin items moved to sidebar
+
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Box sx={{ my: 2, display: 'flex', justifyContent: 'center' }}>
@@ -73,6 +77,16 @@ const Header = () => {
         <ListItem component="a" href="/admin">
           <ListItemText 
             primary="Admin Panel" 
+            primaryTypographyProps={{ 
+              fontWeight: 'bold',
+              color: 'primary.main'
+            }} 
+          />
+        </ListItem>
+        <Divider sx={{ my: 1 }} />
+        <ListItem component="button" onClick={handleAuthClick} sx={{ cursor: 'pointer' }}>
+          <ListItemText 
+            primary="Login / Sign Up" 
             primaryTypographyProps={{ 
               fontWeight: 'bold',
               color: 'primary.main'
@@ -190,6 +204,22 @@ const Header = () => {
                   <ShoppingCartIcon />
                 </Badge>
               </IconButton>
+              <Button
+                color="inherit"
+                onClick={handleAuthClick}
+                startIcon={<PersonIcon />}
+                sx={{
+                  color: '#DA291C',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  '&:hover': {
+                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                    color: '#DA291C',
+                  },
+                }}
+              >
+                Login
+              </Button>
             </Box>
           )}
         </Toolbar>
@@ -216,6 +246,11 @@ const Header = () => {
       </Drawer>
 
       <Cart open={cartOpen} onClose={() => setCartOpen(false)} />
+
+      <AuthModal 
+        open={authModalOpen} 
+        onClose={() => setAuthModalOpen(false)} 
+      />
     </>
   );
 };
