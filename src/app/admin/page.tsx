@@ -30,11 +30,27 @@ const MotionCard = motion(Card);
 const AdminDashboard = () => {
   const adminModules = [
     {
+      title: 'Price Tiers',
+      description: 'Manage wholesale, retail, and custom pricing tiers',
+      icon: <MoneyIcon sx={{ fontSize: 40 }} />,
+      href: '/admin/price-tiers',
+      color: '#1976d2',
+      count: 3,
+    },
+    {
+      title: 'Categories',
+      description: 'Organize products with categories and subcategories',
+      icon: <CategoryIcon sx={{ fontSize: 40 }} />,
+      href: '/admin/categories',
+      color: '#388e3c',
+      count: 5,
+    },
+    {
       title: 'Customer Types',
       description: 'Manage customer categories and discount levels',
-      icon: <CategoryIcon sx={{ fontSize: 40 }} />,
+      icon: <PeopleIcon sx={{ fontSize: 40 }} />,
       href: '/admin/customer-types',
-      color: '#1976d2',
+      color: '#f57c00',
       count: 3,
     },
     {
@@ -42,7 +58,7 @@ const AdminDashboard = () => {
       description: 'Add, edit, and manage customer information',
       icon: <PeopleIcon sx={{ fontSize: 40 }} />,
       href: '/admin/customers',
-      color: '#388e3c',
+      color: '#9c27b0',
       count: 2,
     },
     {
@@ -50,7 +66,7 @@ const AdminDashboard = () => {
       description: 'Track and manage customer orders',
       icon: <OrderIcon sx={{ fontSize: 40 }} />,
       href: '/admin/orders',
-      color: '#f57c00',
+      color: '#ff5722',
       count: 2,
     },
   ];
@@ -166,7 +182,7 @@ const AdminDashboard = () => {
           </Typography>
           <Grid
             display="grid"
-            gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
+            gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr 1fr 1fr' }}
             gap={{ xs: 2, sm: 3 }}
           >
             {adminModules.map((module, index) => (

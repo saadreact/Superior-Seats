@@ -76,7 +76,7 @@ const Header = () => {
           />
         </ListItem>
         <Divider sx={{ my: 1 }} />
-        <ListItem button onClick={handleAuthClick}>
+        <ListItem component="button" onClick={handleAuthClick} sx={{ cursor: 'pointer' }}>
           <ListItemText 
             primary="Login / Sign Up" 
             primaryTypographyProps={{ 

@@ -24,6 +24,7 @@ import {
   Menu as MenuIcon,
   Close as CloseIcon,
   Storefront as StorefrontIcon,
+  AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -48,8 +49,18 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       href: '/admin',
     },
     {
-      text: 'Customer Types',
+      text: 'Price Tiers',
+      icon: <MoneyIcon />,
+      href: '/admin/price-tiers',
+    },
+    {
+      text: 'Categories',
       icon: <CategoryIcon />,
+      href: '/admin/categories',
+    },
+    {
+      text: 'Customer Types',
+      icon: <PeopleIcon />,
       href: '/admin/customer-types',
     },
     {
