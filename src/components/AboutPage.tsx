@@ -27,7 +27,7 @@ import {
 import Header from '@/components/Header';
 import { stats, values, process } from '@/data/About';
 
-const MotionTypography = motion(Typography);
+const MotionTypography = motion.create(Typography);
 
 const AboutPage = () => {
   // Icon mapping function

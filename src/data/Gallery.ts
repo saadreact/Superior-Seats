@@ -43,14 +43,14 @@ export const workPictures: WorkImage[] = [
   
 ]; 
 export const workPicturesTruck: WorkImage[] = [
-  { id: 1, title: 'Truck Seat Customization', image: '/Gallery/Truckimages/truck01.jpg', description: 'Professional truck seat modification' },
-  { id: 2, title: 'Heavy Duty Truck Interior', image: '/Gallery/Truckimages/truck02.jpg', description: 'Commercial truck seat upgrade' },
-  { id: 3, title: 'Truck Seat Restoration', image: '/Gallery/Truckimages/truck03.jpg', description: 'Vintage truck seat restoration' },
-  { id: 4, title: 'Modern Truck Interior', image: '/Gallery/Truckimages/truck04.jpg', description: 'Contemporary truck seating design' },
-  { id: 5, title: 'Luxury Truck Upgrade', image: '/Gallery/Truckimages/truck05.jpg', description: 'Premium truck seat materials' },
-  { id: 6, title: 'Truck Seat Fabrication', image: '/Gallery/Truckimages/truck06.jpg', description: 'Custom truck seat fabrication' },
-  { id: 7, title: 'Truck Interior Design', image: '/Gallery/Truckimages/truck07.jpg', description: 'Professional truck interior design' },
-  { id: 8, title: 'Truck Seat Installation', image: '/Gallery/Truckimages/truck08.jpg', description: 'Expert truck seat installation' },
+  { id: 1, title: 'Truck Seat Customization', image: '/Truckimages/01.jpg', description: 'Professional truck seat modification' },
+  { id: 2, title: 'Heavy Duty Truck Interior', image: '/Truckimages/Bluetruck.jpg', description: 'Commercial truck seat upgrade' },
+  { id: 3, title: 'Truck Seat Restoration', image: '/Truckimages/blackTruck.jpg', description: 'Vintage truck seat restoration' },
+  { id: 4, title: 'Modern Truck Interior', image: '/Truckimages/white truck.jpg', description: 'Contemporary truck seating design' },
+  { id: 5, title: 'Luxury Truck Upgrade', image: '/Truckimages/whitePurpletruck.jpg', description: 'Premium truck seat materials' },
+  { id: 6, title: 'Truck Seat Fabrication', image: '/Truckimages/Seatset.jpg', description: 'Custom truck seat fabrication' },
+  { id: 7, title: 'Truck Interior Design', image: '/Truckimages/seatimages.jpg', description: 'Professional truck interior design' },
+  { id: 8, title: 'Truck Seat Installation', image: '/Truckimages/bluetruckengine.jpg', description: 'Expert truck seat installation' },
   { id: 9, title: 'Truck Seat Maintenance', image: '/Gallery/Truckimages/truck09.jpg', description: 'Truck seat maintenance and care' },
   { id: 10, title: 'Truck Seat Repair', image: '/Gallery/Truckimages/truck10.jpg', description: 'Truck seat repair services' },
   { id: 11, title: 'Truck Seat Replacement', image: '/Gallery/Truckimages/truck11.jpg', description: 'Complete truck seat replacement' },
