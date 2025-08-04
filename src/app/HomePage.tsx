@@ -26,9 +26,9 @@ import {
   ArrowForward 
 } from '@mui/icons-material';
 
-const MotionBox = motion(Box);
-const MotionTypography = motion(Typography);
-const MotionCard = motion(Card);
+const MotionBox = motion.create(Box);
+const MotionTypography = motion.create(Typography);
+const MotionCard = motion.create(Card);
 
 // Custom hook for count-up animation
 const useCountUp = (end: number, duration: number = 2000) => {

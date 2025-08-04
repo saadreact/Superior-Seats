@@ -78,7 +78,12 @@ const Header = () => {
           </ListItem>
         ))}
         <Divider sx={{ my: 1 }} />
-        <ListItem component="a" href="/admin">
+        <ListItem component="a" href="/admin" sx={{
+          backgroundColor: 'transparent',
+          '&:hover': {
+            backgroundColor: 'transparent'
+          }
+        }}>
           <ListItemText 
             primary="Admin Panel" 
             primaryTypographyProps={{ 
@@ -88,7 +93,13 @@ const Header = () => {
           />
         </ListItem>
         <Divider sx={{ my: 1 }} />
-        <ListItem component="button" onClick={handleAuthClick} sx={{ cursor: 'pointer' }}>
+        <ListItem component="button" onClick={handleAuthClick} sx={{ 
+          cursor: 'pointer',
+          backgroundColor: 'transparent',
+          '&:hover': {
+            backgroundColor: 'transparent'
+          }
+        }}>
           <ListItemText 
             primary="Login / Sign Up" 
             primaryTypographyProps={{ 

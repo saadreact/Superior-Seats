@@ -15,11 +15,11 @@ import {
   Paper,
   IconButton,
   Chip,
+  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { Order, OrderItem, Customer, Product } from '@/data/types';
-import OrderForm from '@/components/admin/OrderForm';
+import { useRouter } from 'next/navigation';
 
 // Mock data - replace with API calls
 const mockCustomers: Customer[] = [
@@ -197,12 +197,10 @@ const mockOrders: Order[] = [
 ];
 
 const OrdersPage = () => {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
   const [products, setProducts] = useState<Product[]>(mockProducts);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isViewMode, setIsViewMode] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -233,21 +231,16 @@ const OrdersPage = () => {
   };
 
   const handleAdd = () => {
-    setSelectedOrder(null);
-    setIsViewMode(false);
-    setIsFormOpen(true);
+    router.push('/admin/orders/create');
   };
 
   const handleEdit = (order: Order) => {
-    setSelectedOrder(order);
-    setIsViewMode(false);
-    setIsFormOpen(true);
+    router.push(`/admin/orders/${order.id}/edit`);
   };
 
   const handleView = (order: Order) => {
-    setSelectedOrder(order);
-    setIsViewMode(true);
-    setIsFormOpen(true);
+    // For now, we'll use edit page in view mode
+    router.push(`/admin/orders/${order.id}/edit`);
   };
 
   const handleDelete = (order: Order) => {
@@ -265,46 +258,7 @@ const OrdersPage = () => {
     setOrderToDelete(null);
   };
 
-  const handleFormSubmit = (order: Omit<Order, 'id' | 'createdAt' | 'updatedAt' | 'items'> & { items: Omit<OrderItem, 'id'>[] }) => {
-    if (selectedOrder) {
-      // Edit existing order
-      const updatedOrder: Order = {
-        ...order,
-        items: order.items.map((item, index) => ({
-          ...item,
-          id: selectedOrder.items[index]?.id || Date.now().toString() + index,
-        })),
-        id: selectedOrder.id,
-        createdAt: selectedOrder.createdAt,
-        updatedAt: new Date(),
-      };
-      setOrders(prev => 
-        prev.map(o => o.id === selectedOrder.id ? updatedOrder : o)
-      );
-      setAlert({ type: 'success', message: 'Order updated successfully' });
-    } else {
-      // Add new order
-      const newOrder: Order = {
-        ...order,
-        items: order.items.map((item, index) => ({
-          ...item,
-          id: Date.now().toString() + index,
-        })),
-        id: Date.now().toString(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setOrders(prev => [...prev, newOrder]);
-      setAlert({ type: 'success', message: 'Order added successfully' });
-    }
-    setIsFormOpen(false);
-    setSelectedOrder(null);
-  };
 
-  const handleFormCancel = () => {
-    setIsFormOpen(false);
-    setSelectedOrder(null);
-  };
 
   return (
     <AdminLayout title="Orders">
@@ -487,48 +441,6 @@ const OrdersPage = () => {
             ))}
           </Box>
         </Box>
-
-        {/* Form Dialog */}
-        <Dialog
-          open={isFormOpen}
-          onClose={handleFormCancel}
-          maxWidth="lg"
-          fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: 2,
-              maxHeight: '90vh',
-              overflow: 'hidden',
-              margin: { xs: 2, sm: 'auto' },
-              width: { xs: 'calc(100% - 32px)', sm: 'auto' },
-            },
-          }}
-        >
-          <DialogTitle sx={{ 
-            borderBottom: 1, 
-            borderColor: 'divider',
-            backgroundColor: 'grey.50',
-            fontWeight: 600,
-          }}>
-            {isViewMode ? 'View Order' : selectedOrder ? 'Edit Order' : 'Add Order'}
-          </DialogTitle>
-          <DialogContent sx={{ 
-            pt: 3, 
-            overflow: 'auto', 
-            maxHeight: 'calc(90vh - 140px)',
-            px: { xs: 2, sm: 3 },
-            pb: { xs: 2, sm: 3 }
-          }}>
-            <OrderForm
-              order={selectedOrder}
-              customers={customers}
-              products={products}
-              isViewMode={isViewMode}
-              onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
-            />
-          </DialogContent>
-        </Dialog>
 
         {/* Delete Confirmation Dialog */}
         <Dialog

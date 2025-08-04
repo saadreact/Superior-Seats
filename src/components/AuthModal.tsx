@@ -263,6 +263,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             value={tabValue}
             onChange={handleTabChange}
             aria-label="authentication tabs"
+            centered
             sx={{
               '& .MuiTab-root': {
                 fontWeight: 500,
@@ -298,6 +299,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               fullWidth
               label="Email"
               type="email"
+              placeholder="Enter your email address"
               value={signInForm.email}
               onChange={handleSignInChange('email')}
               margin="normal"
@@ -315,6 +317,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               fullWidth
               label="Password"
               type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
               value={signInForm.password}
               onChange={handleSignInChange('password')}
               margin="normal"
@@ -365,6 +368,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               fullWidth
               label="Email"
               type="email"
+              placeholder="Enter your email address"
               value={signUpForm.email}
               onChange={handleSignUpChange('email')}
               margin="normal"
@@ -382,6 +386,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               fullWidth
               label="Password"
               type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
               value={signUpForm.password}
               onChange={handleSignUpChange('password')}
               margin="normal"
@@ -411,6 +416,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               fullWidth
               label="Confirm Password"
               type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Confirm your password"
               value={signUpForm.confirmPassword}
               onChange={handleSignUpChange('confirmPassword')}
               margin="normal"

@@ -5,7 +5,7 @@ import { Box, Button } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
-const MotionButton = motion(Button);
+const MotionButton = motion.create(Button);
 
 const LogoButton = () => {
   return (

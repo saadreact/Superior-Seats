@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { Customer, CustomerType } from '@/data/types';
-import CustomerForm from '@/components/admin/CustomerForm';
+import { useRouter } from 'next/navigation';
 
 // Mock data - replace with API calls
 const mockCustomerTypes: CustomerType[] = [
@@ -97,11 +97,9 @@ const mockCustomers: Customer[] = [
 ];
 
 const CustomersPage = () => {
+  const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
   const [customerTypes, setCustomerTypes] = useState<CustomerType[]>(mockCustomerTypes);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isViewMode, setIsViewMode] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -112,21 +110,16 @@ const CustomersPage = () => {
   };
 
   const handleAdd = () => {
-    setSelectedCustomer(null);
-    setIsViewMode(false);
-    setIsFormOpen(true);
+    router.push('/admin/customers/create');
   };
 
   const handleEdit = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setIsViewMode(false);
-    setIsFormOpen(true);
+    router.push(`/admin/customers/${customer.id}/edit`);
   };
 
   const handleView = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setIsViewMode(true);
-    setIsFormOpen(true);
+    // For now, we'll use edit page in view mode
+    router.push(`/admin/customers/${customer.id}/edit`);
   };
 
   const handleDelete = (customer: Customer) => {
@@ -144,38 +137,7 @@ const CustomersPage = () => {
     setCustomerToDelete(null);
   };
 
-  const handleFormSubmit = (customer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (selectedCustomer) {
-      // Edit existing customer
-      const updatedCustomer: Customer = {
-        ...customer,
-        id: selectedCustomer.id,
-        createdAt: selectedCustomer.createdAt,
-        updatedAt: new Date(),
-      };
-      setCustomers(prev => 
-        prev.map(c => c.id === selectedCustomer.id ? updatedCustomer : c)
-      );
-      setAlert({ type: 'success', message: 'Customer updated successfully' });
-    } else {
-      // Add new customer
-      const newCustomer: Customer = {
-        ...customer,
-        id: Date.now().toString(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setCustomers(prev => [...prev, newCustomer]);
-      setAlert({ type: 'success', message: 'Customer added successfully' });
-    }
-    setIsFormOpen(false);
-    setSelectedCustomer(null);
-  };
 
-  const handleFormCancel = () => {
-    setIsFormOpen(false);
-    setSelectedCustomer(null);
-  };
 
   return (
     <AdminLayout title="Customers">
@@ -371,46 +333,7 @@ const CustomersPage = () => {
           </Box>
         </Box>
 
-        {/* Form Dialog */}
-        <Dialog
-          open={isFormOpen}
-          onClose={handleFormCancel}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: 2,
-              maxHeight: '90vh',
-              overflow: 'hidden',
-              margin: { xs: 2, sm: 'auto' },
-              width: { xs: 'calc(100% - 32px)', sm: 'auto' },
-            },
-          }}
-        >
-          <DialogTitle sx={{ 
-            borderBottom: 1, 
-            borderColor: 'divider',
-            backgroundColor: 'grey.50',
-            fontWeight: 600,
-          }}>
-            {isViewMode ? 'View Customer' : selectedCustomer ? 'Edit Customer' : 'Add Customer'}
-          </DialogTitle>
-          <DialogContent sx={{ 
-            pt: 3, 
-            overflow: 'auto', 
-            maxHeight: 'calc(90vh - 140px)',
-            px: { xs: 2, sm: 3 },
-            pb: { xs: 2, sm: 3 }
-          }}>
-            <CustomerForm
-              customer={selectedCustomer}
-              customerTypes={customerTypes}
-              isViewMode={isViewMode}
-              onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
-            />
-          </DialogContent>
-        </Dialog>
+
 
         {/* Delete Confirmation Dialog */}
         <Dialog
