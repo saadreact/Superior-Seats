@@ -29,14 +29,12 @@ import {
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import { categories, galleryData } from '@/data/ShopGallery';
-
-
-
-
+import { useCart } from '@/contexts/CartContext';
 
 const ShopGallery = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { addItem } = useCart();
   
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState<typeof galleryData[0] | null>(null);
@@ -69,6 +67,17 @@ const ShopGallery = () => {
     const prevIndex = currentImageIndex === 0 ? filteredImages.length - 1 : currentImageIndex - 1;
     setCurrentImageIndex(prevIndex);
     setSelectedImage(filteredImages[prevIndex]);
+  };
+
+  const handleAddToCart = (item: typeof galleryData[0]) => {
+    addItem({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      image: item.image,
+      description: item.description,
+      category: item.category,
+    });
   };
 
   return (
@@ -190,20 +199,20 @@ const ShopGallery = () => {
                   onClick={() => handleImageClick(item, index)}
                 >
                   <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                                         <CardMedia
-                       component="img"
-                       height="250"
-                       image={item.image}
-                       alt={item.title}
-                       className="card-media"
-                       sx={{
-                         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                         objectFit: 'contain',
-                         width: '100%',
-                         height: '250px',
-                         backgroundColor: '#f5f5f5',
-                       }}
-                     />
+                    <CardMedia
+                      component="img"
+                      height="250"
+                      image={item.image}
+                      alt={item.title}
+                      className="card-media"
+                      sx={{
+                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        objectFit: 'contain',
+                        width: '100%',
+                        height: '250px',
+                        backgroundColor: '#f5f5f5',
+                      }}
+                    />
                     <Box
                       className="zoom-icon"
                       sx={{
@@ -255,20 +264,39 @@ const ShopGallery = () => {
                     >
                       {item.description}
                     </Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      sx={{
-                        borderColor: 'primary.main',
-                        color: 'primary.main',
-                        '&:hover': {
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          borderColor: 'primary.main',
+                          color: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.main',
+                            color: 'white',
+                          },
+                        }}
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(item);
+                        }}
+                        sx={{
                           backgroundColor: 'primary.main',
                           color: 'white',
-                        },
-                      }}
-                    >
-                      View Details
-                    </Button>
+                          '&:hover': {
+                            backgroundColor: 'primary.dark',
+                          },
+                        }}
+                      >
+                        Add to Cart
+                      </Button>
+                    </Box>
                   </CardContent>
                 </Card>
               </Box>
@@ -300,28 +328,32 @@ const ShopGallery = () => {
         fullWidth
         PaperProps={{
           sx: {
-            backgroundColor: 'rgba(0,0,0,0.95)',
-            color: 'white',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)', // Changed to white background
+            color: 'black', // Changed text color to black
           },
         }}
       >
         <DialogContent sx={{ p: 0, position: 'relative' }}>
-          <IconButton
-            onClick={handleCloseLightbox}
-            sx={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              color: 'white',
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              zIndex: 1,
-              '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.7)',
-              },
-            }}
-          >
-            <Close />
-          </IconButton>
+                     <IconButton
+             onClick={handleCloseLightbox}
+             sx={{
+               position: 'absolute',
+               top: 16,
+               right: 16,
+               color: 'white',
+               backgroundColor: 'primary.main',
+               zIndex: 1,
+               boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+               '&:hover': {
+                 backgroundColor: 'primary.dark',
+                 boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                 transform: 'translateY(-1px)',
+               },
+               transition: 'all 0.2s ease',
+             }}
+           >
+             <Close />
+           </IconButton>
 
           {selectedImage && (
             <Box sx={{ position: 'relative' }}>
@@ -338,67 +370,92 @@ const ShopGallery = () => {
                 }}
               />
               
-              {/* Navigation Arrows */}
-              <IconButton
-                onClick={handlePrevImage}
-                sx={{
-                  position: 'absolute',
-                  left: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                  },
-                }}
-              >
-                <ArrowBack />
-              </IconButton>
-              
-              <IconButton
-                onClick={handleNextImage}
-                sx={{
-                  position: 'absolute',
-                  right: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                  },
-                }}
-              >
-                <ArrowForward />
-              </IconButton>
+                             {/* Navigation Arrows */}
+               <IconButton
+                 onClick={handlePrevImage}
+                 sx={{
+                   position: 'absolute',
+                   left: 16,
+                   top: '50%',
+                   transform: 'translateY(-50%)',
+                   color: 'white',
+                   backgroundColor: 'primary.main',
+                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                     transform: 'translateY(-50%) scale(1.1)',
+                   },
+                   transition: 'all 0.2s ease',
+                 }}
+               >
+                 <ArrowBack />
+               </IconButton>
+               
+               <IconButton
+                 onClick={handleNextImage}
+                 sx={{
+                   position: 'absolute',
+                   right: 16,
+                   top: '50%',
+                   transform: 'translateY(-50%)',
+                   color: 'white',
+                   backgroundColor: 'primary.main',
+                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                     transform: 'translateY(-50%) scale(1.1)',
+                   },
+                   transition: 'all 0.2s ease',
+                 }}
+               >
+                 <ArrowForward />
+               </IconButton>
 
-              {/* Image Info */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-                  p: 3,
-                }}
-              >
+                             {/* Image Info */}
+               <Box
+                 sx={{
+                   position: 'absolute',
+                   bottom: 0,
+                   left: 0,
+                   right: 0,
+                   background: 'linear-gradient(transparent, rgba(255,255,255,0.9))',
+                   p: 3,
+                 }}
+               >
                 <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
                   {selectedImage.title}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 2, opacity: 0.9 }}>
                   {selectedImage.description}
                 </Typography>
-                <Chip
-                  label={selectedImage.price}
-                  sx={{
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '1rem',
-                  }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                  <Chip
+                    label={selectedImage.price}
+                    sx={{
+                      backgroundColor: 'primary.main',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '1rem',
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    onClick={() => handleAddToCart(selectedImage)}
+                    sx={{
+                      backgroundColor: 'primary.main',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      '&:hover': {
+                        backgroundColor: 'primary.dark',
+                      },
+                    }}
+                  >
+                    Add to Cart
+                  </Button>
+                </Box>
               </Box>
             </Box>
           )}
