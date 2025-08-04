@@ -28,7 +28,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { CustomerType } from '@/data/types';
-import CustomerTypeForm from '@/components/admin/CustomerTypeForm';
+import { useRouter } from 'next/navigation';
 
 // Mock data - replace with API calls
 const mockCustomerTypes: CustomerType[] = [
@@ -62,30 +62,23 @@ const mockCustomerTypes: CustomerType[] = [
 ];
 
 const CustomerTypesPage = () => {
+  const router = useRouter();
   const [customerTypes, setCustomerTypes] = useState<CustomerType[]>(mockCustomerTypes);
-  const [selectedCustomerType, setSelectedCustomerType] = useState<CustomerType | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isViewMode, setIsViewMode] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [customerTypeToDelete, setCustomerTypeToDelete] = useState<CustomerType | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleAdd = () => {
-    setSelectedCustomerType(null);
-    setIsViewMode(false);
-    setIsFormOpen(true);
+    router.push('/admin/customer-types/create');
   };
 
   const handleEdit = (customerType: CustomerType) => {
-    setSelectedCustomerType(customerType);
-    setIsViewMode(false);
-    setIsFormOpen(true);
+    router.push(`/admin/customer-types/${customerType.id}/edit`);
   };
 
   const handleView = (customerType: CustomerType) => {
-    setSelectedCustomerType(customerType);
-    setIsViewMode(true);
-    setIsFormOpen(true);
+    // For now, we'll use edit page in view mode
+    router.push(`/admin/customer-types/${customerType.id}/edit`);
   };
 
   const handleDelete = (customerType: CustomerType) => {
@@ -103,38 +96,7 @@ const CustomerTypesPage = () => {
     setCustomerTypeToDelete(null);
   };
 
-  const handleFormSubmit = (customerType: Omit<CustomerType, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (selectedCustomerType) {
-      // Edit existing customer type
-      const updatedCustomerType: CustomerType = {
-        ...customerType,
-        id: selectedCustomerType.id,
-        createdAt: selectedCustomerType.createdAt,
-        updatedAt: new Date(),
-      };
-      setCustomerTypes(prev => 
-        prev.map(ct => ct.id === selectedCustomerType.id ? updatedCustomerType : ct)
-      );
-      setAlert({ type: 'success', message: 'Customer type updated successfully' });
-    } else {
-      // Add new customer type
-      const newCustomerType: CustomerType = {
-        ...customerType,
-        id: Date.now().toString(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setCustomerTypes(prev => [...prev, newCustomerType]);
-      setAlert({ type: 'success', message: 'Customer type added successfully' });
-    }
-    setIsFormOpen(false);
-    setSelectedCustomerType(null);
-  };
 
-  const handleFormCancel = () => {
-    setIsFormOpen(false);
-    setSelectedCustomerType(null);
-  };
 
   return (
     <AdminLayout title="Customer Types">
@@ -313,45 +275,7 @@ const CustomerTypesPage = () => {
           </Box>
         </Box>
 
-        {/* Form Dialog */}
-        <Dialog
-          open={isFormOpen}
-          onClose={handleFormCancel}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: 2,
-              maxHeight: '90vh',
-              overflow: 'hidden',
-              margin: { xs: 2, sm: 'auto' },
-              width: { xs: 'calc(100% - 32px)', sm: 'auto' },
-            },
-          }}
-        >
-          <DialogTitle sx={{ 
-            borderBottom: 1, 
-            borderColor: 'divider',
-            backgroundColor: 'grey.50',
-            fontWeight: 600,
-          }}>
-            {isViewMode ? 'View Customer Type' : selectedCustomerType ? 'Edit Customer Type' : 'Add Customer Type'}
-          </DialogTitle>
-          <DialogContent sx={{ 
-            pt: 3, 
-            overflow: 'auto', 
-            maxHeight: 'calc(90vh - 140px)',
-            px: { xs: 2, sm: 3 },
-            pb: { xs: 2, sm: 3 }
-          }}>
-            <CustomerTypeForm
-              customerType={selectedCustomerType}
-              isViewMode={isViewMode}
-              onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
-            />
-          </DialogContent>
-        </Dialog>
+
 
         {/* Delete Confirmation Dialog */}
         <Dialog

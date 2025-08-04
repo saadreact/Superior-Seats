@@ -25,25 +25,17 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { motion } from 'framer-motion';
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 const AdminDashboard = () => {
   const adminModules = [
     {
-      title: 'Price Tiers',
-      description: 'Manage wholesale, retail, and custom pricing tiers',
-      icon: <MoneyIcon sx={{ fontSize: 40 }} />,
-      href: '/admin/price-tiers',
-      color: '#1976d2',
-      count: 3,
-    },
-    {
-      title: 'Categories',
-      description: 'Organize products with categories and subcategories',
-      icon: <CategoryIcon sx={{ fontSize: 40 }} />,
-      href: '/admin/categories',
+      title: 'Products',
+      description: 'Manage product catalog and inventory',
+      icon: <InventoryIcon sx={{ fontSize: 40 }} />,
+      href: '/admin/products',
       color: '#388e3c',
-      count: 5,
+      count: 8,
     },
     {
       title: 'Customer Types',

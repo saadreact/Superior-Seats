@@ -5,7 +5,7 @@ import { Box, Container, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const truckBrands = [
   { name: 'Freightliner', logo: '/Logos/Freightliner.png' },
