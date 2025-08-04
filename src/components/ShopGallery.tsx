@@ -504,7 +504,10 @@ const ShopGallery = () => {
                   <Button
                     variant="contained"
                     size="medium"
-                    onClick={() => handleAddToCart(selectedImage)}
+                    onClick={() => {
+                      handleAddToCart(selectedImage);
+                      handleCloseLightbox();
+                    }}
                     sx={{
                       backgroundColor: 'primary.main',
                       color: 'white',
