@@ -37,7 +37,7 @@ const mockProducts = [
     price: 299.99,
     stock: 15,
     isActive: true,
-    image: '/Truckimages/01.jpg',
+    image: '/Gallery/Truckimages/truck01.jpg',
     specifications: {
       material: 'Leather',
       color: 'Black',
@@ -53,7 +53,7 @@ const mockProducts = [
     price: 499.99,
     stock: 8,
     isActive: true,
-    image: '/Truckimages/Bluetruck.jpg',
+    image: '/Gallery/Truckimages/truck02.jpg',
     specifications: {
       material: 'Premium Leather',
       color: 'Brown',
@@ -69,7 +69,7 @@ const mockProducts = [
     price: 89.99,
     stock: 25,
     isActive: true,
-    image: '/Truckimages/blackTruck.jpg',
+    image: '/Gallery/Truckimages/truck03.jpg',
     specifications: {
       material: 'Genuine Leather',
       color: 'Black',
@@ -85,7 +85,7 @@ const mockProducts = [
     price: 45.99,
     stock: 30,
     isActive: true,
-    image: '/Truckimages/white truck.jpg',
+    image: '/Gallery/Truckimages/truck04.jpg',
     specifications: {
       material: 'Memory Foam',
       color: 'Gray',
@@ -101,7 +101,7 @@ const mockProducts = [
     price: 399.99,
     stock: 12,
     isActive: true,
-    image: '/Truckimages/whitePurpletruck.jpg',
+    image: '/Gallery/Truckimages/truck05.jpg',
     specifications: {
       material: 'Alcantara',
       color: 'Red/Black',
@@ -117,7 +117,7 @@ const mockProducts = [
     price: 75.99,
     stock: 20,
     isActive: true,
-    image: '/Truckimages/Seatset.jpg',
+    image: '/Gallery/Truckimages/truck06.jpg',
     specifications: {
       material: 'Nylon Webbing',
       color: 'Black',
@@ -133,7 +133,7 @@ const mockProducts = [
     price: 599.99,
     stock: 6,
     isActive: true,
-    image: '/Truckimages/seatimages.jpg',
+    image: '/Gallery/Truckimages/truck07.jpg',
     specifications: {
       material: 'Mesh Fabric',
       color: 'Blue',
@@ -149,7 +149,7 @@ const mockProducts = [
     price: 29.99,
     stock: 40,
     isActive: true,
-    image: '/Truckimages/bluetruckengine.jpg',
+    image: '/Gallery/Truckimages/truck08.jpg',
     specifications: {
       material: 'Canvas',
       color: 'Gray',
