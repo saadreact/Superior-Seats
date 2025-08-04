@@ -15,9 +15,9 @@ import { ArrowForward } from '@mui/icons-material';
 import LogoButton from './LogoButton';
 import { motion } from 'framer-motion';
 
-const MotionBox = motion(Box);
-const MotionTypography = motion(Typography);
-const MotionCard = motion(Card);
+const MotionBox = motion.create(Box);
+const MotionTypography = motion.create(Typography);
+const MotionCard = motion.create(Card);
 
 const leftColVariants = {
   hidden: { opacity: 0, y: 60, scale: 0.95 },
