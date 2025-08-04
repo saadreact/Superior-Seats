@@ -31,8 +31,8 @@ export const stats = [
     },
     {
       step: '02',
-      title: '3D Design',
-      description: 'Our interactive 3D configurator lets you visualize and customize your perfect seat.',
+      title: 'Handcrafted Design',
+      description: 'Every seat is manually designed with care and precision, just pure craftsmanship.',
     },
     {
       step: '03',
