@@ -491,16 +491,30 @@ const ShopGallery = () => {
                   alignItems={{ xs: 'stretch', sm: 'center' }}
                   sx={{ flexWrap: 'wrap' }}
                 >
-                  <Chip
-                    label={selectedImage.price}
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    disabled
                     sx={{
                       backgroundColor: 'primary.main',
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: { xs: '0.875rem', sm: '1rem' },
-                      alignSelf: { xs: 'flex-start', sm: 'center' },
+                      px: { xs: 2, sm: 3 },
+                      py: { xs: 1, sm: 1.5 },
+                      minWidth: { xs: '120px', sm: '140px' },
+                      '&:hover': {
+                        backgroundColor: 'primary.main',
+                      },
+                      '&.Mui-disabled': {
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                        opacity: 1,
+                      },
                     }}
-                  />
+                  >
+                    {selectedImage.price}
+                  </Button>
                   <Button
                     variant="contained"
                     size="medium"
@@ -515,6 +529,7 @@ const ShopGallery = () => {
                       fontSize: { xs: '0.875rem', sm: '1rem' },
                       px: { xs: 2, sm: 3 },
                       py: { xs: 1, sm: 1.5 },
+                      minWidth: { xs: '120px', sm: '140px' },
                       '&:hover': {
                         backgroundColor: 'primary.dark',
                       },

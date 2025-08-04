@@ -139,7 +139,7 @@ const Gallery = () => {
         py: { xs: 4, md: 6 },
         overflow: 'hidden',
       }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography
             variant="h4"
             sx={{
@@ -162,7 +162,7 @@ const Gallery = () => {
                 position: 'absolute',
                 top: 0,
                 bottom: 0,
-                width: '100px',
+                width: '150px',
                 zIndex: 2,
                 pointerEvents: 'none',
               },
@@ -202,9 +202,9 @@ const Gallery = () => {
               <Box
                 key={`first-${item.id}`}
                 sx={{
-                  minWidth: 280,
-                  width: 280,
-                  height: 200,
+                  minWidth: 350,
+                  width: 350,
+                  height: 250,
                   position: 'relative',
                   borderRadius: 2,
                   overflow: 'hidden',
@@ -271,9 +271,9 @@ const Gallery = () => {
               <Box
                 key={`second-${item.id}`}
                 sx={{
-                  minWidth: 280,
-                  width: 280,
-                  height: 200,
+                  minWidth: 350,
+                  width: 350,
+                  height: 250,
                   position: 'relative',
                   borderRadius: 2,
                   overflow: 'hidden',
@@ -341,7 +341,7 @@ const Gallery = () => {
 
       {/* Our Work Pictures Section */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fafafa' }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography
             variant="h3"
             sx={{
@@ -355,7 +355,7 @@ const Gallery = () => {
           </Typography>
           <Box sx={{ 
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(5, 1fr)' },
             gap: { xs: 2, md: 3 },
             justifyContent: 'center',
           }}>
@@ -545,7 +545,7 @@ const Gallery = () => {
         color: 'white',
         py: { xs: 6, md: 4 },
       }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Box sx={{ textAlign: 'center' }}>
             <Typography
               variant="h3"
