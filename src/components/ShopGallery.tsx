@@ -19,6 +19,7 @@ import {
   IconButton,
   Tabs,
   Tab,
+  Stack,
 } from '@mui/material';
 import {
   Close,
@@ -34,6 +35,7 @@ import { useCart } from '@/contexts/CartContext';
 const ShopGallery = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { addItem } = useCart();
   
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -89,7 +91,8 @@ const ShopGallery = () => {
         sx={{
           background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
           color: 'white',
-          py: { xs: 6, md: 8 },
+          py: { xs: 4, sm: 6, md: 8 },
+          px: { xs: 2, sm: 3 },
           textAlign: 'center',
         }}
       >
@@ -97,10 +100,11 @@ const ShopGallery = () => {
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '2.5rem', md: '4rem' },
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '4rem' },
               fontWeight: 'bold',
-              mb: 3,
+              mb: { xs: 2, md: 3 },
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              lineHeight: { xs: 1.2, md: 1.1 },
             }}
           >
             Shop Specials
@@ -108,11 +112,12 @@ const ShopGallery = () => {
           <Typography
             variant="h5"
             sx={{
-              mb: 4,
+              mb: { xs: 3, md: 4 },
               opacity: 0.9,
               maxWidth: 800,
               mx: 'auto',
               lineHeight: 1.6,
+              fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
             }}
           >
             Discover our exclusive collection of premium seats with special pricing and unique features
@@ -127,6 +132,7 @@ const ShopGallery = () => {
         position: 'sticky',
         top: 0,
         zIndex: 10,
+        px: { xs: 1, sm: 2 },
       }}>
         <Container maxWidth="lg">
           <Tabs
@@ -136,11 +142,12 @@ const ShopGallery = () => {
             scrollButtons="auto"
             sx={{
               '& .MuiTab-root': {
-                minWidth: 120,
-                fontSize: '0.9rem',
+                minWidth: { xs: 80, sm: 120 },
+                fontSize: { xs: '0.75rem', sm: '0.9rem' },
                 fontWeight: 500,
                 textTransform: 'none',
                 color: 'text.secondary',
+                padding: { xs: '8px 12px', sm: '12px 16px' },
                 '&.Mui-selected': {
                   color: 'primary.main',
                   fontWeight: 600,
@@ -157,7 +164,7 @@ const ShopGallery = () => {
                 key={category.value}
                 value={category.value}
                 label={category.label}
-                icon={<FilterList sx={{ fontSize: '1rem', mr: 1 }} />}
+                icon={<FilterList sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, mr: { xs: 0.5, sm: 1 } }} />}
                 iconPosition="start"
               />
             ))}
@@ -166,12 +173,12 @@ const ShopGallery = () => {
       </Box>
 
       {/* Gallery Grid */}
-      <Box sx={{ py: { xs: 4, md: 6 } }}>
+      <Box sx={{ py: { xs: 3, sm: 4, md: 6 }, px: { xs: 2, sm: 3 } }}>
         <Container maxWidth="lg">
           <Box sx={{ 
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-            gap: { xs: 3, md: 4 },
+            gap: { xs: 2, sm: 3, md: 4 },
             justifyContent: 'center',
             width: '100%'
           }}>
@@ -186,13 +193,13 @@ const ShopGallery = () => {
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                     '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
+                      transform: { xs: 'none', sm: 'translateY(-8px)' },
+                      boxShadow: { xs: '0 4px 20px rgba(0,0,0,0.1)', sm: '0 12px 40px rgba(211, 47, 47, 0.25)' },
                       '& .zoom-icon': {
                         opacity: 1,
                       },
                       '& .card-media': {
-                        transform: 'scale(1.05)',
+                        transform: { xs: 'none', sm: 'scale(1.05)' },
                       },
                     },
                   }}
@@ -209,7 +216,7 @@ const ShopGallery = () => {
                         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         objectFit: 'contain',
                         width: '100%',
-                        height: '250px',
+                        height: { xs: '200px', sm: '250px' },
                         backgroundColor: '#f5f5f5',
                       }}
                     />
@@ -224,32 +231,36 @@ const ShopGallery = () => {
                         transition: 'opacity 0.3s ease',
                         backgroundColor: 'rgba(211, 47, 47, 0.9)',
                         borderRadius: '50%',
-                        p: 1,
+                        p: { xs: 0.5, sm: 1 },
                         color: 'white',
+                        display: { xs: 'none', sm: 'flex' },
                       }}
                     >
-                      <ZoomIn />
+                      <ZoomIn sx={{ fontSize: { xs: 18, sm: 24 } }} />
                     </Box>
                     <Chip
                       label={item.price}
                       sx={{
                         position: 'absolute',
-                        top: 16,
-                        right: 16,
+                        top: { xs: 8, sm: 16 },
+                        right: { xs: 8, sm: 16 },
                         backgroundColor: 'primary.main',
                         color: 'white',
                         fontWeight: 'bold',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        height: { xs: 24, sm: 32 },
                       }}
                     />
                   </Box>
-                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                  <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
                     <Typography
                       variant="h6"
                       sx={{
                         fontWeight: 'bold',
                         mb: 1,
-                        fontSize: '1.1rem',
+                        fontSize: { xs: '1rem', sm: '1.1rem' },
                         color: 'text.primary',
+                        lineHeight: { xs: 1.3, sm: 1.4 },
                       }}
                     >
                       {item.title}
@@ -260,17 +271,28 @@ const ShopGallery = () => {
                         color: 'text.secondary',
                         lineHeight: 1.5,
                         mb: 2,
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        display: { xs: '-webkit-box', sm: 'block' },
+                        WebkitLineClamp: { xs: 2, sm: 'none' },
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
                       }}
                     >
                       {item.description}
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Stack 
+                      direction={{ xs: 'column', sm: 'row' }} 
+                      spacing={{ xs: 1, sm: 1 }}
+                      sx={{ flexWrap: 'wrap', gap: { xs: 1, sm: 1 } }}
+                    >
                       <Button
                         variant="outlined"
                         size="small"
                         sx={{
                           borderColor: 'primary.main',
                           color: 'primary.main',
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          py: { xs: 0.5, sm: 1 },
                           '&:hover': {
                             backgroundColor: 'primary.main',
                             color: 'white',
@@ -289,6 +311,8 @@ const ShopGallery = () => {
                         sx={{
                           backgroundColor: 'primary.main',
                           color: 'white',
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          py: { xs: 0.5, sm: 1 },
                           '&:hover': {
                             backgroundColor: 'primary.dark',
                           },
@@ -296,7 +320,7 @@ const ShopGallery = () => {
                       >
                         Add to Cart
                       </Button>
-                    </Box>
+                    </Stack>
                   </CardContent>
                 </Card>
               </Box>
@@ -304,14 +328,23 @@ const ShopGallery = () => {
           </Box>
 
           {filteredImages.length === 0 && (
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Typography variant="h5" sx={{ color: 'text.secondary', mb: 2 }}>
+            <Box sx={{ textAlign: 'center', py: { xs: 6, md: 8 } }}>
+              <Typography variant="h5" sx={{ 
+                color: 'text.secondary', 
+                mb: 2,
+                fontSize: { xs: '1.25rem', sm: '1.5rem' }
+              }}>
                 No products found for this category
               </Typography>
               <Button
                 variant="contained"
                 onClick={() => setSelectedCategory('all')}
-                sx={{ backgroundColor: 'primary.main' }}
+                sx={{ 
+                  backgroundColor: 'primary.main',
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  px: { xs: 3, sm: 4 },
+                  py: { xs: 1, sm: 1.5 },
+                }}
               >
                 View All Products
               </Button>
@@ -328,32 +361,36 @@ const ShopGallery = () => {
         fullWidth
         PaperProps={{
           sx: {
-            backgroundColor: 'rgba(255, 255, 255, 0.7)', // Changed to white background
-            color: 'black', // Changed text color to black
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            color: 'black',
+            margin: { xs: 2, sm: 4 },
+            maxWidth: { xs: 'calc(100% - 32px)', sm: 'calc(100% - 64px)' },
           },
         }}
       >
         <DialogContent sx={{ p: 0, position: 'relative' }}>
-                     <IconButton
-             onClick={handleCloseLightbox}
-             sx={{
-               position: 'absolute',
-               top: 16,
-               right: 16,
-               color: 'white',
-               backgroundColor: 'primary.main',
-               zIndex: 1,
-               boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-               '&:hover': {
-                 backgroundColor: 'primary.dark',
-                 boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                 transform: 'translateY(-1px)',
-               },
-               transition: 'all 0.2s ease',
-             }}
-           >
-             <Close />
-           </IconButton>
+          <IconButton
+            onClick={handleCloseLightbox}
+            sx={{
+              position: 'absolute',
+              top: { xs: 8, sm: 16 },
+              right: { xs: 8, sm: 16 },
+              color: 'white',
+              backgroundColor: 'primary.main',
+              zIndex: 1,
+              boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+              width: { xs: 32, sm: 40 },
+              height: { xs: 32, sm: 40 },
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+                boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                transform: 'translateY(-1px)',
+              },
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <Close sx={{ fontSize: { xs: 18, sm: 24 } }} />
+          </IconButton>
 
           {selectedImage && (
             <Box sx={{ position: 'relative' }}>
@@ -365,89 +402,119 @@ const ShopGallery = () => {
                 style={{
                   width: '100%',
                   height: 'auto',
-                  maxHeight: '80vh',
+                  maxHeight: isSmallMobile ? '60vh' : '80vh',
                   objectFit: 'contain',
                 }}
               />
               
-                             {/* Navigation Arrows */}
-               <IconButton
-                 onClick={handlePrevImage}
-                 sx={{
-                   position: 'absolute',
-                   left: 16,
-                   top: '50%',
-                   transform: 'translateY(-50%)',
-                   color: 'white',
-                   backgroundColor: 'primary.main',
-                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                   '&:hover': {
-                     backgroundColor: 'primary.dark',
-                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                     transform: 'translateY(-50%) scale(1.1)',
-                   },
-                   transition: 'all 0.2s ease',
-                 }}
-               >
-                 <ArrowBack />
-               </IconButton>
-               
-               <IconButton
-                 onClick={handleNextImage}
-                 sx={{
-                   position: 'absolute',
-                   right: 16,
-                   top: '50%',
-                   transform: 'translateY(-50%)',
-                   color: 'white',
-                   backgroundColor: 'primary.main',
-                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                   '&:hover': {
-                     backgroundColor: 'primary.dark',
-                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                     transform: 'translateY(-50%) scale(1.1)',
-                   },
-                   transition: 'all 0.2s ease',
-                 }}
-               >
-                 <ArrowForward />
-               </IconButton>
+              {/* Navigation Arrows */}
+              <IconButton
+                onClick={handlePrevImage}
+                sx={{
+                  position: 'absolute',
+                  left: { xs: 8, sm: 16 },
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'white',
+                  backgroundColor: 'primary.main',
+                  boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                  width: { xs: 32, sm: 40 },
+                  height: { xs: 32, sm: 40 },
+                  display: { xs: 'none', sm: 'flex' },
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                    boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                    transform: 'translateY(-50%) scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <ArrowBack sx={{ fontSize: { xs: 18, sm: 24 } }} />
+              </IconButton>
+              
+              <IconButton
+                onClick={handleNextImage}
+                sx={{
+                  position: 'absolute',
+                  right: { xs: 8, sm: 16 },
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'white',
+                  backgroundColor: 'primary.main',
+                  boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                  width: { xs: 32, sm: 40 },
+                  height: { xs: 32, sm: 40 },
+                  display: { xs: 'none', sm: 'flex' },
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                    boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                    transform: 'translateY(-50%) scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <ArrowForward sx={{ fontSize: { xs: 18, sm: 24 } }} />
+              </IconButton>
 
-                             {/* Image Info */}
-               <Box
-                 sx={{
-                   position: 'absolute',
-                   bottom: 0,
-                   left: 0,
-                   right: 0,
-                   background: 'linear-gradient(transparent, rgba(255,255,255,0.9))',
-                   p: 3,
-                 }}
-               >
-                <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+              {/* Image Info */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: 'linear-gradient(transparent, rgba(255,255,255,0.9))',
+                  p: { xs: 2, sm: 3 },
+                }}
+              >
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 'bold', 
+                  mb: 1,
+                  fontSize: { xs: '1.125rem', sm: '1.5rem' }
+                }}>
                   {selectedImage.title}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 2, opacity: 0.9 }}>
+                <Typography variant="body1" sx={{ 
+                  mb: 2, 
+                  opacity: 0.9,
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  display: { xs: '-webkit-box', sm: 'block' },
+                  WebkitLineClamp: { xs: 2, sm: 'none' },
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}>
                   {selectedImage.description}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <Stack 
+                  direction={{ xs: 'column', sm: 'row' }} 
+                  spacing={{ xs: 1, sm: 2 }} 
+                  alignItems={{ xs: 'stretch', sm: 'center' }}
+                  sx={{ flexWrap: 'wrap' }}
+                >
                   <Chip
                     label={selectedImage.price}
                     sx={{
                       backgroundColor: 'primary.main',
                       color: 'white',
                       fontWeight: 'bold',
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      alignSelf: { xs: 'flex-start', sm: 'center' },
                     }}
                   />
                   <Button
                     variant="contained"
                     size="medium"
-                    onClick={() => handleAddToCart(selectedImage)}
+                    onClick={() => {
+                      handleAddToCart(selectedImage);
+                      handleCloseLightbox();
+                    }}
                     sx={{
                       backgroundColor: 'primary.main',
                       color: 'white',
                       fontWeight: 'bold',
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      px: { xs: 2, sm: 3 },
+                      py: { xs: 1, sm: 1.5 },
                       '&:hover': {
                         backgroundColor: 'primary.dark',
                       },
@@ -455,7 +522,7 @@ const ShopGallery = () => {
                   >
                     Add to Cart
                   </Button>
-                </Box>
+                </Stack>
               </Box>
             </Box>
           )}

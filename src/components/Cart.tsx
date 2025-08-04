@@ -1,17 +1,14 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   Drawer,
   Typography,
   List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
   IconButton,
   Button,
-  Divider,
   Card,
   CardMedia,
   Chip,
@@ -33,6 +30,7 @@ interface CartProps {
 }
 
 const Cart: React.FC<CartProps> = ({ open, onClose }) => {
+  const router = useRouter();
   const { state, removeItem, updateQuantity } = useCart();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -56,9 +54,9 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: isMobile ? '100%' : 450,
+          width: { xs: '100%', sm: 400, md: 450 },
           backgroundColor: '#ffffff',
-          boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.15)',
+          boxShadow: { xs: '-4px 0 16px rgba(0, 0, 0, 0.1)', sm: '-8px 0 32px rgba(0, 0, 0, 0.15)' },
           borderLeft: '1px solid rgba(0, 0, 0, 0.08)',
         },
       }}
@@ -66,7 +64,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
         <Box sx={{ 
-          p: 3, 
+          p: { xs: 2, sm: 2.5, md: 3 }, 
           borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
           backgroundColor: '#fafafa',
           display: 'flex', 
@@ -78,9 +76,13 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
             display: 'flex', 
             alignItems: 'center',
             color: '#1a1a1a',
-            fontSize: '1.5rem'
+            fontSize: { xs: '1.25rem', sm: '1.4rem', md: '1.5rem' }
           }}>
-            <ShoppingCart sx={{ mr: 1.5, color: 'primary.main', fontSize: '1.8rem' }} />
+            <ShoppingCart sx={{ 
+              mr: { xs: 1, sm: 1.25, md: 1.5 }, 
+              color: 'primary.main', 
+              fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.8rem' } 
+            }} />
             Shopping Cart
           </Typography>
           <IconButton 
@@ -107,56 +109,56 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
             alignItems: 'center', 
             justifyContent: 'center',
             textAlign: 'center',
-            p: 4
+            p: { xs: 3, sm: 4 }
           }}>
             <ShoppingCart sx={{ 
-              fontSize: '5rem', 
+              fontSize: { xs: '3.5rem', sm: '4rem', md: '5rem' }, 
               color: '#ccc', 
-              mb: 3,
+              mb: { xs: 2, sm: 3 },
               opacity: 0.6
             }} />
             <Typography variant="h6" sx={{ 
               color: '#666', 
               mb: 1,
               fontWeight: 500,
-              fontSize: '1.2rem'
+              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' }
             }}>
               Your cart is empty
             </Typography>
             <Typography variant="body2" sx={{ 
               color: '#999',
-              fontSize: '0.95rem'
+              fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.95rem' }
             }}>
               Add some items to get started
             </Typography>
           </Box>
         ) : (
           <>
-            <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+            <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <List sx={{ p: 0 }}>
                 {state.items.map((item) => (
                   <Card key={item.id} sx={{ 
-                    mb: 3, 
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-                    borderRadius: 2,
+                    mb: { xs: 2, sm: 2.5, md: 3 }, 
+                    boxShadow: { xs: '0 1px 8px rgba(0,0,0,0.06)', sm: '0 2px 12px rgba(0,0,0,0.08)' },
+                    borderRadius: { xs: 1.5, sm: 2 },
                     border: '1px solid rgba(0,0,0,0.04)',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                      boxShadow: { xs: '0 2px 12px rgba(0,0,0,0.1)', sm: '0 4px 20px rgba(0,0,0,0.12)' },
                       transform: 'translateY(-1px)'
                     }
                   }}>
-                    <Box sx={{ display: 'flex', p: 3 }}>
+                    <Box sx={{ display: 'flex', p: { xs: 2, sm: 2.5, md: 3 } }}>
                       {/* Item Image */}
                       <CardMedia
                         component="img"
                         sx={{
-                          width: 90,
-                          height: 90,
-                          borderRadius: 2,
+                          width: { xs: 70, sm: 80, md: 90 },
+                          height: { xs: 70, sm: 80, md: 90 },
+                          borderRadius: { xs: 1.5, sm: 2 },
                           objectFit: 'cover',
-                          mr: 3,
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          mr: { xs: 2, sm: 2.5, md: 3 },
+                          boxShadow: { xs: '0 1px 4px rgba(0,0,0,0.08)', sm: '0 2px 8px rgba(0,0,0,0.1)' },
                         }}
                         image={item.image}
                         alt={item.title}
@@ -168,7 +170,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                           <Typography variant="subtitle1" sx={{ 
                             fontWeight: 600, 
                             mb: 0.5,
-                            fontSize: '1.1rem',
+                            fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
                             color: '#1a1a1a'
                           }}>
                             {item.title}
@@ -176,7 +178,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                           <Typography variant="body2" sx={{ 
                             color: '#666', 
                             mb: 1.5,
-                            fontSize: '0.9rem',
+                            fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' },
                             lineHeight: 1.4
                           }}>
                             {item.description}
@@ -188,10 +190,10 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                               backgroundColor: 'primary.main',
                               color: 'white',
                               fontWeight: 600,
-                              fontSize: '0.85rem',
-                              height: 24,
+                              fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
+                              height: { xs: 20, sm: 22, md: 24 },
                               '& .MuiChip-label': {
-                                px: 1.5
+                                px: { xs: 1, sm: 1.25, md: 1.5 }
                               }
                             }}
                           />
@@ -205,8 +207,8 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                               onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
                               sx={{ 
                                 backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                                width: 32,
-                                height: 32,
+                                width: { xs: 28, sm: 30, md: 32 },
+                                height: { xs: 28, sm: 30, md: 32 },
                                 '&:hover': { 
                                   backgroundColor: 'rgba(211, 47, 47, 0.15)',
                                   transform: 'scale(1.05)'
@@ -214,14 +216,14 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                                 transition: 'all 0.2s ease'
                               }}
                             >
-                              <Remove fontSize="small" sx={{ fontSize: '1rem' }} />
+                              <Remove fontSize="small" sx={{ fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }} />
                             </IconButton>
                             <Typography sx={{ 
-                              mx: 2.5, 
-                              minWidth: 24, 
+                              mx: { xs: 2, sm: 2.25, md: 2.5 }, 
+                              minWidth: { xs: 20, sm: 22, md: 24 }, 
                               textAlign: 'center',
                               fontWeight: 600,
-                              fontSize: '1rem',
+                              fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
                               color: '#1a1a1a'
                             }}>
                               {item.quantity}
@@ -231,8 +233,8 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                               onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
                               sx={{ 
                                 backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                                width: 32,
-                                height: 32,
+                                width: { xs: 28, sm: 30, md: 32 },
+                                height: { xs: 28, sm: 30, md: 32 },
                                 '&:hover': { 
                                   backgroundColor: 'rgba(211, 47, 47, 0.15)',
                                   transform: 'scale(1.05)'
@@ -240,13 +242,13 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                                 transition: 'all 0.2s ease'
                               }}
                             >
-                              <Add fontSize="small" sx={{ fontSize: '1rem' }} />
+                              <Add fontSize="small" sx={{ fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }} />
                             </IconButton>
                           </Box>
                           
                           <Typography variant="subtitle2" sx={{ 
                             fontWeight: 700,
-                            fontSize: '1.1rem',
+                            fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
                             color: 'primary.main'
                           }}>
                             {formatPrice(item.price, item.quantity)}
@@ -259,8 +261,8 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                         onClick={() => removeItem(item.id)}
                         sx={{ 
                           color: '#f44336',
-                          width: 36,
-                          height: 36,
+                          width: { xs: 32, sm: 34, md: 36 },
+                          height: { xs: 32, sm: 34, md: 36 },
                           borderRadius: '50%',
                           transition: 'all 0.2s ease',
                           '&:hover': { 
@@ -282,14 +284,14 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
             {/* Cart Summary */}
             <Box sx={{ 
               mt: 'auto', 
-              p: 3,
+              p: { xs: 2, sm: 2.5, md: 3 },
               borderTop: '1px solid rgba(0, 0, 0, 0.08)',
               backgroundColor: '#fafafa'
             }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: { xs: 2, sm: 2.5, md: 3 } }}>
                 <Typography variant="h6" sx={{ 
                   fontWeight: 600,
-                  fontSize: '1.1rem',
+                  fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
                   color: '#1a1a1a'
                 }}>
                   Total ({state.totalItems} items):
@@ -297,7 +299,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                 <Typography variant="h6" sx={{ 
                   fontWeight: 700, 
                   color: 'primary.main',
-                  fontSize: '1.3rem'
+                  fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' }
                 }}>
                   ${state.totalPrice.toFixed(2)}
                 </Typography>
@@ -307,17 +309,21 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                 variant="contained"
                 fullWidth
                 size="large"
+                onClick={() => {
+                  onClose();
+                  router.push('/checkout');
+                }}
                 sx={{
                   backgroundColor: 'primary.main',
-                  py: 2,
-                  fontSize: '1.1rem',
+                  py: { xs: 1.5, sm: 1.75, md: 2 },
+                  fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
                   fontWeight: 600,
-                  borderRadius: 2,
+                  borderRadius: { xs: 1.5, sm: 2 },
                   textTransform: 'none',
-                  boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                  boxShadow: { xs: '0 2px 8px rgba(211, 47, 47, 0.25)', sm: '0 4px 12px rgba(211, 47, 47, 0.3)' },
                   '&:hover': {
                     backgroundColor: 'primary.dark',
-                    boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                    boxShadow: { xs: '0 4px 12px rgba(211, 47, 47, 0.35)', sm: '0 6px 20px rgba(211, 47, 47, 0.4)' },
                     transform: 'translateY(-1px)'
                   },
                   transition: 'all 0.2s ease'
