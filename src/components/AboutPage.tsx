@@ -201,8 +201,26 @@ const AboutPage = () => {
       </Box>
 
       {/* Our Story */}
-      <Box sx={{ py: { xs: 4, sm: 6, md: 8 }, backgroundColor: '#fafafa' }}>
-        <Container maxWidth="lg">
+      <Box sx={{ 
+        py: { xs: 4, sm: 6, md: 8 }, 
+        backgroundColor: '#fafafa', 
+        backgroundImage: 'url(../gallery/patriotism/pngwing.com.png)', 
+        backgroundSize: 'cover', 
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
+          zIndex: 1,
+        }
+      }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: { xs: 3, sm: 4, md: 6 }, alignItems: 'center' }}>
             <Box sx={{ textAlign: 'center', maxWidth: 800, mx: 'auto' }}>
               <MotionTypography 

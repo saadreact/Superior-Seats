@@ -38,8 +38,7 @@ export const workPictures: WorkImage[] = [
   { id: 28, title: 'Custom Car Interior', image: '/Gallery/28.png', description: 'Luxury car seat restoration' },
   { id: 29, title: 'Truck Seat Upgrade', image: '/Gallery/29.png', description: 'Commercial truck seat modification' },
   { id: 30, title: 'Boat Seat Project', image: '/Gallery/30.png', description: 'Marine seating solution' },
-  { id: 31, title: 'Motorcycle Custom', image: '/Gallery/31.png', description: 'Custom bike seat design' },
-  { id: 32, title: 'Classic Car Restoration', image: '/Gallery/32.png', description: 'Vintage car seat restoration' },
+
   
 ]; 
 export const workPicturesTruck: WorkImage[] = [

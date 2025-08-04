@@ -426,29 +426,7 @@ const HeroSection = () => {
           />
         </Box>
 
-        {/* Animation Type Indicator */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 20,
-            left: 20,
-            background: 'rgba(0, 0, 0, 0.7)',
-            color: 'white',
-            px: 2,
-            py: 1,
-            borderRadius: 2,
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            zIndex: 3,
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-          }}
-        >
-          {animationType === 0 && '🎭 Fade'}
-          {animationType === 1 && '⬅️ Slide Left'}
-          {animationType === 2 && '➡️ Slide Right'}
-          {animationType === 3 && '🔍 Zoom In'}
-        </Box>
+
 
 
     </Box>
