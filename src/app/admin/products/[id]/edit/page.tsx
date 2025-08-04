@@ -18,7 +18,7 @@ const mockProduct = {
   price: 299.99,
   stock: 15,
   isActive: true,
-  image: '/Truckimages/01.jpg',
+  image: '/Gallery/Truckimages/truck01.jpg',
   specifications: {
     material: 'Leather',
     color: 'Black',
