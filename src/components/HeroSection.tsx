@@ -63,7 +63,6 @@ const HeroSection = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Background images for slider
   const backgroundImages = [
     '/Gallery/HeroSection/01.jpg',
     '/Gallery/HeroSection/02.jpg',
@@ -73,35 +72,75 @@ const HeroSection = () => {
   ];
 
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const [isTransitioning, setIsTransitioning] = React.useState(false);
-  const [isPaused, setIsPaused] = React.useState(false);
+  const [animationType, setAnimationType] = React.useState(0);
 
-  // Auto-slide background images with pause on hover
+  // Auto-slide background images with different animation types
   React.useEffect(() => {
-    if (isPaused) return;
-
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => 
         (prevIndex + 1) % backgroundImages.length
       );
+      // Cycle through different animation types
+      setAnimationType((prevType) => (prevType + 1) % 4);
     }, 4000); // Change image every 4 seconds
 
     return () => clearInterval(interval);
-  }, [backgroundImages.length, isPaused]);
+  }, [backgroundImages.length]);
 
   const handleImageChange = (index: number) => {
     if (index === currentImageIndex) return;
     setCurrentImageIndex(index);
+    // Random animation type when manually changing
+    setAnimationType(Math.floor(Math.random() * 4));
   };
 
-  const handleMouseEnter = () => setIsPaused(true);
-  const handleMouseLeave = () => setIsPaused(false);
+  // Get animation styles based on type
+  const getAnimationStyles = () => {
+    switch (animationType) {
+      case 0: // Fade
+        return {
+          transition: 'background 0.8s ease-in-out',
+        };
+      case 1: // Slide from left
+        return {
+          transition: 'background 0.8s ease-in-out',
+          backgroundPosition: 'left center',
+          animation: 'slideFromLeft 0.8s ease-in-out',
+          '@keyframes slideFromLeft': {
+            '0%': { backgroundPosition: 'left center' },
+            '100%': { backgroundPosition: 'center center' },
+          },
+        };
+      case 2: // Slide from right
+        return {
+          transition: 'background 0.8s ease-in-out',
+          backgroundPosition: 'right center',
+          animation: 'slideFromRight 0.8s ease-in-out',
+          '@keyframes slideFromRight': {
+            '0%': { backgroundPosition: 'right center' },
+            '100%': { backgroundPosition: 'center center' },
+          },
+        };
+      case 3: // Zoom in
+        return {
+          transition: 'background 0.8s ease-in-out',
+          backgroundSize: '120% 120%',
+          animation: 'zoomIn 0.8s ease-in-out',
+          '@keyframes zoomIn': {
+            '0%': { backgroundSize: '120% 120%' },
+            '100%': { backgroundSize: '100% 100%' },
+          },
+        };
+      default:
+        return {
+          transition: 'background 0.8s ease-in-out',
+        };
+    }
+  };
 
   return (
          <Box
-       onMouseEnter={handleMouseEnter}
-       onMouseLeave={handleMouseLeave}
-               sx={{
+       sx={{
           background: `linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(185, 28, 28, 0.85) 100%), url('${backgroundImages[currentImageIndex]}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -112,9 +151,48 @@ const HeroSection = () => {
           display: 'flex',
           alignItems: 'center',
           position: 'relative',
-          transition: 'background 0.5s ease-in-out',
           cursor: 'pointer',
           overflow: 'hidden',
+          ...getAnimationStyles(),
+          // Global keyframes for animations
+          '@keyframes slideFromLeft': {
+            '0%': { 
+              backgroundPosition: 'left center',
+              opacity: 0.8,
+            },
+            '100%': { 
+              backgroundPosition: 'center center',
+              opacity: 1,
+            },
+          },
+          '@keyframes slideFromRight': {
+            '0%': { 
+              backgroundPosition: 'right center',
+              opacity: 0.8,
+            },
+            '100%': { 
+              backgroundPosition: 'center center',
+              opacity: 1,
+            },
+          },
+          '@keyframes zoomIn': {
+            '0%': { 
+              backgroundSize: '120% 120%',
+              opacity: 0.8,
+            },
+            '100%': { 
+              backgroundSize: '100% 100%',
+              opacity: 1,
+            },
+          },
+          '@keyframes fadeIn': {
+            '0%': { 
+              opacity: 0.8,
+            },
+            '100%': { 
+              opacity: 1,
+            },
+          },
         }}
      >
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, px: { xs: 2, md: 3 } }}>
@@ -232,7 +310,7 @@ const HeroSection = () => {
                     },
                   }}
                 >
-                  Learn More
+                  Start Customizing Now
                 </Button>
               </motion.div>
             </MotionBox>
@@ -308,87 +386,71 @@ const HeroSection = () => {
          ))}
        </Box>
 
-       {/* Enhanced Progress Bar */}
-       <Box
-         sx={{
-           position: 'absolute',
-           bottom: 0,
-           left: 0,
-           right: 0,
-           height: 4,
-           backgroundColor: 'rgba(255, 255, 255, 0.15)',
-           zIndex: 3,
-           overflow: 'hidden',
-           '&::before': {
-             content: '""',
-             position: 'absolute',
-             top: 0,
-             left: 0,
-             right: 0,
-             bottom: 0,
-             background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-             animation: 'shimmer 2s infinite',
-             '@keyframes shimmer': {
-               '0%': { transform: 'translateX(-100%)' },
-               '100%': { transform: 'translateX(100%)' },
-             },
-           },
-         }}
-       >
-         <motion.div
-           initial={{ width: 0 }}
-           animate={{ width: `${((currentImageIndex + 1) / backgroundImages.length) * 100}%` }}
-           transition={{ duration: 0.8, ease: "easeInOut" }}
-           style={{
-             height: '100%',
-             background: 'linear-gradient(90deg, #ffffff, #f0f0f0, #ffffff)',
-             boxShadow: '0 0 15px rgba(255, 255, 255, 0.8)',
-             borderRadius: '0 2px 2px 0',
-           }}
-         />
-       </Box>
+               {/* Enhanced Progress Bar */}
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            zIndex: 3,
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+              animation: 'shimmer 2s infinite',
+              '@keyframes shimmer': {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' },
+              },
+            },
+          }}
+        >
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${((currentImageIndex + 1) / backgroundImages.length) * 100}%` }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            style={{
+              height: '100%',
+              background: 'linear-gradient(90deg, #ffffff, #f0f0f0, #ffffff)',
+              boxShadow: '0 0 15px rgba(255, 255, 255, 0.8)',
+              borderRadius: '0 2px 2px 0',
+            }}
+          />
+        </Box>
 
-       {/* Enhanced Pause/Play Indicator */}
-       {isPaused && (
-         <motion.div
-           initial={{ opacity: 0, scale: 0.8, y: -20 }}
-           animate={{ opacity: 1, scale: 1, y: 0 }}
-           exit={{ opacity: 0, scale: 0.8, y: -20 }}
-           transition={{ duration: 0.3, ease: "easeOut" }}
-         >
-           <Box
-             sx={{
-               position: 'absolute',
-               top: 20,
-               right: 20,
-               background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6))',
-               color: 'white',
-               px: 3,
-               py: 1.5,
-               borderRadius: 3,
-               fontSize: '0.875rem',
-               fontWeight: 600,
-               zIndex: 3,
-               backdropFilter: 'blur(10px)',
-               border: '1px solid rgba(255, 255, 255, 0.2)',
-               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-               animation: 'pulse 2s ease-in-out infinite',
-               '@keyframes pulse': {
-                 '0%, 100%': { 
-                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                   transform: 'scale(1)',
-                 },
-                 '50%': { 
-                   boxShadow: '0 8px 32px rgba(220, 38, 38, 0.4)',
-                   transform: 'scale(1.05)',
-                 },
-               },
-             }}
-           >
-             ⏸️ Paused
-           </Box>
-         </motion.div>
-       )}
+        {/* Animation Type Indicator */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 20,
+            left: 20,
+            background: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            px: 2,
+            py: 1,
+            borderRadius: 2,
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            zIndex: 3,
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+          }}
+        >
+          {animationType === 0 && '🎭 Fade'}
+          {animationType === 1 && '⬅️ Slide Left'}
+          {animationType === 2 && '➡️ Slide Right'}
+          {animationType === 3 && '🔍 Zoom In'}
+        </Box>
+
+
     </Box>
   );
 };
