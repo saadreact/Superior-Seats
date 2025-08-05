@@ -63,22 +63,33 @@ const ContactPage = () => {
       <Header />
       
       {/* Hero Section */}
+      <Box sx={{ mt: { xs: 8, sm: 9, md: 10, lg: 11 } }}>
       <Box
         sx={{
           background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
           color: 'white',
-          py: { xs: 6, md: 4 },
+          height: { xs: '30vh', sm: '32vh', md: '28vh', lg: '30vh' },
+          py: { xs: 4, sm: 5, md: 6, lg: 8 },
+          px: { xs: 2, sm: 3, md: 4 },
           textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mb: { xs: 2, sm: 3, md: 4, lg: 5 },
         }}
       >
         <Container maxWidth="lg">
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '2.5rem', md: '3rem' },
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem', lg: '3rem', xl: '3.5rem' },
               fontWeight: 'bold',
-              mb: 1,
+              mb: { xs: 1, sm: 1.5, md: 2, lg: 3 },
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.1 },
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              minWidth: 0,
             }}
           >
             Get In Touch
@@ -86,11 +97,15 @@ const ContactPage = () => {
           <Typography
             variant="h5"
             sx={{
-              mb: 4,
-              opacity: 0.8,
-              maxWidth: 800,
+              mb: { xs: 1, sm: 2, md: 3, lg: 4 },
+              opacity: 0.9,
+              maxWidth: { xs: '95%', sm: '90%', md: '85%', lg: '80%' },
               mx: 'auto',
-              lineHeight: 1.6,
+              lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
+              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem', lg: '1.25rem', xl: '1.5rem' },
+              px: { xs: 1, sm: 0 },
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
             }}
           >
            Contact us today for a free consultation and quote. We&apos;re here to help bring your vision to life.
@@ -623,6 +638,7 @@ const ContactPage = () => {
           Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
         </Alert>
       </Snackbar>
+      </Box>
     </Box>
   );
 };

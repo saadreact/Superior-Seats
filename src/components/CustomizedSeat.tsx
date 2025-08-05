@@ -93,23 +93,33 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       
       {showHero && (
         /* Hero Section */
+        <Box sx={{ mt: { xs: 8, sm: 9, md: 10, lg: 11 } }}>
         <Box
           sx={{
             background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
             color: 'white',
-            py: { xs: 3, sm: 4, md: 5, lg: 6 },
-            px: { xs: 2, sm: 3 },
+            height: { xs: '30vh', sm: '32vh', md: '28vh', lg: '30vh' },
+            py: { xs: 4, sm: 5, md: 6, lg: 8 },
+            px: { xs: 2, sm: 3, md: 4 },
             textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: { xs: 2, sm: 3, md: 4, lg: 5 },
           }}
         >
           <Container maxWidth="lg">
             <Typography
               variant="h1"
               sx={{
-                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem', lg: '3.5rem' },
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem', lg: '3rem', xl: '3.5rem' },
                 fontWeight: 'bold',
-                mb: { xs: 1, sm: 2 },
-                lineHeight: { xs: 1.2, sm: 1.3, md: 1.4 },
+                mb: { xs: 1, sm: 1.5, md: 2, lg: 3 },
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.1 },
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                minWidth: 0,
               }}
             >
               Customize Your Seat
@@ -117,18 +127,21 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             <Typography
               variant="h5"
               sx={{
-                mb: 1,
+                mb: { xs: 1, sm: 2, md: 3, lg: 4 },
                 opacity: 0.9,
-                maxWidth: 600,
+                maxWidth: { xs: '95%', sm: '90%', md: '85%', lg: '80%' },
                 mx: 'auto',
-                fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
                 lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
-                px: { xs: 1, sm: 0 }
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem', lg: '1.25rem', xl: '1.5rem' },
+                px: { xs: 1, sm: 0 },
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
               }}
             >
               Design your perfect seat with our interactive 3D configurator
             </Typography>
           </Container>
+        </Box>
         </Box>
       )}
 
@@ -574,45 +587,55 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         }}>
           <Container maxWidth="lg">
             <Card sx={{ 
-              p: { xs: 3, sm: 4, md: 5, lg: 6 }, 
+              p: { xs: 2.5, sm: 3.5, md: 4, lg: 5 }, 
               background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
               boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-              borderRadius: 3
+              borderRadius: 3,
+              maxWidth: { xs: '100%', sm: '75%', md: '60%', lg: '50%' },
+              mx: 'auto'
             }}>
-              <Grid container spacing={{ xs: 3, sm: 4 }} alignItems="center">
-                <Grid sx={{ gridColumn: { xs: 'span 12', lg: 'span 12' } }}>
+              <Grid container spacing={{ xs: 2, sm: 2.5 }} alignItems="center" justifyContent="center">
+                <Grid sx={{ gridColumn: { xs: 'span 12', lg: 'span 12' }, textAlign: 'center' }}>
                   <Typography variant="h3" sx={{ 
                     fontWeight: 'bold', 
-                    mb: { xs: 2, sm: 3 }, 
+                    mb: { xs: 1.5, sm: 2 }, 
                     color: 'text.primary',
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
-                    textAlign: { xs: 'center', md: 'left' }
+                    fontSize: { xs: '1.4rem', sm: '1.8rem', md: '2.2rem', lg: '2.5rem' },
+                    textAlign: 'center',
+                    letterSpacing: '-0.5px'
                   }}>
                     Your Custom Seat
                   </Typography>
                   <Box sx={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
-                    gap: { xs: 1.5, sm: 2 },
-                    px: { xs: 1, sm: 0 },
-                    maxWidth: { xs: '100%', lg: '400px' }
+                    gap: { xs: 1.25, sm: 1.5 },
+                    px: { xs: 0.5, sm: 0 },
+                    maxWidth: { xs: '100%', sm: '280px', md: '250px', lg: '220px' },
+                    mx: 'auto',
+                    alignItems: 'center'
                   }}>
                     <Box sx={{ 
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       alignItems: 'center',
-                      flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                      py: { xs: 0.25, sm: 0.5 },
+                      width: '100%',
+                      maxWidth: { xs: '100%', sm: '240px', md: '220px', lg: '200px' }
                     }}>
                       <Typography variant="body1" sx={{ 
                         fontWeight: 500,
-                        fontSize: { xs: '0.875rem', sm: '1rem' },
-                        mb: { xs: 0.5, sm: 0 }
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        color: 'text.secondary',
+                        textAlign: 'left'
                       }}>
                         Base Price:
                       </Typography>
                       <Typography variant="body1" sx={{ 
                         fontWeight: 'bold',
-                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        color: 'text.primary',
+                        textAlign: 'right'
                       }}>
                         ${objects[currentObjectIndex].price}
                       </Typography>
@@ -621,19 +644,23 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       alignItems: 'center',
-                      flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                      py: { xs: 0.25, sm: 0.5 },
+                      width: '100%',
+                      maxWidth: { xs: '100%', sm: '240px', md: '220px', lg: '200px' }
                     }}>
                       <Typography variant="body1" sx={{ 
                         fontWeight: 500,
-                        fontSize: { xs: '0.875rem', sm: '1rem' },
-                        mb: { xs: 0.5, sm: 0 }
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        color: 'text.secondary',
+                        textAlign: 'left'
                       }}>
                         Material:
                       </Typography>
                       <Typography variant="body1" sx={{ 
                         fontWeight: 'bold',
-                        fontSize: { xs: '0.875rem', sm: '1rem' },
-                        textAlign: { xs: 'right', sm: 'left' }
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        color: 'text.primary',
+                        textAlign: 'right'
                       }}>
                         {textures.find(t => t.id === selectedTexture)?.name}
                         {(() => {
@@ -645,23 +672,28 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                       </Typography>
                     </Box>
 
-                    <Divider sx={{ my: { xs: 1.5, sm: 2 }, borderColor: 'grey.300' }} />
+                    <Divider sx={{ my: { xs: 1, sm: 1.5 }, borderColor: 'grey.300' }} />
                     <Box sx={{ 
                       display: 'flex', 
                       justifyContent: 'space-between', 
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      py: { xs: 0.5, sm: 1 },
+                      width: '100%',
+                      maxWidth: { xs: '100%', sm: '240px', md: '220px', lg: '200px' }
                     }}>
                       <Typography variant="h4" sx={{ 
                         fontWeight: 'bold', 
                         color: 'text.primary',
-                        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' }
+                        fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
+                        textAlign: 'left'
                       }}>
                         Total:
                       </Typography>
                       <Typography variant="h4" sx={{ 
                         fontWeight: 'bold', 
                         color: 'primary.main',
-                        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' }
+                        fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
+                        textAlign: 'right'
                       }}>
                         ${totalPrice}
                       </Typography>
@@ -670,66 +702,70 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   
                   {/* Buttons Section - Below Total on Large Screens */}
                   <Box sx={{ 
-                    mt: { xs: 3, sm: 4, lg: 4 },
+                    mt: { xs: 2, sm: 2.5, lg: 3 },
                     display: 'flex',
-                    justifyContent: { xs: 'center', lg: 'flex-start' }
+                    justifyContent: 'center'
                   }}>
                     <Stack 
                       direction={{ xs: 'column', sm: 'row', lg: 'row' }} 
-                      spacing={{ xs: 2, sm: 3 }}
+                      spacing={{ xs: 1.5, sm: 2 }}
                       sx={{ 
-                        justifyContent: { xs: 'center', lg: 'flex-start' },
+                        justifyContent: 'center',
                         alignItems: 'stretch',
-                        width: { xs: '100%', lg: 'auto' }
+                        width: { xs: '100%', sm: 'auto' }
                       }}
                     >
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        startIcon={<ShoppingCart />}
-                        fullWidth={isMobile}
-                        sx={{
-                          backgroundColor: '#d32f2f',
-                          px: { xs: 1.5, sm: 2, md: 3 },
-                          py: { xs: 1.5, sm: 2 },
-                          fontSize: { xs: '0.875rem', sm: '1rem' },
-                          borderRadius: 2,
-                          pl: 2,
-                          boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
-                          '&:hover': {
-                            backgroundColor: '#9a0007',
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 6px 25px rgba(211, 47, 47, 0.4)',
-                          },
-                          transition: 'all 0.3s ease',
-                          minHeight: { xs: 40, sm: 44 }
-                        }}
-                      >
+                                              <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={<ShoppingCart />}
+                          fullWidth={isMobile}
+                          sx={{
+                            backgroundColor: '#d32f2f',
+                            px: { xs: 1.25, sm: 1.5, md: 2 },
+                            py: { xs: 0.75, sm: 1 },
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            borderRadius: 1.5,
+                            pl: 1.5,
+                            boxShadow: '0 3px 15px rgba(211, 47, 47, 0.25)',
+                            '&:hover': {
+                              backgroundColor: '#9a0007',
+                              transform: 'translateY(-1px)',
+                              boxShadow: '0 4px 20px rgba(211, 47, 47, 0.35)',
+                            },
+                            transition: 'all 0.2s ease',
+                            minHeight: { xs: 32, sm: 36 },
+                            fontWeight: 600,
+                            letterSpacing: '0.5px'
+                          }}
+                        >
                         Add to Cart - ${totalPrice}
                       </Button>
-                      <Button
-                        variant="outlined"
-                        size="medium"
-                        endIcon={<ArrowForward />}
-                        fullWidth={isMobile}
-                        sx={{
-                          borderColor: '#d32f2f',
-                          color: '#d32f2f',
-                          px: { xs: 1.5, sm: 4 },
-                          py: { xs: 1.5, sm: 2 },
-                          fontSize: { xs: '0.875rem', sm: '1rem' },
-                          borderRadius: 2,
-                          borderWidth: 2,
-                          '&:hover': {
-                            borderColor: '#9a0007',
-                            backgroundColor: 'rgba(211, 47, 47, 0.04)',
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 20px rgba(211, 47, 47, 0.2)',
-                          },
-                          transition: 'all 0.3s ease',
-                          minHeight: { xs: 40, sm: 44 }
-                        }}
-                      >
+                                              <Button
+                          variant="outlined"
+                          size="small"
+                          endIcon={<ArrowForward />}
+                          fullWidth={isMobile}
+                          sx={{
+                            borderColor: '#d32f2f',
+                            color: '#d32f2f',
+                            px: { xs: 1.25, sm: 1.5, md: 2 },
+                            py: { xs: 0.75, sm: 1 },
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            borderRadius: 1.5,
+                            borderWidth: 1.5,
+                            '&:hover': {
+                              borderColor: '#9a0007',
+                              backgroundColor: 'rgba(211, 47, 47, 0.04)',
+                              transform: 'translateY(-1px)',
+                              boxShadow: '0 3px 15px rgba(211, 47, 47, 0.15)',
+                            },
+                            transition: 'all 0.2s ease',
+                            minHeight: { xs: 32, sm: 36 },
+                            fontWeight: 600,
+                            letterSpacing: '0.5px'
+                          }}
+                        >
                         Build Now
                       </Button>
                     </Stack>
@@ -741,198 +777,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         </Box>
       )}
 
-      {showAbout && (
-        /* About Section */
-        <Box sx={{ 
-          py: { xs: 4, sm: 5, md: 6, lg: 8 }, 
-          backgroundColor: '#fafafa',
-          px: { xs: 2, sm: 3 }
-        }}>
-          <Container maxWidth="lg">
-            <Grid container spacing={{ xs: 3, sm: 4, md: 6 }} alignItems="center">
-              <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
-                <Box sx={{ 
-                  textAlign: { xs: 'center', md: 'left' },
-                  px: { xs: 1, sm: 2 }
-                }}>
-                  <Typography variant="h3" sx={{ 
-                    fontWeight: 'bold', 
-                    mb: { xs: 2, sm: 3 },
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
-                    lineHeight: { xs: 1.2, sm: 1.3, md: 1.4 }
-                  }}>
-                    Crafted for Comfort
-                  </Typography>
-                  <Typography variant="h6" sx={{ 
-                    mb: { xs: 2, sm: 3 }, 
-                    color: 'text.secondary', 
-                    lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
-                    fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' },
-                    px: { xs: 1, sm: 0 }
-                  }}>
-                    At Superior Seats, we believe that every driver deserves the perfect seat. Our commitment to quality craftsmanship and premium materials ensures that your custom seat will provide unmatched comfort and durability for years to come.
-                  </Typography>
-                  
-                  {/* Features List */}
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: { xs: 1.5, sm: 2 },
-                    alignItems: { xs: 'center', md: 'flex-start' },
-                    mt: { xs: 2, sm: 3 }
-                  }}>
-                    {/* Feature 1 */}
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: { xs: 1, sm: 1.5, md: 2 },
-                      width: { xs: '100%', sm: 'auto' },
-                      justifyContent: { xs: 'center', md: 'flex-start' },
-                      flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                      textAlign: { xs: 'center', md: 'left' }
-                    }}>
-                      <LocalShipping sx={{ 
-                        color: 'primary.main',
-                        fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
-                        flexShrink: 0
-                      }} />
-                      <Typography sx={{ 
-                        fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
-                        lineHeight: 1.3,
-                        maxWidth: { xs: '200px', sm: 'none' }
-                      }}>
-                        Free shipping on all custom orders
-                      </Typography>
-                    </Box>
-                    
-                    {/* Feature 2 */}
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: { xs: 1, sm: 1.5, md: 2 },
-                      width: { xs: '100%', sm: 'auto' },
-                      justifyContent: { xs: 'center', md: 'flex-start' },
-                      flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                      textAlign: { xs: 'center', md: 'left' }
-                    }}>
-                      <Security sx={{ 
-                        color: 'primary.main',
-                        fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
-                        flexShrink: 0
-                      }} />
-                      <Typography sx={{ 
-                        fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
-                        lineHeight: 1.3,
-                        maxWidth: { xs: '200px', sm: 'none' }
-                      }}>
-                        3-year warranty on all seats
-                      </Typography>
-                    </Box>
-                    
-                    {/* Feature 3 */}
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: { xs: 1, sm: 1.5, md: 2 },
-                      width: { xs: '100%', sm: 'auto' },
-                      justifyContent: { xs: 'center', md: 'flex-start' },
-                      flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                      textAlign: { xs: 'center', md: 'left' }
-                    }}>
-                      <Support sx={{ 
-                        color: 'primary.main',
-                        fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
-                        flexShrink: 0
-                      }} />
-                      <Typography sx={{ 
-                        fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
-                        lineHeight: 1.3,
-                        maxWidth: { xs: '200px', sm: 'none' }
-                      }}>
-                        Expert support throughout the process
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </Grid>
-            </Grid>
-          </Container>
-        </Box>
-      )}
+      
 
-      {showTestimonials && (
-        /* Testimonials Section */
-        <Box sx={{ 
-          py: { xs: 4, sm: 5, md: 6, lg: 8 }, 
-          backgroundColor: 'white',
-          px: { xs: 2, sm: 3 }
-        }}>
-          <Container maxWidth="lg">
-            <Typography variant="h3" sx={{ 
-              textAlign: 'center', 
-              fontWeight: 'bold', 
-              mb: { xs: 4, sm: 5, md: 6 },
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
-            }}>
-              What Our Customers Say
-            </Typography>
-            <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-              {testimonials.map((testimonial) => (
-                <Grid key={testimonial.id} sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 4' } }}>
-                  <Card sx={{ 
-                    height: '100%', 
-                    p: { xs: 2, sm: 3 },
-                    display: 'flex',
-                    flexDirection: 'column'
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Box
-                        sx={{
-                          width: { xs: 40, sm: 45, md: 50 },
-                          height: { xs: 40, sm: 45, md: 50 },
-                          borderRadius: '50%',
-                          backgroundColor: 'grey.300',
-                          mr: 2,
-                        }}
-                      />
-                      <Box>
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 'bold',
-                          fontSize: { xs: '1rem', sm: '1.25rem' }
-                        }}>
-                          {testimonial.name}
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          color: 'text.secondary',
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                        }}>
-                          {testimonial.role}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box sx={{ display: 'flex', mb: 2 }}>
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} sx={{ 
-                          color: '#ffc107', 
-                          fontSize: { xs: 16, sm: 18, md: 20 } 
-                        }} />
-                      ))}
-                    </Box>
-                    <Typography variant="body1" sx={{ 
-                      fontStyle: 'italic', 
-                      lineHeight: 1.6,
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      flex: 1
-                    }}>
-                      &ldquo;{testimonial.text}&rdquo;
-                    </Typography>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Container>
-        </Box>
-      )}
     </Box>
   );
 };

@@ -17,9 +17,12 @@ import {
   Dialog,
   DialogContent,
   IconButton,
-  Tabs,
-  Tab,
   Stack,
+  Pagination,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
 } from '@mui/material';
 import {
   Close,
@@ -27,9 +30,11 @@ import {
   ArrowBack,
   ArrowForward,
   FilterList,
+  KeyboardArrowLeft,
+  KeyboardArrowRight,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
-import { categories, galleryData } from '@/data/ShopGallery';
+import { mainCategories, subCategories, galleryData } from '@/data/ShopGallery';
 import { useCart } from '@/contexts/CartContext';
 
 const ShopGallery = () => {
@@ -38,16 +43,62 @@ const ShopGallery = () => {
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { addItem } = useCart();
   
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedMainCategory, setSelectedMainCategory] = useState('all');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState<typeof galleryData[0] | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(9);   // cards per page
 
-  const filteredImages = selectedCategory === 'all' 
-    ? galleryData 
-    : galleryData.filter(item => item.category === selectedCategory);
+  // Filter images based on selected categories
+  const filteredImages = galleryData.filter(item => {
+    if (selectedMainCategory === 'all') {
+      return true; // Show all products
+    }
+    
+    if (item.mainCategory !== selectedMainCategory) {
+      return false; // Filter by main category
+    }
+    
+    if (selectedSubCategory === 'all' || selectedSubCategory.startsWith('all-')) {
+      return true; // Show all sub-categories for the selected main category
+    }
+    
+    return item.subCategory === selectedSubCategory;
+  });
 
-  const handleCategoryChange = (event: React.SyntheticEvent, newValue: string) => {
-    setSelectedCategory(newValue);
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredImages.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredImages.slice(startIndex, endIndex);
+
+  // Get available sub-categories for the selected main category
+  const availableSubCategories = selectedMainCategory === 'all' 
+    ? [] 
+    : subCategories[selectedMainCategory as keyof typeof subCategories] || [];
+
+  const handleMainCategoryChange = (event: any) => {
+    const newMainCategory = event.target.value;
+    setSelectedMainCategory(newMainCategory);
+    
+    // Auto-select the appropriate "all" sub-category based on the main category
+    if (newMainCategory === 'seats') {
+      setSelectedSubCategory('all-seats');
+    } else if (newMainCategory === 'spare-parts') {
+      setSelectedSubCategory('all-spare-parts');
+    } else if (newMainCategory === 'accessories') {
+      setSelectedSubCategory('all-accessories');
+    } else {
+      setSelectedSubCategory('all'); // For 'all' main category
+    }
+    
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const handleSubCategoryChange = (event: any) => {
+    setSelectedSubCategory(event.target.value);
+    setCurrentPage(1); // Reset to first page when sub-category changes
   };
 
   const handleImageClick = (image: typeof galleryData[0], index: number) => {
@@ -82,6 +133,12 @@ const ShopGallery = () => {
     });
   };
 
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
@@ -91,20 +148,32 @@ const ShopGallery = () => {
         sx={{
           background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
           color: 'white',
-          py: { xs: 4, sm: 6, md: 8 },
-          px: { xs: 2, sm: 3 },
+          height: { xs: '30vh', sm: '32vh', md: '28vh', lg: '30vh' },
+          py: { xs: 6, sm: 8, md: 10, lg: 12 },
+          px: { xs: 2, sm: 3, md: 4 },
           textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mt: { xs: 8, sm: 9, md: 10, lg: 11 },
+          mb: { xs: 2, sm: 3, md: 4, lg: 5 },
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         <Container maxWidth="lg">
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '2rem', sm: '2.5rem', md: '4rem' },
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem', xl: '3.5rem' },
               fontWeight: 'bold',
-              mb: { xs: 2, md: 3 },
+              mb: { xs: 1.5, sm: 2, md: 2.5, lg: 3 },
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              lineHeight: { xs: 1.2, md: 1.1 },
+              lineHeight: { xs: 1.1, sm: 1.2, md: 1.2, lg: 1.1 },
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              minWidth: 0,
+              px: { xs: 1, sm: 0 },
             }}
           >
             Shop Specials
@@ -112,12 +181,15 @@ const ShopGallery = () => {
           <Typography
             variant="h5"
             sx={{
-              mb: { xs: 3, md: 4 },
+              mb: { xs: 1.5, sm: 2, md: 3, lg: 4 },
               opacity: 0.9,
-              maxWidth: 800,
+              maxWidth: { xs: '95%', sm: '90%', md: '85%', lg: '80%' },
               mx: 'auto',
-              lineHeight: 1.6,
-              fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
+              lineHeight: { xs: 1.3, sm: 1.4, md: 1.5, lg: 1.6 },
+              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem', lg: '1.25rem', xl: '1.5rem' },
+              px: { xs: 1, sm: 0 },
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
             }}
           >
             Discover our exclusive collection of premium seats with special pricing and unique features
@@ -125,64 +197,246 @@ const ShopGallery = () => {
         </Container>
       </Box>
 
-      {/* Filter Tabs */}
+      {/* Category Dropdown Filter */}
       <Box sx={{ 
         backgroundColor: 'white', 
         borderBottom: '1px solid #e0e0e0',
         position: 'sticky',
         top: 0,
         zIndex: 10,
-        px: { xs: 1, sm: 2 },
+        py: { xs: 1.5, sm: 2, md: 2.5, lg: 3 },
+        px: { xs: 1, sm: 2, md: 3 },
       }}>
         <Container maxWidth="lg">
-          <Tabs
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{
-              '& .MuiTab-root': {
-                minWidth: { xs: 80, sm: 120 },
-                fontSize: { xs: '0.75rem', sm: '0.9rem' },
-                fontWeight: 500,
-                textTransform: 'none',
-                color: 'text.secondary',
-                padding: { xs: '8px 12px', sm: '12px 16px' },
-                '&.Mui-selected': {
-                  color: 'primary.main',
-                  fontWeight: 600,
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 2, sm: 2, md: 3 },
+            flexWrap: 'wrap',
+            flexDirection: { xs: 'column', sm: 'row' },
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 600,
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                color: 'text.primary',
+                whiteSpace: 'nowrap',
+                mb: { xs: 1, sm: 0 },
+                textAlign: { xs: 'center', sm: 'left' },
+                width: { xs: '100%', sm: 'auto' },
+              }}
+            >
+              Filter Products:
+            </Typography>
+            
+            {/* Main Category Dropdown */}
+            <FormControl 
+              sx={{ 
+                minWidth: { xs: '100%', sm: '150px', md: '180px', lg: '200px' },
+                width: { xs: '100%', sm: 'auto' },
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'white',
+                  height: { xs: '40px', sm: '45px', md: '50px' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main',
+                    borderWidth: 2,
+                  },
                 },
-              },
-              '& .MuiTabs-indicator': {
-                backgroundColor: 'primary.main',
-                height: 3,
-              },
-            }}
-          >
-            {categories.map((category) => (
-              <Tab
-                key={category.value}
-                value={category.value}
-                label={category.label}
-                icon={<FilterList sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, mr: { xs: 0.5, sm: 1 } }} />}
-                iconPosition="start"
-              />
-            ))}
-          </Tabs>
+                '& .MuiSelect-select': {
+                  fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                  fontWeight: 500,
+                  color: 'text.primary',
+                  py: { xs: 0.5, sm: 0.75, md: 1 },
+                },
+              }}
+            >
+              <InputLabel 
+                id="main-category-select-label"
+                sx={{ 
+                  fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                  fontWeight: 500,
+                  color: 'text.secondary',
+                }}
+              >
+                Main Category
+              </InputLabel>
+              <Select
+                labelId="main-category-select-label"
+                id="main-category-select"
+                value={selectedMainCategory}
+                label="Main Category"
+                onChange={handleMainCategoryChange}
+                startAdornment={
+                  <FilterList 
+                    sx={{ 
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' }, 
+                      mr: 1,
+                      color: 'primary.main'
+                    }} 
+                  />
+                }
+              >
+                {mainCategories.map((category) => (
+                  <MenuItem 
+                    key={category.value} 
+                    value={category.value}
+                    sx={{
+                      fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                      fontWeight: category.value === selectedMainCategory ? 600 : 400,
+                      color: category.value === selectedMainCategory ? 'primary.main' : 'text.primary',
+                      '&:hover': {
+                        backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                      },
+                      '&.Mui-selected': {
+                        backgroundColor: 'rgba(211, 47, 47, 0.12)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(211, 47, 47, 0.16)',
+                        },
+                      },
+                    }}
+                  >
+                    {category.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Sub Category Dropdown */}
+            {selectedMainCategory !== 'all' && availableSubCategories.length > 0 && (
+              <FormControl 
+                sx={{ 
+                  minWidth: { xs: '100%', sm: '150px', md: '180px', lg: '200px' },
+                  width: { xs: '100%', sm: 'auto' },
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'white',
+                    height: { xs: '40px', sm: '45px', md: '50px' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'primary.main',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'primary.main',
+                      borderWidth: 2,
+                    },
+                  },
+                  '& .MuiSelect-select': {
+                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    fontWeight: 500,
+                    color: 'text.primary',
+                    py: { xs: 0.5, sm: 0.75, md: 1 },
+                  },
+                }}
+              >
+                <InputLabel 
+                  id="sub-category-select-label"
+                  sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    fontWeight: 500,
+                    color: 'text.secondary',
+                  }}
+                >
+                  Sub Category
+                </InputLabel>
+                <Select
+                  labelId="sub-category-select-label"
+                  id="sub-category-select"
+                  value={selectedSubCategory}
+                  label="Sub Category"
+                  onChange={handleSubCategoryChange}
+                  startAdornment={
+                    <FilterList 
+                      sx={{ 
+                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' }, 
+                        mr: 1,
+                        color: 'primary.main'
+                      }} 
+                    />
+                  }
+                >
+                  {availableSubCategories.map((category) => (
+                    <MenuItem 
+                      key={category.value} 
+                      value={category.value}
+                      sx={{
+                        fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                        fontWeight: category.value === selectedSubCategory ? 600 : 400,
+                        color: category.value === selectedSubCategory ? 'primary.main' : 'text.primary',
+                        '&:hover': {
+                          backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                        },
+                        '&.Mui-selected': {
+                          backgroundColor: 'rgba(211, 47, 47, 0.12)',
+                          '&:hover': {
+                            backgroundColor: 'rgba(211, 47, 47, 0.16)',
+                          },
+                        },
+                      }}
+                    >
+                      {category.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          </Box>
         </Container>
       </Box>
 
       {/* Gallery Grid */}
-      <Box sx={{ py: { xs: 3, sm: 4, md: 6 }, px: { xs: 2, sm: 3 } }}>
+      <Box sx={{ py: { xs: 2, sm: 3, md: 4, lg: 6 }, px: { xs: 1, sm: 2, md: 3 } }}>
         <Container maxWidth="lg">
+          {/* Gallery Header */}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            mb: { xs: 2, sm: 3, md: 4 },
+            flexWrap: 'wrap',
+            gap: { xs: 1, sm: 0 },
+            flexDirection: { xs: 'column', sm: 'row' },
+          }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 'bold',
+                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
+                textAlign: { xs: 'center', sm: 'left' },
+                width: { xs: '100%', sm: 'auto' },
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+              }}
+            >
+              {selectedMainCategory === 'all' 
+                ? 'All Products' 
+                : selectedSubCategory === 'all' || selectedSubCategory.startsWith('all-')
+                  ? mainCategories.find(cat => cat.value === selectedMainCategory)?.label
+                  : availableSubCategories.find(cat => cat.value === selectedSubCategory)?.label || 'Products'
+              }
+            </Typography>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary',
+                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                textAlign: { xs: 'center', sm: 'right' },
+                width: { xs: '100%', sm: 'auto' },
+              }}
+            >
+              {filteredImages.length} product{filteredImages.length !== 1 ? 's' : ''} found
+            </Typography>
+          </Box>
+
           <Box sx={{ 
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-            gap: { xs: 2, sm: 3, md: 4 },
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)' },
+            gap: { xs: 1.5, sm: 2, md: 3, lg: 4 },
             justifyContent: 'center',
             width: '100%'
           }}>
-            {filteredImages.map((item, index) => (
+            {currentItems.map((item, index) => (
               <Box key={item.id} sx={{ width: '100%' }}>
                 <Card
                   sx={{
@@ -203,7 +457,7 @@ const ShopGallery = () => {
                       },
                     },
                   }}
-                  onClick={() => handleImageClick(item, index)}
+                  onClick={() => handleImageClick(item, startIndex + index)}
                 >
                   <Box sx={{ position: 'relative', overflow: 'hidden' }}>
                     <CardMedia
@@ -216,7 +470,7 @@ const ShopGallery = () => {
                         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         objectFit: 'contain',
                         width: '100%',
-                        height: { xs: '200px', sm: '250px' },
+                        height: { xs: '180px', sm: '200px', md: '220px', lg: '250px' },
                         backgroundColor: '#f5f5f5',
                       }}
                     />
@@ -242,25 +496,30 @@ const ShopGallery = () => {
                       label={item.price}
                       sx={{
                         position: 'absolute',
-                        top: { xs: 8, sm: 16 },
-                        right: { xs: 8, sm: 16 },
+                        top: { xs: 8, sm: 12, md: 16 },
+                        right: { xs: 8, sm: 12, md: 16 },
                         backgroundColor: 'primary.main',
                         color: 'white',
                         fontWeight: 'bold',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        height: { xs: 24, sm: 32 },
+                        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                        height: { xs: 20, sm: 24, md: 28, lg: 32 },
+                        '& .MuiChip-label': {
+                          px: { xs: 1, sm: 1.5 },
+                        },
                       }}
                     />
                   </Box>
-                  <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+                  <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2, md: 2.5, lg: 3 } }}>
                     <Typography
                       variant="h6"
                       sx={{
                         fontWeight: 'bold',
                         mb: 1,
-                        fontSize: { xs: '1rem', sm: '1.1rem' },
+                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
                         color: 'text.primary',
                         lineHeight: { xs: 1.3, sm: 1.4 },
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
                       }}
                     >
                       {item.title}
@@ -271,11 +530,13 @@ const ShopGallery = () => {
                         color: 'text.secondary',
                         lineHeight: 1.5,
                         mb: 2,
-                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                         display: { xs: '-webkit-box', sm: 'block' },
                         WebkitLineClamp: { xs: 2, sm: 'none' },
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
                       }}
                     >
                       {item.description}
@@ -291,8 +552,9 @@ const ShopGallery = () => {
                         sx={{
                           borderColor: 'primary.main',
                           color: 'primary.main',
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                          py: { xs: 0.5, sm: 1 },
+                          fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                          py: { xs: 0.5, sm: 0.75, md: 1 },
+                          px: { xs: 1, sm: 1.5, md: 2 },
                           '&:hover': {
                             backgroundColor: 'primary.main',
                             color: 'white',
@@ -311,8 +573,9 @@ const ShopGallery = () => {
                         sx={{
                           backgroundColor: 'primary.main',
                           color: 'white',
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                          py: { xs: 0.5, sm: 1 },
+                          fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                          py: { xs: 0.5, sm: 0.75, md: 1 },
+                          px: { xs: 1, sm: 1.5, md: 2 },
                           '&:hover': {
                             backgroundColor: 'primary.dark',
                           },
@@ -328,26 +591,126 @@ const ShopGallery = () => {
           </Box>
 
           {filteredImages.length === 0 && (
-            <Box sx={{ textAlign: 'center', py: { xs: 6, md: 8 } }}>
+            <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
               <Typography variant="h5" sx={{ 
                 color: 'text.secondary', 
                 mb: 2,
-                fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
               }}>
                 No products found for this category
               </Typography>
               <Button
                 variant="contained"
-                onClick={() => setSelectedCategory('all')}
+                onClick={() => {
+                  setSelectedMainCategory('all');
+                  setSelectedSubCategory('all');
+                }}
                 sx={{ 
                   backgroundColor: 'primary.main',
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  px: { xs: 3, sm: 4 },
-                  py: { xs: 1, sm: 1.5 },
+                  fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                  px: { xs: 2, sm: 3, md: 4 },
+                  py: { xs: 0.75, sm: 1, md: 1.5 },
                 }}
               >
                 View All Products
               </Button>
+            </Box>
+          )}
+
+          {totalPages > 1 && (
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              mt: { xs: 3, sm: 4, md: 5 },
+              gap: { xs: 2, sm: 0 }
+            }}>
+              {/* Pagination Info */}
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                  textAlign: { xs: 'center', sm: 'left' },
+                  width: { xs: '100%', sm: 'auto' },
+                }}
+              >
+                Showing {startIndex + 1} to {Math.min(endIndex, filteredImages.length)} of {filteredImages.length} products
+              </Typography>
+
+              {/* Pagination Controls */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1,
+                flexDirection: { xs: 'column', sm: 'row' },
+                width: { xs: '100%', sm: 'auto' },
+              }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange({} as any, currentPage - 1)}
+                  startIcon={<KeyboardArrowLeft />}
+                  sx={{
+                    borderColor: 'primary.main',
+                    color: 'primary.main',
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    '&:disabled': {
+                      borderColor: 'grey.300',
+                      color: 'grey.400',
+                    },
+                  }}
+                >
+                  Previous
+                </Button>
+                
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  size="small"
+                  showFirstButton
+                  showLastButton
+                  sx={{
+                    '& .MuiPaginationItem-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      minWidth: { xs: 32, sm: 40 },
+                      height: { xs: 32, sm: 40 },
+                      '&.Mui-selected': {
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'primary.dark',
+                        },
+                      },
+                    },
+                  }}
+                />
+                
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange({} as any, currentPage + 1)}
+                  endIcon={<KeyboardArrowRight />}
+                  sx={{
+                    borderColor: 'primary.main',
+                    color: 'primary.main',
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    '&:disabled': {
+                      borderColor: 'grey.300',
+                      color: 'grey.400',
+                    },
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
             </Box>
           )}
         </Container>
@@ -363,8 +726,8 @@ const ShopGallery = () => {
           sx: {
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
             color: 'black',
-            margin: { xs: 2, sm: 4 },
-            maxWidth: { xs: 'calc(100% - 32px)', sm: 'calc(100% - 64px)' },
+            margin: { xs: 1, sm: 2, md: 4 },
+            maxWidth: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)', md: 'calc(100% - 64px)' },
           },
         }}
       >
@@ -373,14 +736,14 @@ const ShopGallery = () => {
             onClick={handleCloseLightbox}
             sx={{
               position: 'absolute',
-              top: { xs: 8, sm: 16 },
-              right: { xs: 8, sm: 16 },
+              top: { xs: 8, sm: 12, md: 16 },
+              right: { xs: 8, sm: 12, md: 16 },
               color: 'white',
               backgroundColor: 'primary.main',
               zIndex: 1,
               boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-              width: { xs: 32, sm: 40 },
-              height: { xs: 32, sm: 40 },
+              width: { xs: 28, sm: 32, md: 40 },
+              height: { xs: 28, sm: 32, md: 40 },
               '&:hover': {
                 backgroundColor: 'primary.dark',
                 boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
@@ -389,7 +752,7 @@ const ShopGallery = () => {
               transition: 'all 0.2s ease',
             }}
           >
-            <Close sx={{ fontSize: { xs: 18, sm: 24 } }} />
+            <Close sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
           </IconButton>
 
           {selectedImage && (
@@ -402,7 +765,7 @@ const ShopGallery = () => {
                 style={{
                   width: '100%',
                   height: 'auto',
-                  maxHeight: isSmallMobile ? '60vh' : '80vh',
+                  maxHeight: isSmallMobile ? '50vh' : isMobile ? '60vh' : '80vh',
                   objectFit: 'contain',
                 }}
               />
@@ -412,14 +775,14 @@ const ShopGallery = () => {
                 onClick={handlePrevImage}
                 sx={{
                   position: 'absolute',
-                  left: { xs: 8, sm: 16 },
+                  left: { xs: 8, sm: 12, md: 16 },
                   top: '50%',
                   transform: 'translateY(-50%)',
                   color: 'white',
                   backgroundColor: 'primary.main',
                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                  width: { xs: 32, sm: 40 },
-                  height: { xs: 32, sm: 40 },
+                  width: { xs: 28, sm: 32, md: 40 },
+                  height: { xs: 28, sm: 32, md: 40 },
                   display: { xs: 'none', sm: 'flex' },
                   '&:hover': {
                     backgroundColor: 'primary.dark',
@@ -429,21 +792,21 @@ const ShopGallery = () => {
                   transition: 'all 0.2s ease',
                 }}
               >
-                <ArrowBack sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                <ArrowBack sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
               </IconButton>
               
               <IconButton
                 onClick={handleNextImage}
                 sx={{
                   position: 'absolute',
-                  right: { xs: 8, sm: 16 },
+                  right: { xs: 8, sm: 12, md: 16 },
                   top: '50%',
                   transform: 'translateY(-50%)',
                   color: 'white',
                   backgroundColor: 'primary.main',
                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                  width: { xs: 32, sm: 40 },
-                  height: { xs: 32, sm: 40 },
+                  width: { xs: 28, sm: 32, md: 40 },
+                  height: { xs: 28, sm: 32, md: 40 },
                   display: { xs: 'none', sm: 'flex' },
                   '&:hover': {
                     backgroundColor: 'primary.dark',
@@ -453,7 +816,7 @@ const ShopGallery = () => {
                   transition: 'all 0.2s ease',
                 }}
               >
-                <ArrowForward sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                <ArrowForward sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
               </IconButton>
 
               {/* Image Info */}
@@ -464,24 +827,28 @@ const ShopGallery = () => {
                   left: 0,
                   right: 0,
                   background: 'linear-gradient(transparent, rgba(255,255,255,0.9))',
-                  p: { xs: 2, sm: 3 },
+                  p: { xs: 1.5, sm: 2, md: 3 },
                 }}
               >
                 <Typography variant="h5" sx={{ 
                   fontWeight: 'bold', 
                   mb: 1,
-                  fontSize: { xs: '1.125rem', sm: '1.5rem' }
+                  fontSize: { xs: '1rem', sm: '1.125rem', md: '1.5rem' },
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
                 }}>
                   {selectedImage.title}
                 </Typography>
                 <Typography variant="body1" sx={{ 
                   mb: 2, 
                   opacity: 0.9,
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                   display: { xs: '-webkit-box', sm: 'block' },
                   WebkitLineClamp: { xs: 2, sm: 'none' },
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
                 }}>
                   {selectedImage.description}
                 </Typography>
@@ -499,10 +866,10 @@ const ShopGallery = () => {
                       backgroundColor: 'primary.main',
                       color: 'white',
                       fontWeight: 'bold',
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      px: { xs: 2, sm: 3 },
-                      py: { xs: 1, sm: 1.5 },
-                      minWidth: { xs: '120px', sm: '140px' },
+                      fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                      px: { xs: 1.5, sm: 2, md: 3 },
+                      py: { xs: 0.75, sm: 1, md: 1.5 },
+                      minWidth: { xs: '100px', sm: '120px', md: '140px' },
                       '&:hover': {
                         backgroundColor: 'primary.main',
                       },
@@ -526,10 +893,10 @@ const ShopGallery = () => {
                       backgroundColor: 'primary.main',
                       color: 'white',
                       fontWeight: 'bold',
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      px: { xs: 2, sm: 3 },
-                      py: { xs: 1, sm: 1.5 },
-                      minWidth: { xs: '120px', sm: '140px' },
+                      fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                      px: { xs: 1.5, sm: 2, md: 3 },
+                      py: { xs: 0.75, sm: 1, md: 1.5 },
+                      minWidth: { xs: '100px', sm: '120px', md: '140px' },
                       '&:hover': {
                         backgroundColor: 'primary.dark',
                       },

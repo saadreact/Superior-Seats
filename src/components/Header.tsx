@@ -44,7 +44,7 @@ const Header = () => {
   
   // Redux state
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, loading } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, loading } = useAppSelector((state: any) => state.auth);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -87,13 +87,13 @@ const Header = () => {
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Box sx={{ my: 2, display: 'flex', justifyContent: 'center' }}>
-        <Image
-          src="/white-logo.png"
-          alt="Superior Seating LLC"
-          width={200}
-          height={60}
-          style={{ objectFit: 'contain' }}
-        />
+                 <Image
+           src="/superiorlogo/logored.png"
+           alt="Superior Seating LLC"
+           width={200}
+           height={60}
+           style={{ objectFit: 'contain' }}
+         />
       </Box>
       <List>
         {menuItems.map((item) => (
@@ -156,25 +156,30 @@ const Header = () => {
 
   return (
     <>
-      <AppBar 
-        position="static" 
-        elevation={1}
-        sx={{ 
-          backgroundColor: 'white',
-          color: '#DA291C', // Pantone 485C
-        }}
-      >
+             <AppBar 
+         position="fixed" 
+         elevation={1}
+         sx={{ 
+           backgroundColor: 'white',
+           color: '#DA291C', // Pantone 485C
+           top: 0,
+           left: 0,
+           right: 0,
+           zIndex: 1100,
+           width: '100%',
+         }}
+       >
         <Toolbar>
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
             {/* Next.js Image Component */}
-            <Image
-              src="/white-logo.png"
-              alt="Superior Seating LLC"
-              width={isMobile ? 150 : 200}
-              height={isMobile ? 45 : 60}
-              style={{ objectFit: 'contain' }}
-              priority
-            />
+                         <Image
+               src="/superiorlogo/logored.png"
+               alt="Superior Seating LLC"
+               width={isMobile ? 150 : 200}
+               height={isMobile ? 45 : 60}
+               style={{ objectFit: 'contain' }}
+               priority
+             />
             
             {/* Fallback regular img tag - uncomment if Next.js Image doesn't work */}
             {/* 
