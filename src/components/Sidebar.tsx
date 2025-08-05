@@ -15,6 +15,7 @@ import {
   useTheme,
   useMediaQuery,
   Toolbar,
+  Collapse,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -26,6 +27,9 @@ import {
   Storefront as StorefrontIcon,
   AttachMoney as MoneyIcon,
   Inventory as InventoryIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -42,6 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
     {
@@ -49,7 +54,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       icon: <DashboardIcon />,
       href: '/admin',
     },
-
     {
       text: 'Products',
       icon: <InventoryIcon />,
@@ -70,6 +74,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       icon: <OrderIcon />,
       href: '/admin/orders',
     },
+    {
+      text: 'Variations',
+      icon: <SettingsIcon />,
+      href: '/admin/variations',
+    },
   ];
 
   const handleNavigation = (href: string) => {
@@ -86,6 +95,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     return pathname.startsWith(href);
   };
 
+  const toggleCollapse = () => {
+    setCollapsed(!collapsed);
+  };
+
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
@@ -100,13 +113,20 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-          Admin Panel
+          {collapsed ? 'Admin' : 'Admin Panel'}
         </Typography>
-        {isMobile && (
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        )}
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {!isMobile && (
+            <IconButton onClick={toggleCollapse} size="small">
+              {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+            </IconButton>
+          )}
+          {isMobile && (
+            <IconButton onClick={onClose} size="small">
+              <CloseIcon />
+            </IconButton>
+          )}
+        </Box>
       </Box>
 
       {/* Navigation */}
@@ -120,6 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
                 mx: 1,
                 borderRadius: 1,
                 mb: 0.5,
+                minHeight: collapsed ? 48 : 'auto',
                 '&.Mui-selected': {
                   backgroundColor: 'primary.main',
                   color: 'white',
@@ -137,55 +158,59 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             >
               <ListItemIcon
                 sx={{
-                  minWidth: 40,
+                  minWidth: collapsed ? 40 : 40,
                   color: isActive(item.href) ? 'white' : 'inherit',
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                primaryTypographyProps={{
-                  fontWeight: isActive(item.href) ? 600 : 400,
-                }}
-              />
+              {!collapsed && (
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontWeight: isActive(item.href) ? 600 : 400,
+                  }}
+                />
+              )}
             </ListItemButton>
           </ListItem>
         ))}
       </List>
 
       {/* Customer View Section */}
-      <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-        <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
-          Customer View
-        </Typography>
-        <ListItem disablePadding>
-          <ListItemButton
-            onClick={() => handleNavigation('/')}
-            sx={{
-              borderRadius: 1,
-              '&:hover': {
-                backgroundColor: 'action.hover',
-              },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 40 }}>
-              <StorefrontIcon />
-            </ListItemIcon>
-            <ListItemText
-              primary="Back to Website"
-              primaryTypographyProps={{
-                fontSize: '0.875rem',
+      {!collapsed && (
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
+            Customer View
+          </Typography>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigation('/')}
+              sx={{
+                borderRadius: 1,
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
               }}
-            />
-          </ListItemButton>
-        </ListItem>
-      </Box>
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <StorefrontIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Back to Website"
+                primaryTypographyProps={{
+                  fontSize: '0.875rem',
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        </Box>
+      )}
 
       {/* Footer */}
       <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
         <Typography variant="caption" color="text.secondary" align="center">
-          Superior Seats Admin
+          {collapsed ? 'SS' : 'Superior Seats Admin'}
         </Typography>
       </Box>
     </Box>
@@ -223,10 +248,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             display: { xs: 'none', md: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
-              width: drawerWidth,
+              width: collapsed ? 80 : drawerWidth,
               backgroundColor: 'background.paper',
               borderRight: 1,
               borderColor: 'divider',
+              transition: 'width 0.2s ease-in-out',
             },
           }}
           open

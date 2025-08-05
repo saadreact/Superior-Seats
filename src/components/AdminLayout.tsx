@@ -25,6 +25,7 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logoutUser } from '@/store/authSlice';
 
 const drawerWidth = 280;
+const collapsedDrawerWidth = 80;
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -72,6 +73,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
           flexGrow: 1,
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
+          transition: 'margin-left 0.2s ease-in-out, width 0.2s ease-in-out',
         }}
       >
         {/* Top App Bar */}
