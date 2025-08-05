@@ -16,24 +16,35 @@ import {
   IconButton,
   Badge,
   Divider,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   ShoppingCart as ShoppingCartIcon,
+  Logout as LogoutIcon,
+  AccountCircle as AccountCircleIcon,
 } from '@mui/icons-material';
 import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
 import { useCart } from '@/contexts/CartContext';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { logoutUser } from '@/store/authSlice';
 import Cart from './Cart';
 import AuthModal from './AuthModal';
 
 const Header = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { state } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  
+  // Redux state
+  const dispatch = useAppDispatch();
+  const { user, isAuthenticated, loading } = useAppSelector((state) => state.auth);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -58,6 +69,19 @@ const Header = () => {
 
   const handleAuthClick = () => {
     setAuthModalOpen(true);
+  };
+
+  const handleUserMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
+  };
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    handleUserMenuClose();
   };
 
   const drawer = (
@@ -93,21 +117,39 @@ const Header = () => {
           />
         </ListItem>
         <Divider sx={{ my: 1 }} />
-        <ListItem component="button" onClick={handleAuthClick} sx={{ 
-          cursor: 'pointer',
-          backgroundColor: 'transparent',
-          '&:hover': {
-            backgroundColor: 'transparent'
-          }
-        }}>
-          <ListItemText 
-            primary="Login / Sign Up" 
-            primaryTypographyProps={{ 
-              fontWeight: 'bold',
-              color: 'primary.main'
-            }} 
-          />
-        </ListItem>
+        {isAuthenticated ? (
+          <ListItem component="button" onClick={handleLogout} sx={{ 
+            cursor: 'pointer',
+            backgroundColor: 'transparent',
+            '&:hover': {
+              backgroundColor: 'transparent'
+            }
+          }}>
+            <ListItemText 
+              primary={`Logout (${user?.name})`}
+              primaryTypographyProps={{ 
+                fontWeight: 'bold',
+                color: 'primary.main'
+              }} 
+            />
+          </ListItem>
+        ) : (
+          <ListItem component="button" onClick={handleAuthClick} sx={{ 
+            cursor: 'pointer',
+            backgroundColor: 'transparent',
+            '&:hover': {
+              backgroundColor: 'transparent'
+            }
+          }}>
+            <ListItemText 
+              primary="Login / Sign Up" 
+              primaryTypographyProps={{ 
+                fontWeight: 'bold',
+                color: 'primary.main'
+              }} 
+            />
+          </ListItem>
+        )}
       </List>
     </Box>
   );
@@ -224,22 +266,61 @@ const Header = () => {
               >
                 Admin
               </Button>
-              <Button
-                color="inherit"
-                onClick={handleAuthClick}
-                startIcon={<PersonIcon />}
-                sx={{
-                  color: '#DA291C',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  '&:hover': {
-                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
+              {isAuthenticated ? (
+                <>
+                  <Button
+                    color="inherit"
+                    onClick={handleUserMenuClick}
+                    startIcon={<AccountCircleIcon />}
+                    sx={{
+                      color: '#DA291C',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      '&:hover': {
+                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                        color: '#DA291C',
+                      },
+                    }}
+                  >
+                    {user?.name}
+                  </Button>
+                  <Menu
+                    anchorEl={userMenuAnchor}
+                    open={Boolean(userMenuAnchor)}
+                    onClose={handleUserMenuClose}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                  >
+                    <MenuItem onClick={handleLogout}>
+                      <LogoutIcon sx={{ mr: 1 }} />
+                      Logout
+                    </MenuItem>
+                  </Menu>
+                </>
+              ) : (
+                <Button
+                  color="inherit"
+                  onClick={handleAuthClick}
+                  startIcon={<PersonIcon />}
+                  sx={{
                     color: '#DA291C',
-                  },
-                }}
-              >
-                Login
-              </Button>
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                    '&:hover': {
+                      backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                      color: '#DA291C',
+                    },
+                  }}
+                >
+                  Login
+                </Button>
+              )}
             </Box>
           )}
         </Toolbar>
