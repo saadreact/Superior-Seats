@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -17,6 +17,10 @@ import {
   useMediaQuery,
   Tabs,
   Tab,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Visibility,
@@ -24,7 +28,10 @@ import {
   Close as CloseIcon,
   Email as EmailIcon,
   Lock as LockIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { loginUser, registerUser, clearError } from '@/store/authSlice';
 
 interface AuthModalProps {
   open: boolean;
@@ -57,9 +64,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Redux state
+  const dispatch = useAppDispatch();
+  const { loading, error, isAuthenticated } = useAppSelector((state) => state.auth);
 
   // Form states
   const [signInForm, setSignInForm] = useState({
@@ -68,17 +77,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   });
 
   const [signUpForm, setSignUpForm] = useState({
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
+    customer_type: 'retail',
   });
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Close modal when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      onClose();
+      setSuccess('Authentication successful!');
+    }
+  }, [isAuthenticated, onClose]);
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-    setError('');
+    dispatch(clearError());
     setSuccess('');
   };
 
@@ -87,15 +106,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
       ...signInForm,
       [field]: event.target.value,
     });
-    setError('');
+    dispatch(clearError());
   };
 
-  const handleSignUpChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSignUpChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement> | any) => {
     setSignUpForm({
       ...signUpForm,
       [field]: event.target.value,
     });
-    setError('');
+    dispatch(clearError());
   };
 
   const validateEmail = (email: string) => {
@@ -109,110 +128,51 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
   const handleSignIn = async () => {
     if (!signInForm.email || !signInForm.password) {
-      setError('Please fill in all fields');
       return;
     }
 
     if (!validateEmail(signInForm.email)) {
-      setError('Please enter a valid email address');
       return;
     }
 
-    setLoading(true);
-    setError('');
-
-    try {
-      // Replace this URL with your actual sign-in API endpoint
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: signInForm.email,
-          password: signInForm.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Sign in successful!');
-        // Handle successful sign in (e.g., store token, redirect, etc.)
-        setTimeout(() => {
-          onClose();
-          setSignInForm({ email: '', password: '' });
-          setSuccess('');
-        }, 1500);
-      } else {
-        setError(data.message || 'Sign in failed. Please try again.');
-      }
-    } catch (err) {
-      setError('Network error. Please check your connection and try again.');
-    } finally {
-      setLoading(false);
-    }
+    await dispatch(loginUser({
+      email: signInForm.email,
+      password: signInForm.password,
+    }));
   };
 
   const handleSignUp = async () => {
-    if (!signUpForm.email || !signUpForm.password || !signUpForm.confirmPassword) {
-      setError('Please fill in all fields');
+    if (!signUpForm.name || !signUpForm.email || !signUpForm.password || !signUpForm.confirmPassword) {
       return;
     }
 
     if (!validateEmail(signUpForm.email)) {
-      setError('Please enter a valid email address');
       return;
     }
 
     if (!validatePassword(signUpForm.password)) {
-      setError('Password must be at least 6 characters long');
       return;
     }
 
     if (signUpForm.password !== signUpForm.confirmPassword) {
-      setError('Passwords do not match');
       return;
     }
 
-    setLoading(true);
-    setError('');
-
-    try {
-      // Replace this URL with your actual sign-up API endpoint
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: signUpForm.email,
-          password: signUpForm.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Account created successfully! Please sign in.');
-        setTabValue(0); // Switch to sign in tab
-        setSignUpForm({ email: '', password: '', confirmPassword: '' });
-      } else {
-        setError(data.message || 'Sign up failed. Please try again.');
-      }
-    } catch (err) {
-      setError('Network error. Please check your connection and try again.');
-    } finally {
-      setLoading(false);
-    }
+    await dispatch(registerUser({
+      name: signUpForm.name,
+      email: signUpForm.email,
+      password: signUpForm.password,
+      password_confirmation: signUpForm.confirmPassword,
+      customer_type: signUpForm.customer_type,
+    }));
   };
 
   const handleClose = () => {
     onClose();
-    setError('');
+    dispatch(clearError());
     setSuccess('');
     setSignInForm({ email: '', password: '' });
-    setSignUpForm({ email: '', password: '', confirmPassword: '' });
+    setSignUpForm({ name: '', email: '', password: '', confirmPassword: '', customer_type: 'retail' });
     setTabValue(0);
   };
 
@@ -366,6 +326,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
             <TextField
               fullWidth
+              label="Full Name"
+              type="text"
+              placeholder="Enter your full name"
+              value={signUpForm.name}
+              onChange={handleSignUpChange('name')}
+              margin="normal"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 2 }}
+            />
+
+            <TextField
+              fullWidth
               label="Email"
               type="email"
               placeholder="Enter your email address"
@@ -381,6 +359,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               }}
               sx={{ mb: 2 }}
             />
+
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Customer Type</InputLabel>
+              <Select
+                value={signUpForm.customer_type}
+                label="Customer Type"
+                onChange={handleSignUpChange('customer_type')}
+              >
+                <MenuItem value="retail">Retail</MenuItem>
+                <MenuItem value="wholesale">Wholesale</MenuItem>
+                <MenuItem value="dealer">Dealer</MenuItem>
+              </Select>
+            </FormControl>
 
             <TextField
               fullWidth
