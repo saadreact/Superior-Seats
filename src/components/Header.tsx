@@ -44,7 +44,7 @@ const Header = () => {
   
   // Redux state
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, loading } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, loading } = useAppSelector((state: any) => state.auth);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
