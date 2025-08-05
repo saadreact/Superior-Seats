@@ -7,12 +7,16 @@ import { motion } from 'framer-motion';
 
 const MotionButton = motion.create(Button);
 
-const LogoButton = () => {
+interface LogoButtonProps {
+  onClick?: () => void;
+}
+
+const LogoButton = ({ onClick }: LogoButtonProps) => {
   return (
     <MotionButton
       variant="contained"
       size="large"
-      endIcon={<ArrowForward />}
+      onClick={onClick}
       whileHover={{ 
         scale: 1.1,
         rotate: 5,
@@ -26,11 +30,12 @@ const LogoButton = () => {
         backgroundColor: 'white',
         color: '#DA291C', // Pantone 485C
         borderRadius: '50%',
-        width: 80,
-        height: 80,
+        width: { xs: 45, sm: 55, md: 70, lg: 85, xl: 100 },
+        height: { xs: 45, sm: 55, md: 70, lg: 85, xl: 100 },
         minWidth: 'unset',
         position: 'relative',
         overflow: 'hidden',
+        zIndex: 10,
         '&:hover': {
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
         },
@@ -44,7 +49,7 @@ const LogoButton = () => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          fontSize: '2rem',
+          fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.6rem', lg: '1.9rem', xl: '2.5rem' },
           fontWeight: 'bold',
           color: '#DA291C', // Pantone 485C
           textShadow: '2px 2px 4px rgba(0,0,0,0.3)',

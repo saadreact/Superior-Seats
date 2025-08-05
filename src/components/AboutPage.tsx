@@ -50,6 +50,7 @@ const AboutPage = () => {
       <Header />
       
       {/* Hero Section */}
+      <Box sx={{ mt: { xs: 8, sm: 9, md: 10, lg: 11 } }}>
       <Box
         sx={{
           height: { xs: '50vh', sm: '60vh', md: '70vh' },
@@ -202,13 +203,31 @@ const AboutPage = () => {
 
       {/* Our Story */}
       <Box sx={{ 
-        py: { xs: 4, sm: 6, md: 8 }, 
+        py: { xs: 2, sm: 3, md: 5, lg: 7 }, 
+        px: { xs: 0.5, sm: 1.5, md: 2.5, lg: 3.5 },
         backgroundColor: '#fafafa', 
-        backgroundImage: 'url(../gallery/patriotism/pngwing.com.png)', 
-        backgroundSize: 'cover', 
-        backgroundPosition: 'center',
+        backgroundImage: {
+          xs: 'url(/Gallery/Patriotism/pngwing.com.png)',
+          sm: 'url(/Gallery/Patriotism/pngwing.com.png)',
+          md: 'url(/Gallery/Patriotism/pngwing.com.png)',
+          lg: 'url(/Gallery/Patriotism/pngwing.com.png)',
+        }, 
+        backgroundSize: {
+          xs: 'cover',
+          sm: 'cover',
+          md: 'cover',
+          lg: 'cover',
+        },
+        backgroundPosition: {
+          xs: 'center',
+          sm: 'center',
+          md: 'center',
+          lg: 'center',
+        },
         backgroundRepeat: 'no-repeat',
         position: 'relative',
+        overflow: 'hidden',
+        minHeight: { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto' },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -221,8 +240,16 @@ const AboutPage = () => {
         }
       }}>
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: { xs: 3, sm: 4, md: 6 }, alignItems: 'center' }}>
-            <Box sx={{ textAlign: 'center', maxWidth: 800, mx: 'auto' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: { xs: 1.5, sm: 2.5, md: 3.5, lg: 5 }, alignItems: 'center' }}>
+            <Box sx={{ 
+              textAlign: 'center', 
+              maxWidth: { xs: '92%', sm: '88%', md: 800 }, 
+              mx: 'auto',
+              px: { xs: 0.25, sm: 0.75, md: 1.5, lg: 0 },
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              overflow: 'hidden'
+            }}>
               <MotionTypography 
                 variant="h3" 
                 initial={{ opacity: 0, y: 30 }}
@@ -231,9 +258,12 @@ const AboutPage = () => {
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 sx={{ 
                   fontWeight: 'bold', 
-                  mb: { xs: 2, sm: 3, md: 4 },
-                  fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' },
-                  textAlign: 'center'
+                  mb: { xs: 1.5, sm: 2, md: 3, lg: 4 },
+                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem' },
+                  textAlign: 'center',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto'
                 }}
               >
                 Our Story
@@ -241,35 +271,49 @@ const AboutPage = () => {
               <Typography 
                 variant="h6" 
                 sx={{ 
-                  mb: { xs: 2, sm: 3 }, 
+                  mb: { xs: 1.5, sm: 2, md: 3 }, 
                   color: 'text.secondary', 
-                  lineHeight: 1.8,
-                  fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                  lineHeight: { xs: 1.4, sm: 1.6, md: 1.8 },
+                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto',
+                  maxWidth: '100%'
                 }}
               >
               At Superior Seating, every seat begins with your vision. We combine cutting-edge technology, timeless craftsmanship, and a deep passion for design to deliver seating solutions that are as unique as the people who use them.
               </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  mb: { xs: 2, sm: 3 }, 
-                  color: 'text.secondary', 
-                  lineHeight: 1.7,
-                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
-                }}
-              >
-              Driven by comfort, defined by style, and tailored to your exact needs, our custom seats are built to enhance every journey—whether it&apos;s in a Semitruck, Sprinter, RV, or limousine. With over 20 signature styles and endless layout possibilities, our team works closely with you to bring your ideas to life using only the highest-quality materials and advanced manufacturing techniques.
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: 'text.secondary', 
-                  lineHeight: 1.7,
-                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
-                }}
-              >
-              From start to finish, we focus on what matters most: exceptional comfort, personalized design, and a seamless experience that puts the customer first. Discover how your vision can become reality—one seat at a time.
-              </Typography>
+                             <Typography 
+                 variant="body1" 
+                 sx={{ 
+                   mb: { xs: 1, sm: 1.5, md: 2, lg: 3 }, 
+                   color: 'text.secondary', 
+                   lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                   fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                   wordWrap: 'break-word',
+                   overflowWrap: 'break-word',
+                   hyphens: 'auto',
+                   maxWidth: '100%',
+                   pb: { xs: 0.5, sm: 1 }
+                 }}
+               >
+               Driven by comfort, defined by style, and tailored to your exact needs, our custom seats are built to enhance every journey—whether it&apos;s in a Semitruck, Sprinter, RV, or limousine. With over 20 signature styles and endless layout possibilities, our team works closely with you to bring your ideas to life using only the highest-quality materials and advanced manufacturing techniques.
+               </Typography>
+               <Typography 
+                 variant="body1" 
+                 sx={{ 
+                   color: 'text.secondary', 
+                   lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                   fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                   wordWrap: 'break-word',
+                   overflowWrap: 'break-word',
+                   hyphens: 'auto',
+                   maxWidth: '100%',
+                   pb: { xs: 0.5, sm: 1 }
+                 }}
+               >
+               From start to finish, we focus on what matters most: exceptional comfort, personalized design, and a seamless experience that puts the customer first. Discover how your vision can become reality—one seat at a time.
+               </Typography>
             </Box>
           </Box>
         </Container>
@@ -742,7 +786,7 @@ const AboutPage = () => {
                  </Typography>
                </Card>
 
-                                {/* Professional Installation */}
+               {/* Professional Installation */}
                  <Card sx={{ 
                    width: '100%', 
                    height: { xs: 150, sm: 160, md: 180 }, 
@@ -914,6 +958,7 @@ const AboutPage = () => {
             </Box>
           </Box>
         </Container>
+      </Box>
       </Box>
     </Box>
   );
