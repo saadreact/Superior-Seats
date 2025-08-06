@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   Typography,
@@ -23,11 +24,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -36,7 +32,6 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import VariationForm from '@/components/admin/VariationForm';
 
 interface Variation {
   id: number;
@@ -89,10 +84,8 @@ const mockVariations: Variation[] = [
 ];
 
 const VariationsPage = () => {
+  const router = useRouter();
   const [variations, setVariations] = useState<Variation[]>(mockVariations);
-  const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isViewMode, setIsViewMode] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [variationToDelete, setVariationToDelete] = useState<Variation | null>(null);
 
@@ -100,21 +93,15 @@ const VariationsPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleAddVariation = () => {
-    setSelectedVariation(null);
-    setIsViewMode(false);
-    setIsFormOpen(true);
+    router.push('/admin/variations/create');
   };
 
   const handleEditVariation = (variation: Variation) => {
-    setSelectedVariation(variation);
-    setIsViewMode(false);
-    setIsFormOpen(true);
+    router.push(`/admin/variations/${variation.id}/edit`);
   };
 
   const handleViewVariation = (variation: Variation) => {
-    setSelectedVariation(variation);
-    setIsViewMode(true);
-    setIsFormOpen(true);
+    router.push(`/admin/variations/${variation.id}`);
   };
 
   const handleDeleteVariation = (variation: Variation) => {
@@ -128,32 +115,6 @@ const VariationsPage = () => {
       setIsDeleteDialogOpen(false);
       setVariationToDelete(null);
     }
-  };
-
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-    setSelectedVariation(null);
-    setIsViewMode(false);
-  };
-
-  const handleFormSubmit = (variationData: Omit<Variation, 'id' | 'createdAt'>) => {
-    if (selectedVariation) {
-      // Edit existing variation
-      setVariations(variations.map(v => 
-        v.id === selectedVariation.id 
-          ? { ...variationData, id: v.id, createdAt: v.createdAt }
-          : v
-      ));
-    } else {
-      // Add new variation
-      const newVariation: Variation = {
-        ...variationData,
-        id: Math.max(...variations.map(v => v.id)) + 1,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setVariations([...variations, newVariation]);
-    }
-    handleFormClose();
   };
 
   const renderDesktopView = () => (
@@ -309,15 +270,6 @@ const VariationsPage = () => {
             {isMobile ? renderMobileView() : renderDesktopView()}
           </Box>
         )}
-
-        {/* Form Dialog */}
-        <VariationForm
-          open={isFormOpen}
-          onClose={handleFormClose}
-          onSubmit={handleFormSubmit}
-          variation={selectedVariation}
-          isViewMode={isViewMode}
-        />
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}>
