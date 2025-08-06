@@ -183,20 +183,6 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                           }}>
                             {item.description}
                           </Typography>
-                          <Chip
-                            label={item.price}
-                            size="small"
-                            sx={{
-                              backgroundColor: 'primary.main',
-                              color: 'white',
-                              fontWeight: 600,
-                              fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
-                              height: { xs: 20, sm: 22, md: 24 },
-                              '& .MuiChip-label': {
-                                px: { xs: 1, sm: 1.25, md: 1.5 }
-                              }
-                            }}
-                          />
                         </Box>
                         
                         {/* Quantity Controls */}
@@ -249,7 +235,8 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                           <Typography variant="subtitle2" sx={{ 
                             fontWeight: 700,
                             fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
-                            color: 'primary.main'
+                            color: 'primary.main',
+                            ml: { xs: 1, sm: 1.5, md: 2 }
                           }}>
                             {formatPrice(item.price, item.quantity)}
                           </Typography>

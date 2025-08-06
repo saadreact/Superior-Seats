@@ -143,37 +143,38 @@ const ShopGallery = () => {
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
       
-      {/* Hero Section */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-          color: 'white',
-          height: { xs: '30vh', sm: '32vh', md: '28vh', lg: '30vh' },
-          py: { xs: 6, sm: 8, md: 10, lg: 12 },
-          px: { xs: 2, sm: 3, md: 4 },
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mt: { xs: 8, sm: 9, md: 10, lg: 11 },
-          mb: { xs: 2, sm: 3, md: 4, lg: 5 },
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
+             {/* Hero Section */}
+       <Box
+         sx={{
+           background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+           color: 'white',
+           height: { xs: '20vh', sm: '22vh', md: '20vh', lg: '22vh' },
+           py: { xs: 2, sm: 3, md: 4, lg: 5 },
+           px: { xs: 1, sm: 2, md: 3, lg: 4 },
+           textAlign: 'center',
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'center',
+           mt: { xs: '56px', sm: '64px', md: '64px' },
+           mb: { xs: 1, sm: 1, md: 1, lg: 1 },
+           position: 'relative',
+           zIndex: 1,
+         }}
+       >
         <Container maxWidth="lg">
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem', xl: '3.5rem' },
+              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
               fontWeight: 'bold',
-              mb: { xs: 1.5, sm: 2, md: 2.5, lg: 3 },
+              mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              lineHeight: { xs: 1.1, sm: 1.2, md: 1.2, lg: 1.1 },
+              lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
               minWidth: 0,
-              px: { xs: 1, sm: 0 },
+              px: { xs: 0.5, sm: 1 },
+              display: 'block',
             }}
           >
             Shop Specials
@@ -181,13 +182,17 @@ const ShopGallery = () => {
           <Typography
             variant="h5"
             sx={{
-              mb: { xs: 1.5, sm: 2, md: 3, lg: 4 },
+              mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
               opacity: 0.9,
-              maxWidth: { xs: '95%', sm: '90%', md: '85%', lg: '80%' },
+              maxWidth: '100%',
               mx: 'auto',
-              lineHeight: { xs: 1.3, sm: 1.4, md: 1.5, lg: 1.6 },
-              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem', lg: '1.25rem', xl: '1.5rem' },
-              px: { xs: 1, sm: 0 },
+              lineHeight: { xs: 1.3, sm: 1.4, md: 1.3, lg: 1.4 },
+              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
+              px: { xs: 0.5, sm: 1 },
+              whiteSpace: 'normal',
+              overflow: 'visible',
+              textOverflow: 'clip',
+              display: 'block',
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -202,42 +207,30 @@ const ShopGallery = () => {
         backgroundColor: 'white', 
         borderBottom: '1px solid #e0e0e0',
         position: 'sticky',
-        top: 0,
+        top: { xs: '56px', sm: '64px', md: '64px' },
         zIndex: 10,
-        py: { xs: 1.5, sm: 2, md: 2.5, lg: 3 },
-        px: { xs: 1, sm: 2, md: 3 },
+        py: { xs: 0.5, sm: 1, md: 1.5, lg: 1 },
+        px: { xs: 0.5, sm: 1, md: 2, lg: 3 },
+        mt: 0,
       }}>
         <Container maxWidth="lg">
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: { xs: 2, sm: 2, md: 3 },
+            gap: { xs: 1, sm: 1.5, md: 2, lg: 3 },
             flexWrap: 'wrap',
             flexDirection: { xs: 'column', sm: 'row' },
           }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 600,
-                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
-                color: 'text.primary',
-                whiteSpace: 'nowrap',
-                mb: { xs: 1, sm: 0 },
-                textAlign: { xs: 'center', sm: 'left' },
-                width: { xs: '100%', sm: 'auto' },
-              }}
-            >
-              Filter Products:
-            </Typography>
+         
             
             {/* Main Category Dropdown */}
             <FormControl 
               sx={{ 
-                minWidth: { xs: '100%', sm: '150px', md: '180px', lg: '200px' },
+                minWidth: { xs: '100%', sm: '140px', md: '160px', lg: '180px' },
                 width: { xs: '100%', sm: 'auto' },
                 '& .MuiOutlinedInput-root': {
                   backgroundColor: 'white',
-                  height: { xs: '40px', sm: '45px', md: '50px' },
+                  height: { xs: '32px', sm: '36px', md: '40px', lg: '44px' },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
                     borderColor: 'primary.main',
                   },
@@ -247,17 +240,17 @@ const ShopGallery = () => {
                   },
                 },
                 '& .MuiSelect-select': {
-                  fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                  fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem', lg: '1rem' },
                   fontWeight: 500,
                   color: 'text.primary',
-                  py: { xs: 0.5, sm: 0.75, md: 1 },
+                  py: { xs: 0.25, sm: 0.375, md: 0.7, lg: 0.7 },
                 },
               }}
             >
               <InputLabel 
                 id="main-category-select-label"
                 sx={{ 
-                  fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                  fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
                   fontWeight: 500,
                   color: 'text.secondary',
                 }}
@@ -273,7 +266,7 @@ const ShopGallery = () => {
                 startAdornment={
                   <FilterList 
                     sx={{ 
-                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' }, 
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem' }, 
                       mr: 1,
                       color: 'primary.main'
                     }} 
@@ -285,7 +278,7 @@ const ShopGallery = () => {
                     key={category.value} 
                     value={category.value}
                     sx={{
-                      fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                      fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
                       fontWeight: category.value === selectedMainCategory ? 600 : 400,
                       color: category.value === selectedMainCategory ? 'primary.main' : 'text.primary',
                       '&:hover': {
@@ -309,11 +302,11 @@ const ShopGallery = () => {
             {selectedMainCategory !== 'all' && availableSubCategories.length > 0 && (
               <FormControl 
                 sx={{ 
-                  minWidth: { xs: '100%', sm: '150px', md: '180px', lg: '200px' },
+                  minWidth: { xs: '100%', sm: '140px', md: '160px', lg: '180px' },
                   width: { xs: '100%', sm: 'auto' },
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: 'white',
-                    height: { xs: '40px', sm: '45px', md: '50px' },
+                    height: { xs: '32px', sm: '36px', md: '40px', lg: '44px' },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'primary.main',
                     },
@@ -323,17 +316,18 @@ const ShopGallery = () => {
                     },
                   },
                   '& .MuiSelect-select': {
-                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem', lg: '1rem' },
                     fontWeight: 500,
                     color: 'text.primary',
-                    py: { xs: 0.5, sm: 0.75, md: 1 },
+                    py: { xs: 0.25, sm: 0.375, md: 0.7, lg: 0.7 },
+                
                   },
                 }}
               >
                 <InputLabel 
                   id="sub-category-select-label"
                   sx={{ 
-                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
                     fontWeight: 500,
                     color: 'text.secondary',
                   }}
@@ -349,7 +343,7 @@ const ShopGallery = () => {
                   startAdornment={
                     <FilterList 
                       sx={{ 
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' }, 
+                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem' }, 
                         mr: 1,
                         color: 'primary.main'
                       }} 
@@ -361,7 +355,7 @@ const ShopGallery = () => {
                       key={category.value} 
                       value={category.value}
                       sx={{
-                        fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
                         fontWeight: category.value === selectedSubCategory ? 600 : 400,
                         color: category.value === selectedSubCategory ? 'primary.main' : 'text.primary',
                         '&:hover': {
@@ -386,7 +380,7 @@ const ShopGallery = () => {
       </Box>
 
       {/* Gallery Grid */}
-      <Box sx={{ py: { xs: 2, sm: 3, md: 4, lg: 6 }, px: { xs: 1, sm: 2, md: 3 } }}>
+      <Box sx={{ py: { xs: 1, sm: 1.5, md: 2, lg: 2 }, px: { xs: 1, sm: 2, md: 3 } }}>
         <Container maxWidth="lg">
           {/* Gallery Header */}
           <Box sx={{ 
@@ -399,7 +393,7 @@ const ShopGallery = () => {
             flexDirection: { xs: 'column', sm: 'row' },
           }}>
             <Typography 
-              variant="h5" 
+              variant="h3" 
               sx={{ 
                 fontWeight: 'bold',
                 fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
@@ -771,53 +765,53 @@ const ShopGallery = () => {
               />
               
               {/* Navigation Arrows */}
-              <IconButton
-                onClick={handlePrevImage}
-                sx={{
-                  position: 'absolute',
-                  left: { xs: 8, sm: 12, md: 16 },
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'primary.main',
-                  boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                  width: { xs: 28, sm: 32, md: 40 },
-                  height: { xs: 28, sm: 32, md: 40 },
-                  display: { xs: 'none', sm: 'flex' },
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                    boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                    transform: 'translateY(-50%) scale(1.1)',
-                  },
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <ArrowBack sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
-              </IconButton>
-              
-              <IconButton
-                onClick={handleNextImage}
-                sx={{
-                  position: 'absolute',
-                  right: { xs: 8, sm: 12, md: 16 },
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'primary.main',
-                  boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                  width: { xs: 28, sm: 32, md: 40 },
-                  height: { xs: 28, sm: 32, md: 40 },
-                  display: { xs: 'none', sm: 'flex' },
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                    boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                    transform: 'translateY(-50%) scale(1.1)',
-                  },
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <ArrowForward sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
-              </IconButton>
+                             <IconButton
+                 onClick={handlePrevImage}
+                 sx={{
+                   position: 'absolute',
+                   left: { xs: 16, sm: 24, md: 32 },
+                   top: '50%',
+                   transform: 'translateY(-50%)',
+                   color: 'white',
+                   backgroundColor: 'primary.main',
+                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                   width: { xs: 28, sm: 32, md: 40 },
+                   height: { xs: 28, sm: 32, md: 40 },
+                   display: { xs: 'none', sm: 'flex' },
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                     transform: 'translateY(-50%) scale(1.1)',
+                   },
+                   transition: 'all 0.2s ease',
+                 }}
+               >
+                 <ArrowBack sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
+               </IconButton>
+               
+               <IconButton
+                 onClick={handleNextImage}
+                 sx={{
+                   position: 'absolute',
+                   right: { xs: 16, sm: 24, md: 32 },
+                   top: '50%',
+                   transform: 'translateY(-50%)',
+                   color: 'white',
+                   backgroundColor: 'primary.main',
+                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                   width: { xs: 28, sm: 32, md: 40 },
+                   height: { xs: 28, sm: 32, md: 40 },
+                   display: { xs: 'none', sm: 'flex' },
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                     transform: 'translateY(-50%) scale(1.1)',
+                   },
+                   transition: 'all 0.2s ease',
+                 }}
+               >
+                 <ArrowForward sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
+               </IconButton>
 
               {/* Image Info */}
               <Box
@@ -860,16 +854,16 @@ const ShopGallery = () => {
                 >
                   <Button
                     variant="contained"
-                    size="medium"
+                    size="small"
                     disabled
                     sx={{
                       backgroundColor: 'primary.main',
                       color: 'white',
                       fontWeight: 'bold',
-                      fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
-                      px: { xs: 1.5, sm: 2, md: 3 },
-                      py: { xs: 0.75, sm: 1, md: 1.5 },
-                      minWidth: { xs: '100px', sm: '120px', md: '140px' },
+                      fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                      px: { xs: 1, sm: 1.5, md: 2 },
+                      py: { xs: 0.5, sm: 0.75, md: 1 },
+                      minWidth: { xs: '80px', sm: '90px', md: '100px' },
                       '&:hover': {
                         backgroundColor: 'primary.main',
                       },
@@ -884,7 +878,7 @@ const ShopGallery = () => {
                   </Button>
                   <Button
                     variant="contained"
-                    size="medium"
+                    size="small"
                     onClick={() => {
                       handleAddToCart(selectedImage);
                       handleCloseLightbox();
@@ -893,10 +887,10 @@ const ShopGallery = () => {
                       backgroundColor: 'primary.main',
                       color: 'white',
                       fontWeight: 'bold',
-                      fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
-                      px: { xs: 1.5, sm: 2, md: 3 },
-                      py: { xs: 0.75, sm: 1, md: 1.5 },
-                      minWidth: { xs: '100px', sm: '120px', md: '140px' },
+                      fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                      px: { xs: 1, sm: 1.5, md: 2 },
+                      py: { xs: 0.5, sm: 0.75, md: 1 },
+                      minWidth: { xs: '80px', sm: '90px', md: '100px' },
                       '&:hover': {
                         backgroundColor: 'primary.dark',
                       },

@@ -17,6 +17,7 @@ import {
 import { Person, Business, Send, Phone, Email, LocationOn, AccessTime } from '@mui/icons-material';
 import { contactInfo, initialFormData, ContactFormData } from '@/data/ContactPage';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
@@ -63,33 +64,35 @@ const ContactPage = () => {
       <Header />
       
       {/* Hero Section */}
-      <Box sx={{ mt: { xs: 8, sm: 9, md: 10, lg: 11 } }}>
       <Box
         sx={{
           background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
           color: 'white',
-          height: { xs: '30vh', sm: '32vh', md: '28vh', lg: '30vh' },
-          py: { xs: 4, sm: 5, md: 6, lg: 8 },
-          px: { xs: 2, sm: 3, md: 4 },
+          height: { xs: '18vh', sm: '20vh', md: '18vh', lg: '20vh' },
+          py: { xs: 2, sm: 3, md: 4, lg: 5 },
+          px: { xs: 1, sm: 2, md: 3, lg: 4 },
           textAlign: 'center',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          mb: { xs: 2, sm: 3, md: 4, lg: 5 },
+          mt: { xs: '56px', sm: '64px', md: '64px' },
+          mb: { xs: 0, sm: 0.5, md: 1, lg: 1.5 },
         }}
       >
         <Container maxWidth="lg">
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem', lg: '3rem', xl: '3.5rem' },
+              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
               fontWeight: 'bold',
-              mb: { xs: 1, sm: 1.5, md: 2, lg: 3 },
+              mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.1 },
+              lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
               minWidth: 0,
+              px: { xs: 0.5, sm: 1 },
+              display: 'block',
             }}
           >
             Get In Touch
@@ -97,13 +100,17 @@ const ContactPage = () => {
           <Typography
             variant="h5"
             sx={{
-              mb: { xs: 1, sm: 2, md: 3, lg: 4 },
+              mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
               opacity: 0.9,
-              maxWidth: { xs: '95%', sm: '90%', md: '85%', lg: '80%' },
+              maxWidth: '100%',
               mx: 'auto',
-              lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
-              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem', lg: '1.25rem', xl: '1.5rem' },
-              px: { xs: 1, sm: 0 },
+              lineHeight: { xs: 1.3, sm: 1.4, md: 1.3, lg: 1.4 },
+              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
+              px: { xs: 0.5, sm: 1 },
+              whiteSpace: 'normal',
+              overflow: 'visible',
+              textOverflow: 'clip',
+              display: 'block',
               wordBreak: 'break-word',
               overflowWrap: 'break-word',
             }}
@@ -116,7 +123,7 @@ const ContactPage = () => {
      
 
       {/* Contact Form */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fafafa' }}>
+      <Box sx={{ py: { xs: 2, md: 2 }, backgroundColor: '#fafafa' }}>
         <Container maxWidth="md">
           <Typography
             variant="h3"
@@ -130,28 +137,28 @@ const ContactPage = () => {
             Send Us a Message
           </Typography>
        
-                     <Card
-             sx={{
-               p: { xs: 3, sm: 4, md: 6 },
-               boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-               borderRadius: { xs: 2, md: 3 },
-               background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
-               border: '1px solid rgba(211, 47, 47, 0.08)',
-               maxWidth: { xs: '100%', sm: 600, md: 800 },
-               mx: 'auto',
-               position: 'relative',
-               '&::before': {
-                 content: '""',
-                 position: 'absolute',
-                 top: 0,
-                 left: 0,
-                 right: 0,
-                 height: 4,
-                 background: 'linear-gradient(90deg, #d32f2f 0%, #9a0007 100%)',
-                 borderRadius: '3px 3px 0 0',
-               },
-             }}
-           >
+                                           <Card
+              sx={{
+                p: { xs: 3, sm: 4, md: 5 },
+                boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                borderRadius: { xs: 2, md: 3 },
+                background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
+                border: '1px solid rgba(211, 47, 47, 0.08)',
+                maxWidth: { xs: '100%', sm: 500, md: 600 },
+                mx: 'auto',
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 4,
+                  background: 'linear-gradient(90deg, #d32f2f 0%, #9a0007 100%)',
+                  borderRadius: '3px 3px 0 0',
+                },
+              }}
+            >
                          <form onSubmit={handleSubmit}>
                <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
                 
@@ -459,15 +466,15 @@ const ContactPage = () => {
           </Card>
         </Container>
       </Box>
-  {/* Contact Information */}
-  <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: 'white' }}>
+     {/* Contact Information */}
+   <Box sx={{ py: { xs: 2, md: 2 }, backgroundColor: 'white' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
             sx={{
               textAlign: 'center',
               fontWeight: 'bold',
-              mb: 6,
+              mb: 3.5,
               color: 'text.primary',
             }}
           >
@@ -592,32 +599,61 @@ const ContactPage = () => {
         </Container>
       </Box>
       {/* Map Section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: 'white' }}>
+      <Box sx={{ py: { xs: 2, md: 3 }, backgroundColor: 'white' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
             sx={{
               textAlign: 'center',
               fontWeight: 'bold',
-              mb: 6,
+              mb: 3.5,
               color: 'text.primary',
             }}
           >
             Find Us
           </Typography>
-                     <Box
-             sx={{
-               height: { xs: 300, sm: 350, md: 400 },
-               backgroundColor: '#e0e0e0',
-               borderRadius: { xs: 1, sm: 2 },
-               display: 'flex',
-               alignItems: 'center',
-               justifyContent: 'center',
-               border: '2px dashed #ccc',
-             }}
-           >
-            <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-              Map will be embedded here
+          <Box
+            sx={{
+              height: { xs: 300, sm: 350, md: 400 },
+              borderRadius: { xs: 1, sm: 2 },
+              overflow: 'hidden',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.1)',
+              position: 'relative',
+            }}
+          >
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2990.274257380935!2d-85.97568268459367!3d41.68250697923919!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8811b5b0256b1b8f%3A0x403d81bc47e5b9b!2s21468%20C%20St%2C%20Elkhart%2C%20IN%2046516%2C%20USA!5e0!3m2!1sen!2sus!4v1640995200000!5m2!1sen!2sus"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Superior Seating LLC Location"
+            />
+          </Box>
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                fontWeight: 500,
+              }}
+            >
+              21468 C Street, Elkhart, IN 46516, United States
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                mt: 0.5,
+                opacity: 0.8,
+              }}
+            >
+              Click on the map above to get directions
             </Typography>
           </Box>
         </Container>
@@ -638,7 +674,6 @@ const ContactPage = () => {
           Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
         </Alert>
       </Snackbar>
-      </Box>
     </Box>
   );
 };

@@ -43,7 +43,7 @@ const TruckCarousel = () => {
   return (
     <Box
       sx={{
-        py: { xs: 6, md: 8 },
+        py: { xs: 8, md: 10 },
         backgroundColor: '#f8f9fa',
         overflow: 'hidden',
       }}
@@ -140,8 +140,8 @@ const TruckCarousel = () => {
                 <Image
                   src={brand.logo}
                   alt={brand.name}
-                  width={80}
-                  height={80}
+                  width={100}
+                  height={100}
                   style={{
                     objectFit: 'contain',
                     maxWidth: '100%',
@@ -183,8 +183,8 @@ const TruckCarousel = () => {
                 <Image
                   src={brand.logo}
                   alt={brand.name}
-                  width={80}
-                  height={80}
+                  width={100}
+                  height={100}
                   style={{
                     objectFit: 'contain',
                     maxWidth: '100%',

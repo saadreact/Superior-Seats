@@ -55,11 +55,11 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
         borderRadius: { xs: 2, sm: 3 } 
       }}>
         <form onSubmit={handleSubmit}>
-          <Stack spacing={{ xs: 2, sm: 3 }}>
+          <Stack spacing={2}>
             {/* First Name and Last Name */}
             <Box sx={{ 
               display: 'flex', 
-              gap: { xs: 1, sm: 2 },
+              gap: 2,
               flexDirection: { xs: 'column', sm: 'row' }
             }}>
               <TextField
@@ -68,12 +68,14 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 value={formData.firstName}
                 onChange={handleInputChange('firstName')}
                 required
+                size="medium"
                 sx={{
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem'
                   },
                   '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem',
+                    height: '1.4375em'
                   }
                 }}
               />
@@ -83,12 +85,14 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 value={formData.lastName}
                 onChange={handleInputChange('lastName')}
                 required
+                size="medium"
                 sx={{
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem'
                   },
                   '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem',
+                    height: '1.4375em'
                   }
                 }}
               />
@@ -102,12 +106,14 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
               value={formData.email}
               onChange={handleInputChange('email')}
               required
+              size="medium"
               sx={{
                 '& .MuiInputLabel-root': {
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: '0.875rem'
                 },
                 '& .MuiInputBase-input': {
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: '0.875rem',
+                  height: '1.4375em'
                 }
               }}
             />
@@ -120,12 +126,14 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
               value={formData.phone}
               onChange={handleInputChange('phone')}
               required
+              size="medium"
               sx={{
                 '& .MuiInputLabel-root': {
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: '0.875rem'
                 },
                 '& .MuiInputBase-input': {
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: '0.875rem',
+                  height: '1.4375em'
                 }
               }}
             />
@@ -139,12 +147,13 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
               multiline
               rows={2}
               required
+              size="medium"
               sx={{
                 '& .MuiInputLabel-root': {
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: '0.875rem'
                 },
                 '& .MuiInputBase-input': {
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: '0.875rem'
                 }
               }}
             />
@@ -152,7 +161,7 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
             {/* City, State, ZIP */}
             <Box sx={{ 
               display: 'flex', 
-              gap: { xs: 1, sm: 2 },
+              gap: 2,
               flexDirection: { xs: 'column', sm: 'row' }
             }}>
               <TextField
@@ -161,12 +170,14 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 value={formData.city}
                 onChange={handleInputChange('city')}
                 required
+                size="medium"
                 sx={{
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem'
                   },
                   '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem',
+                    height: '1.4375em'
                   }
                 }}
               />
@@ -176,12 +187,14 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 value={formData.state}
                 onChange={handleInputChange('state')}
                 required
+                size="medium"
                 sx={{
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem'
                   },
                   '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem',
+                    height: '1.4375em'
                   }
                 }}
               />
@@ -189,7 +202,7 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
             
             <Box sx={{ 
               display: 'flex', 
-              gap: { xs: 1, sm: 2 },
+              gap: 2,
               flexDirection: { xs: 'column', sm: 'row' }
             }}>
               <TextField
@@ -198,17 +211,19 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 value={formData.zipCode}
                 onChange={handleInputChange('zipCode')}
                 required
+                size="medium"
                 sx={{
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem'
                   },
                   '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: '0.875rem',
+                    height: '1.4375em'
                   }
                 }}
               />
-              <FormControl fullWidth required>
-                <InputLabel sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              <FormControl fullWidth required size="medium">
+                <InputLabel sx={{ fontSize: '0.875rem' }}>
                   Country
                 </InputLabel>
                 <Select
@@ -217,13 +232,14 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                   label="Country"
                   sx={{
                     '& .MuiSelect-select': {
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                      fontSize: '0.875rem',
+                      height: '1.4375em'
                     }
                   }}
                 >
                   {countries.map((country) => (
                     <MenuItem key={country.value} value={country.value} sx={{ 
-                      fontSize: { xs: '0.875rem', sm: '1rem' } 
+                      fontSize: '0.875rem' 
                     }}>
                       {country.label}
                     </MenuItem>
