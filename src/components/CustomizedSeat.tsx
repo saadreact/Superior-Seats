@@ -56,7 +56,7 @@ interface CustomizeYourSeatProps {
 const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   showHeader = true,
   showHero = true,
-  showPricing = true,
+  showPricing = false,
   showAbout = true,
   showTestimonials = true
 }) => {
@@ -93,33 +93,34 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       
       {showHero && (
         /* Hero Section */
-        <Box sx={{ mt: { xs: 8, sm: 9, md: 10, lg: 11 } }}>
+        <Box sx={{ mt: { xs: 8, sm: 9, md: 8, lg: 8 } }}>
         <Box
           sx={{
             background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
             color: 'white',
-            height: { xs: '30vh', sm: '32vh', md: '28vh', lg: '30vh' },
-            py: { xs: 4, sm: 5, md: 6, lg: 8 },
-            px: { xs: 2, sm: 3, md: 4 },
+            height: { xs: '18vh', sm: '20vh', md: '18vh', lg: '20vh' },
+            py: { xs: 2, sm: 3, md: 4, lg: 5 },
+           px: { xs: 1, sm: 2, md: 3, lg: 4 },
             textAlign: 'center',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            mb: { xs: 2, sm: 3, md: 4, lg: 5 },
+            mb: { xs: 0, sm: 0.5, md: 1, lg: 1.5 },
           }}
         >
           <Container maxWidth="lg">
             <Typography
               variant="h1"
               sx={{
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem', lg: '3rem', xl: '3.5rem' },
+                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
                 fontWeight: 'bold',
-                mb: { xs: 1, sm: 1.5, md: 2, lg: 3 },
+                mb: { xs: 0.25, sm: 0.5, md: 0.75, lg: 1 },
                 textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.1 },
+                lineHeight: { xs: 1, sm: 1, md: 1, lg: 1 },
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
                 minWidth: 0,
+                px: { xs: 1, sm: 0 },
               }}
             >
               Customize Your Seat
@@ -127,15 +128,16 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             <Typography
               variant="h5"
               sx={{
-                mb: { xs: 1, sm: 2, md: 3, lg: 4 },
+                mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
                 opacity: 0.9,
-                maxWidth: { xs: '95%', sm: '90%', md: '85%', lg: '80%' },
+                maxWidth: '100%',
                 mx: 'auto',
-                lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
+                lineHeight: { xs: 1.4, sm: 1.5, md: 1 },
                 fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem', lg: '1.25rem', xl: '1.5rem' },
                 px: { xs: 1, sm: 0 },
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
+                whiteSpace: 'nowrap',
+                overflow: 'visible',
+                textOverflow: 'clip',
               }}
             >
               Design your perfect seat with our interactive 3D configurator
@@ -147,7 +149,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
       {/* Main Configuration Section */}
       <Container maxWidth="xl" sx={{ 
-        py: { xs: 3, sm: 4, md: 6, lg: 8, xl: 10 },
+        py: { xs: 1.5, sm: 2, md: 3, lg: 4, xl: 5 },
         px: { xs: 2, sm: 3 }
       }}>
         <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ 
@@ -329,453 +331,186 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
           {/* Right Column - Customization Options */}
           <Grid sx={{ gridColumn: { xs: 'span 12', lg: 'span 1' } }}>
-            <Stack spacing={{ xs: 2, sm: 3, md: 4 }} sx={{ height: '100%' }}>
-              {/* Texture Selection - Top Container */}
-              <Card sx={{ 
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
-                borderRadius: 2,
-                flex: { xs: 'none', lg: 1 }
+            <Card sx={{ 
+              height: { xs: '350px', sm: '400px', md: '500px', lg: '600px' },
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
+              borderRadius: 2,
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <CardContent sx={{ 
+                p: { xs: 2, sm: 3 },
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden'
               }}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                  <Typography variant="h6" sx={{ 
-                    mb: { xs: 2, sm: 3 }, 
-                    fontWeight: 'bold', 
-                    color: 'text.primary',
-                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                  }}>
-                    Choose Your Material
-                  </Typography>
-                  
-                  {/* Selected Material Name */}
-                  {selectedTexture && (
-                    <Typography variant="h5" sx={{ 
+                {/* Scrollable Content Container */}
+                <Box sx={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  '&::-webkit-scrollbar': {
+                    width: '8px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: '#f1f1f1',
+                    borderRadius: '4px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: '#c1c1c1',
+                    borderRadius: '4px',
+                    '&:hover': {
+                      background: '#a8a8a8',
+                    },
+                  },
+                }}>
+                  {/* Material Selection Section */}
+                  <Box sx={{ mb: 4 }}>
+                    <Typography variant="h6" sx={{ 
                       mb: { xs: 2, sm: 3 }, 
                       fontWeight: 'bold', 
-                      color: 'primary.main', 
-                      textAlign: 'center',
-                      fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                      color: 'text.primary',
+                      fontSize: { xs: '1.1rem', sm: '1.25rem' }
                     }}>
-                      {textures.find(t => t.id === selectedTexture)?.name}
+                      Choose Your Material
                     </Typography>
-                  )}
-                  
-                  <Box sx={{ 
-                    display: 'flex', 
-                    gap: { xs: 1, sm: 1.5, md: 2 }, 
-                    justifyContent: 'center', 
-                    flexWrap: 'wrap',
-                    mb: { xs: 2, sm: 3 }
-                  }}>
-                    {textures.map((texture) => (
-                      <Box
-                        key={texture.id}
-                        onClick={() => setSelectedTexture(texture.id)}
-                        sx={{
-                          width: { xs: 50, sm: 55, md: 60 },
-                          height: { xs: 50, sm: 55, md: 60 },
-                          borderRadius: 2,
-                          border: '3px solid',
-                          borderColor: selectedTexture === texture.id ? 'primary.main' : 'grey.300',
-                          cursor: 'pointer',
-                          transition: 'all 0.3s ease',
-                          position: 'relative',
-                          overflow: 'hidden',
-                          '&:hover': {
-                            transform: 'scale(1.1)',
-                            borderColor: 'primary.main',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                          }
-                        }}
-                      >
-                        <Image
-                          src={texture.image}
-                          alt={texture.name}
-                          fill
-                          style={{ objectFit: 'cover' }}
-                        />
-                        {selectedTexture === texture.id && (
+                    
+                    {/* Selected Material Name */}
+                    {selectedTexture && (
+                      <Typography variant="h5" sx={{ 
+                        mb: { xs: 2, sm: 3 }, 
+                        fontWeight: 'bold', 
+                        color: 'primary.main', 
+                        textAlign: 'center',
+                        fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                      }}>
+                        {textures.find(t => t.id === selectedTexture)?.name}
+                      </Typography>
+                    )}
+                    
+                    <Box sx={{ 
+                      display: 'flex', 
+                      gap: { xs: 1, sm: 1.5, md: 2 }, 
+                      justifyContent: 'center', 
+                      flexWrap: 'wrap',
+                      mb: { xs: 2, sm: 3 }
+                    }}>
+                      {textures.map((texture) => (
+                        <Box
+                          key={texture.id}
+                          onClick={() => setSelectedTexture(texture.id)}
+                          sx={{
+                            width: { xs: 50, sm: 55, md: 60 },
+                            height: { xs: 50, sm: 55, md: 60 },
+                            borderRadius: 2,
+                            border: '3px solid',
+                            borderColor: selectedTexture === texture.id ? 'primary.main' : 'grey.300',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            '&:hover': {
+                              transform: 'scale(1.1)',
+                              borderColor: 'primary.main',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            }
+                          }}
+                        >
+                          <Image
+                            src={texture.image}
+                            alt={texture.name}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                          />
+                          {selectedTexture === texture.id && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: 'rgba(0,0,0,0.3)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <CheckCircle sx={{ 
+                                color: 'white', 
+                                fontSize: { xs: 18, sm: 20, md: 24 } 
+                              }} />
+                            </Box>
+                          )}
+                        </Box>
+                      ))}
+                    </Box>
+                    
+                    
+                  </Box>
+
+                  {/* Divider */}
+                  <Divider sx={{ my: 3 }} />
+
+                  {/* Color Selection Section */}
+                  <Box>
+                    <Typography variant="h6" sx={{ 
+                      mb: { xs: 2, sm: 3 }, 
+                      fontWeight: 'bold', 
+                      color: 'text.primary',
+                      fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                    }}>
+                      Choose Your Color
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      gap: { xs: 1, sm: 1.5 }, 
+                      flexWrap: 'wrap', 
+                      justifyContent: 'center',
+                      mb: { xs: 2, sm: 3 }
+                    }}>
+                      {colors.map((color) => (
+                        <Tooltip key={color.id} title={color.name}>
                           <Box
+                            onClick={() => setSelectedColor(color.id)}
                             sx={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              backgroundColor: 'rgba(0,0,0,0.3)',
+                              width: { xs: 45, sm: 48, md: 50 },
+                              height: { xs: 45, sm: 48, md: 50 },
+                              borderRadius: '50%',
+                              backgroundColor: color.hex,
+                              border: '4px solid',
+                              borderColor: selectedColor === color.id ? 'primary.main' : 'transparent',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'scale(1.15)',
+                                borderColor: 'primary.main',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                              },
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                             }}
                           >
-                            <CheckCircle sx={{ 
-                              color: 'white', 
-                              fontSize: { xs: 18, sm: 20, md: 24 } 
-                            }} />
+                            {selectedColor === color.id && (
+                              <CheckCircle sx={{ 
+                                color: 'white', 
+                                fontSize: { xs: 16, sm: 17, md: 18 } 
+                              }} />
+                            )}
                           </Box>
-                        )}
-                      </Box>
-                    ))}
-                  </Box>
-                  
-                  {/* Price Display */}
-                  <Box sx={{ mt: 1, textAlign: 'center' }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      gap: { xs: 2, sm: 3, lg: 4 }, 
-                      alignItems: 'center',
-                      p: { xs: 1, sm: 1.5, lg: 2 },
-                      borderRadius: 2,
-                      background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                      border: '1px solid #dee2e6',
-                      flexDirection: { xs: 'column', sm: 'row', lg: 'row' },
-                      minHeight: { lg: '80px' }
-                    }}>
-                      <Box sx={{ 
-                        textAlign: 'center', 
-                        minWidth: { xs: 'auto', sm: 70, lg: 100 },
-                        flex: 1
-                      }}>
-                        <Typography variant="caption" sx={{ 
-                          color: 'text.secondary', 
-                          display: 'block',
-                          fontWeight: 'bold',
-                          letterSpacing: 0.5,
-                          mb: 0.5,
-                          fontSize: { xs: '0.6rem', sm: '0.7rem', lg: '0.8rem' }
-                        }}>
-                          RETAIL PRICE
-                        </Typography>
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 'bold', 
-                          color: 'text.primary',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                          mb: 0.5,
-                          fontSize: { xs: '1rem', sm: '1.25rem', lg: '1.5rem' }
-                        }}>
-                          {(() => {
-                            const texture = textures.find(t => t.id === selectedTexture);
-                            return texture && texture.price !== 0
-                              ? `${texture.price > 0 ? '+' : ''}$${texture.price}`
-                              : 'Included';
-                          })()}
-                        </Typography>
-                      </Box>
-                      <Divider 
-                        orientation="vertical"
-                        flexItem 
-                        sx={{ 
-                          height: { xs: 1, sm: 40, lg: 60 }, 
-                          width: 1,
-                          borderColor: '#dee2e6', 
-                          mx: { xs: 0, sm: 2, lg: 3 },
-                          my: { xs: 1, sm: 0, lg: 0 },
-                          display: { xs: 'none', sm: 'block' }
-                        }} 
-                      />
-                      <Box sx={{ 
-                        textAlign: 'center', 
-                        minWidth: { xs: 'auto', sm: 70, lg: 100 },
-                        flex: 1
-                      }}>
-                        <Typography variant="caption" sx={{ 
-                          color: 'success.main', 
-                          display: 'block',
-                          fontWeight: 'bold',
-                          letterSpacing: 0.5,
-                          mb: 0.5,
-                          fontSize: { xs: '0.6rem', sm: '0.7rem', lg: '0.8rem' }
-                        }}>
-                          WHOLESALE
-                        </Typography>
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 'bold', 
-                          color: 'success.main',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                          mb: 0.5,
-                          fontSize: { xs: '1rem', sm: '1.25rem', lg: '1.5rem' }
-                        }}>
-                          {(() => {
-                            const texture = textures.find(t => t.id === selectedTexture);
-                            if (texture && texture.price !== 0) {
-                              const wholesalePrice = Math.round(texture.price * 0.7);
-                              return `${texture.price > 0 ? '+' : ''}$${wholesalePrice}`;
-                            }
-                            return 'Included';
-                          })()}
-                        </Typography>
-                      </Box>
+                        </Tooltip>
+                      ))}
                     </Box>
                   </Box>
-                </CardContent>
-              </Card>
-
-              {/* Color Selection - Bottom Container */}
-              <Card sx={{ 
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
-                borderRadius: 2, 
-                flex: { xs: 'none', lg: 1 }
-              }}>
-                <CardContent sx={{ 
-                  p: { xs: 2, sm: 3 }, 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column' 
-                }}>
-                  <Typography variant="h6" sx={{ 
-                    mb: { xs: 2, sm: 3 }, 
-                    fontWeight: 'bold', 
-                    color: 'text.primary',
-                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                  }}>
-                    Choose Your Color
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    gap: { xs: 1, sm: 1.5 }, 
-                    flexWrap: 'wrap', 
-                    justifyContent: 'center', 
-                    flex: 1, 
-                    alignItems: 'center' 
-                  }}>
-                    {colors.map((color) => (
-                      <Tooltip key={color.id} title={color.name}>
-                        <Box
-                          onClick={() => setSelectedColor(color.id)}
-                          sx={{
-                            width: { xs: 45, sm: 48, md: 50 },
-                            height: { xs: 45, sm: 48, md: 50 },
-                            borderRadius: '50%',
-                            backgroundColor: color.hex,
-                            border: '4px solid',
-                            borderColor: selectedColor === color.id ? 'primary.main' : 'transparent',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              transform: 'scale(1.15)',
-                              borderColor: 'primary.main',
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                            },
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {selectedColor === color.id && (
-                            <CheckCircle sx={{ 
-                              color: 'white', 
-                              fontSize: { xs: 16, sm: 17, md: 18 } 
-                            }} />
-                          )}
-                        </Box>
-                      </Tooltip>
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Stack>
+                </Box>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
       </Container>
 
-      {showPricing && (
-        /* Pricing Section */
-        <Box sx={{ 
-          py: { xs: 4, sm: 5, md: 6, lg: 8 }, 
-          backgroundColor: 'white',
-          px: { xs: 2, sm: 3 }
-        }}>
-          <Container maxWidth="lg">
-            <Card sx={{ 
-              p: { xs: 2.5, sm: 3.5, md: 4, lg: 5 }, 
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-              borderRadius: 3,
-              maxWidth: { xs: '100%', sm: '75%', md: '60%', lg: '50%' },
-              mx: 'auto'
-            }}>
-              <Grid container spacing={{ xs: 2, sm: 2.5 }} alignItems="center" justifyContent="center">
-                <Grid sx={{ gridColumn: { xs: 'span 12', lg: 'span 12' }, textAlign: 'center' }}>
-                  <Typography variant="h3" sx={{ 
-                    fontWeight: 'bold', 
-                    mb: { xs: 1.5, sm: 2 }, 
-                    color: 'text.primary',
-                    fontSize: { xs: '1.4rem', sm: '1.8rem', md: '2.2rem', lg: '2.5rem' },
-                    textAlign: 'center',
-                    letterSpacing: '-0.5px'
-                  }}>
-                    Your Custom Seat
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: { xs: 1.25, sm: 1.5 },
-                    px: { xs: 0.5, sm: 0 },
-                    maxWidth: { xs: '100%', sm: '280px', md: '250px', lg: '220px' },
-                    mx: 'auto',
-                    alignItems: 'center'
-                  }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      py: { xs: 0.25, sm: 0.5 },
-                      width: '100%',
-                      maxWidth: { xs: '100%', sm: '240px', md: '220px', lg: '200px' }
-                    }}>
-                      <Typography variant="body1" sx={{ 
-                        fontWeight: 500,
-                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                        color: 'text.secondary',
-                        textAlign: 'left'
-                      }}>
-                        Base Price:
-                      </Typography>
-                      <Typography variant="body1" sx={{ 
-                        fontWeight: 'bold',
-                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                        color: 'text.primary',
-                        textAlign: 'right'
-                      }}>
-                        ${objects[currentObjectIndex].price}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      py: { xs: 0.25, sm: 0.5 },
-                      width: '100%',
-                      maxWidth: { xs: '100%', sm: '240px', md: '220px', lg: '200px' }
-                    }}>
-                      <Typography variant="body1" sx={{ 
-                        fontWeight: 500,
-                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                        color: 'text.secondary',
-                        textAlign: 'left'
-                      }}>
-                        Material:
-                      </Typography>
-                      <Typography variant="body1" sx={{ 
-                        fontWeight: 'bold',
-                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                        color: 'text.primary',
-                        textAlign: 'right'
-                      }}>
-                        {textures.find(t => t.id === selectedTexture)?.name}
-                        {(() => {
-                          const texture = textures.find(t => t.id === selectedTexture);
-                          return texture && texture.price !== 0 
-                            ? ` (${texture.price > 0 ? '+' : ''}$${texture.price})`
-                            : '';
-                        })()}
-                      </Typography>
-                    </Box>
 
-                    <Divider sx={{ my: { xs: 1, sm: 1.5 }, borderColor: 'grey.300' }} />
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      py: { xs: 0.5, sm: 1 },
-                      width: '100%',
-                      maxWidth: { xs: '100%', sm: '240px', md: '220px', lg: '200px' }
-                    }}>
-                      <Typography variant="h4" sx={{ 
-                        fontWeight: 'bold', 
-                        color: 'text.primary',
-                        fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
-                        textAlign: 'left'
-                      }}>
-                        Total:
-                      </Typography>
-                      <Typography variant="h4" sx={{ 
-                        fontWeight: 'bold', 
-                        color: 'primary.main',
-                        fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
-                        textAlign: 'right'
-                      }}>
-                        ${totalPrice}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  
-                  {/* Buttons Section - Below Total on Large Screens */}
-                  <Box sx={{ 
-                    mt: { xs: 2, sm: 2.5, lg: 3 },
-                    display: 'flex',
-                    justifyContent: 'center'
-                  }}>
-                    <Stack 
-                      direction={{ xs: 'column', sm: 'row', lg: 'row' }} 
-                      spacing={{ xs: 1.5, sm: 2 }}
-                      sx={{ 
-                        justifyContent: 'center',
-                        alignItems: 'stretch',
-                        width: { xs: '100%', sm: 'auto' }
-                      }}
-                    >
-                                              <Button
-                          variant="contained"
-                          size="small"
-                          startIcon={<ShoppingCart />}
-                          fullWidth={isMobile}
-                          sx={{
-                            backgroundColor: '#d32f2f',
-                            px: { xs: 1.25, sm: 1.5, md: 2 },
-                            py: { xs: 0.75, sm: 1 },
-                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                            borderRadius: 1.5,
-                            pl: 1.5,
-                            boxShadow: '0 3px 15px rgba(211, 47, 47, 0.25)',
-                            '&:hover': {
-                              backgroundColor: '#9a0007',
-                              transform: 'translateY(-1px)',
-                              boxShadow: '0 4px 20px rgba(211, 47, 47, 0.35)',
-                            },
-                            transition: 'all 0.2s ease',
-                            minHeight: { xs: 32, sm: 36 },
-                            fontWeight: 600,
-                            letterSpacing: '0.5px'
-                          }}
-                        >
-                        Add to Cart - ${totalPrice}
-                      </Button>
-                                              <Button
-                          variant="outlined"
-                          size="small"
-                          endIcon={<ArrowForward />}
-                          fullWidth={isMobile}
-                          sx={{
-                            borderColor: '#d32f2f',
-                            color: '#d32f2f',
-                            px: { xs: 1.25, sm: 1.5, md: 2 },
-                            py: { xs: 0.75, sm: 1 },
-                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                            borderRadius: 1.5,
-                            borderWidth: 1.5,
-                            '&:hover': {
-                              borderColor: '#9a0007',
-                              backgroundColor: 'rgba(211, 47, 47, 0.04)',
-                              transform: 'translateY(-1px)',
-                              boxShadow: '0 3px 15px rgba(211, 47, 47, 0.15)',
-                            },
-                            transition: 'all 0.2s ease',
-                            minHeight: { xs: 32, sm: 36 },
-                            fontWeight: 600,
-                            letterSpacing: '0.5px'
-                          }}
-                        >
-                        Build Now
-                      </Button>
-                    </Stack>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Card>
-          </Container>
-        </Box>
-      )}
 
       
 

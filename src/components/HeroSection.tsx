@@ -75,6 +75,7 @@ const HeroSection = () => {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [animationKey, setAnimationKey] = React.useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = React.useState(true);
+  const [slideDirection, setSlideDirection] = React.useState<'right' | 'left'>('left');
 
   // Auto-slide background images with slide from right animation
   React.useEffect(() => {
@@ -91,8 +92,9 @@ const HeroSection = () => {
     return () => clearInterval(interval);
   }, [backgroundImages.length, isAutoPlaying]);
 
-  const handleImageChange = (index: number) => {
+  const handleImageChange = (index: number, direction: 'right' | 'left' = 'left') => {
     if (index === currentImageIndex) return;
+    setSlideDirection(direction);
     setCurrentImageIndex(index);
     // Trigger animation by updating key
     setAnimationKey(prev => prev + 1);
@@ -128,11 +130,11 @@ const HeroSection = () => {
     if (isLeftSwipe) {
       // Swipe left - go to next image
       const nextIndex = (currentImageIndex + 1) % backgroundImages.length;
-      handleImageChange(nextIndex);
+      handleImageChange(nextIndex, 'left');
     } else if (isRightSwipe) {
       // Swipe right - go to previous image
       const prevIndex = currentImageIndex === 0 ? backgroundImages.length - 1 : currentImageIndex - 1;
-      handleImageChange(prevIndex);
+      handleImageChange(prevIndex, 'right');
     }
     
     // Resume auto-play after a delay
@@ -171,11 +173,11 @@ const HeroSection = () => {
     if (isLeftSwipe) {
       // Swipe left - go to next image
       const nextIndex = (currentImageIndex + 1) % backgroundImages.length;
-      handleImageChange(nextIndex);
+      handleImageChange(nextIndex, 'left');
     } else if (isRightSwipe) {
       // Swipe right - go to previous image
       const prevIndex = currentImageIndex === 0 ? backgroundImages.length - 1 : currentImageIndex - 1;
-      handleImageChange(prevIndex);
+      handleImageChange(prevIndex, 'right');
     }
     
     setIsDragging(false);
@@ -192,8 +194,8 @@ const HeroSection = () => {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           color: 'white',
-          py: { xs: 6, sm: 8, md: 10, lg: 12 },
-          minHeight: { xs: '50vh', sm: '60vh', md: '70vh', lg: '80vh' },
+          py: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
+          minHeight: { xs: '50vh', sm: '55vh', md: '60vh', lg: '65vh', xl: '70vh' },
           display: 'flex',
           alignItems: 'center',
           position: 'relative',
@@ -201,10 +203,22 @@ const HeroSection = () => {
           overflow: 'hidden',
           userSelect: 'none',
           touchAction: 'none',
+          // Add top margin to account for fixed header in mobile view
+          mt: { xs: '56px', sm: '64px', md: '64px' },
           // Global keyframes for slide animation
           '@keyframes slideFromRight': {
             '0%': { 
               transform: 'translateX(100%)',
+              opacity: 0.8,
+            },
+            '100%': { 
+              transform: 'translateX(0%)',
+              opacity: 1,
+            },
+          },
+          '@keyframes slideFromLeft': {
+            '0%': { 
+              transform: 'translateX(-100%)',
               opacity: 0.8,
             },
             '100%': { 
@@ -252,19 +266,21 @@ const HeroSection = () => {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              animation: 'slideFromRight 0.8s ease-in-out',
+              animation: slideDirection === 'left' ? 'slideFromRight 0.8s ease-in-out' : 'slideFromLeft 0.8s ease-in-out',
               zIndex: 1,
             }}
           />
-       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, px: { xs: 2, sm: 3, md: 4, lg: 4 } }}>
-                    <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                ml: { xs: 0, sm: -1, md: -2, lg: -4 },
-              }}
-            >
+               <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, px: { xs: 2, sm: 3, md: 4, lg: 6 } }}>
+                                         <Box
+               sx={{
+                 display: 'flex',
+                 alignItems: 'center',
+                 justifyContent: 'flex-start',
+                 width: '100%',
+                 pl: { xs: 0, sm: 0, md: 0, lg: 0 },
+                 ml: { xs: 0, sm: 0, md: 0, lg: 0 },
+               }}
+             >
                       {/* Left: Headline, Description, Buttons */}
                        <MotionBox
                initial={{ opacity: 0, y: 60, scale: 0.95 }}
@@ -278,67 +294,83 @@ const HeroSection = () => {
                   sx={{
                     display: 'flex',
                     alignItems: 'flex-start',
-                    gap: { xs: 2, sm: 3, md: 4, lg: 6 },
-                    mb: { xs: 1, sm: 1.5, md: 2, lg: 2 },
+                    gap: { xs: 1.5, sm: 2, md: 3, lg: 4, xl: 6 },
+                    mb: { xs: 0.5, sm: 1, md: 1.5, lg: 2 },
+                    width: '100%',
+                    flexDirection: { xs: 'column', sm: 'row' },
                   }}
                 >
                   {/* Logo on Left */}
-                  <motion.div
-                    animate={{
-                      y: [-8, 8, -8],
-                      rotate: [0, 1, -1, 0],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                    style={{
-                      filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
-                      marginTop: '32px',
-                    }}
-                  >
-                    <LogoButton onClick={() => router.push('/custom-seats')} />
-                  </motion.div>
+                                     <Box
+                     sx={{
+                       filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
+                       marginTop: { xs: '-8px', sm: '-6px', md: '-4px' },
+                       marginLeft: { xs: '0px', sm: '-8px', md: '-12px' },
+                       flexShrink: 0,
+                       alignSelf: { xs: 'center', sm: 'flex-start' },
+                     }}
+                   >
+                    <motion.div
+                      animate={{
+                        y: [-8, 8, -8],
+                        rotate: [0, 1, -1, 0],
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <LogoButton onClick={() => router.push('/custom-seats')} />
+                    </motion.div>
+                  </Box>
                   
                   {/* Content on Right */}
                   <MotionBox
                     sx={{
                       flex: 1,
-                      textAlign: 'left',
+                      textAlign: { xs: 'center', sm: 'left' },
                       minWidth: 0, // Prevents text overflow
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: { xs: 'center', sm: 'flex-start' },
                     }}
                   >
-                    <MotionTypography
-                      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      sx={{
-                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.8rem', lg: '3.5rem', xl: '4rem' },
-                        fontWeight: 'bold',
-                        lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2 },
-                        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                        color: 'white',
-                        mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1 },
-                        mt: { xs: 2, sm: 0, md: 0, lg: 0 },
-                        wordBreak: 'break-word',
-                        overflowWrap: 'break-word',
-                      }}
-                    >
-                      Superior Seating LLC
-                    </MotionTypography>
+                                         <MotionTypography
+                       initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                       transition={{ duration: 1, ease: "easeOut" }}
+                       sx={{
+                         fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
+                         fontWeight: 'bold',
+                         lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2 },
+                         textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                         color: 'white',
+                         mb: { xs: 0.25, sm: 0.5, md: 0.75, lg: 0.75 },
+                         mt: { xs: 0.5, sm: 0, md: 0, lg: 0 },
+                         wordBreak: 'break-word',
+                         overflowWrap: 'break-word',
+                         px: { xs: 1, sm: 0 },
+                       }}
+                     >
+                       Superior Seating LLC
+                     </MotionTypography>
                     <MotionTypography
                       initial={{ opacity: 0, y: 50, scale: 0.9 }}
                       whileInView={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{ duration: 1, ease: "easeOut" }}
                       sx={{
                         opacity: 0.95,
-                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem', lg: '1.25rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
                         textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
                         letterSpacing: '0.5px',
                         fontWeight: 300,
                         lineHeight: { xs: 1.3, sm: 1.4, md: 1.4, lg: 1.4 },
                         display: { xs: 'block', sm: 'block' },
+                        px: { xs: 2, sm: 0 },
+                        py: { xs: 0.5, sm: 1, md: 3, lg: 2 },
+                        textAlign: { xs: 'center', sm: 'left' },
                       }}
                     >
                       Premium truck, RV, and van seating with custom options and superior craftsmanship
@@ -355,13 +387,14 @@ const HeroSection = () => {
         <Box
           sx={{
             position: 'absolute',
-            bottom: { xs: 15, sm: 20, md: 25, lg: 30 },
+            bottom: { xs: 10, sm: 15, md: 20, lg: 25, xl: 30 },
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
-            gap: { xs: 0.5, sm: 1, md: 1.5, lg: 2 },
+            gap: { xs: 0.25, sm: 0.5, md: 1, lg: 1.5, xl: 2 },
             zIndex: 3,
             alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {backgroundImages.map((_, index) => (
@@ -375,40 +408,15 @@ const HeroSection = () => {
             >
               <Box
                 sx={{
-                  width: index === currentImageIndex ? { xs: 30, sm: 35, md: 40, lg: 50 } : { xs: 8, sm: 10, md: 11, lg: 12 },
-                  height: { xs: 8, sm: 10, md: 11, lg: 12 },
-                  borderRadius: index === currentImageIndex ? { xs: 4, sm: 4.5, md: 5, lg: 6 } : '50%',
+                  width: { xs: 6, sm: 8, md: 10, lg: 11, xl: 12 },
+                  height: { xs: 6, sm: 8, md: 10, lg: 11, xl: 12 },
+                  borderRadius: '50%',
                   backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.4)',
-                  transition: 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                  position: 'relative',
-                  boxShadow: index === currentImageIndex 
-                    ? '0 0 20px rgba(255, 255, 255, 0.6)' 
-                    : '0 0 5px rgba(255, 255, 255, 0.2)',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: 'inherit',
-                    background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)',
-                    opacity: index === currentImageIndex ? 1 : 0,
-                    transition: 'opacity 0.4s ease',
-                  },
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '-2px',
-                    left: '-2px',
-                    right: '-2px',
-                    bottom: '-2px',
-                    borderRadius: 'inherit',
-                    background: 'linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1))',
-                    opacity: index === currentImageIndex ? 1 : 0,
-                    transition: 'opacity 0.4s ease',
-                    zIndex: -1,
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.6)',
+                    transform: 'scale(1.2)',
                   },
                 }}
                 onClick={() => handleImageChange(index)}
@@ -424,7 +432,7 @@ const HeroSection = () => {
             bottom: 0,
             left: 0,
             right: 0,
-            height: 4,
+            height: { xs: 2, sm: 3, md: 4 },
             backgroundColor: 'rgba(255, 255, 255, 0.15)',
             zIndex: 3,
             overflow: 'hidden',

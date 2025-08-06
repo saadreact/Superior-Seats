@@ -100,74 +100,81 @@ const Gallery = () => {
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
       
-      {/* Hero Section */}
-      <Box sx={{ mt: { xs: 8, sm: 9, md: 10, lg: 11 } }}>
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-          color: 'white',
-          height: { xs: '30vh', sm: '32vh', md: '28vh', lg: '30vh' },
-          py: { xs: 4, sm: 5, md: 6, lg: 8 },
-          px: { xs: 2, sm: 3, md: 4 },
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mb: { xs: 2, sm: 3, md: 4, lg: 5 },
-        }}
-      >
+             {/* Hero Section */}
+       <Box
+          sx={{
+            background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+            color: 'white',
+            height: { xs: '18vh', sm: '20vh', md: '18vh', lg: '20vh' },
+            py: { xs: 2, sm: 3, md: 4, lg: 5 },
+            px: { xs: 1, sm: 2, md: 3, lg: 4 },
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mt: { xs: '56px', sm: '64px', md: '64px' },
+            mb: { xs: 0, sm: 0.5, md: 1, lg: 1.5 },
+          }}
+        >
         <Container maxWidth="lg">
-          <Typography
-            variant="h1"
-            sx={{
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem', lg: '3rem', xl: '3.5rem' },
-              fontWeight: 'bold',
-              mb: { xs: 1, sm: 1.5, md: 2, lg: 3 },
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.1 },
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              minWidth: 0,
-            }}
-          >
-            Our Work Gallery
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              mb: { xs: 1, sm: 2, md: 3, lg: 4 },
-              opacity: 0.9,
-              maxWidth: { xs: '95%', sm: '90%', md: '85%', lg: '80%' },
-              mx: 'auto',
-              lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
-              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem', lg: '1.25rem', xl: '1.5rem' },
-              px: { xs: 1, sm: 0 },
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-            }}
-          >
-            Explore our custom seating solutions across different vehicle types and see our craftsmanship in action.
-          </Typography>
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
+                fontWeight: 'bold',
+                mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                minWidth: 0,
+                px: { xs: 0.5, sm: 1 },
+                display: 'block',
+              }}
+            >
+              Our Work Gallery
+            </Typography>
+            <Typography
+              variant="h5"
+              sx={{
+                mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
+                opacity: 0.9,
+                maxWidth: '100%',
+                mx: 'auto',
+                lineHeight: { xs: 1.3, sm: 1.4, md: 1.3, lg: 1.4 },
+                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
+                px: { xs: 0.5, sm: 1 },
+                whiteSpace: 'normal',
+                overflow: 'visible',
+                textOverflow: 'clip',
+                display: 'block',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+              }}
+            >
+              Explore our custom seating solutions across different vehicle types and see our craftsmanship in action.
+            </Typography>
         </Container>
       </Box>
-      {/* Horizontal Image Slider */}
+                                 {/* Horizontal Image Slider */}
       <Box sx={{ 
         backgroundColor: '#f8f9fa',
-        py: { xs: 4, md: 6 },
+        py: { xs: 0.25, md: 0.5 },
         overflow: 'hidden',
       }}>
-        <Container maxWidth="xl">
-          <Typography
-            variant="h4"
-            sx={{
-              textAlign: 'center',
-              fontWeight: 'bold',
-              mb: 4,
-              color: 'text.primary',
-            }}
-          >
-            Our Workshop
-          </Typography>
+          <Container maxWidth="xl">
+                        <Typography
+              variant="h3"
+              sx={{
+                textAlign: 'center',
+                fontWeight: 'bold',
+                mb: { xs: 0.5, sm: 1.5, md: 2.5 ,lg:2.5},
+               
+                
+              }}
+            >
+              Our Work Shop
+            </Typography>
           
           <Box
             sx={{
@@ -198,7 +205,7 @@ const Gallery = () => {
             sx={{
               display: 'flex',
               gap: 3,
-              animation: 'slideLeft 30s linear infinite',
+                             animation: 'slideLeft 60s linear infinite',
               width: 'max-content',
               animationPlayState: selectedImage ? 'paused' : 'running',
               '@keyframes slideLeft': {
@@ -356,26 +363,27 @@ const Gallery = () => {
         </Container>
       </Box>
 
-      {/* Our Work Pictures Section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fafafa' }}>
-        <Container maxWidth="xl">
-          <Typography
-            variant="h3"
-            sx={{
-              textAlign: 'center',
-              fontWeight: 'bold',
-              mb: 6,
-              color: 'text.primary',
-            }}
-          >
-            Our Beautiful Work
-          </Typography>
-          <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(5, 1fr)' },
-            gap: { xs: 2, md: 3 },
-            justifyContent: 'center',
-          }}>
+                           {/* Our Work Pictures Section */}
+      <Box sx={{ py: { xs: 1, md: 1.5 }, backgroundColor: '#fafafa' }}>
+          <Container maxWidth="xl">
+            <Typography
+              variant="h3"
+              sx={{
+                textAlign: 'center',
+                fontWeight: 'bold',
+                mb: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
+                py: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
+                color: 'text.primary',
+              }}
+            >
+              Our Beautiful Work
+            </Typography>
+                     <Box sx={{ 
+             display: 'grid',
+             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(5, 1fr)' },
+             gap: { xs: 1.5, sm: 2, md: 2.5, lg: 3 },
+             justifyContent: 'center',
+           }}>
             {workPictures.map((item, index) => (
               <Box 
                 key={item.id} 
@@ -388,7 +396,7 @@ const Gallery = () => {
                   opacity: animatedImages[index] ? 1 : 0,
                   transform: animatedImages[index] ? 'translateY(0) scale(1)' : 'translateY(50px) scale(0.8)',
                   transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                  animation: animatedImages[index] ? 'imageFloat 3s ease-in-out infinite' : 'none',
+                  animation: animatedImages[index] ? 'imageFloat 20s ease-in-out infinite' : 'none',
                   '@keyframes imageFloat': {
                     '0%, 100%': {
                       transform: 'translateY(0) scale(1)',
@@ -448,14 +456,18 @@ const Gallery = () => {
                       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                       backgroundColor: 'rgba(211, 47, 47, 0.95)',
                       borderRadius: '50%',
-                      p: 1.5,
+                      width: 48,
+                      height: 48,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       color: 'white',
                       zIndex: 2,
                       backdropFilter: 'blur(10px)',
                       border: '2px solid rgba(255,255,255,0.2)',
                     }}
                   >
-                    <ZoomIn sx={{ fontSize: 24 }} />
+                    <ZoomIn sx={{ fontSize: 20 }} />
                   </Box>
                   
                   {/* Image Overlay with Title */}
@@ -474,17 +486,17 @@ const Gallery = () => {
                       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 'bold',
-                        fontSize: '1.1rem',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                        mb: 1,
-                      }}
-                    >
-                      {item.title}
-                    </Typography>
+                                         <Typography
+                       variant="body1"
+                       sx={{
+                         fontWeight: 'bold',
+                         fontSize: '1.1rem',
+                         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                         mb: 1,
+                       }}
+                     >
+                       {item.title}
+                     </Typography>
                     <Typography
                       variant="body2"
                       sx={{
@@ -556,46 +568,47 @@ const Gallery = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Call to Action Section */}
+                   {/* Call to Action Section */}
       <Box sx={{ 
         background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
         color: 'white',
-        py: { xs: 6, md: 4 },
+        py: { xs: 1.5, sm: 2, md: 2.5 },
       }}>
-        <Container maxWidth="xl">
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 'bold',
-                mb: 3,
-                fontSize: { xs: '2rem', md: '3rem' },
-              }}
-            >
-              Ready to Start Your Project?
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                mb: 4,
-                opacity: 0.9,
-                maxWidth: 600,
-                mx: 'auto',
-                lineHeight: 1.6,
-              }}
-            >
-              Get inspired by our gallery and let us bring your vision to life. Contact us for a custom quote today.
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+         <Container maxWidth="xl">
+           <Box sx={{ textAlign: 'center' }}>
+                           <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 'bold',
+                  mb: { xs: 0.5, sm: 1, md: 1.5 },
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.5rem' },
+                }}
+              >
+                Ready to Start Your Project?
+              </Typography>
+                           <Typography
+                variant="body1"
+                sx={{
+                  mb: { xs: 1.5, sm: 2, md: 2.5 },
+                  opacity: 0.9,
+                  maxWidth: 600,
+                  mx: 'auto',
+                  lineHeight: 1.6,
+                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                }}
+              >
+               Get inspired by our gallery and let us bring your vision to life. Contact us for a custom quote today.
+             </Typography>
+            <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Button
                 variant="contained"
                 size="large"
                 sx={{
                   backgroundColor: 'white',
                   color: 'primary.main',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
+                  px: { xs: 2.5, sm: 3, md: 4 },
+                  py: { xs: 1, sm: 1.25, md: 1.5 },
+                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
                   fontWeight: 'bold',
                   '&:hover': {
                     backgroundColor: 'rgba(255,255,255,0.9)',
@@ -611,9 +624,9 @@ const Gallery = () => {
                 sx={{
                   borderColor: 'white',
                   color: 'white',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
+                  px: { xs: 2.5, sm: 3, md: 4 },
+                  py: { xs: 1, sm: 1.25, md: 1.5 },
+                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
                   fontWeight: 'bold',
                   '&:hover': {
                     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -625,7 +638,6 @@ const Gallery = () => {
             </Box>
           </Box>
         </Container>
-      </Box>
       </Box>
     </Box>
   );

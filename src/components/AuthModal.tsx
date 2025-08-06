@@ -68,7 +68,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
   // Redux state
   const dispatch = useAppDispatch();
-  const { loading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { loading, error, isAuthenticated } = useAppSelector((state: any) => state.auth);
 
   // Form states
   const [signInForm, setSignInForm] = useState({

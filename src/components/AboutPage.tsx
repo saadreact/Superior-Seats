@@ -10,6 +10,7 @@ import {
   Avatar,
   Chip,
   Divider,
+  IconButton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
@@ -25,9 +26,11 @@ import {
   AutoAwesome,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { stats, values, process } from '@/data/About';
 
 const MotionTypography = motion.create(Typography);
+const MotionBox = motion.create(Box);
 
 const AboutPage = () => {
   // Icon mapping function
@@ -50,7 +53,6 @@ const AboutPage = () => {
       <Header />
       
       {/* Hero Section */}
-      <Box sx={{ mt: { xs: 8, sm: 9, md: 10, lg: 11 } }}>
       <Box
         sx={{
           height: { xs: '50vh', sm: '60vh', md: '70vh' },
@@ -63,11 +65,8 @@ const AboutPage = () => {
           px: { xs: 2, sm: 3, md: 4 },
           textAlign: 'center',
           position: 'relative',
-          mx: { xs: 1, sm: 1.5, md: 2 },
-          my: { xs: 1, sm: 1.5, md: 2 },
-          borderRadius: { xs: '8px', sm: '12px', md: '20px' },
           overflow: 'hidden',
-          boxShadow: '0 15px 40px rgba(0,0,0,0.25)',
+          mt: { xs: '56px', sm: '64px', md: '64px' },
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -203,7 +202,7 @@ const AboutPage = () => {
 
       {/* Our Story */}
       <Box sx={{ 
-        py: { xs: 2, sm: 3, md: 5, lg: 7 }, 
+        md: { xs: 2, sm: 3, md: 7, lg: 5 }, 
         px: { xs: 0.5, sm: 1.5, md: 2.5, lg: 3.5 },
         backgroundColor: '#fafafa', 
         backgroundImage: {
@@ -240,7 +239,7 @@ const AboutPage = () => {
         }
       }}>
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: { xs: 1.5, sm: 2.5, md: 3.5, lg: 5 }, alignItems: 'center' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: { xs: 1.5, sm: 2.5, md: 4, lg: 5 }, alignItems: 'center' }}>
             <Box sx={{ 
               textAlign: 'center', 
               maxWidth: { xs: '92%', sm: '88%', md: 800 }, 
@@ -250,30 +249,29 @@ const AboutPage = () => {
               overflowWrap: 'break-word',
               overflow: 'hidden'
             }}>
-              <MotionTypography 
-                variant="h3" 
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                sx={{ 
-                  fontWeight: 'bold', 
-                  mb: { xs: 1.5, sm: 2, md: 3, lg: 4 },
-                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem' },
-                  textAlign: 'center',
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                  hyphens: 'auto'
-                }}
-              >
-                Our Story
-              </MotionTypography>
+             {/* Section Title */}
+    <MotionTypography 
+      variant="h3"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, amount: 0.1 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      sx={{ 
+        textAlign: 'center', 
+        fontWeight: 'bold', 
+        mb: { xs: 1.5, sm: 2, md: 3 },
+        fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' },
+        mt: { xs: 1, sm: 3, md: 1.5, lg: 2 }
+      }}
+    >
+      Our Story
+    </MotionTypography>
               <Typography 
                 variant="h6" 
                 sx={{ 
-                  mb: { xs: 1.5, sm: 2, md: 3 }, 
+                  mb: { xs: 1, sm: 2, md: 2.5 }, 
                   color: 'text.secondary', 
-                  lineHeight: { xs: 1.4, sm: 1.6, md: 1.8 },
+                  lineHeight: { xs: 1.1, sm: 1.6, md: 1.8 },
                   fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
@@ -302,8 +300,9 @@ const AboutPage = () => {
                <Typography 
                  variant="body1" 
                  sx={{ 
-                   color: 'text.secondary', 
-                   lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                   color: 'text.secondary',
+                    mb: { xs: 1, sm: 1.3, md: 2, lg: 3 },  
+                   lineHeight: { xs: 1.2, sm: 1.4, md: 1.4, lg: 1.5 },
                    fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
                    wordWrap: 'break-word',
                    overflowWrap: 'break-word',
@@ -320,7 +319,7 @@ const AboutPage = () => {
       </Box>
 
       {/* Our Values */}
-      <Box sx={{ py: { xs: 4, sm: 6, md: 8 }, backgroundColor: 'white' }}>
+      <Box sx={{ py: { xs: 1.5, sm: 2, md: 3.5 }, backgroundColor: 'white' }}>
         <Container maxWidth="lg">
           <MotionTypography 
             variant="h3" 
@@ -331,7 +330,7 @@ const AboutPage = () => {
             sx={{ 
               textAlign: 'center', 
               fontWeight: 'bold', 
-              mb: { xs: 3, sm: 4, md: 6 },
+              mb: { xs: 2, sm: 2.5, md: 2 },
               fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' }
             }}
           >
@@ -341,7 +340,8 @@ const AboutPage = () => {
             <Box sx={{ 
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-              gap: { xs: 2, sm: 3, md: 4 },
+              gap: { xs: 1.5, sm: 2, md: 3 },
+             
               maxWidth: 1200,
               width: '100%',
               justifyContent: 'center'
@@ -351,13 +351,13 @@ const AboutPage = () => {
                    key={index}
                    sx={{
                      width: '100%',
-                     height: { xs: 160, sm: 180, md: 200 },
+                     height: { xs: 130, sm: 135, md: 145 },
                      textAlign: 'center',
                      display: 'flex',
                      flexDirection: 'column',
                      justifyContent: 'center',
                      alignItems: 'center',
-                     p: { xs: 1, sm: 1.5, md: 2 },
+                     p: { xs: 0.75, sm: 1, md: 1.5 },
                     boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     cursor: 'pointer',
@@ -378,8 +378,8 @@ const AboutPage = () => {
                     className="icon"
                     sx={{ 
                       color: 'primary.main', 
-                      mb: { xs: 0.5, sm: 1, md: 1.5 },
-                      fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem' },
+                      mb: { xs: 0, sm: 0.25, md: 0 },
+                      fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
@@ -390,8 +390,8 @@ const AboutPage = () => {
                     variant="h6" 
                     sx={{ 
                       fontWeight: 'bold', 
-                      mb: { xs: 0.5, sm: 1 }, 
-                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                      mb: { xs: 0.25, sm: 0.5 }, 
+                      fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' },
                       transition: 'color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
@@ -402,8 +402,8 @@ const AboutPage = () => {
                     sx={{ 
                       color: 'text.secondary', 
                       lineHeight: 1.4, 
-                      fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.8rem' },
-                      px: { xs: 0.5, sm: 1 },
+                      fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' },
+                      px: { xs: 0.25, sm: 0.5 },
                     }}
                   >
                     {value.description}
@@ -416,7 +416,7 @@ const AboutPage = () => {
       </Box>
 
     {/* Our Process */}
-<Box sx={{ py: { xs: 4, sm: 6, md: 8 }, backgroundColor: '#fafafa' }}>
+<Box sx={{ py: { xs: 2, sm: 3, md: 3.5}, backgroundColor: '#fafafa' }}>
   <Container maxWidth="lg">
     
     {/* Section Title */}
@@ -429,7 +429,7 @@ const AboutPage = () => {
       sx={{ 
         textAlign: 'center', 
         fontWeight: 'bold', 
-        mb: { xs: 3, sm: 4, md: 6 },
+        mb: { xs: 1.5, sm: 2, md: 3.5 },
         fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' }
       }}
     >
@@ -555,7 +555,7 @@ const AboutPage = () => {
 </Box>
 
              {/* Why Choose Us */}
-       <Box sx={{ py: { xs: 4, sm: 6, md: 8 }, backgroundColor: 'white' }}>
+       <Box sx={{ py: { xs: 2, sm: 3, md: 4, lg: 5 }, backgroundColor: 'white' }}>
          <Container maxWidth="lg">
            <MotionTypography 
              variant="h3" 
@@ -890,76 +890,8 @@ const AboutPage = () => {
          </Container>
        </Box>
 
-      {/* CTA Section */}
-      <Box sx={{ py: { xs: 4, sm: 6, md: 8 }, backgroundColor: 'primary.main', color: 'white' }}>
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center' }}>
-            <MotionTypography 
-              variant="h3" 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              sx={{ 
-                fontWeight: 'bold', 
-                mb: { xs: 2, sm: 3 },
-                fontSize: { xs: '1.6rem', sm: '2rem', md: '3rem' }
-              }}
-            >
-              Ready to Experience Superior Comfort?
-            </MotionTypography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mb: { xs: 3, sm: 4 }, 
-                opacity: 0.9,
-                fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' }
-              }}
-            >
-              Start customizing your perfect seat today with our interactive 3D configurator
-            </Typography>
-            <Box sx={{ 
-              display: 'flex', 
-              gap: { xs: 1, sm: 2 }, 
-              justifyContent: 'center', 
-              flexWrap: 'wrap' 
-            }}>
-              <Chip
-                label="Start Customizing"
-                sx={{
-                  backgroundColor: 'white',
-                  color: 'primary.main',
-                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                  px: { xs: 2, sm: 3 },
-                  py: { xs: 0.5, sm: 1 },
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.9)',
-                  },
-                }}
-                onClick={() => window.location.href = '/custom-seats'}
-              />
-              <Chip
-                label="Contact Us"
-                variant="outlined"
-                sx={{
-                  borderColor: 'white',
-                  color: 'white',
-                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                  px: { xs: 2, sm: 3 },
-                  py: { xs: 0.5, sm: 1 },
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                  },
-                }}
-                onClick={() => window.location.href = '/contact'}
-              />
-            </Box>
-          </Box>
-        </Container>
-      </Box>
-      </Box>
+             {/* Footer Component */}
+       <Footer />
     </Box>
   );
 };

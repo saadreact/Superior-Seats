@@ -169,10 +169,12 @@ const HomePage = () => {
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Header />
-      <HeroSection />
+      <Box sx={{ mt: 0, pt: 0 }}>
+        <HeroSection />
+      </Box>
       
       {/* Stats Section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: 'background.default' }}>
+      <Box sx={{ py: { xs: 2, md: 3 }, backgroundColor: 'background.default' }}>
         <Container maxWidth="lg">
           <MotionBox
             variants={statsContainerVariants}
@@ -194,36 +196,40 @@ const HomePage = () => {
       </Box>
 
       {/* Products Section */}
-      <Box sx={{ py: { xs: 6, md: 8 } }}>
+      <Box sx={{ py: { xs: 2, md: 3 } }}>
         <Container maxWidth="lg">
           <MotionBox
             variants={sectionVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
-            sx={{ textAlign: 'center', mb: 6 }}
+            sx={{ textAlign: 'center', mb: { xs: 2, md: 3 } }}
           >
             <Typography
               variant="h2"
               sx={{
-                mb: 2,
-                fontSize: { xs: '2rem', md: '3rem' },
+                mb: { xs: 1, md: 2 },
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 'bold',
               }}
             >
               Our Seating Solutions
             </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                color: 'text.secondary',
-                maxWidth: 600,
-                mx: 'auto',
-                fontSize: { xs: '1rem', md: '1.125rem' },
-              }}
-            >
-              Premium truck, RV, and van seating with custom options and superior craftsmanship.
-            </Typography>
+                         <Typography
+               variant="h6"
+               sx={{
+                 color: 'text.secondary',
+                 maxWidth: { xs: '100%', sm: '100%', md: '100%' },
+                 mx: 'auto',
+                 fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                 px: { xs: 2, sm: 0 },
+                 whiteSpace: 'nowrap',
+                 overflow: 'visible',
+                 textOverflow: 'clip',
+               }}
+             >
+               Premium truck, RV, and van seating with custom options and superior craftsmanship.
+             </Typography>
           </MotionBox>
 
           <MotionBox
@@ -235,7 +241,7 @@ const HomePage = () => {
             <Grid
               display="grid"
               gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
-              gap={4}
+              gap={{ xs: 2, sm: 3, md: 4 }}
             >
               {products.map((product, index) => (
                 <MotionCard
@@ -255,7 +261,7 @@ const HomePage = () => {
                   <CardMedia
                     component="div"
                     sx={{
-                      height: 200,
+                      height: { xs: 150, sm: 180, md: 200 },
                       backgroundColor: 'grey.100',
                       display: 'flex',
                       alignItems: 'center',
@@ -264,8 +270,8 @@ const HomePage = () => {
                   >
                     {product.icon}
                   </CardMedia>
-                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2.5, md: 3 } }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
                       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                         {product.title}
                       </Typography>
@@ -273,10 +279,10 @@ const HomePage = () => {
                         {product.price}
                       </Typography>
                     </Box>
-                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                    <Typography variant="body2" sx={{ mb: { xs: 1.5, md: 2 }, color: 'text.secondary' }}>
                       {product.description}
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, md: 2 }, flexWrap: 'wrap' }}>
                       {product.features.map((feature, featureIndex) => (
                         <Chip
                           key={`feature-${index}-${featureIndex}`}
@@ -319,7 +325,7 @@ const HomePage = () => {
         variants={ctaVariants}
         viewport={{ once: true }}
         sx={{
-          py: { xs: 8, md: 12 },
+          py: { xs: 2, sm: 3, md: 4, lg: 5 },
           background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
           color: 'white',
         }}
@@ -336,8 +342,8 @@ const HomePage = () => {
               variants={sectionVariants}
               variant="h2"
               sx={{
-                mb: 3,
-                fontSize: { xs: '2rem', md: '3rem' },
+                mb: { xs: 1, sm: 1.5, md: 2 },
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 'bold',
               }}
             >
@@ -347,11 +353,12 @@ const HomePage = () => {
               variants={sectionVariants}
               variant="h6"
               sx={{
-                mb: 4,
+                mb: { xs: 2, sm: 2.5, md: 3 },
                 opacity: 0.9,
-                maxWidth: 600,
+                maxWidth: { xs: '100%', sm: 600 },
                 mx: 'auto',
-                fontSize: { xs: '1rem', md: '1.125rem' },
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                px: { xs: 2, sm: 0 },
               }}
             >
               Join hundreds of satisfied customers who have transformed their vehicles with our premium seating.
@@ -368,9 +375,9 @@ const HomePage = () => {
                 sx={{
                   backgroundColor: 'white',
                   color: 'primary.main',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
+                  px: { xs: 3, sm: 4 },
+                  py: { xs: 1, sm: 1.5 },
+                  fontSize: { xs: '1rem', sm: '1.1rem' },
                   '&:hover': {
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                   },
@@ -402,7 +409,7 @@ const StatItem = ({ stat }: { stat: { number: number; label: string; suffix: str
         sx={{
           fontWeight: 'bold',
           color: 'primary.main',
-          fontSize: { xs: '2rem', md: '3rem' },
+          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
         }}
       >
         {count}{stat.suffix}
@@ -411,7 +418,7 @@ const StatItem = ({ stat }: { stat: { number: number; label: string; suffix: str
         variant="body1"
         sx={{
           color: 'text.secondary',
-          fontSize: { xs: '0.875rem', md: '1rem' },
+          fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
         }}
       >
         {stat.label}
