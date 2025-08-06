@@ -23,7 +23,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
 
   const handleContinueShopping = () => {
     clearCart();
-    router.push('/shop');
+    router.push('/ShopGallery');
   };
 
   const handleGoHome = () => {

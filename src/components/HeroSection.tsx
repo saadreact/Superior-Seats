@@ -75,6 +75,7 @@ const HeroSection = () => {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [animationKey, setAnimationKey] = React.useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = React.useState(true);
+  const [slideDirection, setSlideDirection] = React.useState<'right' | 'left'>('left');
 
   // Auto-slide background images with slide from right animation
   React.useEffect(() => {
@@ -91,8 +92,9 @@ const HeroSection = () => {
     return () => clearInterval(interval);
   }, [backgroundImages.length, isAutoPlaying]);
 
-  const handleImageChange = (index: number) => {
+  const handleImageChange = (index: number, direction: 'right' | 'left' = 'left') => {
     if (index === currentImageIndex) return;
+    setSlideDirection(direction);
     setCurrentImageIndex(index);
     // Trigger animation by updating key
     setAnimationKey(prev => prev + 1);
@@ -128,11 +130,11 @@ const HeroSection = () => {
     if (isLeftSwipe) {
       // Swipe left - go to next image
       const nextIndex = (currentImageIndex + 1) % backgroundImages.length;
-      handleImageChange(nextIndex);
+      handleImageChange(nextIndex, 'left');
     } else if (isRightSwipe) {
       // Swipe right - go to previous image
       const prevIndex = currentImageIndex === 0 ? backgroundImages.length - 1 : currentImageIndex - 1;
-      handleImageChange(prevIndex);
+      handleImageChange(prevIndex, 'right');
     }
     
     // Resume auto-play after a delay
@@ -171,11 +173,11 @@ const HeroSection = () => {
     if (isLeftSwipe) {
       // Swipe left - go to next image
       const nextIndex = (currentImageIndex + 1) % backgroundImages.length;
-      handleImageChange(nextIndex);
+      handleImageChange(nextIndex, 'left');
     } else if (isRightSwipe) {
       // Swipe right - go to previous image
       const prevIndex = currentImageIndex === 0 ? backgroundImages.length - 1 : currentImageIndex - 1;
-      handleImageChange(prevIndex);
+      handleImageChange(prevIndex, 'right');
     }
     
     setIsDragging(false);
@@ -205,6 +207,16 @@ const HeroSection = () => {
           '@keyframes slideFromRight': {
             '0%': { 
               transform: 'translateX(100%)',
+              opacity: 0.8,
+            },
+            '100%': { 
+              transform: 'translateX(0%)',
+              opacity: 1,
+            },
+          },
+          '@keyframes slideFromLeft': {
+            '0%': { 
+              transform: 'translateX(-100%)',
               opacity: 0.8,
             },
             '100%': { 
@@ -252,7 +264,7 @@ const HeroSection = () => {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              animation: 'slideFromRight 0.8s ease-in-out',
+              animation: slideDirection === 'left' ? 'slideFromRight 0.8s ease-in-out' : 'slideFromLeft 0.8s ease-in-out',
               zIndex: 1,
             }}
           />

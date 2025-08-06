@@ -237,15 +237,18 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
               display: 'flex', 
               gap: { xs: 1, sm: 2 }, 
               mt: { xs: 1, sm: 2 },
-              flexDirection: { xs: 'column', sm: 'row' }
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'center'
             }}>
               <Button
                 variant="outlined"
                 onClick={onBack}
-                fullWidth
+                size="medium"
                 sx={{ 
-                  py: { xs: 1.25, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  py: { xs: 1, sm: 1.25 },
+                  px: { xs: 2, sm: 3 },
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                  minWidth: { xs: '120px', sm: '140px' }
                 }}
               >
                 Back
@@ -253,10 +256,12 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
               <Button
                 type="submit"
                 variant="contained"
-                fullWidth
+                size="medium"
                 sx={{ 
-                  py: { xs: 1.25, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  py: { xs: 1, sm: 1.25 },
+                  px: { xs: 2, sm: 3 },
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                  minWidth: { xs: '120px', sm: '140px' }
                 }}
               >
                 Continue to Payment

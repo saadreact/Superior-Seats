@@ -113,14 +113,17 @@ const Checkout = () => {
       <Header />
       
       {/* Hero Section */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-          color: 'white',
-          py: { xs: 4, sm: 6 },
-          textAlign: 'center',
-        }}
-      >
+      <Box sx={{ 
+        mt: { xs: 8, sm: 9, md: 10, lg: 11 }
+      }}>
+        <Box
+          sx={{
+            background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+            color: 'white',
+            py: { xs: 4, sm: 6 },
+            textAlign: 'center',
+          }}
+        >
         <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
           <Typography
             variant="h1"
@@ -143,6 +146,7 @@ const Checkout = () => {
             Complete your order with secure payment
           </Typography>
         </Container>
+        </Box>
       </Box>
 
       {/* Main Content Container */}
