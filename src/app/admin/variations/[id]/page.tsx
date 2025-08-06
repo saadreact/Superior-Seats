@@ -1,0 +1,283 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  Divider,
+  Alert,
+  CircularProgress,
+  Chip,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+} from '@mui/icons-material';
+import AdminLayout from '@/components/AdminLayout';
+
+interface Variation {
+  id: number;
+  name: string;
+  category: string;
+  armType: string;
+  lumbar: string;
+  reclineType: string;
+  seatType: string;
+  materialType: string;
+  heatOption: string;
+  seatItemType: string;
+  color: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+// Mock data - replace with API call
+const mockVariations: Variation[] = [
+  {
+    id: 1,
+    name: 'Premium Truck Seat',
+    category: 'Truck Seats',
+    armType: 'Fixed',
+    lumbar: 'Adjustable',
+    reclineType: 'Manual',
+    seatType: 'Bucket',
+    materialType: 'Leather',
+    heatOption: 'Yes',
+    seatItemType: 'Driver',
+    color: 'Black',
+    isActive: true,
+    createdAt: '2024-01-15',
+  },
+  {
+    id: 2,
+    name: 'Standard Car Seat',
+    category: 'Car Seats',
+    armType: 'Removable',
+    lumbar: 'Fixed',
+    reclineType: 'Power',
+    seatType: 'Bench',
+    materialType: 'Fabric',
+    heatOption: 'No',
+    seatItemType: 'Passenger',
+    color: 'Gray',
+    isActive: true,
+    createdAt: '2024-01-10',
+  },
+];
+
+const ViewVariationPage = () => {
+  const router = useRouter();
+  const params = useParams();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const [variation, setVariation] = useState<Variation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    const loadVariation = async () => {
+      try {
+        // Mock API call - replace with actual API
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const variationId = Number(params.id);
+        const foundVariation = mockVariations.find(v => v.id === variationId);
+        
+        if (!foundVariation) {
+          setNotFound(true);
+          return;
+        }
+
+        setVariation(foundVariation);
+      } catch (error) {
+        console.error('Failed to load variation:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVariation();
+  }, [params.id]);
+
+  const handleEdit = () => {
+    router.push(`/admin/variations/${params.id}/edit`);
+  };
+
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this variation?')) {
+      // Mock delete - replace with actual API call
+      router.push('/admin/variations');
+    }
+  };
+
+  const renderField = (label: string, value: string | boolean) => (
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: { xs: 'column', sm: 'row' },
+      justifyContent: 'space-between',
+      alignItems: { xs: 'flex-start', sm: 'center' },
+      py: 1,
+      borderBottom: '1px solid',
+      borderColor: 'divider',
+    }}>
+      <Typography variant="body1" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+        {label}:
+      </Typography>
+      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+        {typeof value === 'boolean' ? (value ? 'Active' : 'Inactive') : value}
+      </Typography>
+    </Box>
+  );
+
+  if (loading) {
+    return (
+      <AdminLayout title="View Variation">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <CircularProgress />
+        </Box>
+      </AdminLayout>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <AdminLayout title="Variation Not Found">
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography variant="h5" gutterBottom>
+            Variation Not Found
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            The variation you&apos;re looking for doesn&apos;t exist.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => router.push('/admin/variations')}
+            startIcon={<ArrowBackIcon />}
+          >
+            Back to Variations
+          </Button>
+        </Box>
+      </AdminLayout>
+    );
+  }
+
+  if (!variation) {
+    return null;
+  }
+
+  return (
+    <AdminLayout title="View Variation">
+      <Box>
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              startIcon={<ArrowBackIcon />}
+              onClick={() => router.push('/admin/variations')}
+              sx={{ color: 'text.secondary' }}
+            >
+              Back
+            </Button>
+            <Typography variant="h4" component="h1">
+              View Variation
+            </Typography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={handleEdit}
+            >
+              Edit
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Content */}
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Header Info */}
+            <Box>
+              <Typography variant="h5" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
+                {variation.name}
+              </Typography>
+              <Chip
+                label={variation.isActive ? 'Active' : 'Inactive'}
+                color={variation.isActive ? 'success' : 'default'}
+                size="small"
+              />
+            </Box>
+
+            <Divider />
+
+            {/* Basic Information */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
+                Basic Information
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                {renderField('Name', variation.name)}
+                {renderField('Category', variation.category)}
+              </Box>
+            </Box>
+
+            {/* Seat Configuration */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
+                Seat Configuration
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                {renderField('Seat Type', variation.seatType)}
+                {renderField('Arm Type', variation.armType)}
+                {renderField('Lumbar', variation.lumbar)}
+                {renderField('Recline Type', variation.reclineType)}
+              </Box>
+            </Box>
+
+            {/* Material & Features */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
+                Material & Features
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                {renderField('Material Type', variation.materialType)}
+                {renderField('Heat Option', variation.heatOption)}
+                {renderField('Seat Item Type', variation.seatItemType)}
+                {renderField('Color', variation.color)}
+              </Box>
+            </Box>
+
+            {/* Status */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
+                Status
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                {renderField('Status', variation.isActive)}
+                {renderField('Created At', new Date(variation.createdAt).toLocaleDateString())}
+              </Box>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
+    </AdminLayout>
+  );
+};
+
+export default ViewVariationPage; 
