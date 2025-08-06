@@ -23,7 +23,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
 
   const handleContinueShopping = () => {
     clearCart();
-    router.push('/shop');
+    router.push('/ShopGallery');
   };
 
   const handleGoHome = () => {
@@ -35,12 +35,12 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
     <Box sx={{ px: { xs: 1, sm: 2, md: 4, lg: 6 } }}>
       {/* Order Confirmation Header */}
       <Box sx={{ 
-        p: { xs: 2, sm: 3 }, 
+        p: { xs: 1.5, sm: 2 }, 
         backgroundColor: 'success.50', 
         borderRadius: { xs: 2, sm: 3 }, 
         border: '1px solid', 
         borderColor: 'success.100',
-        mb: { xs: 2, sm: 3, md: 4 },
+        mb: 2,
         display: 'flex',
         alignItems: 'center',
         flexDirection: { xs: 'column', sm: 'row' },
@@ -51,7 +51,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
           borderRadius: { xs: 1.5, sm: 2 }, 
           backgroundColor: 'success.main', 
           mr: { xs: 0, sm: 2 },
-          mb: { xs: 2, sm: 0 }
+          mb: { xs: 1, sm: 0 }
         }}>
           <CheckCircle sx={{ color: 'white', fontSize: { xs: 20, sm: 24 } }} />
         </Box>
@@ -73,7 +73,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
       <Alert 
         severity="success" 
         sx={{ 
-          mb: { xs: 2, sm: 3, md: 4 },
+          mb: 2,
           borderRadius: { xs: 2, sm: 3 },
           border: '1px solid',
           borderColor: 'success.light',
@@ -89,7 +89,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
 
       {/* Order Details Card */}
       <Card sx={{ 
-        p: { xs: 2, sm: 3, md: 4 }, 
+        p: { xs: 2, sm: 3 }, 
         borderRadius: { xs: 2, sm: 3 }, 
         boxShadow: { xs: '0 2px 12px rgba(0,0,0,0.08)', sm: '0 4px 20px rgba(0,0,0,0.08)' }, 
         border: '1px solid', 
@@ -101,13 +101,13 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        mb: { xs: 2, sm: 3, md: 4 }
+        mb: 2
       }}>
-        <Box sx={{ textAlign: 'center', mb: { xs: 2, sm: 3, md: 4 } }}>
+        <Box sx={{ textAlign: 'center', mb: 2 }}>
           <CheckCircle sx={{ 
-            fontSize: { xs: 48, sm: 56, md: 64 }, 
+            fontSize: { xs: 40, sm: 48, md: 56 }, 
             color: 'success.main', 
-            mb: { xs: 1, sm: 2 } 
+            mb: 1 
           }} />
           <Typography variant="h4" fontWeight="bold" color="success.main" gutterBottom sx={{ 
             fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
@@ -115,7 +115,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
             Order #12345
           </Typography>
           <Typography variant="h6" color="text.secondary" sx={{ 
-            mb: { xs: 1, sm: 2 },
+            mb: 1,
             fontSize: { xs: '1rem', sm: '1.25rem' }
           }}>
             Total Amount: ${totalPrice.toFixed(2)}
@@ -127,17 +127,17 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
           </Typography>
         </Box>
 
-        <Divider sx={{ width: '100%', mb: { xs: 2, sm: 3, md: 4 } }} />
+        <Divider sx={{ width: '100%', mb: 2 }} />
 
         {/* Order Summary */}
-        <Box sx={{ width: '100%', mb: { xs: 2, sm: 3, md: 4 } }}>
+        <Box sx={{ width: '100%', mb: 2 }}>
           <Typography variant="h6" fontWeight="bold" sx={{ 
-            mb: { xs: 1, sm: 2 },
+            mb: 1,
             fontSize: { xs: '1rem', sm: '1.25rem' }
           }}>
             What happens next?
           </Typography>
-          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+          <Stack spacing={1}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
               <Box sx={{ 
                 width: { xs: 20, sm: 24 }, 
@@ -220,14 +220,14 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
         </Box>
 
         {/* Action Buttons */}
-        <Stack direction="column" spacing={{ xs: 1.5, sm: 2 }} sx={{ width: '100%', maxWidth: { xs: '100%', sm: 400 } }}>
+        <Stack direction="column" spacing={1.5} sx={{ width: '100%', maxWidth: { xs: '100%', sm: 400 } }}>
           <Button
             variant="contained"
             onClick={handleContinueShopping}
             startIcon={<ShoppingCart />}
             sx={{
-              py: { xs: 1.5, sm: 2 },
-              px: { xs: 3, sm: 4 },
+              py: { xs: 1.25, sm: 1.5 },
+              px: { xs: 2.5, sm: 3 },
               borderRadius: { xs: 2, sm: 3 },
               fontWeight: 'bold',
               fontSize: { xs: '0.875rem', sm: '1rem' },
@@ -247,8 +247,8 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
             onClick={handleGoHome}
             startIcon={<Home />}
             sx={{
-              py: { xs: 1.5, sm: 2 },
-              px: { xs: 3, sm: 4 },
+              py: { xs: 1.25, sm: 1.5 },
+              px: { xs: 2.5, sm: 3 },
               borderRadius: { xs: 2, sm: 3 },
               fontWeight: 'bold',
               fontSize: { xs: '0.875rem', sm: '1rem' },

@@ -33,12 +33,15 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
     return (
       <Fade in timeout={800}>
         <Box sx={{ 
-          textAlign: 'center', 
-          py: { xs: 6, sm: 8, md: 12 },
-          px: { xs: 2, sm: 3, md: 4 },
-          maxWidth: { xs: '100%', sm: 450, md: 500 },
-          mx: 'auto'
+          mt: { xs: 8, sm: 9, md: 10, lg: 11 }
         }}>
+          <Box sx={{ 
+            textAlign: 'center', 
+            py: { xs: 6, sm: 8, md: 12 },
+            px: { xs: 1.5, sm: 2, md: 3 },
+            maxWidth: { xs: '100%', sm: 400, md: 450 },
+            mx: 'auto'
+          }}>
           <Zoom in timeout={1000}>
             <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
               <ShoppingCart sx={{ 
@@ -71,18 +74,19 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
               fontWeight: 'bold',
               fontSize: { xs: '1rem', sm: '1.1rem' },
               textTransform: 'none',
-              background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-              boxShadow: { xs: '0 4px 16px rgba(25, 118, 210, 0.3)', sm: '0 8px 25px rgba(25, 118, 210, 0.3)' },
-              '&:hover': {
-                background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)',
+                             background: 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)',
+               boxShadow: { xs: '0 4px 16px rgba(211, 47, 47, 0.3)', sm: '0 8px 25px rgba(211, 47, 47, 0.3)' },
+               '&:hover': {
+                 background: 'linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)',
                 transform: { xs: 'translateY(-2px)', sm: 'translateY(-3px)' },
-                boxShadow: { xs: '0 6px 20px rgba(25, 118, 210, 0.4)', sm: '0 12px 35px rgba(25, 118, 210, 0.4)' },
+                boxShadow: { xs: '0 6px 20px rgba(211, 47, 47, 0.4)', sm: '0 12px 35px rgba(211, 47, 47, 0.4)' },
               },
               transition: 'all 0.3s ease-in-out',
             }}
           >
             Continue Shopping
           </Button>
+          </Box>
         </Box>
       </Fade>
     );
@@ -91,22 +95,25 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
   return (
     <Fade in timeout={600}>
       <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center',
-        maxWidth: { xs: '100%', sm: '700px', md: '800px' },
-        mx: 'auto',
-        width: '100%',
-        px: { xs: 1, sm: 2, md: 3 }
+        mt: { xs: 2, sm: 2, md: 2, lg: 1 }
       }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          maxWidth: { xs: '100%', sm: '500px', md: '550px' },
+          mx: 'auto',
+          width: '100%',
+          px: { xs: 0.5, sm: 1, md: 1.5 }
+        }}>
                  {/* Enhanced Cart Review Header */}
          <Paper elevation={0} sx={{ 
-           p: { xs: 2, sm: 2.5, md: 3, lg: 4 }, 
-           background: 'linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%)',
+           p: { xs: 1.5, sm: 2, md: 2 }, 
+           background: 'linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%)',
            borderRadius: { xs: 2, sm: 3, md: 4 }, 
            border: '2px solid',
-           borderColor: 'primary.100',
-           mb: { xs: 2, sm: 3, md: 4 },
+           borderColor: 'error.100',
+           mb: { xs: 1.5, sm: 2, md: 2 },
            display: 'flex',
            alignItems: 'center',
            position: 'relative',
@@ -114,7 +121,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
            width: '100%',
            flexDirection: { xs: 'column', sm: 'row' },
            textAlign: { xs: 'center', sm: 'left' },
-           gap: { xs: 2, sm: 3 },
+           gap: { xs: 1.5, sm: 2 },
            '&::before': {
              content: '""',
              position: 'absolute',
@@ -122,25 +129,25 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
              left: 0,
              right: 0,
              height: '4px',
-             background: 'linear-gradient(90deg, #1976d2, #42a5f5, #1976d2)',
+             background: 'linear-gradient(90deg, #d32f2f, #f44336, #d32f2f)',
            }
          }}>
            <Box sx={{ 
-             p: { xs: 1.5, sm: 2, md: 2.5 }, 
+             p: { xs: 1, sm: 1.5, md: 2 }, 
              borderRadius: { xs: 2, sm: 3 }, 
-             background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-             mr: { xs: 0, sm: 2, md: 3 },
-             mb: { xs: 2, sm: 0 },
-             boxShadow: '0 4px 15px rgba(25, 118, 210, 0.3)',
-             minWidth: { xs: '60px', sm: '70px', md: '80px' },
-             height: { xs: '60px', sm: '70px', md: '80px' },
+             background: 'linear-gradient(135deg, #d32f2f 0%, #f44336 100%)',
+             mr: { xs: 0, sm: 1.5, md: 2 },
+             mb: { xs: 1.5, sm: 0 ,md: 2},
+             boxShadow: '0 4px 15px rgba(211, 47, 47, 0.3)',
+             minWidth: { xs: '50px', sm: '60px', md: '70px' },
+             height: { xs: '50px', sm: '60px', md: '70px' },
              display: 'flex',
              alignItems: 'center',
              justifyContent: 'center'
            }}>
              <ShoppingCart sx={{ 
                color: 'white', 
-               fontSize: { xs: 24, sm: 28, md: 32 } 
+               fontSize: { xs: 20, sm: 24, md: 28 } 
              }} />
            </Box>
            <Box sx={{ 
@@ -151,17 +158,17 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
              gap: { xs: 1.5, sm: 2 }
            }}>
              <Typography variant="h4" fontWeight="bold" color="primary.main" gutterBottom sx={{ 
-               fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.125rem' },
+               fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
                textAlign: { xs: 'center', sm: 'left' },
                lineHeight: { xs: 1.2, sm: 1.3 }
              }}>
                Review Your Cart
              </Typography>
              <Typography variant="body1" color="text.secondary" sx={{ 
-               mb: { xs: 2, sm: 1.5 },
-               fontSize: { xs: '0.875rem', sm: '1rem' },
+               mb: { xs: 1.5, sm: 1 },
+               fontSize: { xs: '0.8rem', sm: '0.9rem' },
                textAlign: { xs: 'center', sm: 'left' },
-               lineHeight: 1.5,
+               lineHeight: 1.4,
                maxWidth: { xs: '100%', sm: '90%' }
              }}>
                Please review your selected items before proceeding to checkout
@@ -177,11 +184,11 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                  width: '100%'
                }}
              >
-               <Chip 
-                 icon={<CheckCircle />} 
-                 label={`${items.length} item${items.length > 1 ? 's' : ''}`} 
-                 color="primary" 
-                 variant="outlined"
+                               <Chip 
+                  icon={<CheckCircle />} 
+                  label={`${items.length} item${items.length > 1 ? 's' : ''}`} 
+                  color="error" 
+                  variant="outlined"
                  size="small"
                  sx={{ 
                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -216,18 +223,18 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
           border: '1px solid',
           borderColor: 'divider',
           backgroundColor: 'background.paper',
-          mb: { xs: 2, sm: 3, md: 4 },
+          mb: { xs: 1.5, sm: 2, md: 2.5 },
           overflow: 'hidden',
           width: '100%',
         }}>
           <Box sx={{ 
-            p: { xs: 2, sm: 3 }, 
+            p: { xs: 1.5, sm: 2 }, 
             background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
             borderBottom: '1px solid',
             borderColor: 'divider'
           }}>
             <Typography variant="h6" fontWeight="bold" color="text.primary" sx={{ 
-              fontSize: { xs: '1rem', sm: '1.25rem' }
+              fontSize: { xs: '0.9rem', sm: '1.1rem' }
             }}>
               Cart Items ({items.length})
             </Typography>
@@ -239,8 +246,8 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                 <Box>
                   <ListItem
                     sx={{
-                      py: { xs: 2, sm: 3 },
-                      px: { xs: 2, sm: 3, md: 4 },
+                      py: { xs: 1.5, sm: 2 },
+                      px: { xs: 1.5, sm: 2, md: 2.5 },
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         backgroundColor: 'action.hover',
@@ -254,9 +261,9 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                         src={item.image}
                         alt={item.title}
                         sx={{ 
-                          width: { xs: 50, sm: 60, md: 70 }, 
-                          height: { xs: 50, sm: 60, md: 70 }, 
-                          mr: { xs: 2, sm: 3 },
+                          width: { xs: 40, sm: 50, md: 60 }, 
+                          height: { xs: 40, sm: 50, md: 60 }, 
+                          mr: { xs: 1.5, sm: 2 },
                           border: '2px solid',
                           borderColor: 'primary.100',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
@@ -266,7 +273,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                     <ListItemText
                       primary={
                         <Typography variant="h6" fontWeight="bold" color="text.primary" gutterBottom sx={{ 
-                          fontSize: { xs: '1rem', sm: '1.25rem' }
+                          fontSize: { xs: '0.9rem', sm: '1.1rem' }
                         }}>
                           {item.title}
                         </Typography>
@@ -274,34 +281,34 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                       secondary={
                         <Box>
                           <Typography variant="body2" color="text.secondary" sx={{ 
-                            mb: 2, 
-                            lineHeight: 1.6,
-                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                            mb: 1.5, 
+                            lineHeight: 1.5,
+                            fontSize: { xs: '0.8rem', sm: '0.9rem' }
                           }}>
                             {item.description}
                           </Typography>
                           <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" sx={{ 
                             gap: { xs: 1, sm: 2 }
                           }}>
-                            <Chip
-                              label={`Quantity: ${item.quantity}`}
-                              size="small"
-                              color="primary"
-                              variant="filled"
-                              sx={{ 
-                                fontWeight: 'bold',
-                                background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                                                         <Chip
+                               label={`Quantity: ${item.quantity}`}
+                               size="small"
+                               color="error"
+                               variant="filled"
+                               sx={{ 
+                                 fontWeight: 'bold',
+                                 background: 'linear-gradient(135deg, #d32f2f 0%, #f44336 100%)',
                                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                                 '& .MuiChip-label': {
                                   fontSize: { xs: '0.75rem', sm: '0.875rem' }
                                 }
                               }}
                             />
-                            <Typography variant="h5" color="primary.main" fontWeight="bold" sx={{ 
-                              fontSize: { xs: '1.125rem', sm: '1.5rem' }
-                            }}>
-                              ${(parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
-                            </Typography>
+                                                         <Typography variant="h5" color="error.main" fontWeight="bold" sx={{ 
+                               fontSize: { xs: '1rem', sm: '1.25rem' }
+                             }}>
+                               ${(parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
+                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ 
                               fontSize: { xs: '0.75rem', sm: '0.875rem' }
                             }}>
@@ -310,6 +317,9 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                           </Stack>
                         </Box>
                       }
+                      secondaryTypographyProps={{
+                        component: 'div'
+                      }}
                     />
                     <IconButton
                       onClick={() => removeItem(item.id)}
@@ -349,91 +359,91 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
           border: '1px solid',
           borderColor: 'divider',
           backgroundColor: 'background.paper',
-          mb: { xs: 2, sm: 3, md: 4 },
+          mb: { xs: 1.5, sm: 2, md: 2.5 },
           overflow: 'hidden',
           width: '100%',
         }}>
           <Box sx={{ 
-            p: { xs: 2, sm: 3 }, 
+            p: { xs: 1.5, sm: 2 }, 
             background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
             borderBottom: '1px solid',
             borderColor: 'divider'
           }}>
             <Typography variant="h6" fontWeight="bold" color="text.primary" sx={{ 
-              fontSize: { xs: '1rem', sm: '1.25rem' }
+              fontSize: { xs: '0.9rem', sm: '1.1rem' }
             }}>
               Order Summary
             </Typography>
           </Box>
           
-          <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <Box sx={{ p: { xs: 1.5, sm: 2, md: 2.5 } }}>
             {/* Subtotal */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: { xs: 2, sm: 3 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: { xs: 1.5, sm: 2 } }}>
               <Typography variant="h6" fontWeight={600} color="text.primary" sx={{ 
-                fontSize: { xs: '0.875rem', sm: '1.25rem' }
+                fontSize: { xs: '0.8rem', sm: '1rem' }
               }}>
                 Subtotal ({items.length} item{items.length > 1 ? 's' : ''}):
               </Typography>
-              <Typography variant="h6" fontWeight={600} color="primary.main" sx={{ 
-                fontSize: { xs: '0.875rem', sm: '1.25rem' }
-              }}>
-                ${totalPrice.toFixed(2)}
-              </Typography>
+                             <Typography variant="h6" fontWeight={600} color="error.main" sx={{ 
+                 fontSize: { xs: '0.8rem', sm: '1rem' }
+               }}>
+                 ${totalPrice.toFixed(2)}
+               </Typography>
             </Box>
             
             {/* Shipping */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: { xs: 2, sm: 3 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: { xs: 1.5, sm: 2 } }}>
               <Typography variant="body1" color="text.secondary" sx={{ 
-                fontSize: { xs: '0.875rem', sm: '1rem' }
+                fontSize: { xs: '0.8rem', sm: '0.9rem' }
               }}>
                 Shipping:
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ 
-                fontSize: { xs: '0.875rem', sm: '1rem' }
+                fontSize: { xs: '0.8rem', sm: '0.9rem' }
               }}>
                 {totalPrice > 500 ? 'Free' : '$29.99'}
               </Typography>
             </Box>
             
             {/* Tax */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: { xs: 3, sm: 4 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: { xs: 2, sm: 2.5 } }}>
               <Typography variant="body1" color="text.secondary" sx={{ 
-                fontSize: { xs: '0.875rem', sm: '1rem' }
+                fontSize: { xs: '0.8rem', sm: '0.9rem' }
               }}>
                 Tax (8%):
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ 
-                fontSize: { xs: '0.875rem', sm: '1rem' }
+                fontSize: { xs: '0.8rem', sm: '0.9rem' }
               }}>
                 ${(totalPrice * 0.08).toFixed(2)}
               </Typography>
             </Box>
             
             {/* Divider */}
-            <Divider sx={{ mb: 4 }} />
+            <Divider sx={{ mb: 2.5 }} />
             
             {/* Total */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              p: { xs: 2, sm: 3 },
-              background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
-              borderRadius: { xs: 2, sm: 3 },
-              border: '1px solid',
-              borderColor: 'primary.200',
-            }}>
-              <Typography variant="h5" fontWeight="bold" color="primary.main" sx={{ 
-                fontSize: { xs: '1.125rem', sm: '1.5rem' }
-              }}>
-                Total:
-              </Typography>
-              <Typography variant="h5" fontWeight="bold" color="primary.main" sx={{ 
-                fontSize: { xs: '1.125rem', sm: '1.5rem' }
-              }}>
-                ${(totalPrice + (totalPrice > 500 ? 0 : 29.99) + (totalPrice * 0.08)).toFixed(2)}
-              </Typography>
-            </Box>
+                         <Box sx={{ 
+               display: 'flex', 
+               justifyContent: 'space-between', 
+               alignItems: 'center',
+               p: { xs: 1.5, sm: 2 },
+               background: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)',
+               borderRadius: { xs: 2, sm: 3 },
+               border: '1px solid',
+               borderColor: 'error.200',
+             }}>
+               <Typography variant="h5" fontWeight="bold" color="error.main" sx={{ 
+                 fontSize: { xs: '1rem', sm: '1.25rem' }
+               }}>
+                 Total:
+               </Typography>
+               <Typography variant="h5" fontWeight="bold" color="error.main" sx={{ 
+                 fontSize: { xs: '1rem', sm: '1.25rem' }
+               }}>
+                 ${(totalPrice + (totalPrice > 500 ? 0 : 29.99) + (totalPrice * 0.08)).toFixed(2)}
+               </Typography>
+             </Box>
           </Box>
         </Card>
 
@@ -441,8 +451,8 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'center',
-          mt: { xs: 2, sm: 3, md: 4 },
-          mb: 2,
+          mt: { xs: 1.5, sm: 2, md: 2.5 },
+          mb: 1.5,
           width: '100%'
         }}>
           <Button
@@ -451,20 +461,20 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
             disabled={items.length === 0}
             size="large"
             sx={{
-              py: { xs: 2, sm: 2.5 },
-              px: { xs: 4, sm: 6, md: 8 },
+              py: { xs: 1.5, sm: 1.5 },
+              px: { xs: 3, sm: 4, md: 3 },
               borderRadius: { xs: 3, sm: 4 },
               fontWeight: 'bold',
-              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
               textTransform: 'none',
-              background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-              boxShadow: { xs: '0 4px 16px rgba(25, 118, 210, 0.3)', sm: '0 8px 25px rgba(25, 118, 210, 0.3)' },
-              transition: 'all 0.3s ease-in-out',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
-                transform: { xs: 'translateY(-2px)', sm: 'translateY(-3px)' },
-                boxShadow: { xs: '0 6px 20px rgba(25, 118, 210, 0.4)', sm: '0 12px 35px rgba(25, 118, 210, 0.4)' },
-              },
+                           background: 'linear-gradient(135deg, #d32f2f 0%, #f44336 100%)',
+             boxShadow: { xs: '0 4px 16px rgba(211, 47, 47, 0.3)', sm: '0 8px 25px rgba(211, 47, 47, 0.3)' },
+             transition: 'all 0.3s ease-in-out',
+             '&:hover': {
+               background: 'linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%)',
+               transform: { xs: 'translateY(-2px)', sm: 'translateY(-3px)' },
+               boxShadow: { xs: '0 6px 20px rgba(211, 47, 47, 0.4)', sm: '0 12px 35px rgba(211, 47, 47, 0.4)' },
+             },
               '&:disabled': {
                 background: 'linear-gradient(135deg, #bdbdbd 0%, #e0e0e0 100%)',
                 transform: 'none',
@@ -479,17 +489,17 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
         {/* Security Notice */}
         <Box sx={{ 
           textAlign: 'center', 
-          mt: { xs: 2, sm: 3 }, 
+          mt: { xs: 1.5, sm: 2 }, 
           width: '100%' 
         }}>
-          <Alert 
-            severity="info" 
-            icon={<Security />}
-            sx={{ 
-              borderRadius: { xs: 2, sm: 3 },
-              background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
-              border: '1px solid',
-              borderColor: 'primary.200',
+                     <Alert 
+             severity="info" 
+             icon={<Security />}
+             sx={{ 
+               borderRadius: { xs: 2, sm: 3 },
+               background: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)',
+               border: '1px solid',
+               borderColor: 'error.200',
               fontSize: { xs: '0.875rem', sm: '1rem' },
               '& .MuiAlert-message': {
                 fontSize: { xs: '0.875rem', sm: '1rem' }
@@ -502,6 +512,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
               Your payment information is secure and encrypted. We use industry-standard security protocols.
             </Typography>
           </Alert>
+        </Box>
         </Box>
       </Box>
     </Fade>

@@ -4,16 +4,17 @@ export const contactInfo = [
     icon: 'Phone',
     title: 'Phone',
     details: [
-      '+1 (555) 123-4567',
+      '+1 574-389-9011',
       'Mon-Fri: 8AM-6PM',
-      'Sat: 9AM-4PM'
+      'Sat: closed',
+      'Sun: Closed'
     ]
   },
   {
     icon: 'Email',
     title: 'Email',
     details: [
-      'info@superiorseats.com',
+      'info@superiorseatingllc.com',
       'support@superiorseats.com',
       'sales@superiorseats.com'
     ]
@@ -22,9 +23,9 @@ export const contactInfo = [
     icon: 'LocationOn',
     title: 'Address',
     details: [
-      '123 Custom Seat Drive',
-      'Automotive District',
-      'Seattle, WA 98101'
+      '21468 C Street Elkhart, IN',
+      'United States',
+      'Indiana 46516'
     ]
   },
   {
@@ -32,7 +33,7 @@ export const contactInfo = [
     title: 'Business Hours',
     details: [
       'Monday - Friday: 8AM-6PM',
-      'Saturday: 9AM-4PM',
+      'Saturday: closed',
       'Sunday: Closed'
     ]
   }

@@ -113,21 +113,25 @@ const Checkout = () => {
       <Header />
       
       {/* Hero Section */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-          color: 'white',
-          py: { xs: 4, sm: 6 },
-          textAlign: 'center',
-        }}
-      >
+      <Box sx={{ 
+        mt: { xs: '56px', sm: '64px', md: '64px' }
+      }}>
+        <Box
+          sx={{
+            background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+            color: 'white',
+            py: { xs: 2, sm: 3, md: 4 },
+            textAlign: 'center',
+          }}
+        >
         <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
               fontWeight: 'bold',
-              mb: 2,
+              mb: 1,
+              lineHeight: 1.2,
             }}
           >
             Checkout
@@ -138,16 +142,20 @@ const Checkout = () => {
               opacity: 0.9,
               maxWidth: 600,
               mx: 'auto',
+              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+              lineHeight: 1.4,
+              mb: 0,
             }}
           >
             Complete your order with secure payment
           </Typography>
         </Container>
+        </Box>
       </Box>
 
       {/* Main Content Container */}
       <Container maxWidth="lg" sx={{ 
-        py: { xs: 2, sm: 4, md: 6 }, 
+        py: { xs: 1, sm: 2, md: 3 }, 
         px: { xs: 1, sm: 2, md: 6 },
         display: 'flex',
         flexDirection: 'column',
@@ -163,11 +171,11 @@ const Checkout = () => {
           alignItems: 'center'
         }}>
           {/* Stepper Section */}
-          <Box sx={{ width: '100%', mb: { xs: 2, sm: 3, md: 4 } }}>
+          <Box sx={{ width: '100%', mb: 2 }}>
             <Stepper 
               activeStep={activeStep} 
               sx={{ 
-                mb: { xs: 2, sm: 3, md: 4 },
+                mb: 2,
                 display: { xs: 'none', md: 'flex' },
                 justifyContent: 'center'
               }}
@@ -189,14 +197,14 @@ const Checkout = () => {
             {/* Mobile Step Indicator */}
             <Box sx={{ 
               display: { xs: 'block', md: 'none' }, 
-              mb: { xs: 2, sm: 3 }, 
+              mb: 1, 
               textAlign: 'center',
               px: 2
             }}>
               <Typography variant="h6" sx={{ 
                 fontWeight: 'bold', 
-                mb: 1,
-                fontSize: { xs: '1rem', sm: '1.25rem' }
+                mb: 0.5,
+                fontSize: { xs: '0.875rem', sm: '1rem' }
               }}>
                 Step {activeStep + 1} of {steps.length}: {steps[activeStep]}
               </Typography>
@@ -219,7 +227,7 @@ const Checkout = () => {
           {/* Main Content Area */}
           <Box sx={{ width: '100%' }}>
             <Card sx={{ 
-              p: { xs: 2, sm: 3, md: 4 },
+              p: { xs: 1.5, sm: 2, md: 3 },
               borderRadius: { xs: 2, sm: 3 },
               boxShadow: { xs: '0 4px 16px rgba(0,0,0,0.08)', sm: '0 8px 32px rgba(0,0,0,0.1)' },
               border: '1px solid',
