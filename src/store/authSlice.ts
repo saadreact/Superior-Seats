@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { apiService } from '@/utils/api';
 
 // Types
 export interface User {
@@ -21,16 +21,13 @@ export interface AuthState {
   error: string | null;
 }
 
-// API URLs
-const API_BASE_URL = 'https://superiorseats.ali-khalid.com/api';
-
 // Async thunks
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/login`, credentials);
-      return response.data;
+      const result = await apiService.login(credentials.email, credentials.password);
+      return result;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
@@ -47,8 +44,8 @@ export const registerUser = createAsyncThunk(
     customer_type: string;
   }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/register`, userData);
-      return response.data;
+      const result = await apiService.register(userData);
+      return result;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
     }
@@ -57,16 +54,9 @@ export const registerUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   'auth/logout',
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const { auth } = getState() as { auth: AuthState };
-      if (auth.token) {
-        await axios.post(`${API_BASE_URL}/logout`, {}, {
-          headers: {
-            Authorization: `Bearer ${auth.token}`
-          }
-        });
-      }
+      await apiService.logout();
       return true;
     } catch (error: any) {
       // Even if logout API fails, we should still clear local state
