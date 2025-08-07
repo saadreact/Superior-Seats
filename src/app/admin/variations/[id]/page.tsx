@@ -20,56 +20,26 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
+import { apiService } from '@/utils/api';
 
 interface Variation {
   id: number;
   name: string;
-  category: string;
-  armType: string;
+  price: number;
+  stitch_pattern: string;
+  arm_type: string;
   lumbar: string;
-  reclineType: string;
-  seatType: string;
-  materialType: string;
-  heatOption: string;
-  seatItemType: string;
+  recline_type: string;
+  seat_type: string;
+  material_type: string;
+  heat_option: string;
+  seat_item_type: string;
   color: string;
-  isActive: boolean;
-  createdAt: string;
+  is_active: boolean;
+  image?: string;
+  created_at: string;
+  updated_at: string;
 }
-
-// Mock data - replace with API call
-const mockVariations: Variation[] = [
-  {
-    id: 1,
-    name: 'Premium Truck Seat',
-    category: 'Truck Seats',
-    armType: 'Fixed',
-    lumbar: 'Adjustable',
-    reclineType: 'Manual',
-    seatType: 'Bucket',
-    materialType: 'Leather',
-    heatOption: 'Yes',
-    seatItemType: 'Driver',
-    color: 'Black',
-    isActive: true,
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 2,
-    name: 'Standard Car Seat',
-    category: 'Car Seats',
-    armType: 'Removable',
-    lumbar: 'Fixed',
-    reclineType: 'Power',
-    seatType: 'Bench',
-    materialType: 'Fabric',
-    heatOption: 'No',
-    seatItemType: 'Passenger',
-    color: 'Gray',
-    isActive: true,
-    createdAt: '2024-01-10',
-  },
-];
 
 const ViewVariationPage = () => {
   const router = useRouter();
@@ -79,16 +49,15 @@ const ViewVariationPage = () => {
 
   const [variation, setVariation] = useState<Variation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     const loadVariation = async () => {
       try {
-        // Mock API call - replace with actual API
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
         const variationId = Number(params.id);
-        const foundVariation = mockVariations.find(v => v.id === variationId);
+        const response = await apiService.getVariation(variationId);
+        const foundVariation = response.variation;
         
         if (!foundVariation) {
           setNotFound(true);
@@ -96,8 +65,9 @@ const ViewVariationPage = () => {
         }
 
         setVariation(foundVariation);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load variation:', error);
+        setError(error.message || 'Failed to load variation');
       } finally {
         setLoading(false);
       }
@@ -210,6 +180,11 @@ const ViewVariationPage = () => {
         </Box>
 
         {/* Content */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
         <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Header Info */}
@@ -218,11 +193,30 @@ const ViewVariationPage = () => {
                 {variation.name}
               </Typography>
               <Chip
-                label={variation.isActive ? 'Active' : 'Inactive'}
-                color={variation.isActive ? 'success' : 'default'}
+                label={variation.is_active ? 'Active' : 'Inactive'}
+                color={variation.is_active ? 'success' : 'default'}
                 size="small"
               />
             </Box>
+
+            {/* Variation Image */}
+            {variation.image && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Variation Image
+                </Typography>
+                <img
+                  src={`http://127.0.0.1:8000${variation.image}`}
+                  alt={variation.name}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '300px',
+                    objectFit: 'cover',
+                    borderRadius: 8,
+                  }}
+                />
+              </Box>
+            )}
 
             <Divider />
 
@@ -233,7 +227,7 @@ const ViewVariationPage = () => {
               </Typography>
               <Box sx={{ mt: 2 }}>
                 {renderField('Name', variation.name)}
-                {renderField('Category', variation.category)}
+                {renderField('Price', `$${variation.price}`)}
               </Box>
             </Box>
 
@@ -243,10 +237,10 @@ const ViewVariationPage = () => {
                 Seat Configuration
               </Typography>
               <Box sx={{ mt: 2 }}>
-                {renderField('Seat Type', variation.seatType)}
-                {renderField('Arm Type', variation.armType)}
+                {renderField('Seat Type', variation.seat_type)}
+                {renderField('Arm Type', variation.arm_type)}
                 {renderField('Lumbar', variation.lumbar)}
-                {renderField('Recline Type', variation.reclineType)}
+                {renderField('Recline Type', variation.recline_type)}
               </Box>
             </Box>
 
@@ -256,9 +250,10 @@ const ViewVariationPage = () => {
                 Material & Features
               </Typography>
               <Box sx={{ mt: 2 }}>
-                {renderField('Material Type', variation.materialType)}
-                {renderField('Heat Option', variation.heatOption)}
-                {renderField('Seat Item Type', variation.seatItemType)}
+                {renderField('Material Type', variation.material_type)}
+                {renderField('Heat Option', variation.heat_option)}
+                {renderField('Stitch Pattern', variation.stitch_pattern)}
+                {renderField('Seat Item Type', variation.seat_item_type)}
                 {renderField('Color', variation.color)}
               </Box>
             </Box>
@@ -269,8 +264,8 @@ const ViewVariationPage = () => {
                 Status
               </Typography>
               <Box sx={{ mt: 2 }}>
-                {renderField('Status', variation.isActive)}
-                {renderField('Created At', new Date(variation.createdAt).toLocaleDateString())}
+                {renderField('Status', variation.is_active)}
+                {renderField('Created At', new Date(variation.created_at).toLocaleDateString())}
               </Box>
             </Box>
           </Box>

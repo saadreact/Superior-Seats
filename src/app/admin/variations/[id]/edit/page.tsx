@@ -19,27 +19,50 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
+  IconButton,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
+  CloudUpload as CloudUploadIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
+import { apiService } from '@/utils/api';
+
+interface FormOptions {
+  stitch_patterns: Array<{
+    name: string;
+    image_url: string;
+    description: string;
+  }>;
+  arm_types: string[];
+  lumbar_options: string[];
+  recline_types: string[];
+  seat_types: string[];
+  material_types: string[];
+  heat_options: string[];
+  seat_item_types: string[];
+  colors: string[];
+}
 
 interface Variation {
   id: number;
   name: string;
-  category: string;
-  armType: string;
+  price: number;
+  stitch_pattern: string;
+  arm_type: string;
   lumbar: string;
-  reclineType: string;
-  seatType: string;
-  materialType: string;
-  heatOption: string;
-  seatItemType: string;
+  recline_type: string;
+  seat_type: string;
+  material_type: string;
+  heat_option: string;
+  seat_item_type: string;
   color: string;
-  isActive: boolean;
-  createdAt: string;
+  is_active: boolean;
+  image?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Dropdown options
@@ -111,74 +134,60 @@ const colors = [
   'Custom',
 ];
 
-// Mock data - replace with API call
-const mockVariations: Variation[] = [
-  {
-    id: 1,
-    name: 'Premium Truck Seat',
-    category: 'Truck Seats',
-    armType: 'Fixed',
-    lumbar: 'Adjustable',
-    reclineType: 'Manual',
-    seatType: 'Bucket',
-    materialType: 'Leather',
-    heatOption: 'Yes',
-    seatItemType: 'Driver',
-    color: 'Black',
-    isActive: true,
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 2,
-    name: 'Standard Car Seat',
-    category: 'Car Seats',
-    armType: 'Removable',
-    lumbar: 'Fixed',
-    reclineType: 'Power',
-    seatType: 'Bench',
-    materialType: 'Fabric',
-    heatOption: 'No',
-    seatItemType: 'Passenger',
-    color: 'Gray',
-    isActive: true,
-    createdAt: '2024-01-10',
-  },
-];
-
 const EditVariationPage = () => {
   const router = useRouter();
   const params = useParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [formData, setFormData] = useState<Omit<Variation, 'id' | 'createdAt'>>({
-    name: '',
-    category: '',
-    armType: '',
-    lumbar: '',
-    reclineType: '',
-    seatType: '',
-    materialType: '',
-    heatOption: '',
-    seatItemType: '',
-    color: '',
-    isActive: true,
+      const [formData, setFormData] = useState<Omit<Variation, 'id' | 'created_at' | 'updated_at'> & { newImage?: File }>({
+      name: '',
+      price: 0,
+      stitch_pattern: '',
+      arm_type: '',
+      lumbar: '',
+      recline_type: '',
+      seat_type: '',
+      material_type: '',
+      heat_option: '',
+      seat_item_type: '',
+      color: '',
+      is_active: true,
+      image: '',
+      newImage: undefined,
+    });
+
+  const [options, setOptions] = useState<FormOptions>({
+    stitch_patterns: [],
+    arm_types: [],
+    lumbar_options: [],
+    recline_types: [],
+    seat_types: [],
+    material_types: [],
+    heat_options: [],
+    seat_item_types: [],
+    colors: [],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [optionsLoading, setOptionsLoading] = useState(true);
   const [success, setSuccess] = useState('');
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    const loadVariation = async () => {
+    const loadData = async () => {
       try {
-        // Mock API call - replace with actual API
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        // Load options first
+        const optionsResponse = await apiService.getVariationOptions();
+        setOptions(optionsResponse);
+        setOptionsLoading(false);
+
+        // Then load variation data
         const variationId = Number(params.id);
-        const variation = mockVariations.find(v => v.id === variationId);
+        const response = await apiService.getVariation(variationId);
+        const variation = response.variation;
         
         if (!variation) {
           setNotFound(true);
@@ -187,31 +196,52 @@ const EditVariationPage = () => {
 
         setFormData({
           name: variation.name,
-          category: variation.category,
-          armType: variation.armType,
+          price: variation.price || 0,
+          stitch_pattern: variation.stitch_pattern,
+          arm_type: variation.arm_type,
           lumbar: variation.lumbar,
-          reclineType: variation.reclineType,
-          seatType: variation.seatType,
-          materialType: variation.materialType,
-          heatOption: variation.heatOption,
-          seatItemType: variation.seatItemType,
+          recline_type: variation.recline_type,
+          seat_type: variation.seat_type,
+          material_type: variation.material_type,
+          heat_option: variation.heat_option,
+          seat_item_type: variation.seat_item_type,
           color: variation.color,
-          isActive: variation.isActive,
+          is_active: variation.is_active,
+          image: variation.image || '',
+          newImage: undefined,
         });
-      } catch (error) {
-        setErrors({ submit: 'Failed to load variation. Please try again.' });
+      } catch (error: any) {
+        setErrors({ submit: error.message || 'Failed to load variation. Please try again.' });
       } finally {
         setInitialLoading(false);
       }
     };
 
-    loadVariation();
+    loadData();
   }, [params.id]);
 
   const handleChange = (field: keyof typeof formData) => (
     event: React.ChangeEvent<HTMLInputElement> | any
   ) => {
     const value = event.target.value as string;
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: '',
+      }));
+    }
+  };
+
+  const handleNumberChange = (field: keyof typeof formData) => (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = parseFloat(event.target.value) || 0;
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -235,6 +265,50 @@ const EditVariationPage = () => {
     }));
   };
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        setErrors(prev => ({
+          ...prev,
+          image: 'Please select a valid image file (JPEG, PNG, or GIF)',
+        }));
+        return;
+      }
+      
+      // Validate file size (2MB max)
+      if (file.size > 2 * 1024 * 1024) {
+        setErrors(prev => ({
+          ...prev,
+          image: 'Image size must be less than 2MB',
+        }));
+        return;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        newImage: file,
+      }));
+      
+      // Clear error
+      if (errors.image) {
+        setErrors(prev => ({
+          ...prev,
+          image: '',
+        }));
+      }
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      newImage: undefined,
+    }));
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -242,36 +316,40 @@ const EditVariationPage = () => {
       newErrors.name = 'Variation name is required';
     }
 
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
+    if (formData.price <= 0) {
+      newErrors.price = 'Price must be greater than 0';
     }
 
-    if (!formData.armType) {
-      newErrors.armType = 'Arm type is required';
+    if (!formData.stitch_pattern) {
+      newErrors.stitch_pattern = 'Stitch pattern is required';
+    }
+
+    if (!formData.arm_type) {
+      newErrors.arm_type = 'Arm type is required';
     }
 
     if (!formData.lumbar) {
       newErrors.lumbar = 'Lumbar is required';
     }
 
-    if (!formData.reclineType) {
-      newErrors.reclineType = 'Recline type is required';
+    if (!formData.recline_type) {
+      newErrors.recline_type = 'Recline type is required';
     }
 
-    if (!formData.seatType) {
-      newErrors.seatType = 'Seat type is required';
+    if (!formData.seat_type) {
+      newErrors.seat_type = 'Seat type is required';
     }
 
-    if (!formData.materialType) {
-      newErrors.materialType = 'Material type is required';
+    if (!formData.material_type) {
+      newErrors.material_type = 'Material type is required';
     }
 
-    if (!formData.heatOption) {
-      newErrors.heatOption = 'Heat option is required';
+    if (!formData.heat_option) {
+      newErrors.heat_option = 'Heat option is required';
     }
 
-    if (!formData.seatItemType) {
-      newErrors.seatItemType = 'Seat item type is required';
+    if (!formData.seat_item_type) {
+      newErrors.seat_item_type = 'Seat item type is required';
     }
 
     if (!formData.color) {
@@ -292,15 +370,32 @@ const EditVariationPage = () => {
     setLoading(true);
     
     try {
-      // Mock API call - replace with actual API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const variationId = Number(params.id);
       
+      // Prepare the update data with all required fields
+      const updateData = {
+        name: formData.name,
+        price: formData.price,
+        stitch_pattern: formData.stitch_pattern,
+        arm_type: formData.arm_type,
+        lumbar: formData.lumbar,
+        recline_type: formData.recline_type,
+        seat_type: formData.seat_type,
+        material_type: formData.material_type,
+        heat_option: formData.heat_option,
+        seat_item_type: formData.seat_item_type,
+        color: formData.color,
+        is_active: formData.is_active,
+        image: formData.newImage, // Only pass new image if uploaded
+      };
+      
+      const response = await apiService.updateVariation(variationId, updateData);
       setSuccess('Variation updated successfully!');
       setTimeout(() => {
         router.push('/admin/variations');
       }, 1500);
-    } catch (error) {
-      setErrors({ submit: 'Failed to update variation. Please try again.' });
+    } catch (error: any) {
+      setErrors({ submit: error.message || 'Failed to update variation. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -309,7 +404,7 @@ const EditVariationPage = () => {
   const renderField = (
     field: keyof typeof formData,
     label: string,
-    options: string[],
+    optionsKey: keyof FormOptions,
     required = true
   ) => (
     <FormControl fullWidth required={required} error={!!errors[field]}>
@@ -318,12 +413,37 @@ const EditVariationPage = () => {
         value={formData[field] as string}
         label={label}
         onChange={handleChange(field)}
+        disabled={optionsLoading}
       >
-        {options.map((option) => (
-          <MenuItem key={option} value={option}>
-            {option}
-          </MenuItem>
-        ))}
+        {optionsKey === 'stitch_patterns' ? (
+          options[optionsKey].map((option: any) => (
+            <MenuItem key={option.name} value={option.name}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <img 
+                  src={option.image_url} 
+                  alt={option.name}
+                  style={{ width: 30, height: 30, objectFit: 'cover', borderRadius: 4 }}
+                  onError={(e) => {
+                    // Hide broken image
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                <Box>
+                  <Typography variant="body2">{option.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {option.description}
+                  </Typography>
+                </Box>
+              </Box>
+            </MenuItem>
+          ))
+        ) : (
+          options[optionsKey].map((option: string) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))
+        )}
       </Select>
     </FormControl>
   );
@@ -415,7 +535,103 @@ const EditVariationPage = () => {
                     helperText={errors.name}
                   />
 
-                  {renderField('category', 'Category', categories)}
+                  <TextField
+                    fullWidth
+                    label="Price"
+                    type="number"
+                    value={formData.price}
+                    onChange={handleNumberChange('price')}
+                    required
+                    placeholder="Enter price"
+                    InputProps={{
+                      startAdornment: '$',
+                    }}
+                    error={!!errors.price}
+                    helperText={errors.price}
+                  />
+                </Box>
+              </Box>
+
+              {/* Image Upload */}
+              <Box>
+                <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
+                  Variation Image
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Current Image */}
+                  {formData.image && !formData.newImage && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <img
+                        src={`http://127.0.0.1:8000${formData.image}`}
+                        alt="Current"
+                        style={{
+                          width: 150,
+                          height: 150,
+                          objectFit: 'cover',
+                          borderRadius: 8,
+                          border: '2px solid #e0e0e0',
+                        }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        Current Image
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {/* New Image Preview */}
+                  {formData.newImage && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <img
+                        src={URL.createObjectURL(formData.newImage)}
+                        alt="Preview"
+                        style={{
+                          width: 150,
+                          height: 150,
+                          objectFit: 'cover',
+                          borderRadius: 8,
+                          border: '2px solid #e0e0e0',
+                        }}
+                      />
+                      <IconButton
+                        onClick={removeImage}
+                        color="error"
+                        size="small"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  )}
+                  
+                  {/* Upload Button */}
+                  <Box>
+                    <input
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      id="image-upload"
+                      type="file"
+                      onChange={handleImageChange}
+                    />
+                    <label htmlFor="image-upload">
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        startIcon={<CloudUploadIcon />}
+                        sx={{ mb: 1 }}
+                      >
+                        {formData.image ? 'Change Image' : 'Upload Image'}
+                      </Button>
+                    </label>
+                    {errors.image && (
+                      <Typography variant="caption" color="error" display="block">
+                        {errors.image}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Supported formats: JPEG, PNG, GIF (Max 2MB)
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
 
@@ -427,13 +643,13 @@ const EditVariationPage = () => {
                 <Divider sx={{ mb: 2 }} />
                 
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
-                  {renderField('seatType', 'Seat Type', seatTypes)}
-                  {renderField('armType', 'Arm Type', armTypes)}
+                  {renderField('seat_type', 'Seat Type', 'seat_types')}
+                  {renderField('arm_type', 'Arm Type', 'arm_types')}
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mt: 2 }}>
-                  {renderField('lumbar', 'Lumbar', lumbarOptions)}
-                  {renderField('reclineType', 'Recline Type', reclineTypes)}
+                  {renderField('lumbar', 'Lumbar', 'lumbar_options')}
+                  {renderField('recline_type', 'Recline Type', 'recline_types')}
                 </Box>
               </Box>
 
@@ -445,13 +661,17 @@ const EditVariationPage = () => {
                 <Divider sx={{ mb: 2 }} />
                 
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
-                  {renderField('materialType', 'Material Type', materialTypes)}
-                  {renderField('heatOption', 'Heat Option', heatOptions)}
+                  {renderField('material_type', 'Material Type', 'material_types')}
+                  {renderField('heat_option', 'Heat Option', 'heat_options')}
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mt: 2 }}>
-                  {renderField('seatItemType', 'Seat Item Type', seatItemTypes)}
-                  {renderField('color', 'Color', colors)}
+                  {renderField('stitch_pattern', 'Stitch Pattern', 'stitch_patterns')}
+                  {renderField('seat_item_type', 'Seat Item Type', 'seat_item_types')}
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mt: 2 }}>
+                  {renderField('color', 'Color', 'colors')}
                 </Box>
               </Box>
 
@@ -465,8 +685,8 @@ const EditVariationPage = () => {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={formData.isActive}
-                      onChange={handleSwitchChange('isActive')}
+                      checked={formData.is_active}
+                      onChange={handleSwitchChange('is_active')}
                     />
                   }
                   label="Active"
