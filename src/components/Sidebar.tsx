@@ -27,26 +27,28 @@ import {
   Storefront as StorefrontIcon,
   AttachMoney as MoneyIcon,
   Inventory as InventoryIcon,
-  ExpandLess as ExpandLessIcon,
-  ExpandMore as ExpandMoreIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 
 const drawerWidth = 280;
 const mobileDrawerWidth = 280;
+const collapsedDrawerWidth = 80; // New constant for collapsed drawer width
 
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onToggleCollapse }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
     {
@@ -96,7 +98,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   };
 
   const toggleCollapse = () => {
-    setCollapsed(!collapsed);
+    if (onToggleCollapse) {
+      onToggleCollapse();
+    }
   };
 
   const drawerContent = (
@@ -112,13 +116,15 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           justifyContent: 'space-between',
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-          {collapsed ? 'Admin' : 'Admin Panel'}
-        </Typography>
+        {!collapsed && (
+          <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+            Admin Panel
+          </Typography>
+        )}
         <Box sx={{ display: 'flex', gap: 1 }}>
           {!isMobile && (
             <IconButton onClick={toggleCollapse} size="small">
-              {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+              {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           )}
           {isMobile && (
@@ -248,7 +254,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             display: { xs: 'none', md: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
-              width: collapsed ? 80 : drawerWidth,
+              width: collapsed ? collapsedDrawerWidth : drawerWidth,
               backgroundColor: 'background.paper',
               borderRight: 1,
               borderColor: 'divider',

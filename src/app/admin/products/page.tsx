@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -16,186 +16,143 @@ import {
   DialogContent,
   DialogActions,
   Alert,
+  CircularProgress,
+  Paper,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
-  Inventory as InventoryIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
+import { apiService } from '@/utils/api';
 
-// Mock product data
-const mockProducts = [
-  {
-    id: '1',
-    name: 'Truck Seat - Standard',
-    description: 'Standard truck seat with basic features and comfort',
-    category: 'Seats',
-    price: 299.99,
-    stock: 15,
-    isActive: true,
-    image: '/Gallery/Truckimages/truck01.jpg',
-    specifications: {
-      material: 'Leather',
-      color: 'Black',
-      weight: '25 lbs',
-      dimensions: '24" x 20" x 8"'
-    }
-  },
-  {
-    id: '2',
-    name: 'Truck Seat - Premium',
-    description: 'Premium truck seat with advanced features and luxury comfort',
-    category: 'Seats',
-    price: 499.99,
-    stock: 8,
-    isActive: true,
-    image: '/Gallery/Truckimages/truck02.jpg',
-    specifications: {
-      material: 'Premium Leather',
-      color: 'Brown',
-      weight: '28 lbs',
-      dimensions: '24" x 20" x 8"'
-    }
-  },
-  {
-    id: '3',
-    name: 'Seat Cover - Leather',
-    description: 'High-quality leather seat cover for protection and style',
-    category: 'Accessories',
-    price: 89.99,
-    stock: 25,
-    isActive: true,
-    image: '/Gallery/Truckimages/truck03.jpg',
-    specifications: {
-      material: 'Genuine Leather',
-      color: 'Black',
-      weight: '2 lbs',
-      dimensions: 'Universal Fit'
-    }
-  },
-  {
-    id: '4',
-    name: 'Seat Cushion - Memory Foam',
-    description: 'Memory foam seat cushion for enhanced comfort',
-    category: 'Accessories',
-    price: 45.99,
-    stock: 30,
-    isActive: true,
-    image: '/Gallery/Truckimages/truck04.jpg',
-    specifications: {
-      material: 'Memory Foam',
-      color: 'Gray',
-      weight: '1.5 lbs',
-      dimensions: '18" x 16" x 2"'
-    }
-  },
-  {
-    id: '5',
-    name: 'Truck Seat - Racing',
-    description: 'Racing-style truck seat with sporty design',
-    category: 'Seats',
-    price: 399.99,
-    stock: 12,
-    isActive: true,
-    image: '/Gallery/Truckimages/truck05.jpg',
-    specifications: {
-      material: 'Alcantara',
-      color: 'Red/Black',
-      weight: '26 lbs',
-      dimensions: '24" x 20" x 8"'
-    }
-  },
-  {
-    id: '6',
-    name: 'Seat Belt - Safety Plus',
-    description: 'Enhanced safety seat belt with comfort padding',
-    category: 'Safety',
-    price: 75.99,
-    stock: 20,
-    isActive: true,
-    image: '/Gallery/Truckimages/truck06.jpg',
-    specifications: {
-      material: 'Nylon Webbing',
-      color: 'Black',
-      weight: '1 lb',
-      dimensions: 'Universal'
-    }
-  },
-  {
-    id: '7',
-    name: 'Truck Seat - Ergonomic',
-    description: 'Ergonomic truck seat designed for long-haul comfort',
-    category: 'Seats',
-    price: 599.99,
-    stock: 6,
-    isActive: true,
-    image: '/Gallery/Truckimages/truck07.jpg',
-    specifications: {
-      material: 'Mesh Fabric',
-      color: 'Blue',
-      weight: '30 lbs',
-      dimensions: '24" x 20" x 8"'
-    }
-  },
-  {
-    id: '8',
-    name: 'Seat Organizer',
-    description: 'Multi-compartment seat organizer for storage',
-    category: 'Accessories',
-    price: 29.99,
-    stock: 40,
-    isActive: true,
-    image: '/Gallery/Truckimages/truck08.jpg',
-    specifications: {
-      material: 'Canvas',
-      color: 'Gray',
-      weight: '0.5 lbs',
-      dimensions: '12" x 8" x 4"'
-    }
-  },
-];
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  price: string;
+  stock: number;
+  images?: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  variations?: Array<{
+    id: number;
+    name: string;
+    category: string;
+    arm_type: string;
+    lumbar: string;
+    recline_type: string;
+    seat_type: string;
+    material_type: string;
+    heat_option: string;
+    seat_item_type: string;
+    color: string;
+    is_active: boolean;
+  }>;
+}
 
-const categories = ['Seats', 'Accessories', 'Safety', 'Maintenance'];
+interface ProductsResponse {
+  current_page: number;
+  data: Product[];
+  first_page_url: string;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
 
 const ProductsPage = () => {
   const router = useRouter();
-  const [products, setProducts] = useState(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<any>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    loadProducts();
+  }, [currentPage, searchTerm]);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params: Record<string, any> = {
+        page: currentPage,
+        limit: 12,
+      };
+      
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+      
+      const response: ProductsResponse = await apiService.getProducts(params);
+      setProducts(response.data || []);
+      setTotalPages(response.last_page);
+    } catch (err: any) {
+      if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+        setError('Please log in to access this page');
+      } else {
+        setError('Failed to load products. Please try again later.');
+      }
+      console.error('Error loading products:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     router.push('/admin/products/create');
   };
 
-  const handleEdit = (product: any) => {
+  const handleEdit = (product: Product) => {
     router.push(`/admin/products/${product.id}/edit`);
   };
 
-  const handleView = (product: any) => {
-    // For now, we'll use edit page in view mode
-    router.push(`/admin/products/${product.id}/edit`);
+  const handleView = (product: Product) => {
+    router.push(`/admin/products/${product.id}`);
   };
 
-  const handleDelete = (product: any) => {
+  const handleDelete = (product: Product) => {
     setProductToDelete(product);
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (productToDelete) {
-      setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
-      setAlert({ type: 'success', message: 'Product deleted successfully' });
+      try {
+        setDeleting(true);
+        await apiService.deleteProduct(productToDelete.id);
+        setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
+        setAlert({ type: 'success', message: 'Product deleted successfully' });
+      } catch (err: any) {
+        setError(err.message || 'Failed to delete product');
+        console.error('Error deleting product:', err);
+      } finally {
+        setDeleting(false);
+      }
     }
     setIsDeleteDialogOpen(false);
     setProductToDelete(null);
   };
 
-
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   return (
     <AdminLayout title="Products">
@@ -221,6 +178,24 @@ const ProductsPage = () => {
           </Button>
         </Box>
 
+        {/* Search Bar */}
+        <Box sx={{ mb: 3 }}>
+          <TextField
+            fullWidth
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={handleSearch}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ maxWidth: 400 }}
+          />
+        </Box>
+
         {alert && (
           <Alert 
             severity={alert.type} 
@@ -231,90 +206,120 @@ const ProductsPage = () => {
           </Alert>
         )}
 
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
         {/* Products Grid */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
-          {products.map((product) => (
-            <Box key={product.id}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  '&:hover': {
-                    boxShadow: 3,
-                    transform: 'translateY(-2px)',
-                  },
-                  transition: 'all 0.3s ease-in-out',
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={product.image}
-                  alt={product.name}
-                  sx={{ objectFit: 'cover' }}
-                />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" component="h2" gutterBottom>
-                    {product.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {product.description}
-                  </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Typography variant="h6" color="primary" fontWeight={600}>
-                      ${product.price}
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+            <CircularProgress />
+          </Box>
+        ) : products.length === 0 ? (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No products found
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Product" to create your first product.'}
+            </Typography>
+          </Paper>
+        ) : (
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
+            {products.map((product) => (
+              <Box key={product.id}>
+                <Card 
+                  sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    '&:hover': {
+                      boxShadow: 3,
+                      transform: 'translateY(-2px)',
+                    },
+                    transition: 'all 0.3s ease-in-out',
+                  }}
+                >
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={
+                      product.images && product.images.length > 0 
+                        ? `http://127.0.0.1:8000${product.images[0]}`
+                        : '/Gallery/Truckimages/truck01.jpg'
+                    }
+                    alt={product.name}
+                    sx={{ objectFit: 'cover' }}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" component="h2" gutterBottom>
+                      {product.name}
                     </Typography>
-                    <Chip
-                      label={product.category}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Stock: {product.stock}
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {product.description}
                     </Typography>
-                    <Chip
-                      label={product.isActive ? 'Active' : 'Inactive'}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="h6" color="primary" fontWeight={600}>
+                        ${product.price}
+                      </Typography>
+                      <Chip
+                        label={product.category}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Stock: {product.stock}
+                      </Typography>
+                      <Chip
+                        label={product.is_active ? 'Active' : 'Inactive'}
+                        size="small"
+                        color={product.is_active ? 'success' : 'default'}
+                      />
+                    </Box>
+                    {product.variations && product.variations.length > 0 && (
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {product.variations.length} variation{product.variations.length !== 1 ? 's' : ''}
+                        </Typography>
+                      </Box>
+                    )}
+                  </CardContent>
+                  <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
+                    <IconButton
                       size="small"
-                      color={product.isActive ? 'success' : 'default'}
-                    />
-                  </Box>
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleView(product)}
-                    title="View"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <ViewIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEdit(product)}
-                    title="Edit"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(product)}
-                    title="Delete"
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            </Box>
-          ))}
-        </Box>
-
-
+                      onClick={() => handleView(product)}
+                      title="View"
+                      sx={{ color: 'primary.main' }}
+                    >
+                      <ViewIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleEdit(product)}
+                      title="Edit"
+                      sx={{ color: 'primary.main' }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDelete(product)}
+                      title="Delete"
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </CardActions>
+                </Card>
+              </Box>
+            ))}
+          </Box>
+        )}
 
         {/* Delete Confirmation Dialog */}
         <Dialog
@@ -328,11 +333,11 @@ const ProductsPage = () => {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
               Cancel
             </Button>
-            <Button onClick={confirmDelete} color="error" variant="contained">
-              Delete
+            <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
+              {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogActions>
         </Dialog>

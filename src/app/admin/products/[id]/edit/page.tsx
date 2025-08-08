@@ -1,63 +1,110 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, CircularProgress } from '@mui/material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { useRouter, useParams } from 'next/navigation';
+import {
+  Box,
+  Typography,
+  Alert,
+  Paper,
+  CircularProgress,
+} from '@mui/material';
 import AdminLayout from '@/components/AdminLayout';
 import ProductForm from '@/components/admin/ProductForm';
-import { useRouter } from 'next/navigation';
+import { apiService } from '@/utils/api';
 
-const categories = ['Seats', 'Accessories', 'Safety', 'Maintenance'];
-
-// Mock product data
-const mockProduct = {
-  id: '1',
-  name: 'Truck Seat - Standard',
-  description: 'Standard truck seat with basic features and comfort',
-  category: 'Seats',
-  price: 299.99,
-  stock: 15,
-  isActive: true,
-  image: '/Gallery/Truckimages/truck01.jpg',
-  specifications: {
-    material: 'Leather',
-    color: 'Black',
-    weight: '25 lbs',
-    dimensions: '24" x 20" x 8"'
-  }
-};
-
-interface EditProductPageProps {
-  params: Promise<{
-    id: string;
+interface Product {
+  id?: number;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  stock: number;
+  images?: string[];
+  is_active: boolean;
+  variation_ids?: number[];
+  variations?: Array<{
+    id: number;
+    name: string;
+    stitch_pattern: string;
+    arm_type: string;
+    lumbar: string;
+    recline_type: string;
+    seat_type: string;
+    material_type: string;
+    heat_option: string;
+    seat_item_type: string;
+    color: string;
+    price: string;
+    image?: string;
+    is_active: boolean;
+    pivot: {
+      product_id: number;
+      variation_id: number;
+    };
   }>;
 }
 
-const EditProductPage = ({ params }: EditProductPageProps) => {
-  return (
-    <EditProductClient params={params} />
-  );
-};
-
-const EditProductClient = ({ params }: { params: Promise<{ id: string }> }) => {
+const EditProductPage = () => {
   const router = useRouter();
-  const [product, setProduct] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
-  const resolvedParams = React.use(params);
+  const params = useParams();
+  const productId = params.id as string;
 
-  React.useEffect(() => {
-    // Simulate API call to fetch product
-    setTimeout(() => {
-      setProduct(mockProduct);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadProduct();
+  }, [productId]);
+
+  const loadProduct = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiService.getProduct(parseInt(productId));
+      const productData = response.product;
+      
+      // Extract variation_ids from the nested variations array
+      const variationIds = productData.variations?.map((variation: any) => variation.id) || [];
+      
+      setProduct({
+        ...productData,
+        variation_ids: variationIds,
+      });
+    } catch (err: any) {
+      if (err.message.includes('404')) {
+        setError('Product not found');
+      } else {
+        setError('Failed to load product');
+      }
+      console.error('Error loading product:', err);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, [resolvedParams.id]);
+    }
+  };
 
-  const handleSubmit = (updatedProduct: any) => {
-    // Handle product update
-    console.log('Updating product:', updatedProduct);
-    // Add API call here
-    router.push('/admin/products');
+  const handleSubmit = async (productData: Product & { newImages?: File[] }) => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+
+      await apiService.updateProduct(parseInt(productId), productData);
+      
+      setSuccess('Product updated successfully!');
+      setTimeout(() => {
+        router.push('/admin/products');
+      }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update product');
+      console.error('Error updating product:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -67,27 +114,20 @@ const EditProductClient = ({ params }: { params: Promise<{ id: string }> }) => {
   if (loading) {
     return (
       <AdminLayout title="Edit Product">
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
       </AdminLayout>
     );
   }
 
-  if (!product) {
+  if (error && !product) {
     return (
-      <AdminLayout title="Product Not Found">
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="h6" color="error">
-            Product not found
-          </Typography>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => router.push('/admin/products')}
-            sx={{ mt: 2 }}
-          >
-            Back to Products
-          </Button>
+      <AdminLayout title="Edit Product">
+        <Box>
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
         </Box>
       </AdminLayout>
     );
@@ -95,25 +135,34 @@ const EditProductClient = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <AdminLayout title="Edit Product">
-      <Box sx={{ mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.push('/admin/products')}
-          sx={{ mb: 2 }}
-        >
-          Back to Products
-        </Button>
+      <Box>
         <Typography variant="h4" component="h1" gutterBottom>
-          Edit Product: {product.name}
+          Edit Product
         </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {success && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            {success}
+          </Alert>
+        )}
+
+        {product && (
+          <Paper sx={{ p: 3 }}>
+            <ProductForm
+              product={product}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              loading={saving}
+            />
+          </Paper>
+        )}
       </Box>
-      
-      <ProductForm
-        product={product}
-        categories={categories}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-      />
     </AdminLayout>
   );
 };
