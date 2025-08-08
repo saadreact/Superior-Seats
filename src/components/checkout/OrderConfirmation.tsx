@@ -9,7 +9,9 @@ import {
   Divider
 } from '@mui/material';
 import { CheckCircle, Home, ShoppingCart } from '@mui/icons-material';
-import { useCart } from '@/contexts/CartContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store/store';
+import { clearCart } from '@/store/cartSlice';
 import { useRouter } from 'next/navigation';
 
 interface OrderConfirmationProps {
@@ -17,17 +19,17 @@ interface OrderConfirmationProps {
 }
 
 const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
-  const { state, clearCart } = useCart();
-  const { totalPrice } = state;
+  const dispatch = useDispatch();
+  const { items, totalItems, totalPrice } = useSelector((state: RootState) => state.cart);
   const router = useRouter();
 
   const handleContinueShopping = () => {
-    clearCart();
+    dispatch(clearCart());
     router.push('/ShopGallery');
   };
 
   const handleGoHome = () => {
-    clearCart();
+    dispatch(clearCart());
     router.push('/');
   };
 

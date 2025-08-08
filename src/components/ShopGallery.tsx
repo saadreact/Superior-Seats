@@ -35,16 +35,17 @@ import {
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import { mainCategories, subCategories, galleryData } from '@/data/ShopGallery';
-import { useCart } from '@/contexts/CartContext';
 // NEW IMPORTS: Added to enable communication with CustomizedSeat component
 import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
 import { useRouter } from 'next/navigation'; // Next.js router for programmatic navigation
+import { useDispatch } from 'react-redux';
+import { addItem } from '@/store/cartSlice';
 
 const ShopGallery = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { addItem } = useCart();
+  const dispatch = useDispatch();
   // NEW CONTEXT USAGE: Access functions to set selected item and navigate
   const { setSelectedItem } = useSelectedItem(); // Destructure setSelectedItem from context
   const router = useRouter(); // Initialize Next.js router for navigation
@@ -129,14 +130,14 @@ const ShopGallery = () => {
   };
 
   const handleAddToCart = (item: typeof galleryData[0]) => {
-    addItem({
+    dispatch(addItem({
       id: item.id,
       title: item.title,
       price: item.price,
       image: item.image,
       description: item.description,
       category: item.category,
-    });
+    }));
   };
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
@@ -186,7 +187,7 @@ const ShopGallery = () => {
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem', lg: '3rem', xl: '3rem' },
               fontWeight: 'bold',
               mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',

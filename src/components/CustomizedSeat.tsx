@@ -6,12 +6,13 @@ import { Grid } from '@mui/material';
 import { testimonials } from '@/data/testimonials';
 import Header from '@/components/Header';
 // CONSOLIDATED IMPORTS: All customization data now comes from a single file
-import { textures, colors, objects } from '@/data/CustomizedSeat';
+import { textures, colors, objects, stichtingtextures } from '@/data/CustomizedSeat';
 // NEW IMPORTS: Added to enable communication between ShopGallery and CustomizedSeat components
 import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to access selected item data
 import { useRouter } from 'next/navigation'; // Next.js router for programmatic navigation
 // NEW IMPORT: Added to enable cart functionality
-import { useCart } from '@/contexts/CartContext'; // Context hook to access cart functions
+import { useDispatch } from 'react-redux';
+import { addItem } from '@/store/cartSlice';
 
 import {
   Box,
@@ -65,11 +66,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const { selectedItem, clearSelectedItem } = useSelectedItem(); // Destructure selectedItem and clearSelectedItem from context
   const router = useRouter(); 
  
-  const { addItem } = useCart(); 
+  const dispatch = useDispatch(); 
 
   // State for customization options
   const [selectedTexture, setSelectedTexture] = useState('none'); 
   const [selectedColor, setSelectedColor] = useState('none'); 
+  const [selectedStitching, setSelectedStitching] = useState('none');
   const [currentObjectIndex, setCurrentObjectIndex] = useState(0);
 
   const calculateTotalPrice = () => {
@@ -82,8 +84,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     // Get color price
     const colorPrice = colors.find(c => c.id === selectedColor)?.price || 0;
     
+    // Get stitching pattern price
+    const stitchingPrice = stichtingtextures.find(s => s.id === selectedStitching)?.price || 0;
+    
     // Calculate total
-    return baseSeatPrice + texturePrice + colorPrice;
+    return baseSeatPrice + texturePrice + colorPrice + stitchingPrice;
   };
 
   const totalPrice = calculateTotalPrice();
@@ -560,6 +565,118 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   {/* Divider */}
                   <Divider sx={{ my: 3 }} />
 
+                                     {/* Stitching Pattern Section */}
+                   <Box sx={{ mb: 4 }}>
+                     <Typography variant="h6" sx={{ 
+                       mb: { xs: 2, sm: 3 }, 
+                       fontWeight: 'bold', 
+                       color: 'text.primary',
+                       fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                     }}>
+                       Choose Your Stitching Pattern
+                     </Typography>
+                     
+                     {/* Selected Stitching Pattern Name */}
+                     {selectedStitching && (
+                       <Typography variant="h5" sx={{ 
+                         mb: { xs: 2, sm: 3 }, 
+                         fontWeight: 'bold', 
+                         color: selectedStitching === 'none' ? 'text.secondary' : 'primary.main', 
+                         textAlign: 'center',
+                         fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
+                       }}>
+                         {stichtingtextures.find(s => s.id === selectedStitching)?.name}
+                       </Typography>
+                     )}
+                     
+                     <Box sx={{ 
+                       display: 'flex', 
+                       gap: { xs: 1, sm: 1.5, md: 2 }, 
+                       justifyContent: 'center', 
+                       flexWrap: 'wrap',
+                       mb: { xs: 2, sm: 3 }
+                     }}>
+                       {stichtingtextures.map((stitching) => (
+                         <Box
+                           key={stitching.id}
+                           onClick={() => setSelectedStitching(stitching.id)}
+                           sx={{
+                             width: { xs: 50, sm: 55, md: 60 },
+                             height: { xs: 50, sm: 55, md: 60 },
+                             borderRadius: 2,
+                             border: '3px solid',
+                             borderColor: selectedStitching === stitching.id ? 'primary.main' : 'grey.300',
+                             cursor: 'pointer',
+                             transition: 'all 0.3s ease',
+                             position: 'relative',
+                             overflow: 'hidden',
+                             '&:hover': {
+                               transform: 'scale(1.1)',
+                               borderColor: 'primary.main',
+                               boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                             }
+                           }}
+                         >
+                           {stitching.id === 'none' ? (
+                             <Box
+                               sx={{
+                                 width: '100%',
+                                 height: '100%',
+                                 backgroundColor: '#f5f5f5',
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 justifyContent: 'center',
+                                 border: '2px dashed #ccc'
+                               }}
+                             >
+                               <Typography 
+                                 variant="caption" 
+                                 sx={{ 
+                                   fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                                   color: 'text.secondary',
+                                   textAlign: 'center',
+                                   fontWeight: 'bold'
+                                 }}
+                               >
+                                 None
+                               </Typography>
+                             </Box>
+                           ) : (
+                             <Image
+                               src={stitching.image}
+                               alt={stitching.name}
+                               fill
+                               style={{ objectFit: 'cover' }}
+                             />
+                           )}
+                           {selectedStitching === stitching.id && (
+                             <Box
+                               sx={{
+                                 position: 'absolute',
+                                 top: 0,
+                                 left: 0,
+                                 right: 0,
+                                 bottom: 0,
+                                 backgroundColor: stitching.id === 'none' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.3)',
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 justifyContent: 'center',
+                               }}
+                             >
+                               <CheckCircle sx={{ 
+                                 color: stitching.id === 'none' ? 'primary.main' : 'white', 
+                                 fontSize: { xs: 18, sm: 20, md: 24 } 
+                               }} />
+                             </Box>
+                           )}
+                         </Box>
+                       ))}
+                     </Box>
+                   </Box>
+
+                  {/* Divider */}
+                  <Divider sx={{ my: 3 }} />
+
                                      {/* ENHANCED PRICE SECTION: Displays base seat price, material price, color price, and total */}
                    {selectedTexture && (
                      <Box sx={{ 
@@ -583,13 +700,13 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          mb: 2,
                          width: '100%' // ADDED: Ensure full width within container
                        }}>
-                         {/* FIRST ROW: Base Seat Price, Material Price, and Color Price buttons */}
-                         <Box sx={{
-                           display: 'grid',
-                           gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-                           gap: { xs: 0.5, sm: 1 }, // REDUCED: Smaller gaps to fit better
-                           width: '100%' // ADDED: Ensure full width
-                         }}>
+                                                   {/* FIRST ROW: Base Seat Price, Material Price, Color Price, and Stitching Pattern Price buttons */}
+                          <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(4, 1fr)' },
+                            gap: { xs: 0.5, sm: 0.75 }, // REDUCED: Smaller gaps to fit better
+                            width: '100%' // ADDED: Ensure full width
+                          }}>
                                                                                    {/* BASE SEAT PRICE BUTTON: Shows base seat price using standard button */}
                              <Button
                                variant="outlined"
@@ -604,8 +721,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  justifyContent: 'center',
                                  alignItems: 'center',
                                  py: { xs: 0.75, sm: 1 },
-                                 px: { xs: 1, sm: 1.5 },
-                                 width: '180px',
+                                 px: { xs: 0.5, sm: 1 }, // REDUCED: Smaller horizontal padding
+                                 width: '100%', // CHANGED: Use full width of grid cell
                                  height: '50px',
                                  '&:hover': {
                                    bgcolor: 'white',
@@ -621,7 +738,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                              >
                                                            <Typography variant="h6" sx={{ 
                                 fontWeight: 'bold',
-                                fontSize: { xs: '0.75rem', sm: '0.85rem' }, // INCREASED: Larger font size for better visibility
+                                fontSize: { xs: '0.7rem', sm: '0.8rem' }, // REDUCED: Smaller font size for better fit
                                 mb: 0.25,
                                 lineHeight: 1
                               }}>
@@ -629,7 +746,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               </Typography>
                               <Typography variant="body2" sx={{ 
                                 opacity: 0.9,
-                                fontSize: { xs: '0.65rem', sm: '0.75rem' }, // INCREASED: Larger font size for better visibility
+                                fontSize: { xs: '0.6rem', sm: '0.7rem' }, // REDUCED: Smaller font size for better fit
                                 lineHeight: 1
                               }}>
                                {selectedItem ? selectedItem.title : objects[currentObjectIndex].name}
@@ -650,8 +767,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  justifyContent: 'center',
                                  alignItems: 'center',
                                  py: { xs: 0.75, sm: 1 },
-                                 px: { xs: 1, sm: 1.5 },
-                                 width: '180px',
+                                 px: { xs: 0.5, sm: 1 }, // REDUCED: Smaller horizontal padding
+                                 width: '100%', // CHANGED: Use full width of grid cell
                                  height: '50px',
                                  '&:hover': {
                                    bgcolor: 'white',
@@ -667,7 +784,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                              >
                                                            <Typography variant="h6" sx={{ 
                                 fontWeight: 'bold',
-                                fontSize: { xs: '0.75rem', sm: '0.85rem' }, // INCREASED: Larger font size for better visibility
+                                fontSize: { xs: '0.7rem', sm: '0.8rem' }, // REDUCED: Smaller font size for better fit
                                 mb: 0.25,
                                 lineHeight: 1
                               }}>
@@ -675,7 +792,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               </Typography>
                               <Typography variant="body2" sx={{ 
                                 opacity: 0.9,
-                                fontSize: { xs: '0.65rem', sm: '0.75rem' }, // INCREASED: Larger font size for better visibility
+                                fontSize: { xs: '0.6rem', sm: '0.7rem' }, // REDUCED: Smaller font size for better fit
                                 lineHeight: 1
                               }}>
                                {textures.find(t => t.id === selectedTexture)?.name}
@@ -696,8 +813,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  justifyContent: 'center',
                                  alignItems: 'center',
                                  py: { xs: 0.75, sm: 1 },
-                                 px: { xs: 1, sm: 1.5 },
-                                 width: '180px',
+                                 px: { xs: 0.5, sm: 1 }, // REDUCED: Smaller horizontal padding
+                                 width: '100%', // CHANGED: Use full width of grid cell
                                  height: '50px',
                                  '&:hover': {
                                    bgcolor: 'white',
@@ -713,7 +830,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                              >
                                                            <Typography variant="h6" sx={{ 
                                 fontWeight: 'bold',
-                                fontSize: { xs: '0.75rem', sm: '0.85rem' }, // INCREASED: Larger font size for better visibility
+                                fontSize: { xs: '0.7rem', sm: '0.8rem' }, // REDUCED: Smaller font size for better fit
                                 mb: 0.25,
                                 lineHeight: 1
                               }}>
@@ -721,22 +838,68 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               </Typography>
                               <Typography variant="body2" sx={{ 
                                 opacity: 0.9,
-                                fontSize: { xs: '0.65rem', sm: '0.75rem' }, // INCREASED: Larger font size for better visibility
+                                fontSize: { xs: '0.6rem', sm: '0.7rem' }, // REDUCED: Smaller font size for better fit
                                 lineHeight: 1
                               }}>
                                {colors.find(c => c.id === selectedColor)?.name}
                              </Typography>
+                                                        </Button>
+                           
+                                                                                    {/* STITCHING PATTERN PRICE BUTTON: Shows selected stitching pattern price using standard button */}
+                             <Button
+                               variant="outlined"
+                               disabled
+                               sx={{
+                                 bgcolor: 'white',
+                                 color: '#d32f2f',
+                                 border: '2px solid #d32f2f',
+                                 minHeight: '60px',
+                                 display: 'flex',
+                                 flexDirection: 'column',
+                                 justifyContent: 'center',
+                                 alignItems: 'center',
+                                 py: { xs: 0.75, sm: 1 },
+                                 px: { xs: 0.5, sm: 1 }, // REDUCED: Smaller horizontal padding
+                                 width: '100%', // CHANGED: Use full width of grid cell
+                                 height: '50px',
+                                 '&:hover': {
+                                   bgcolor: 'white',
+                                   borderColor: '#d32f2f',
+                                 },
+                                 '&.Mui-disabled': {
+                                   bgcolor: 'white',
+                                   color: '#d32f2f',
+                                   borderColor: '#d32f2f',
+                                   opacity: 1
+                                 }
+                               }}
+                             >
+                                                           <Typography variant="h6" sx={{ 
+                                fontWeight: 'bold',
+                                fontSize: { xs: '0.7rem', sm: '0.8rem' }, // REDUCED: Smaller font size for better fit
+                                mb: 0.25,
+                                lineHeight: 1
+                              }}>
+                                {selectedStitching === 'none' ? '$0' : `+$${stichtingtextures.find(s => s.id === selectedStitching)?.price || 0}`}
+                              </Typography>
+                              <Typography variant="body2" sx={{ 
+                                opacity: 0.9,
+                                fontSize: { xs: '0.6rem', sm: '0.7rem' }, // REDUCED: Smaller font size for better fit
+                                lineHeight: 1
+                              }}>
+                               {stichtingtextures.find(s => s.id === selectedStitching)?.name}
+                             </Typography>
                            </Button>
                          </Box>
                          
-                                                                                                                                 {/* SECOND ROW: Total Price and Add to Cart button */}
-                             <Box sx={{
-                               display: 'grid',
-                               gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-                               gap: { xs: 0.5, sm: 1 },
-                               width: '100%',
-                               mt: { xs: 1, sm: 1.5, md: 1.5, lg: 1.5 }
-                             }}>
+                                                                                                                                  {/* SECOND ROW: Total Price and Add to Cart button */}
+                                                           <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: { xs: '1fr', sm: 'repeat(4, 1fr)' },
+                                gap: { xs: 0.5, sm: 0.75 }, // REDUCED: Smaller gaps to match first row
+                                width: '100%',
+                                mt: { xs: 1, sm: 1.5, md: 1.5, lg: 1.5 }
+                              }}>
                                {/* TOTAL PRICE BUTTON: Shows the merged total price using standard button */}
                               <Button
                                 variant="contained"
@@ -750,8 +913,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                   justifyContent: 'center',
                                   alignItems: 'center',
                                   py: { xs: 0.75, sm: 1 },
-                                  px: { xs: 1, sm: 1.5 }, // REDUCED: Smaller horizontal padding
-                                  width: '180px', // ADDED: Full width within grid cell
+                                  px: { xs: 0.5, sm: 1 }, // REDUCED: Smaller horizontal padding
+                                  width: '100%', // CHANGED: Use full width of grid cell
                                    height: '50px',
                                   '&:hover': {
                                     bgcolor: '#b71c1c', // Changed to darker red for hover effect
@@ -768,7 +931,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               >
                                 <Typography variant="h6" sx={{ 
                                   fontWeight: 'bold',
-                                  fontSize: { xs: '0.85rem', sm: '0.95rem' }, // INCREASED: Larger font size for better visibility
+                                  fontSize: { xs: '0.8rem', sm: '0.9rem' }, // REDUCED: Smaller font size for better fit
                                   mb: 0.25,
                                   lineHeight: 1
                                 }}>
@@ -776,7 +939,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                 </Typography>
                                 <Typography variant="body2" sx={{ 
                                   opacity: 0.9,
-                                  fontSize: { xs: '0.7rem', sm: '0.8rem' }, // INCREASED: Larger font size for better visibility
+                                  fontSize: { xs: '0.65rem', sm: '0.75rem' }, // REDUCED: Smaller font size for better fit
                                   lineHeight: 1
                                 }}>
                                  Total Price
@@ -788,29 +951,30 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                  <Button
                    variant="contained"
                    size="medium"
-                   startIcon={<ShoppingCart sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }} />}
+                   startIcon={<ShoppingCart sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }} />} // REDUCED: Smaller icon size
                    onClick={() => {
-                     // ENHANCED: Add item to cart with the merged total price, handling "None" selections
-                     const materialName = selectedTexture === 'none' ? 'No Material' : textures.find(t => t.id === selectedTexture)?.name;
-                     const colorName = selectedColor === 'none' ? 'No Color' : colors.find(c => c.id === selectedColor)?.name;
+                                           // ENHANCED: Add item to cart with the merged total price, handling "None" selections
+                      const materialName = selectedTexture === 'none' ? 'No Material' : textures.find(t => t.id === selectedTexture)?.name;
+                      const colorName = selectedColor === 'none' ? 'No Color' : colors.find(c => c.id === selectedColor)?.name;
+                      const stitchingName = selectedStitching === 'none' ? 'No Stitching' : stichtingtextures.find(s => s.id === selectedStitching)?.name;
 
-                     addItem({
-                       id: selectedItem.id,
-                       title: `${selectedItem.title} - ${materialName} ${colorName}`,
-                       price: `$${totalPrice}`,
-                       image: selectedItem.image,
-                       description: `${selectedItem.description} with ${materialName} material and ${colorName} color`,
-                       category: selectedItem.category
-                     });
+                      dispatch(addItem({
+                        id: selectedItem.id,
+                        title: `${selectedItem.title} - ${materialName} ${colorName} ${stitchingName}`,
+                        price: `$${totalPrice}`,
+                        image: selectedItem.image,
+                        description: `${selectedItem.description} with ${materialName} material, ${colorName} color, and ${stitchingName} stitching`,
+                        category: selectedItem.category
+                      }));
                    }}
                    sx={{
                      bgcolor: '#d32f2f', // Changed to red color
                      color: 'white',
-                     fontSize: { xs: '0.75rem', sm: '0.85rem' }, // ADJUSTED: Smaller font size for better fit
+                     fontSize: { xs: '0.7rem', sm: '0.8rem' }, // REDUCED: Smaller font size for better fit
                      py: { xs: 0.5, sm: 0.75 }, // REDUCED: Less vertical padding for better fit
-                     px: { xs: 0.75, sm: 1 }, // REDUCED: Less horizontal padding for better fit
+                     px: { xs: 0.5, sm: 1 }, // REDUCED: Less horizontal padding for better fit
                      minHeight: '60px',
-                     width: '180px', // Changed to match Total Price button size
+                     width: '100%', // CHANGED: Use full width of grid cell
                      height: '50px', // Added to match Total Price button size
                      gap: { xs: 0.25, sm: 0.5 }, // ADDED: Control spacing between icon and text
                      '&:hover': {
@@ -828,8 +992,9 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                  </Button>
                )}
                              
-                             {/* EMPTY SPACE: Third column to maintain grid alignment */}
-                             <Box sx={{ width: '180px', height: '50px' }} />
+                                                           {/* EMPTY SPACE: Third and fourth columns to maintain grid alignment */}
+                              <Box sx={{ width: '100%', height: '50px' }} />
+                              <Box sx={{ width: '100%', height: '50px' }} />
                           </Box>
                        </Box>
                        

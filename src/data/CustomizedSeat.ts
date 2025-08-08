@@ -8,6 +8,7 @@ export interface Texture {
   image: string;
 }
 
+
 export const textures: Texture[] = [
   { id: 'none', name: '', price: 0, image: '/Textures/01.jpg' }, 
   { id: 'leather', name: 'Premium Leather', price: 200, image: '/Textures/01.jpg' },
@@ -25,6 +26,18 @@ export const textures: Texture[] = [
   { id: 'silk', name: 'Silk Blend', price: 350, image: '/Textures/01.jpg' },
   { id: 'denim', name: 'Premium Denim', price: 500, image: '/Textures/07.jpg' },
   { id: 'cork', name: 'Natural Cork', price: 100, image: '/Textures/04.jpg' },
+];
+export const stichtingtextures: Texture[] = [
+  { id: 'none', name: '', price: 0, image: '/Textures/01.jpg' }, 
+  { id: 'leather', name: 'Microfiber', price: 500, image: '/stitchpatterns/08.jpg' },
+  { id: 'fabric', name: 'Performance Fabric', price: 400, image: '/stitchpatterns/02.jpg' },
+  { id: 'suede', name: 'Luxury Suede', price: 230, image: '/stitchpatterns/03.jpg' },
+  { id: 'nappa', name: 'Nappa Leather', price: 300, image: '/stitchpatterns/04.jpg' },
+  { id: 'alcantara', name: 'Alcantara', price: 400, image: '/stitchpatterns/05.jpg' },
+  { id: 'mesh', name: 'Breathable Mesh', price: 150, image: '/stitchpatterns/06.jpg' },
+  { id: 'vinyl', name: 'Premium Vinyl', price: 100, image: '/stitchpatterns/07.jpg' },
+
+
 ];
 
 // Color interface and data
