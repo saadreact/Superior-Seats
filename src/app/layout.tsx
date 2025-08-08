@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import ThemeRegistry from '@/components/ThemeRegistry';
-import { CartProvider } from '@/contexts/CartContext';
 import { SelectedItemProvider } from '@/contexts/SelectedItemContext';
 import ReduxProvider from '@/components/ReduxProvider';
 import './globals.css';
@@ -23,11 +22,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <ReduxProvider>
           <ThemeRegistry>
-            <CartProvider>
-              <SelectedItemProvider>
-                {children}
-              </SelectedItemProvider>
-            </CartProvider>
+            <SelectedItemProvider>
+              {children}
+            </SelectedItemProvider>
           </ThemeRegistry>
         </ReduxProvider>
       </body>

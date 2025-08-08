@@ -27,7 +27,8 @@ import {
 } from '@mui/icons-material';
 import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
-import { useCart } from '@/contexts/CartContext';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logoutUser } from '@/store/authSlice';
 import Cart from './Cart';
@@ -38,13 +39,13 @@ const Header = () => {
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { state } = useCart();
+  const { totalItems } = useSelector((state: RootState) => state.cart);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   
   // Redux state
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, loading } = useAppSelector((state: any) => state.auth);
+  const { user, isAuthenticated, loading } = useAppSelector((state) => state.auth);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -211,7 +212,7 @@ const Header = () => {
                 onClick={handleCartToggle}
                 sx={{ color: '#DA291C', ml: 1 }}
               >
-                <Badge badgeContent={state.totalItems} color="primary">
+                <Badge badgeContent={totalItems} color="primary">
                   <ShoppingCartIcon />
                 </Badge>
               </IconButton>
@@ -247,7 +248,7 @@ const Header = () => {
                   }
                 }}
               >
-                <Badge badgeContent={state.totalItems} color="primary">
+                <Badge badgeContent={totalItems} color="primary">
                   <ShoppingCartIcon />
                 </Badge>
               </IconButton>

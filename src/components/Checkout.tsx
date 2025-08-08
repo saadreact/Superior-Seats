@@ -19,7 +19,9 @@ import {
   ShoppingCart,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
-import { useCart } from '@/contexts/CartContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store/store';
+import { clearCart } from '@/store/cartSlice';
 import { CartReview, ShippingInformation, PaymentMethod, OrderConfirmation } from './checkout/index';
 
 // Steps array with proper spacing and comments
@@ -34,7 +36,8 @@ const Checkout = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { state, clearCart } = useCart();
+  const dispatch = useDispatch();
+  const { items, totalItems, totalPrice } = useSelector((state: RootState) => state.cart);
   
   const [activeStep, setActiveStep] = useState(0);
   const [orderComplete, setOrderComplete] = useState(false);
@@ -51,13 +54,13 @@ const Checkout = () => {
     // Simulate order processing
     setTimeout(() => {
       setOrderComplete(true);
-      clearCart();
+      dispatch(clearCart());
       handleNext();
     }, 2000);
   };
 
   // Empty cart state
-  if (state.items.length === 0 && !orderComplete) {
+  if (items.length === 0 && !orderComplete) {
     return (
       <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
         <Header />
