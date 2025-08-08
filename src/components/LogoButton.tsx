@@ -21,7 +21,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
         tooltip: {
           sx: {
             backgroundColor: 'white !important',
-            color: '#DA291C !important', // Pantone 485C - red text
+            color: '#DA291C !important',
             fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
             padding: { xs: '8px 12px', sm: '10px 16px' },
             borderRadius: '8px',
@@ -51,7 +51,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
         }}
         sx={{
           backgroundColor: 'white',
-          color: '#DA291C', // Pantone 485C
+          color: '#DA291C',
           borderRadius: '50%',
           width: { xs: 85, sm: 65, md: 70, lg: 85, xl: 100 },
           height: { xs: 85, sm: 65, md: 70, lg: 85, xl: 100 },
@@ -66,7 +66,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
           boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
         }}
       >
-        <Box   // s setting
+        <Box
           sx={{
             position: 'absolute',
             top: '50%',
@@ -74,7 +74,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
             transform: 'translate(-50%, -50%)',
             fontSize: { xs: '2.5rem', sm: '1.6rem', md: '2rem', lg: '2.3rem', xl: '3rem' },
             fontWeight: 'bold',
-            color: '#DA291C', // Pantone 485C
+            color: '#DA291C',
             textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
           }}
         >

@@ -19,15 +19,17 @@ import {
   Zoom
 } from '@mui/material';
 import { Delete, ShoppingCart, LocalShipping, Security, CheckCircle } from '@mui/icons-material';
-import { useCart } from '@/contexts/CartContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store/store';
+import { removeItem } from '@/store/cartSlice';
 
 interface CartReviewProps {
   onNext: () => void;
 }
 
 const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
-  const { state, removeItem } = useCart();
-  const { items, totalPrice } = state;
+  const dispatch = useDispatch();
+  const { items, totalItems, totalPrice } = useSelector((state: RootState) => state.cart);
 
   if (items.length === 0) {
     return (
@@ -322,7 +324,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                       }}
                     />
                     <IconButton
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => dispatch(removeItem(item.id))}
                       sx={{
                         color: 'error.main',
                         p: { xs: 1, sm: 1.5 },

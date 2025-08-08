@@ -22,7 +22,10 @@ import {
   Delete,
   ShoppingCart,
 } from '@mui/icons-material';
-import { useCart } from '@/contexts/CartContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store/store';
+import { removeItem, updateQuantity } from '@/store/cartSlice';
+import { CartItem } from '@/store/cartSlice';
 
 interface CartProps {
   open: boolean;
@@ -31,14 +34,15 @@ interface CartProps {
 
 const Cart: React.FC<CartProps> = ({ open, onClose }) => {
   const router = useRouter();
-  const { state, removeItem, updateQuantity } = useCart();
+  const dispatch = useDispatch();
+  const { items, totalItems, totalPrice } = useSelector((state: RootState) => state.cart) as { items: CartItem[]; totalItems: number; totalPrice: number };
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleQuantityChange = (id: number, currentQuantity: number, change: number) => {
     const newQuantity = currentQuantity + change;
     if (newQuantity > 0) {
-      updateQuantity(id, newQuantity);
+      dispatch(updateQuantity({ id, quantity: newQuantity }));
     }
   };
 
@@ -101,7 +105,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
         </Box>
 
         {/* Cart Items */}
-        {state.items.length === 0 ? (
+        {items.length === 0 ? (
           <Box sx={{ 
             flex: 1, 
             display: 'flex', 
@@ -136,7 +140,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
           <>
             <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <List sx={{ p: 0 }}>
-                {state.items.map((item) => (
+                {items.map((item: CartItem) => (
                   <Card key={item.id} sx={{ 
                     mb: { xs: 2, sm: 2.5, md: 3 }, 
                     boxShadow: { xs: '0 1px 8px rgba(0,0,0,0.06)', sm: '0 2px 12px rgba(0,0,0,0.08)' },
@@ -245,7 +249,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                       
                       {/* Remove Button */}
                       <IconButton
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => dispatch(removeItem(item.id))}
                         sx={{ 
                           color: '#f44336',
                           width: { xs: 32, sm: 34, md: 36 },
@@ -281,14 +285,14 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
                   color: '#1a1a1a'
                 }}>
-                  Total ({state.totalItems} items):
+                  Total ({totalItems} items):
                 </Typography>
                 <Typography variant="h6" sx={{ 
                   fontWeight: 700, 
                   color: 'primary.main',
                   fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' }
                 }}>
-                  ${state.totalPrice.toFixed(2)}
+                  ${totalPrice.toFixed(2)}
                 </Typography>
               </Box>
               
