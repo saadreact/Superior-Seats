@@ -53,8 +53,8 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
           backgroundColor: 'white',
           color: '#DA291C', // Pantone 485C
           borderRadius: '50%',
-          width: { xs: 65, sm: 65, md: 70, lg: 85, xl: 100 },
-          height: { xs: 65, sm: 65, md: 70, lg: 85, xl: 100 },
+          width: { xs: 85, sm: 65, md: 70, lg: 85, xl: 100 },
+          height: { xs: 85, sm: 65, md: 70, lg: 85, xl: 100 },
           minWidth: 'unset',
           position: 'relative',
           overflow: 'hidden',
@@ -72,7 +72,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            fontSize: { xs: '2rem', sm: '1.6rem', md: '2rem', lg: '2.3rem', xl: '3rem' },
+            fontSize: { xs: '2.5rem', sm: '1.6rem', md: '2rem', lg: '2.3rem', xl: '3rem' },
             fontWeight: 'bold',
             color: '#DA291C', // Pantone 485C
             textShadow: '2px 2px 4px rgba(0,0,0,0.3)',

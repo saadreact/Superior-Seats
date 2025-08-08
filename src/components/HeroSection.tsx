@@ -77,7 +77,6 @@ const HeroSection = () => {
   const [isAutoPlaying, setIsAutoPlaying] = React.useState(true);
   const [slideDirection, setSlideDirection] = React.useState<'right' | 'left'>('left');
 
-  // Auto-slide background images with slide from right animation
   React.useEffect(() => {
     if (!isAutoPlaying) return;
     
@@ -85,9 +84,9 @@ const HeroSection = () => {
       setCurrentImageIndex((prevIndex) => 
         (prevIndex + 1) % backgroundImages.length
       );
-      // Trigger animation by updating key
+    
       setAnimationKey(prev => prev + 1);
-    }, 4000); // Change image every 4 seconds
+    }, 4000); 
 
     return () => clearInterval(interval);
   }, [backgroundImages.length, isAutoPlaying]);
@@ -96,7 +95,6 @@ const HeroSection = () => {
     if (index === currentImageIndex) return;
     setSlideDirection(direction);
     setCurrentImageIndex(index);
-    // Trigger animation by updating key
     setAnimationKey(prev => prev + 1);
   };
 
@@ -342,7 +340,7 @@ const HeroSection = () => {
                        whileInView={{ opacity: 1, y: 0, scale: 1 }}
                        transition={{ duration: 1, ease: "easeOut" }}
                        sx={{
-                         fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
+                         fontSize: { xs: '2rem', sm: '2.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
                          fontWeight: 'bold',
                          lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2 },
                          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
@@ -362,7 +360,7 @@ const HeroSection = () => {
                       transition={{ duration: 1, ease: "easeOut" }}
                       sx={{
                         opacity: 0.95,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
+                        fontSize: { xs: '1.5rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
                         textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
                         letterSpacing: '0.5px',
                         fontWeight: 300,
