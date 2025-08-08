@@ -223,9 +223,11 @@ const HomePage = () => {
                  mx: 'auto',
                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
                  px: { xs: 2, sm: 0 },
-                 whiteSpace: 'nowrap',
+                 whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow text to wrap on mobile
                  overflow: 'visible',
                  textOverflow: 'clip',
+                 textAlign: 'center', // Center the text
+                 lineHeight: { xs: 1.4, sm: 1.5 }, // Better line height for readability
                }}
              >
                Premium truck, RV, and van seating with custom options and superior craftsmanship.
