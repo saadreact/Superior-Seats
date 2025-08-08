@@ -36,12 +36,18 @@ import {
 import Header from '@/components/Header';
 import { mainCategories, subCategories, galleryData } from '@/data/ShopGallery';
 import { useCart } from '@/contexts/CartContext';
+// NEW IMPORTS: Added to enable communication with CustomizedSeat component
+import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
+import { useRouter } from 'next/navigation'; // Next.js router for programmatic navigation
 
 const ShopGallery = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { addItem } = useCart();
+  // NEW CONTEXT USAGE: Access functions to set selected item and navigate
+  const { setSelectedItem } = useSelectedItem(); // Destructure setSelectedItem from context
+  const router = useRouter(); // Initialize Next.js router for navigation
   
   const [selectedMainCategory, setSelectedMainCategory] = useState('all');
   const [selectedSubCategory, setSelectedSubCategory] = useState('all');
@@ -131,6 +137,21 @@ const ShopGallery = () => {
       description: item.description,
       category: item.category,
     });
+  };
+
+  // NEW FUNCTION: Handles item selection and navigation to customization page
+  const handleCustomize = (item: typeof galleryData[0]) => {
+    setSelectedItem({ // FUNCTION: Set the selected item in global context
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      subCategory: item.subCategory,
+      mainCategory: item.mainCategory,
+      image: item.image,
+      description: item.description,
+      price: item.price,
+    });
+    router.push('/customize-your-seat'); // FUNCTION: Navigate to customization page
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -540,9 +561,14 @@ const ShopGallery = () => {
                       spacing={{ xs: 1, sm: 1 }}
                       sx={{ flexWrap: 'wrap', gap: { xs: 1, sm: 1 } }}
                     >
+                      {/* MODIFIED BUTTON: Changed from "View Details" to "Customize" with new functionality */}
                       <Button
                         variant="outlined"
                         size="small"
+                        onClick={(e) => {
+                          e.stopPropagation(); // PREVENT: Stop card click event from firing
+                          handleCustomize(item); // FUNCTION: Call the new customize handler
+                        }}
                         sx={{
                           borderColor: 'primary.main',
                           color: 'primary.main',
@@ -555,7 +581,7 @@ const ShopGallery = () => {
                           },
                         }}
                       >
-                        View Details
+                        Customize {/* TEXT: Changed button text from "View Details" */}
                       </Button>
                       <Button
                         variant="contained"
