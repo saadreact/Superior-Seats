@@ -108,19 +108,19 @@ const HeroSection = () => {
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
+    // Don't prevent default to allow button clicks
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
     setIsAutoPlaying(false);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault();
+    // Don't prevent default to allow button clicks
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault();
+    // Don't prevent default to allow button clicks
     if (!touchStart || !touchEnd) return;
     
     const distance = touchStart - touchEnd;
@@ -147,7 +147,7 @@ const HeroSection = () => {
   const [isDragging, setIsDragging] = React.useState(false);
 
   const onMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
+    // Don't prevent default to allow button clicks
     setIsDragging(true);
     setMouseEnd(null);
     setMouseStart(e.clientX);
@@ -156,7 +156,7 @@ const HeroSection = () => {
 
   const onMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
-    e.preventDefault();
+    // Don't prevent default to allow button clicks
     setMouseEnd(e.clientX);
   };
 
