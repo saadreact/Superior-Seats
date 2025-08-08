@@ -18,6 +18,8 @@ import {
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import { useRouter } from 'next/navigation';
@@ -36,6 +38,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const router = useRouter();
   
@@ -64,15 +67,28 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {/* Sidebar */}
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar 
+        open={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
 
       {/* Main Content */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
+          width: { 
+            md: sidebarCollapsed 
+              ? `calc(100% - ${collapsedDrawerWidth}px)` 
+              : `calc(100% - ${drawerWidth}px)`
+          },
+          ml: { 
+            md: sidebarCollapsed 
+              ? `${collapsedDrawerWidth}px` 
+              : `${drawerWidth}px`
+          },
           transition: 'margin-left 0.2s ease-in-out, width 0.2s ease-in-out',
         }}
       >
@@ -93,7 +109,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
             aria-label="open drawer"
             edge="start"
             onClick={handleSidebarToggle}
-            sx={{ mr: 2, display: { md: 'none' } }}
+            sx={{ mr: 2, display: { xs: 'block', md: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
