@@ -3,11 +3,15 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Grid } from '@mui/material'; 
-import { textures } from '@/data/textures';
-import { colors } from '@/data/colors';
 import { testimonials } from '@/data/testimonials';
 import Header from '@/components/Header';
-import Chair3DModel from '@/components/Chair3DModel';
+// CONSOLIDATED IMPORTS: All customization data now comes from a single file
+import { textures, colors, objects } from '@/data/CustomizedSeat';
+// NEW IMPORTS: Added to enable communication between ShopGallery and CustomizedSeat components
+import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to access selected item data
+import { useRouter } from 'next/navigation'; // Next.js router for programmatic navigation
+// NEW IMPORT: Added to enable cart functionality
+import { useCart } from '@/contexts/CartContext'; // Context hook to access cart functions
 
 import {
   Box,
@@ -15,20 +19,12 @@ import {
   Typography,
   Card,
   CardContent,
-  Button,
-  Chip,
   useTheme,
   useMediaQuery,
-  FormControl,
-  FormControlLabel,
-  Checkbox,
-  Radio,
-  RadioGroup,
   Divider,
-  Paper,
   IconButton,
   Tooltip,
-  Stack,
+  Button,
 } from '@mui/material';
 import { 
   Chair, 
@@ -44,7 +40,6 @@ import {
   Security,
   Support
 } from '@mui/icons-material';
-
 interface CustomizeYourSeatProps {
   showHeader?: boolean;
   showHero?: boolean;
@@ -60,29 +55,35 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   showAbout = true,
   showTestimonials = true
 }) => {
+ 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   
+
+  const { selectedItem, clearSelectedItem } = useSelectedItem(); // Destructure selectedItem and clearSelectedItem from context
+  const router = useRouter(); 
+ 
+  const { addItem } = useCart(); 
+
   // State for customization options
-  const [selectedTexture, setSelectedTexture] = useState('leather');
-  const [selectedColor, setSelectedColor] = useState('black');
+  const [selectedTexture, setSelectedTexture] = useState('none'); 
+  const [selectedColor, setSelectedColor] = useState('none'); 
   const [currentObjectIndex, setCurrentObjectIndex] = useState(0);
 
-  // Different objects to display
-  const objects = [
-    { id: 'sofa', name: 'Car Seat', price: 899 },
-    { id: 'car', name: 'Back Double Seat', price: 1299 },
-    { id: 'truck', name: 'Truck Seat', price: 1499 },
-    { id: 'racing', name: 'Van Seat', price: 1899 },
-    { id: 'office', name: 'Ship Seats', price: 699 },
-  ];
-
   const calculateTotalPrice = () => {
-    const currentObject = objects[currentObjectIndex];
+    // Get base seat price (from selected item or default objects)
+    const baseSeatPrice = selectedItem ? parseFloat(selectedItem.price.replace('$', '')) : objects[currentObjectIndex].price;
+    
+    // Get material/texture price
     const texturePrice = textures.find(t => t.id === selectedTexture)?.price || 0;
-    return currentObject.price + texturePrice;
+    
+    // Get color price
+    const colorPrice = colors.find(c => c.id === selectedColor)?.price || 0;
+    
+    // Calculate total
+    return baseSeatPrice + texturePrice + colorPrice;
   };
 
   const totalPrice = calculateTotalPrice();
@@ -93,7 +94,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       
       {showHero && (
         /* Hero Section */
-        <Box sx={{ mt: { xs: 8, sm: 9, md: 8, lg: 8 } }}>
+        <Box sx={{ mt: { xs: 6, sm: 9, md: 8, lg: 8 } }}>
         <Box
           sx={{
             background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
@@ -182,111 +183,92 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   position: 'relative',
                 }}
               >
-                {/* Left Arrow */}
-                <IconButton
-                  onClick={() => setCurrentObjectIndex(prev => prev === 0 ? objects.length - 1 : prev - 1)}
-                  sx={{
-                    position: 'absolute',
-                    left: { xs: 10, sm: 15, md: 20 },
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    bgcolor: 'rgba(255,255,255,0.9)',
-                    color: '#d32f2f',
-                    width: { xs: 40, sm: 44, md: 48 },
-                    height: { xs: 40, sm: 44, md: 48 },
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,1)',
-                      transform: 'translateY(-50%) scale(1.1)',
-                    },
-                    zIndex: 10,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  }}
-                >
-                  ←
-                </IconButton>
 
-                {/* Right Arrow */}
-                <IconButton
-                  onClick={() => setCurrentObjectIndex(prev => prev === objects.length - 1 ? 0 : prev + 1)}
-                  sx={{
-                    position: 'absolute',
-                    right: { xs: 10, sm: 15, md: 20 },
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    bgcolor: 'rgba(255,255,255,0.9)',
-                    color: '#d32f2f',
-                    width: { xs: 40, sm: 44, md: 48 },
-                    height: { xs: 40, sm: 44, md: 48 },
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,1)',
-                      transform: 'translateY(-50%) scale(1.1)',
-                    },
-                    zIndex: 10,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  }}
-                >
-                  →
-                </IconButton>
                 
-                {/* 3D Model Viewer */}
+                {/* MODIFIED IMAGE DISPLAY AREA: Now conditionally renders selected item image or placeholder */}
                 <Box sx={{ 
                   height: '100%', 
                   width: '100%',
-                  position: 'relative'
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(0,0,0,0.05)',
+                  borderRadius: 2,
+                  overflow: 'hidden'
                 }}>
-                  <Chair3DModel 
-                    selectedTexture={selectedTexture}
-                    selectedColor={colors.find(c => c.id === selectedColor)?.hex || '#000000'}
-                    currentObjectIndex={currentObjectIndex}
-                  />
-                  
-                  {/* Object Name Display */}
-                  <Box sx={{
-                    position: 'absolute',
-                    top: { xs: 10, sm: 15, md: 20 },
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    bgcolor: 'rgba(0,0,0,0.7)',
-                    color: 'white',
-                    px: { xs: 2, sm: 3 },
-                    py: { xs: 0.5, sm: 1 },
-                    borderRadius: 2,
-                    backdropFilter: 'blur(10px)',
-                    maxWidth: { xs: '90%', sm: 'auto' }
-                  }}>
+                  {selectedItem ? ( // CONDITIONAL RENDERING: Show selected item image if available
+                    <Image
+                      src={selectedItem.image} // DISPLAY: Show the selected item's image
+                      alt={selectedItem.title}
+                      fill
+                      style={{ 
+                        objectFit: 'contain',
+                        padding: '20px'
+                      }}
+                    />
+                  ) : (
+                    // PLACEHOLDER: Show message when no item is selected from shop
                     <Typography variant="h6" sx={{ 
-                      fontWeight: 'bold',
-                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                      px: 2
                     }}>
-                      {objects[currentObjectIndex].name}
+                      Select an item from the shop to customize
                     </Typography>
-                  </Box>
+                  )}
                   
-                  {/* Instructions */}
-                  <Box sx={{
-                    position: 'absolute',
-                    bottom: { xs: 10, sm: 15, md: 20 },
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    textAlign: 'center',
-                    bgcolor: 'rgba(0,0,0,0.7)',
-                    color: 'white',
-                    px: { xs: 2, sm: 3 },
-                    py: { xs: 0.5, sm: 1 },
-                    borderRadius: 2,
-                    backdropFilter: 'blur(10px)',
-                    maxWidth: { xs: '90%', sm: 'auto' }
-                  }}>
-                    <Typography variant="body2" sx={{ 
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      lineHeight: 1.2
+                  {/* MODIFIED OBJECT NAME DISPLAY: Now shows selected item title when available */}
+                  {selectedItem && ( // CONDITIONAL RENDERING: Only show if an item is selected
+                    <Box sx={{
+                      position: 'absolute',
+                      top: { xs: 10, sm: 15, md: 20 },
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      bgcolor: 'rgba(0,0,0,0.7)',
+                      color: 'white',
+                      px: { xs: 2, sm: 3 },
+                      py: { xs: 0.5, sm: 1 },
+                      borderRadius: 2,
+                      backdropFilter: 'blur(10px)',
+                      maxWidth: { xs: '90%', sm: 'auto' }
                     }}>
-                      {isMobile ? 'Tap arrows to change seat type' : 'Drag to rotate • Scroll to zoom • Use arrows to change seat type'}
-                    </Typography>
-                  </Box>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 'bold',
+                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                      }}>
+                        {selectedItem.title} {/* DISPLAY: Show selected item's title */}
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {/* MODIFIED INSTRUCTIONS/INFO DISPLAY: Now shows selected item price and category */}
+                  {selectedItem && ( // CONDITIONAL RENDERING: Only show if an item is selected
+                    <Box sx={{
+                      position: 'absolute',
+                      bottom: { xs: 10, sm: 15, md: 20 },
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      textAlign: 'center',
+                      bgcolor: 'rgba(0,0,0,0.7)',
+                      color: 'white',
+                      px: { xs: 2, sm: 3 },
+                      py: { xs: 0.5, sm: 1 },
+                      borderRadius: 2,
+                      backdropFilter: 'blur(10px)',
+                      maxWidth: { xs: '90%', sm: 'auto' }
+                    }}>
+                      <Typography variant="body2" sx={{ 
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        lineHeight: 1.2
+                      }}>
+                        {selectedItem.price} • {selectedItem.category} {/* DISPLAY: Show selected item's price and category */}
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
                 
-                {/* Viewer Controls */}
+                {/* MODIFIED VIEWER CONTROLS: Added back to shop button, removed navigation arrows */}
                 <Box sx={{ 
                   position: 'absolute', 
                   top: { xs: 10, sm: 15, md: 20 }, 
@@ -294,6 +276,29 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   display: 'flex',
                   gap: { xs: 0.5, sm: 1 }
                 }}>
+                  {/* NEW BACK TO SHOP BUTTON: Only shows when an item is selected */}
+                  {selectedItem && ( // CONDITIONAL RENDERING: Only show if an item is selected
+                    <Tooltip title="Back to Shop">
+                      <IconButton 
+                        size={isSmallMobile ? "small" : "medium"}
+                        onClick={() => {
+                          clearSelectedItem(); // FUNCTION: Clear the selected item from context
+                          router.push('/shop'); // FUNCTION: Navigate back to shop page
+                        }}
+                        sx={{ 
+                          bgcolor: 'rgba(255,255,255,0.95)', 
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          '&:hover': {
+                            bgcolor: 'rgba(255,255,255,1)',
+                            transform: 'scale(1.05)',
+                          }
+                        }}
+                      >
+                        ← {/* ICON: Back arrow */}
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {/* EXISTING ZOOM CONTROLS: Kept for future functionality */}
                   <Tooltip title="Zoom In">
                     <IconButton 
                       size={isSmallMobile ? "small" : "medium"}
@@ -380,9 +385,9 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                       <Typography variant="h5" sx={{ 
                         mb: { xs: 2, sm: 3 }, 
                         fontWeight: 'bold', 
-                        color: 'primary.main', 
+                        color: selectedTexture === 'none' ? 'text.secondary' : 'primary.main', 
                         textAlign: 'center',
-                        fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
                       }}>
                         {textures.find(t => t.id === selectedTexture)?.name}
                       </Typography>
@@ -416,12 +421,40 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                             }
                           }}
                         >
-                          <Image
-                            src={texture.image}
-                            alt={texture.name}
-                            fill
-                            style={{ objectFit: 'cover' }}
-                          />
+                          {texture.id === 'none' ? (
+                            // NONE OPTION: Special display for "None" option
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                backgroundColor: '#f5f5f5',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '2px dashed #ccc'
+                              }}
+                            >
+                              <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                  fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                                  color: 'text.secondary',
+                                  textAlign: 'center',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                None
+                              </Typography>
+                            </Box>
+                          ) : (
+                            // REGULAR TEXTURE: Normal image display for texture options
+                            <Image
+                              src={texture.image}
+                              alt={texture.name}
+                              fill
+                              style={{ objectFit: 'cover' }}
+                            />
+                          )}
                           {selectedTexture === texture.id && (
                             <Box
                               sx={{
@@ -430,14 +463,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                 left: 0,
                                 right: 0,
                                 bottom: 0,
-                                backgroundColor: 'rgba(0,0,0,0.3)',
+                                backgroundColor: texture.id === 'none' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.3)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                               }}
                             >
                               <CheckCircle sx={{ 
-                                color: 'white', 
+                                color: texture.id === 'none' ? 'primary.main' : 'white', 
                                 fontSize: { xs: 18, sm: 20, md: 24 } 
                               }} />
                             </Box>
@@ -477,25 +510,45 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               width: { xs: 45, sm: 48, md: 50 },
                               height: { xs: 45, sm: 48, md: 50 },
                               borderRadius: '50%',
-                              backgroundColor: color.hex,
+                              backgroundColor: color.id === 'none' ? '#f5f5f5' : color.hex,
                               border: '4px solid',
                               borderColor: selectedColor === color.id ? 'primary.main' : 'transparent',
                               cursor: 'pointer',
                               transition: 'all 0.3s ease',
                               '&:hover': {
                                 transform: 'scale(1.15)',
-                                borderColor: 'primary.main',
+                                borderColor: 'primary.secondary',
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                               },
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
+                              position: 'relative', // ADDED: Required for absolute positioning of child elements
                             }}
                           >
+                            {color.id === 'none' && (
+                              // NONE OPTION: Special display for "None" color option
+                              <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                  fontSize: { xs: '0.5rem', sm: '0.6rem' },
+                                  color: selectedColor === color.id ? 'primary.main' : 'text.secondary',
+                                  fontWeight: 'bold',
+                                  // Let parent flexbox center it, no absolute positioning
+                                }}
+                              >
+                                None
+                              </Typography>
+                            )}
                             {selectedColor === color.id && (
-                              <CheckCircle sx={{ 
-                                color: 'white', 
-                                fontSize: { xs: 16, sm: 17, md: 18 } 
+                              <CheckCircle sx={{
+                                color: color.id === 'none' ? 'primary.main' : 'white',
+                                fontSize: color.id === 'none' ? { xs: 12, sm: 14, md: 16 } : { xs: 16, sm: 17, md: 18 }, // Smaller tick for 'None'
+                                position: 'absolute', // Absolute positioning for tick
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                zIndex: 2 // Ensure tick is on top
                               }} />
                             )}
                           </Box>
@@ -503,6 +556,286 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                       ))}
                     </Box>
                   </Box>
+
+                  {/* Divider */}
+                  <Divider sx={{ my: 3 }} />
+
+                                     {/* ENHANCED PRICE SECTION: Displays base seat price, material price, color price, and total */}
+                   {selectedTexture && (
+                     <Box sx={{ 
+                       mx: { xs: 1, sm: 2 }, // ADDED: Left and right margins
+                       overflow: 'hidden' // ADDED: Prevent horizontal scrollbar
+                     }}>
+                       <Typography variant="h6" sx={{ 
+                         mb: { xs: 1.5, sm: 2 }, 
+                         fontWeight: 'bold', 
+                         color: 'text.primary',
+                         fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                       }}>
+                         Price Breakdown
+                       </Typography>
+                       
+                       {/* TWO-ROW PRICE LAYOUT: Base Seat + Material + Color Price in first row, Total Price + Add to Cart in second row */}
+                       <Box sx={{
+                         display: 'flex',
+                         flexDirection: 'column',
+                         gap: { xs: 1, sm: 1.5 },
+                         mb: 2,
+                         width: '100%' // ADDED: Ensure full width within container
+                       }}>
+                         {/* FIRST ROW: Base Seat Price, Material Price, and Color Price buttons */}
+                         <Box sx={{
+                           display: 'grid',
+                           gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+                           gap: { xs: 0.5, sm: 1 }, // REDUCED: Smaller gaps to fit better
+                           width: '100%' // ADDED: Ensure full width
+                         }}>
+                                                                                   {/* BASE SEAT PRICE BUTTON: Shows base seat price using standard button */}
+                             <Button
+                               variant="outlined"
+                               disabled
+                               sx={{
+                                 bgcolor: 'white',
+                                 color: '#d32f2f',
+                                 border: '2px solid #d32f2f',
+                                 minHeight: '60px',
+                                 display: 'flex',
+                                 flexDirection: 'column',
+                                 justifyContent: 'center',
+                                 alignItems: 'center',
+                                 py: { xs: 0.75, sm: 1 },
+                                 px: { xs: 1, sm: 1.5 },
+                                 width: '180px',
+                                 height: '50px',
+                                 '&:hover': {
+                                   bgcolor: 'white',
+                                   borderColor: '#d32f2f',
+                                 },
+                                 '&.Mui-disabled': {
+                                   bgcolor: 'white',
+                                   color: '#d32f2f',
+                                   borderColor: '#d32f2f',
+                                   opacity: 1
+                                 }
+                               }}
+                             >
+                                                           <Typography variant="h6" sx={{ 
+                                fontWeight: 'bold',
+                                fontSize: { xs: '0.75rem', sm: '0.85rem' }, // INCREASED: Larger font size for better visibility
+                                mb: 0.25,
+                                lineHeight: 1
+                              }}>
+                                ${selectedItem ? parseFloat(selectedItem.price.replace('$', '')) : objects[currentObjectIndex].price}
+                              </Typography>
+                              <Typography variant="body2" sx={{ 
+                                opacity: 0.9,
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' }, // INCREASED: Larger font size for better visibility
+                                lineHeight: 1
+                              }}>
+                               {selectedItem ? selectedItem.title : objects[currentObjectIndex].name}
+                             </Typography>
+                           </Button>
+                           
+                                                                                   {/* MATERIAL PRICE BUTTON: Shows selected material/texture price using standard button */}
+                             <Button
+                               variant="outlined"
+                               disabled
+                               sx={{
+                                 bgcolor: 'white',
+                                 color: '#d32f2f',
+                                 border: '2px solid #d32f2f',
+                                 minHeight: '60px',
+                                 display: 'flex',
+                                 flexDirection: 'column',
+                                 justifyContent: 'center',
+                                 alignItems: 'center',
+                                 py: { xs: 0.75, sm: 1 },
+                                 px: { xs: 1, sm: 1.5 },
+                                 width: '180px',
+                                 height: '50px',
+                                 '&:hover': {
+                                   bgcolor: 'white',
+                                   borderColor: '#d32f2f',
+                                 },
+                                 '&.Mui-disabled': {
+                                   bgcolor: 'white',
+                                   color: '#d32f2f',
+                                   borderColor: '#d32f2f',
+                                   opacity: 1
+                                 }
+                               }}
+                             >
+                                                           <Typography variant="h6" sx={{ 
+                                fontWeight: 'bold',
+                                fontSize: { xs: '0.75rem', sm: '0.85rem' }, // INCREASED: Larger font size for better visibility
+                                mb: 0.25,
+                                lineHeight: 1
+                              }}>
+                                {selectedTexture === 'none' ? '$0' : `+$${textures.find(t => t.id === selectedTexture)?.price || 0}`}
+                              </Typography>
+                              <Typography variant="body2" sx={{ 
+                                opacity: 0.9,
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' }, // INCREASED: Larger font size for better visibility
+                                lineHeight: 1
+                              }}>
+                               {textures.find(t => t.id === selectedTexture)?.name}
+                             </Typography>
+                           </Button>
+                           
+                                                                                   {/* COLOR PRICE BUTTON: Shows selected color price using standard button */}
+                             <Button
+                               variant="outlined"
+                               disabled
+                               sx={{
+                                 bgcolor: 'white',
+                                 color: '#d32f2f',
+                                 border: '2px solid #d32f2f',
+                                 minHeight: '60px',
+                                 display: 'flex',
+                                 flexDirection: 'column',
+                                 justifyContent: 'center',
+                                 alignItems: 'center',
+                                 py: { xs: 0.75, sm: 1 },
+                                 px: { xs: 1, sm: 1.5 },
+                                 width: '180px',
+                                 height: '50px',
+                                 '&:hover': {
+                                   bgcolor: 'white',
+                                   borderColor: '#d32f2f',
+                                 },
+                                 '&.Mui-disabled': {
+                                   bgcolor: 'white',
+                                   color: '#d32f2f',
+                                   borderColor: '#d32f2f',
+                                   opacity: 1
+                                 }
+                               }}
+                             >
+                                                           <Typography variant="h6" sx={{ 
+                                fontWeight: 'bold',
+                                fontSize: { xs: '0.75rem', sm: '0.85rem' }, // INCREASED: Larger font size for better visibility
+                                mb: 0.25,
+                                lineHeight: 1
+                              }}>
+                                {selectedColor === 'none' ? '$0' : `+$${colors.find(c => c.id === selectedColor)?.price || 0}`}
+                              </Typography>
+                              <Typography variant="body2" sx={{ 
+                                opacity: 0.9,
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' }, // INCREASED: Larger font size for better visibility
+                                lineHeight: 1
+                              }}>
+                               {colors.find(c => c.id === selectedColor)?.name}
+                             </Typography>
+                           </Button>
+                         </Box>
+                         
+                                                                                                                                 {/* SECOND ROW: Total Price and Add to Cart button */}
+                             <Box sx={{
+                               display: 'grid',
+                               gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+                               gap: { xs: 0.5, sm: 1 },
+                               width: '100%',
+                               mt: { xs: 1, sm: 1.5, md: 1.5, lg: 1.5 }
+                             }}>
+                               {/* TOTAL PRICE BUTTON: Shows the merged total price using standard button */}
+                              <Button
+                                variant="contained"
+                                disabled
+                                sx={{
+                                  bgcolor: '#d32f2f', // Changed to red color
+                                  color: 'white',
+                                  minHeight: '60px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  py: { xs: 0.75, sm: 1 },
+                                  px: { xs: 1, sm: 1.5 }, // REDUCED: Smaller horizontal padding
+                                  width: '180px', // ADDED: Full width within grid cell
+                                   height: '50px',
+                                  '&:hover': {
+                                    bgcolor: '#b71c1c', // Changed to darker red for hover effect
+                                    transform: 'scale(1.02)', // Added scale effect like cart button
+                                  },
+                                  '&.Mui-disabled': {
+                                    bgcolor: '#d32f2f', // Changed to red
+                                    color: 'white',
+                                    opacity: 1
+                                  },
+                                  transition: 'all 0.2s ease-in-out', // Added transition for smooth effects
+                                  boxShadow: { xs: '0 4px 12px rgba(211, 47, 47, 0.35)', sm: '0 6px 20px rgba(211, 47, 47, 0.4)' }, // Changed to red box shadow
+                                }}
+                              >
+                                <Typography variant="h6" sx={{ 
+                                  fontWeight: 'bold',
+                                  fontSize: { xs: '0.85rem', sm: '0.95rem' }, // INCREASED: Larger font size for better visibility
+                                  mb: 0.25,
+                                  lineHeight: 1
+                                }}>
+                                  ${totalPrice}
+                                </Typography>
+                                <Typography variant="body2" sx={{ 
+                                  opacity: 0.9,
+                                  fontSize: { xs: '0.7rem', sm: '0.8rem' }, // INCREASED: Larger font size for better visibility
+                                  lineHeight: 1
+                                }}>
+                                 Total Price
+                               </Typography>
+                             </Button>
+                             
+                                                                        {/* ADD TO CART BUTTON: Uses the merged total price - positioned under second button */}
+               {selectedItem && (
+                 <Button
+                   variant="contained"
+                   size="medium"
+                   startIcon={<ShoppingCart sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }} />}
+                   onClick={() => {
+                     // ENHANCED: Add item to cart with the merged total price, handling "None" selections
+                     const materialName = selectedTexture === 'none' ? 'No Material' : textures.find(t => t.id === selectedTexture)?.name;
+                     const colorName = selectedColor === 'none' ? 'No Color' : colors.find(c => c.id === selectedColor)?.name;
+
+                     addItem({
+                       id: selectedItem.id,
+                       title: `${selectedItem.title} - ${materialName} ${colorName}`,
+                       price: `$${totalPrice}`,
+                       image: selectedItem.image,
+                       description: `${selectedItem.description} with ${materialName} material and ${colorName} color`,
+                       category: selectedItem.category
+                     });
+                   }}
+                   sx={{
+                     bgcolor: '#d32f2f', // Changed to red color
+                     color: 'white',
+                     fontSize: { xs: '0.75rem', sm: '0.85rem' }, // ADJUSTED: Smaller font size for better fit
+                     py: { xs: 0.5, sm: 0.75 }, // REDUCED: Less vertical padding for better fit
+                     px: { xs: 0.75, sm: 1 }, // REDUCED: Less horizontal padding for better fit
+                     minHeight: '60px',
+                     width: '180px', // Changed to match Total Price button size
+                     height: '50px', // Added to match Total Price button size
+                     gap: { xs: 0.25, sm: 0.5 }, // ADDED: Control spacing between icon and text
+                     '&:hover': {
+                       bgcolor: '#b71c1c', // Changed to darker red for hover effect
+                       transform: 'scale(1.02)',
+                     },
+                     transition: 'all 0.2s ease-in-out',
+                     boxShadow: { xs: '0 4px 12px rgba(211, 47, 47, 0.35)', sm: '0 6px 20px rgba(211, 47, 47, 0.4)' }, // Changed to red box shadow
+                     '& .MuiButton-startIcon': {
+                       marginRight: { xs: 0.25, sm: 0.5 }, // ADDED: Control icon spacing
+                     }
+                   }}
+                 >
+                   Add to Cart - ${totalPrice}
+                 </Button>
+               )}
+                             
+                             {/* EMPTY SPACE: Third column to maintain grid alignment */}
+                             <Box sx={{ width: '180px', height: '50px' }} />
+                          </Box>
+                       </Box>
+                       
+
+                     </Box>
+                   )}
                 </Box>
               </CardContent>
             </Card>
