@@ -90,18 +90,17 @@ const ProductsPage = () => {
       setLoading(true);
       setError(null);
       
-      const params: Record<string, any> = {
-        page: currentPage,
-        limit: 12,
-      };
+      const params: Record<string, any> = {};
+      if (searchTerm) params.search = searchTerm;
+      if (currentPage > 1) params.page = currentPage;
       
-      if (searchTerm) {
-        params.search = searchTerm;
+      const response = await apiService.getProducts(params);
+      setProducts(response || []);
+      
+      // Extract pagination info if available
+      if (response && typeof response === 'object' && 'meta' in response) {
+        setTotalPages(response.meta.last_page || 1);
       }
-      
-      const response: ProductsResponse = await apiService.getProducts(params);
-      setProducts(response.data || []);
-      setTotalPages(response.last_page);
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         setError('Please log in to access this page');
@@ -244,11 +243,10 @@ const ProductsPage = () => {
                 >
                   <CardMedia
                     component="img"
-                    height="200"
-                    image={
-                      product.images && product.images.length > 0 
-                        ? `http://127.0.0.1:8000${product.images[0]}`
-                        : '/Gallery/Truckimages/truck01.jpg'
+                    height="140"
+                    image={product.images && product.images.length > 0 
+                      ? `https://superiorseats.ali-khalid.com${product.images[0]}`
+                      : '/TruckImages/01.jpg'
                     }
                     alt={product.name}
                     sx={{ objectFit: 'cover' }}

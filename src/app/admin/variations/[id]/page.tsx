@@ -21,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
+import Image from 'next/image';
 
 interface Variation {
   id: number;
@@ -205,15 +206,12 @@ const ViewVariationPage = () => {
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                   Variation Image
                 </Typography>
-                <img
-                  src={`http://127.0.0.1:8000${variation.image}`}
+                <Image
+                  src={`https://superiorseats.ali-khalid.com${variation.image}`}
                   alt={variation.name}
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '300px',
-                    objectFit: 'cover',
-                    borderRadius: 8,
-                  }}
+                  width={200}
+                  height={150}
+                  style={{ objectFit: 'cover', borderRadius: 8 }}
                 />
               </Box>
             )}
