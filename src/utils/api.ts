@@ -1,7 +1,31 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-// Create axios instance 
-const api: AxiosInstance = axios.create({
+// Helper function to get token from localStorage
+const getToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    // Check both possible storage keys
+    const directToken = localStorage.getItem('auth_token');
+    if (directToken) return directToken;
+    
+    // Check Redux persist storage
+    const persistAuth = localStorage.getItem('persist:auth');
+    if (persistAuth) {
+      try {
+        const authData = JSON.parse(persistAuth);
+        if (authData.token) {
+          const tokenData = JSON.parse(authData.token);
+          return tokenData;
+        }
+      } catch (e) {
+        console.error('Error parsing persist auth:', e);
+      }
+    }
+  }
+  return null;
+};
+
+// Create axios instance with base configuration
+const api = axios.create({
   baseURL: 'https://superiorseats.ali-khalid.com/api',
   headers: {
     'Content-Type': 'application/json',
@@ -23,43 +47,22 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle errors
+// Response interceptor to handle auth errors
 api.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Clear token on 401
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('persist:auth');
+      // Clear tokens on unauthorized
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('persist:auth');
+      }
     }
     return Promise.reject(error);
   }
 );
-
-// Helper function to get token from localStorage
-const getToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  
-  try {
-    // Check direct token storage first
-    const directToken = localStorage.getItem('auth_token');
-    if (directToken) return directToken;
-    
-    // Check Redux-persist storage
-    const authData = localStorage.getItem('persist:auth');
-    if (authData) {
-      const parsed = JSON.parse(authData);
-      const authState = JSON.parse(parsed.auth);
-      return authState.token;
-    }
-  } catch (error) {
-    console.error('Error getting token:', error);
-  }
-  
-  return null;
-};
 
 // API service class
 class ApiService {
@@ -69,12 +72,14 @@ class ApiService {
   // Authentication
   async login(email: string, password: string) {
     const response = await api.post('/login', { email, password });
-    const { token, user } = response.data;
+    const { data } = response.data;
     
     // Store token
-    localStorage.setItem('auth_token', token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', data.token);
+    }
     
-    return { token, user };
+    return data;
   }
 
   async register(userData: {
@@ -85,12 +90,14 @@ class ApiService {
     customer_type: string;
   }) {
     const response = await api.post('/register', userData);
-    const { token, user } = response.data;
+    const { data } = response.data;
     
     // Store token
-    localStorage.setItem('auth_token', token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', data.token);
+    }
     
-    return { token, user };
+    return data;
   }
 
   async logout() {
@@ -99,26 +106,28 @@ class ApiService {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear tokens regardless of API response
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('persist:auth');
+      // Clear tokens regardless of API call success
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('persist:auth');
+      }
     }
   }
 
   isAuthenticated(): boolean {
-    return !!getToken();
+    return getToken() !== null;
   }
 
   // Variations API
   async getVariations(params: Record<string, any> = {}) {
     const queryString = new URLSearchParams(params).toString();
     const response = await api.get(`/variations?${queryString}`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async getVariation(id: number) {
     const response = await api.get(`/variations/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // Helper function to build FormData for variations
@@ -187,7 +196,7 @@ class ApiService {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async updateVariation(id: number, data: {
@@ -214,7 +223,7 @@ class ApiService {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return response.data;
+      return response.data.data || response.data;
     } else {
       // If no image, use PUT with JSON
       const jsonData = {
@@ -237,13 +246,13 @@ class ApiService {
           'Content-Type': 'application/json',
         },
       });
-      return response.data;
+      return response.data.data || response.data;
     }
   }
 
   async deleteVariation(id: number) {
     const response = await api.delete(`/variations/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // Helper function to map stitch pattern names to local image URLs
@@ -274,27 +283,33 @@ class ApiService {
     const response = await api.get('/variations/options');
     
     // Debug: Log the original stitch patterns from API
-    console.log('Original stitch patterns from API:', response.data.stitch_patterns);
+    console.log('Original stitch patterns from API:', response.data.data?.stitch_patterns || response.data.stitch_patterns);
     
     // Transform stitch patterns to use local images
-    if (response.data.stitch_patterns) {
-      response.data.stitch_patterns = this.transformStitchPatterns(response.data.stitch_patterns);
-      console.log('Transformed stitch patterns with local images:', response.data.stitch_patterns);
+    if (response.data.data?.stitch_patterns || response.data.stitch_patterns) {
+      const stitchPatterns = response.data.data?.stitch_patterns || response.data.stitch_patterns;
+      const transformedPatterns = this.transformStitchPatterns(stitchPatterns);
+      console.log('Transformed stitch patterns with local images:', transformedPatterns);
+      
+      return {
+        ...response.data.data || response.data,
+        stitch_patterns: transformedPatterns
+      };
     }
     
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // Products API
   async getProducts(params: Record<string, any> = {}) {
     const queryString = new URLSearchParams(params).toString();
     const response = await api.get(`/products?${queryString}`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async getProduct(id: number) {
     const response = await api.get(`/products/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async createProduct(data: {
@@ -334,7 +349,7 @@ class ApiService {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async updateProduct(id: number, data: {
@@ -374,7 +389,7 @@ class ApiService {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return response.data;
+      return response.data.data || response.data;
     } else {
       // If no new images, use PUT with JSON
       const jsonData: any = {};
@@ -392,13 +407,13 @@ class ApiService {
           'Content-Type': 'application/json',
         },
       });
-      return response.data;
+      return response.data.data || response.data;
     }
   }
 
   async deleteProduct(id: number) {
     const response = await api.delete(`/products/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // Debug method

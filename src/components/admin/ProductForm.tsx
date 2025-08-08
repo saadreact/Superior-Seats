@@ -110,7 +110,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       setLoadingVariations(true);
       setError(null);
       const response = await apiService.getVariations();
-      setVariations(response.data || []);
+      setVariations(response || []);
     } catch (err: any) {
       setError('Failed to load variations');
       console.error('Error loading variations:', err);
@@ -296,44 +296,24 @@ const ProductForm: React.FC<ProductFormProps> = ({
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 {formData.images.map((image, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      position: 'relative',
-                      width: 100,
-                      height: 100,
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
+                  <Box key={index} sx={{ position: 'relative' }}>
                     <Image
-                      src={`http://127.0.0.1:8000${image}`}
-                      alt={`Product ${index + 1}`}
+                      src={`https://superiorseats.ali-khalid.com${image}`}
+                      alt={`Product image ${index + 1}`}
                       width={100}
                       height={100}
-                      style={{
-                        objectFit: 'cover',
-                      }}
+                      style={{ objectFit: 'cover', borderRadius: 4 }}
                     />
                     <IconButton
                       size="small"
-                      color="error"
                       onClick={() => removeCurrentImage(index)}
                       sx={{
                         position: 'absolute',
-                        top: 4,
-                        right: 4,
-                        minWidth: 'auto',
-                        width: 24,
-                        height: 24,
-                        borderRadius: '50%',
-                        p: 0,
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        },
+                        top: -8,
+                        right: -8,
+                        bgcolor: 'error.main',
+                        color: 'white',
+                        '&:hover': { bgcolor: 'error.dark' },
                       }}
                     >
                       <CloseIcon fontSize="small" />
@@ -472,25 +452,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
               >
                 {variations.map((variation) => (
                   <MenuItem key={variation.id} value={variation.id}>
-                    <Checkbox checked={(formData.variation_ids || []).indexOf(variation.id) > -1} />
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                       {variation.image && (
                         <Image
-                          src={`http://127.0.0.1:8000${variation.image}`}
+                          src={`https://superiorseats.ali-khalid.com${variation.image}`}
                           alt={variation.name}
                           width={40}
                           height={40}
-                          style={{
-                            objectFit: 'cover',
-                            borderRadius: 4,
-                          }}
-                          onError={(e) => {
-                            // Hide broken image
-                            e.currentTarget.style.display = 'none';
-                          }}
+                          style={{ objectFit: 'cover', borderRadius: 4 }}
                         />
                       )}
-                      <ListItemText 
+                      <ListItemText
                         primary={variation.name}
                         secondary={`${variation.stitch_pattern} - ${variation.material_type} ${variation.color}`}
                       />

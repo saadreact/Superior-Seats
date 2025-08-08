@@ -78,7 +78,7 @@ const VariationsPage = () => {
       setLoading(true);
       setError(null);
       const response = await apiService.getVariations();
-      setVariations(response.data || []);
+      setVariations(response || []);
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         setError('Please log in to access this page');
@@ -146,7 +146,7 @@ const VariationsPage = () => {
               <TableCell>
                 {variation.image ? (
                   <Image
-                    src={`http://127.0.0.1:8000${variation.image}`}
+                    src={`https://superiorseats.ali-khalid.com${variation.image}`}
                     alt={variation.name}
                     width={50}
                     height={50}
@@ -157,8 +157,8 @@ const VariationsPage = () => {
                     sx={{
                       width: 50,
                       height: 50,
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: 4,
+                      bgcolor: 'grey.200',
+                      borderRadius: 1,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
