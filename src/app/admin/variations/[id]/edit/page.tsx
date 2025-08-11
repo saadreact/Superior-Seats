@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
+import Image from 'next/image';
 
 interface FormOptions {
   stitch_patterns: Array<{
@@ -561,22 +562,18 @@ const EditVariationPage = () => {
                 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {/* Current Image */}
-                  {formData.image && !formData.newImage && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <img
-                        src={`http://127.0.0.1:8000${formData.image}`}
-                        alt="Current"
-                        style={{
-                          width: 150,
-                          height: 150,
-                          objectFit: 'cover',
-                          borderRadius: 8,
-                          border: '2px solid #e0e0e0',
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        Current Image
+                  {formData.image && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Current Image:
                       </Typography>
+                      <Image
+                        src={`https://superiorseats.ali-khalid.com${formData.image}`}
+                        alt="Current variation image"
+                        width={200}
+                        height={150}
+                        style={{ objectFit: 'cover', borderRadius: 8 }}
+                      />
                     </Box>
                   )}
                   

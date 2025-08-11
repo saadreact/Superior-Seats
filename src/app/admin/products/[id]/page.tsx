@@ -21,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
+import Image from 'next/image';
 
 interface Variation {
   id: number;
@@ -190,26 +191,24 @@ const ProductDetailPage = () => {
                 </Box>
               </Box>
 
-              {product.images && product.images.length > 0 && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Product Images
+              {product.images && product.images.length > 0 ? (
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+                  {product.images.map((image, index) => (
+                    <Image
+                      key={index}
+                      src={`https://superiorseats.ali-khalid.com${image}`}
+                      alt={`${product.name} - Image ${index + 1}`}
+                      width={200}
+                      height={150}
+                      style={{ objectFit: 'cover', borderRadius: 8 }}
+                    />
+                  ))}
+                </Box>
+              ) : (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No images available
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    {product.images.map((image, index) => (
-                      <img 
-                        key={index}
-                        src={`http://127.0.0.1:8000${image}`}
-                        alt={`${product.name} ${index + 1}`}
-                        style={{ 
-                          maxWidth: '200px', 
-                          maxHeight: '200px', 
-                          objectFit: 'cover',
-                          borderRadius: '8px'
-                        }}
-                      />
-                    ))}
-                  </Box>
                 </Box>
               )}
             </Paper>
