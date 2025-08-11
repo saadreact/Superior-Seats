@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation'; // Next.js router for programmatic 
 // NEW IMPORT: Added to enable cart functionality
 import { useDispatch } from 'react-redux';
 import { addItem } from '@/store/cartSlice';
-
+import HeroSection from './common/HeroSectionaCommon';
 import {
   Box,
   Container,
@@ -99,58 +99,16 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       
       {showHero && (
         /* Hero Section */
-        <Box sx={{ mt: { xs: 6, sm: 9, md: 8, lg: 8 } }}>
-        <Box
-          sx={{
-            background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-            color: 'white',
-            height: { xs: '18vh', sm: '20vh', md: '18vh', lg: '20vh' },
-            py: { xs: 2, sm: 3, md: 4, lg: 5 },
-           px: { xs: 1, sm: 2, md: 3, lg: 4 },
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mb: { xs: 0, sm: 0.5, md: 1, lg: 1.5 },
-          }}
-        >
-          <Container maxWidth="lg">
-            <Typography
-              variant="h1"
-              sx={{
-                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
-                fontWeight: 'bold',
-                mb: { xs: 0.25, sm: 0.5, md: 0.75, lg: 1 },
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                lineHeight: { xs: 1, sm: 1, md: 1, lg: 1 },
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                minWidth: 0,
-                px: { xs: 1, sm: 0 },
-              }}
-            >
-              Customize Your Seat
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
-                opacity: 0.9,
-                maxWidth: '100%',
-                mx: 'auto',
-                lineHeight: { xs: 1.4, sm: 1.5, md: 1 },
-                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem', lg: '1.25rem', xl: '1.5rem' },
-                px: { xs: 1, sm: 0 },
-                whiteSpace: 'nowrap',
-                overflow: 'visible',
-                textOverflow: 'clip',
-              }}
-            >
-              Design your perfect seat with our interactive 3D configurator
-            </Typography>
-          </Container>
-        </Box>
-        </Box>
+        <HeroSection
+         title="Customize Your Seat"
+         description="Design your perfect seat with our interactive 3D configurator"
+         height={{
+          xs: '18vh',
+          sm: '20vh',
+          md: '18vh',
+          lg: '20vh'
+         }}
+         />
       )}
 
       {/* Main Configuration Section */}

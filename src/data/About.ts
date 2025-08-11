@@ -47,6 +47,6 @@ export const stats = [
     {
       step: '05',
       title: 'Delivery',
-      description: 'Professional installation and setup to ensure your seat fits perfectly.',
+      description: 'Each order is carefully packaged before shipping.',
     },
   ];

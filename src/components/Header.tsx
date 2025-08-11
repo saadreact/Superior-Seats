@@ -18,6 +18,7 @@ import {
   Divider,
   Menu,
   MenuItem,
+  Container,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -38,7 +39,13 @@ const Header = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const theme = useTheme();
+  
+  // Responsive breakpoints
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const { totalItems } = useSelector((state: RootState) => state.cart);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -59,14 +66,10 @@ const Header = () => {
     { text: 'Home', href: '/' },
     { text: 'Customize Your Seat', href: '/custom-seats' },
     { text: 'Shop Specials', href: '/ShopGallery' },
-    // { text: 'Upholstery Services', href: '/upholstery' },
-    // { text: 'Other Products', href: '/other-products' },
     { text: 'Gallery', href: '/gallery' },
     { text: 'About', href: '/about' },
     { text: 'Contact', href: '/contact' },
   ];
-
-  // Admin items moved to sidebar
 
   const handleAuthClick = () => {
     setAuthModalOpen(true);
@@ -86,67 +89,113 @@ const Header = () => {
   };
 
   const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Box sx={{ my: 2, display: 'flex', justifyContent: 'center' }}>
-                 <Image
-           src="/superiorlogo/logored.png"
-           alt="Superior Seating LLC"
-           width={200}
-           height={60}
-           style={{ objectFit: 'contain' }}
-         />
+    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center', height: '100%' }}>
+      <Box sx={{ 
+        my: 2, 
+        display: 'flex', 
+        justifyContent: 'center',
+        px: 2
+      }}>
+        <Image
+          src="/superiorlogo/logored.png"
+          alt="Superior Seating LLC"
+          width={isSmallMobile ? 180 : 200}
+          height={isSmallMobile ? 54 : 60}
+          style={{ objectFit: 'contain' }}
+        />
       </Box>
-      <List>
+      <List sx={{ flex: 1 }}>
         {menuItems.map((item) => (
-          <ListItem key={item.text} component="a" href={item.href}>
-            <ListItemText primary={item.text} />
+          <ListItem 
+            key={item.text} 
+            component="a" 
+            href={item.href}
+            sx={{
+              py: 1.5,
+              '&:hover': {
+                backgroundColor: 'rgba(218, 41, 28, 0.05)',
+              }
+            }}
+          >
+            <ListItemText 
+              primary={item.text}
+              primaryTypographyProps={{
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                fontWeight: 500,
+                color: '#DA291C'
+              }}
+            />
           </ListItem>
         ))}
-        <Divider sx={{ my: 1 }} />
-        <ListItem component="a" href="/admin" sx={{
-          backgroundColor: 'transparent',
-          '&:hover': {
-            backgroundColor: 'transparent'
-          }
-        }}>
+        <Divider sx={{ my: 1.5 }} />
+        <ListItem 
+          component="a" 
+          href="/admin" 
+          sx={{
+            backgroundColor: 'transparent',
+            py: 1.5,
+            '&:hover': {
+              backgroundColor: 'rgba(218, 41, 28, 0.05)',
+            }
+          }}
+        >
           <ListItemText 
             primary="Admin Panel" 
             primaryTypographyProps={{ 
               fontWeight: 'bold',
-              color: 'primary.main'
+              color: 'primary.main',
+              fontSize: { xs: '0.9rem', sm: '1rem' }
             }} 
           />
         </ListItem>
-        <Divider sx={{ my: 1 }} />
+        <Divider sx={{ my: 1.5 }} />
         {isAuthenticated ? (
-          <ListItem component="button" onClick={handleLogout} sx={{ 
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            '&:hover': {
-              backgroundColor: 'transparent'
-            }
-          }}>
+          <ListItem 
+            component="button" 
+            onClick={handleLogout} 
+            sx={{ 
+              cursor: 'pointer',
+              backgroundColor: 'transparent',
+              py: 1.5,
+              width: '100%',
+              border: 'none',
+              textAlign: 'left',
+              '&:hover': {
+                backgroundColor: 'rgba(218, 41, 28, 0.05)',
+              }
+            }}
+          >
             <ListItemText 
               primary={`Logout (${user?.name})`}
               primaryTypographyProps={{ 
                 fontWeight: 'bold',
-                color: 'primary.main'
+                color: 'primary.main',
+                fontSize: { xs: '0.9rem', sm: '1rem' }
               }} 
             />
           </ListItem>
         ) : (
-          <ListItem component="button" onClick={handleAuthClick} sx={{ 
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            '&:hover': {
-              backgroundColor: 'transparent'
-            }
-          }}>
+          <ListItem 
+            component="button" 
+            onClick={handleAuthClick} 
+            sx={{ 
+              cursor: 'pointer',
+              backgroundColor: 'transparent',
+              py: 1.5,
+              width: '100%',
+              border: 'none',
+              textAlign: 'left',
+              '&:hover': {
+                backgroundColor: 'rgba(218, 41, 28, 0.05)',
+              }
+            }}
+          >
             <ListItemText 
               primary="Login / Sign Up" 
               primaryTypographyProps={{ 
                 fontWeight: 'bold',
-                color: 'primary.main'
+                color: 'primary.main',
+                fontSize: { xs: '0.9rem', sm: '1rem' }
               }} 
             />
           </ListItem>
@@ -157,176 +206,276 @@ const Header = () => {
 
   return (
     <>
-             <AppBar 
-         position="fixed" 
-         elevation={1}
-         sx={{ 
-           backgroundColor: 'white',
-           color: '#DA291C', // Pantone 485C
-           top: 0,
-           left: 0,
-           right: 0,
-           zIndex: 1100,
-           width: '100%',
-         }}
-       >
-        <Toolbar>
-          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-            {/* Next.js Image Component */}
-                         <Image
-               src="/superiorlogo/logored.png"
-               alt="Superior Seating LLC"
-               width={isMobile ? 150 : 200}
-               height={isMobile ? 45 : 60}
-               style={{ objectFit: 'contain' }}
-               priority
-             />
+      <AppBar 
+        position="fixed" 
+        elevation={1}
+        sx={{ 
+          backgroundColor: 'white',
+          color: '#DA291C',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1100,
+          width: '100%',
+          borderBottom: '1px solid rgba(218, 41, 28, 0.1)',
+        }}
+      >
+        <Container maxWidth="xl" disableGutters>
+          <Toolbar 
+            sx={{ 
+              justifyContent: 'space-between',
+              minHeight: { xs: '55px', sm: '38px', md: '40px' },
+              px: { xs: 2, sm: 3, md: 4 },
+              py: { xs: 0.75, sm: 0 }
+            }}
+          >
+            {/* Logo Section */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              flexShrink: 0
+            }}>
+                             <Image
+                 src="/superiorlogo/logored.png"
+                 alt="Superior Seating LLC"
+                 width={isSmallMobile ? 130 : isMobile ? 165 : isTablet ? 200 : 240}
+                 height={isSmallMobile ? 39 : isMobile ? 50 : isTablet ? 60 : 76}
+                 style={{ objectFit: 'contain' }}
+                 priority
+               />
+            </Box>
             
-            {/* Fallback regular img tag - uncomment if Next.js Image doesn't work */}
-            {/* 
-            <img
-              src="/white-logo.png"
-              alt="Superior Seating LLC"
-              style={{
-                width: isMobile ? 150 : 200,
-                height: isMobile ? 45 : 60,
-                objectFit: 'contain'
-              }}
-            />
-            */}
-          </Box>
-          
-          {isMobile ? (
-            <>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-                onClick={handleDrawerToggle}
-                sx={{ color: '#DA291C' }}
-              >
-                <MenuIcon />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={handleCartToggle}
-                sx={{ color: '#DA291C', ml: 1 }}
-              >
-                <Badge badgeContent={totalItems} color="primary">
-                  <ShoppingCartIcon />
-                </Badge>
-              </IconButton>
-            </>
-          ) : (
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              {menuItems.map((item) => (
-                <Button
-                  key={item.text}
-                  color="inherit"
-                  href={item.href}
-                  sx={{
-                    color: '#DA291C', // Pantone 485C
-                    fontWeight: 500,
-                    '&:hover': {
-                      backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                      color: '#DA291C',
-                    },
-                  }}
-                >
-                  {item.text}
-                </Button>
-              ))}
-              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-              <IconButton
-                color="inherit"
-                onClick={handleCartToggle}
-                sx={{ 
-                  color: '#DA291C',
-                  ml: 1,
-                  '&:hover': {
-                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                  }
-                }}
-              >
-                <Badge badgeContent={totalItems} color="primary">
-                  <ShoppingCartIcon />
-                </Badge>
-              </IconButton>
-              <Button
-                color="inherit"
-                href="/admin"
-                sx={{
-                  color: '#DA291C',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  '&:hover': {
-                    backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                    color: '#DA291C',
-                  },
-                }}
-              >
-                Admin
-              </Button>
-              {isAuthenticated ? (
-                <>
+            {/* Centered Menu Items - Desktop & Tablet */}
+            {!isMobile && (
+              <Box sx={{ 
+                display: 'flex', 
+                gap: { md: 1.5, lg: 2 }, 
+                alignItems: 'center',
+                position: 'absolute',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                flexWrap: 'nowrap'
+              }}>
+                {menuItems.map((item) => (
                   <Button
+                    key={item.text}
                     color="inherit"
-                    onClick={handleUserMenuClick}
-                    startIcon={<AccountCircleIcon />}
+                    href={item.href}
                     sx={{
                       color: '#DA291C',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
+                      fontWeight: 545,
+                      fontSize: { md: '0.8rem', lg: '0.875rem' },
+                      px: { md: 1, lg: 1.5 },
+                      py: { md: 0.75, lg: 1 },
+                      whiteSpace: 'nowrap',
+                      minWidth: 'auto',
                       '&:hover': {
                         backgroundColor: 'rgba(218, 41, 28, 0.1)',
                         color: '#DA291C',
+                        transform: 'translateY(-1px)',
                       },
+                      transition: 'all 0.2s ease',
                     }}
                   >
-                    {user?.name}
+                    {item.text}
                   </Button>
-                  <Menu
-                    anchorEl={userMenuAnchor}
-                    open={Boolean(userMenuAnchor)}
-                    onClose={handleUserMenuClose}
-                    anchorOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'right',
-                    }}
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
+                ))}
+              </Box>
+            )}
+            
+            {/* Right Side Actions */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: { xs: 0.5, sm: 1, md: 1.5 },
+              flexShrink: 0
+            }}>
+              {isMobile ? (
+                <>
+                  <IconButton
+                    color="inherit"
+                    aria-label="open drawer"
+                    edge="start"
+                    onClick={handleDrawerToggle}
+                    sx={{ 
+                      color: '#DA291C',
+                      p: { xs: 1, sm: 1.5 },
+                      '&:hover': {
+                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                      }
                     }}
                   >
-                    <MenuItem onClick={handleLogout}>
-                      <LogoutIcon sx={{ mr: 1 }} />
-                      Logout
-                    </MenuItem>
-                  </Menu>
+                    <MenuIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
+                  </IconButton>
+                  <IconButton
+                    color="inherit"
+                    onClick={handleCartToggle}
+                    sx={{ 
+                      color: '#DA291C',
+                      p: { xs: 1, sm: 1.5 },
+                      '&:hover': {
+                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                      }
+                    }}
+                  >
+                    <Badge 
+                      badgeContent={totalItems} 
+                      color="primary"
+                      sx={{
+                        '& .MuiBadge-badge': {
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          minWidth: { xs: '16px', sm: '18px' },
+                          height: { xs: '16px', sm: '18px' },
+                        }
+                      }}
+                    >
+                      <ShoppingCartIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
+                    </Badge>
+                  </IconButton>
                 </>
               ) : (
-                <Button
-                  color="inherit"
-                  onClick={handleAuthClick}
-                  startIcon={<PersonIcon />}
-                  sx={{
-                    color: '#DA291C',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    '&:hover': {
-                      backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                <>
+                  <Divider 
+                    orientation="vertical" 
+                    flexItem 
+                    sx={{ 
+                      mx: { md: 1, lg: 1.5 },
+                      height: { md: '32px', lg: '36px' }
+                    }} 
+                  />
+                  <IconButton
+                    color="inherit"
+                    onClick={handleCartToggle}
+                    sx={{ 
                       color: '#DA291C',
-                    },
-                  }}
-                >
-                  Login
-                </Button>
+                      p: { md: 1, lg: 1.5 },
+                      '&:hover': {
+                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                        transform: 'scale(1.05)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <Badge 
+                      badgeContent={totalItems} 
+                      color="primary"
+                      sx={{
+                        '& .MuiBadge-badge': {
+                          fontSize: { md: '0.7rem', lg: '0.75rem' },
+                          minWidth: { md: '18px', lg: '20px' },
+                          height: { md: '18px', lg: '20px' },
+                        }
+                      }}
+                    >
+                      <ShoppingCartIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
+                    </Badge>
+                  </IconButton>
+                  <Button
+                    color="inherit"
+                    href="/admin"
+                    sx={{
+                      color: '#DA291C',
+                      fontWeight: 600,
+                      fontSize: { md: '0.8rem', lg: '0.875rem' },
+                      px: { md: 1.5, lg: 2 },
+                      py: { md: 0.75, lg: 1 },
+                      '&:hover': {
+                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                        color: '#DA291C',
+                        transform: 'translateY(-1px)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    Admin
+                  </Button>
+                  {isAuthenticated ? (
+                    <>
+                      <Button
+                        color="inherit"
+                        onClick={handleUserMenuClick}
+                        startIcon={<AccountCircleIcon sx={{ fontSize: { md: '1.2rem', lg: '1.4rem' } }} />}
+                        sx={{
+                          color: '#DA291C',
+                          fontWeight: 600,
+                          fontSize: { md: '0.8rem', lg: '0.875rem' },
+                          px: { md: 1.5, lg: 2 },
+                          py: { md: 0.75, lg: 1 },
+                          '&:hover': {
+                            backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                            color: '#DA291C',
+                            transform: 'translateY(-1px)',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        {user?.name}
+                      </Button>
+                      <Menu
+                        anchorEl={userMenuAnchor}
+                        open={Boolean(userMenuAnchor)}
+                        onClose={handleUserMenuClose}
+                        anchorOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        }}
+                        transformOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                        }}
+                        PaperProps={{
+                          sx: {
+                            mt: 1,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                            borderRadius: 2,
+                          }
+                        }}
+                      >
+                        <MenuItem 
+                          onClick={handleLogout}
+                          sx={{
+                            py: 1.5,
+                            px: 2,
+                            '&:hover': {
+                              backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                            }
+                          }}
+                        >
+                          <LogoutIcon sx={{ mr: 1.5, fontSize: '1.2rem' }} />
+                          Logout
+                        </MenuItem>
+                      </Menu>
+                    </>
+                  ) : (
+                    <Button
+                      color="inherit"
+                      onClick={handleAuthClick}
+                      startIcon={<PersonIcon sx={{ fontSize: { md: '1.2rem', lg: '1.4rem' } }} />}
+                      sx={{
+                        color: '#DA291C',
+                        fontWeight: 600,
+                        fontSize: { md: '0.8rem', lg: '0.875rem' },
+                        px: { md: 1.5, lg: 2 },
+                        py: { md: 0.75, lg: 1 },
+                        '&:hover': {
+                          backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                          color: '#DA291C',
+                          transform: 'translateY(-1px)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      Login
+                    </Button>
+                  )}
+                </>
               )}
             </Box>
-          )}
-        </Toolbar>
+          </Toolbar>
+        </Container>
       </AppBar>
 
+      {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -338,9 +487,10 @@ const Header = () => {
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
-            width: 240,
+            width: { xs: '280px', sm: '320px' },
             backgroundColor: 'white',
             color: '#DA291C',
+            borderRight: '1px solid rgba(218, 41, 28, 0.1)',
           },
         }}
       >
