@@ -45,7 +45,7 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                 whileInView="visible"
                 viewport={{ once: true }}
                 sx={{
-                  py: { xs: 2, sm: 3, md: 4, lg: 5 },
+                  py: { xs: 2, sm: 2.5, md: 3, lg: 3.5 },
                   background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
                   color: 'white',
                 }}
@@ -66,8 +66,8 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                     }}>
                       <Typography variant="h3" sx={{
                         fontWeight: 'bold',
-                        mb: 1,
-                        fontSize: { xs: '1.125rem', sm: '1.25rem' , md: '1.5rem', lg: '1.75rem'},
+                        mb: 0.5,
+                        fontSize: { xs: '1rem', sm: '1.125rem' , md: '1.25rem', lg: '1.5rem'},
                         background: 'linear-gradient(45deg, #ffffff 30%, #f0f0f0 90%)',
                         backgroundClip: 'text',
                         WebkitBackgroundClip: 'text',
@@ -77,18 +77,53 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                       </Typography>
                       <Typography variant="body1" sx={{
                         opacity: 0.9,
-                        fontSize: { xs: '1rem', sm: '1.125rem' },
-                        mb: 1,
-                        lineHeight: 1.6
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        mb: 0.5,
+                        lineHeight: 1.4
                       }}>
                         Crafting comfort, one seat at a time
                       </Typography>
                       <Typography variant="body2" sx={{
                         opacity: 0.7,
-                        fontSize: { xs: '0.875rem', sm: '1rem' },
-                        lineHeight: 1.5
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        lineHeight: 1.3,
+                        mb: 0.5
                       }}>
-                        21468 C Street, Elkhart, IN 46516
+                        21468 C Street<br />
+                        Elkhart, IN 46516
+                      </Typography>
+                      <Typography variant="body2" sx={{
+                        opacity: 0.7,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        lineHeight: 1.3,
+                        mb: 0.5
+                      }}>
+                        P. 574-389-9011
+                      </Typography>
+                      <Typography variant="body2" sx={{
+                        opacity: 0.7,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        lineHeight: 1.3,
+                        mb: 0.5
+                      }}>
+                        info@superiorseatingllc.com
+                      </Typography>
+                      <Typography variant="body2" sx={{
+                        opacity: 0.7,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        lineHeight: 1.3,
+                        fontWeight: 'bold',
+                        mt: 1
+                      }}>
+                        Office Hours
+                      </Typography>
+                      <Typography variant="body2" sx={{
+                        opacity: 0.7,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        lineHeight: 1.3
+                      }}>
+                        Tuesday to Friday<br />
+                        7:00am to 5:00pm
                       </Typography>
                     </Box>
 
@@ -99,14 +134,14 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                       alignItems: { xs: 'center', md: 'flex-start' },
                       flex: { md: '1' }
                     }}>
-                      <Typography variant="h3" sx={{
-                        fontWeight: 'bold',
-                        mb: 1,
-                        fontSize: { xs: '1.125rem', sm: '1.25rem' , md: '1.5rem', lg: '1.75rem'},
-                        textAlign: { xs: 'center', md: 'left' }
-                      }}>
-                        Quick Links
-                      </Typography>
+                                             <Typography variant="h3" sx={{
+                         fontWeight: 'bold',
+                         mb: 0.5,
+                         fontSize: { xs: '1rem', sm: '1.125rem' , md: '1.25rem', lg: '1.5rem'},
+                         textAlign: { xs: 'center', md: 'left' }
+                       }}>
+                         Quick Links
+                       </Typography>
                       <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -117,76 +152,76 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                           component="a"
                           href="#"
                           onClick={handlePrivacyClick}
-                          sx={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontSize: { xs: '1rem', sm: '1.125rem' },
-                            opacity: 0.8,
-                            transition: 'all 0.3s ease',
-                            cursor: 'pointer',
-                            '&:hover': {
-                              opacity: 1,
-                              textDecoration: 'underline',
-                              transform: 'translateX(5px)'
-                            }
-                          }}
+                                                     sx={{
+                             color: 'white',
+                             textDecoration: 'none',
+                             fontSize: { xs: '0.875rem', sm: '1rem' },
+                             opacity: 0.8,
+                             transition: 'all 0.3s ease',
+                             cursor: 'pointer',
+                             '&:hover': {
+                               opacity: 1,
+                               textDecoration: 'underline',
+                               transform: 'translateX(5px)'
+                             }
+                           }}
                         >
                           Privacy Policy
                         </Typography>
-                        <Typography
-                          component="a"
-                          href="/terms-of-service"
-                          sx={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontSize: { xs: '1rem', sm: '1.125rem' },
-                            opacity: 0.8,
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              opacity: 1,
-                              textDecoration: 'underline',
-                              transform: 'translateX(5px)'
-                            }
-                          }}
-                        >
-                          Terms of Service
-                        </Typography>
-                        <Typography
-                          component="a"
-                          href="/warranty"
-                          sx={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontSize: { xs: '1rem', sm: '1.125rem' },
-                            opacity: 0.8,
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              opacity: 1,
-                              textDecoration: 'underline',
-                              transform: 'translateX(5px)'
-                            }
-                          }}
-                        >
-                          Warranty
-                        </Typography>
-                        <Typography
-                          component="a"
-                          href="/contact"
-                          sx={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontSize: { xs: '1rem', sm: '1.125rem' },
-                            opacity: 0.8,
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              opacity: 1,
-                              textDecoration: 'underline',
-                              transform: 'translateX(5px)'
-                            }
-                          }}
-                        >
-                          Contact Us
-                        </Typography>
+                                                 <Typography
+                           component="a"
+                           href="/terms-of-service"
+                           sx={{
+                             color: 'white',
+                             textDecoration: 'none',
+                             fontSize: { xs: '0.875rem', sm: '1rem' },
+                             opacity: 0.8,
+                             transition: 'all 0.3s ease',
+                             '&:hover': {
+                               opacity: 1,
+                               textDecoration: 'underline',
+                               transform: 'translateX(5px)'
+                             }
+                           }}
+                         >
+                           Terms of Service
+                         </Typography>
+                                                 <Typography
+                           component="a"
+                           href="/warranty"
+                           sx={{
+                             color: 'white',
+                             textDecoration: 'none',
+                             fontSize: { xs: '0.875rem', sm: '1rem' },
+                             opacity: 0.8,
+                             transition: 'all 0.3s ease',
+                             '&:hover': {
+                               opacity: 1,
+                               textDecoration: 'underline',
+                               transform: 'translateX(5px)'
+                             }
+                           }}
+                         >
+                           Warranty
+                         </Typography>
+                                                 <Typography
+                           component="a"
+                           href="/contact"
+                           sx={{
+                             color: 'white',
+                             textDecoration: 'none',
+                             fontSize: { xs: '0.875rem', sm: '1rem' },
+                             opacity: 0.8,
+                             transition: 'all 0.3s ease',
+                             '&:hover': {
+                               opacity: 1,
+                               textDecoration: 'underline',
+                               transform: 'translateX(5px)'
+                             }
+                           }}
+                         >
+                           Contact Us
+                         </Typography>
                       </Box>
                     </Box>
 
@@ -197,91 +232,91 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                       alignItems: { xs: 'center', md: 'flex-start' },
                       flex: { md: '1' }
                     }}>
-                      <Typography variant="h3" sx={{
-                        fontWeight: 'bold',
-                        mb: 2,
-                        fontSize: { xs: '1.125rem', sm: '1.25rem' , md: '1.5rem', lg: '1.75rem'},
-                        textAlign: { xs: 'center', md: 'left' }
-                      }}>
-                        Follow Us
-                      </Typography>
+                                             <Typography variant="h3" sx={{
+                         fontWeight: 'bold',
+                         mb: 1,
+                         fontSize: { xs: '1rem', sm: '1.125rem' , md: '1.25rem', lg: '1.5rem'},
+                         textAlign: { xs: 'center', md: 'left' }
+                       }}>
+                         Follow Us
+                       </Typography>
                       <Box sx={{
                         display: 'flex',
                         gap: 2,
                         justifyContent: 'center'
                       }}>
-                        <IconButton
-                          component="a"
-                          href="https://www.facebook.com/people/Superior-Seating-LLC/61576399660914/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            color: 'white',
-                            backgroundColor: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255,255,255,0.25)',
-                              transform: 'scale(1.1) translateY(-2px)',
-                              boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
-                            },
-                            transition: 'all 0.3s ease',
-                            width: { xs: 56, sm: 60 },
-                            height: { xs: 56, sm: 60 },
-                          
-                          }}
-                        >
+                                                   <IconButton
+                             component="a"
+                             href="https://www.facebook.com/people/Superior-Seating-LLC/61576399660914/"
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             sx={{
+                               color: 'white',
+                               backgroundColor: 'rgba(255,255,255,0.15)',
+                               backdropFilter: 'blur(10px)',
+                               border: '1px solid rgba(255,255,255,0.2)',
+                               '&:hover': {
+                                 backgroundColor: 'rgba(255,255,255,0.25)',
+                                 transform: 'scale(1.1) translateY(-2px)',
+                                 boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                               },
+                               transition: 'all 0.3s ease',
+                               width: { xs: 48, sm: 52 },
+                               height: { xs: 48, sm: 52 },
+                             
+                             }}
+                           >
                           <Box component="span" sx={{
                             fontSize: { xs: '1.5rem', sm: '1.75rem' },
                             fontWeight: 'bold'
                           }}>f</Box>
                         </IconButton>
 
-                        <IconButton
-                          component="a"
-                          href="https://instagram.com"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            color: 'white',
-                            backgroundColor: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255,255,255,0.25)',
-                              transform: 'scale(1.1) translateY(-2px)',
-                              boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
-                            },
-                            transition: 'all 0.3s ease',
-                            width: { xs: 56, sm: 60 },
-                            height: { xs: 56, sm: 60 },
-                          }}
-                        >
+                                                   <IconButton
+                             component="a"
+                             href="https://instagram.com"
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             sx={{
+                               color: 'white',
+                               backgroundColor: 'rgba(255,255,255,0.15)',
+                               backdropFilter: 'blur(10px)',
+                               border: '1px solid rgba(255,255,255,0.2)',
+                               '&:hover': {
+                                 backgroundColor: 'rgba(255,255,255,0.25)',
+                                 transform: 'scale(1.1) translateY(-2px)',
+                                 boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                               },
+                               transition: 'all 0.3s ease',
+                               width: { xs: 48, sm: 52 },
+                               height: { xs: 48, sm: 52 },
+                             }}
+                           >
                           <Box component="span" sx={{
                             fontSize: { xs: '1.5rem', sm: '1.75rem' }
                           }}>📷</Box>
                         </IconButton>
 
-                        <IconButton
-                          component="a"
-                          href="https://youtube.com"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            color: 'white',
-                            backgroundColor: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255,255,255,0.25)',
-                              transform: 'scale(1.1) translateY(-2px)',
-                              boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
-                            },
-                            transition: 'all 0.3s ease',
-                            width: { xs: 56, sm: 60 },
-                            height: { xs: 56, sm: 60 },
-                          }}
-                        >
+                                                   <IconButton
+                             component="a"
+                             href="https://youtube.com"
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             sx={{
+                               color: 'white',
+                               backgroundColor: 'rgba(255,255,255,0.15)',
+                               backdropFilter: 'blur(10px)',
+                               border: '1px solid rgba(255,255,255,0.2)',
+                               '&:hover': {
+                                 backgroundColor: 'rgba(255,255,255,0.25)',
+                                 transform: 'scale(1.1) translateY(-2px)',
+                                 boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                               },
+                               transition: 'all 0.3s ease',
+                               width: { xs: 48, sm: 52 },
+                               height: { xs: 48, sm: 52 },
+                             }}
+                           >
                           <Box component="span" sx={{
                             fontSize: { xs: '1.5rem', sm: '1.75rem' }
                           }}>▶</Box>
@@ -292,21 +327,21 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                     </Box>
                   </Box>
 
-                  {/* Copyright */}
-                  <Box sx={{
-                    mt: { xs: 2, md: 2 },
-                    pt: { xs: 2, md: 2 },
-                    borderTop: '1px solid rgba(255,255,255,0.2)',
-                    textAlign: 'center'
-                  }}>
-                    <Typography variant="body2" sx={{
-                      opacity: 0.8,
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      fontWeight: 500
-                    }}>
-                      © 2024 Superior Seating LLC. All rights reserved.
-                    </Typography>
-                  </Box>
+                                     {/* Copyright */}
+                   <Box sx={{
+                     mt: { xs: 1.5, md: 1.5 },
+                     pt: { xs: 1.5, md: 1.5 },
+                     borderTop: '1px solid rgba(255,255,255,0.2)',
+                     textAlign: 'center'
+                   }}>
+                     <Typography variant="body2" sx={{
+                       opacity: 0.8,
+                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                       fontWeight: 500
+                     }}>
+                       © 2024 Superior Seating LLC. All rights reserved.
+                     </Typography>
+                   </Box>
                 </Container>
               </MotionBox>
 

@@ -21,6 +21,7 @@ import {
   ArrowForward,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
+import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import { workPictures, workPicturesTruck, WorkImage } from '@/data/Gallery';
 
 const Gallery = () => {
@@ -100,62 +101,17 @@ const Gallery = () => {
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
       
-             {/* Hero Section */}
-       <Box
-          sx={{
-            background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-            color: 'white',
-            height: { xs: '18vh', sm: '20vh', md: '18vh', lg: '20vh' },
-            py: { xs: 2, sm: 3, md: 4, lg: 5 },
-            px: { xs: 1, sm: 2, md: 3, lg: 4 },
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mt: { xs: '56px', sm: '64px', md: '64px' },
-            mb: { xs: 0, sm: 0.5, md: 1, lg: 1.5 },
+            {/* Hero Section */}
+        <HeroSectionCommon
+          title="Our Work Gallery"
+          description="Explore our custom seating solutions across different vehicle types and see our craftsmanship in action."
+          height={{
+            xs: '18vh',
+            sm: '20vh',
+            md: '18vh',
+            lg: '20vh'
           }}
-        >
-        <Container maxWidth="lg">
-            <Typography
-              variant="h1"
-              sx={{
-                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
-                fontWeight: 'bold',
-                mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                minWidth: 0,
-                px: { xs: 0.5, sm: 1 },
-                display: 'block',
-              }}
-            >
-              Our Work Gallery
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
-                opacity: 0.9,
-                maxWidth: '100%',
-                mx: 'auto',
-                lineHeight: { xs: 1.3, sm: 1.4, md: 1.3, lg: 1.4 },
-                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
-                px: { xs: 0.5, sm: 1 },
-                whiteSpace: 'normal',
-                overflow: 'visible',
-                textOverflow: 'clip',
-                display: 'block',
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-              }}
-            >
-              Explore our custom seating solutions across different vehicle types and see our craftsmanship in action.
-            </Typography>
-        </Container>
-      </Box>
+        />
                                  {/* Horizontal Image Slider */}
       <Box sx={{ 
         backgroundColor: '#f8f9fa',

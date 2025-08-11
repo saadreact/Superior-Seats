@@ -58,6 +58,15 @@ export interface PaymentFormData {
   expiryDate: string;
   cvv: string;
   saveCard: boolean;
+  email?: string;
+  billingAddress?: {
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
 }
 
 // Default form values

@@ -5,7 +5,7 @@ export const contactInfo = [
     title: 'Phone',
     details: [
       '+1 574-389-9011',
-      'Mon-Fri: 8AM-6PM',
+      'Tue-Fri: 7AM-5PM',
       'Sat: closed',
       'Sun: Closed'
     ]
@@ -32,7 +32,7 @@ export const contactInfo = [
     icon: 'AccessTime',
     title: 'Business Hours',
     details: [
-      'Monday - Friday: 8AM-6PM',
+      'Tuesday - Friday: 7AM-5PM',
       'Saturday: closed',
       'Sunday: Closed'
     ]

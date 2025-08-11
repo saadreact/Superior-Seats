@@ -34,6 +34,7 @@ import {
   KeyboardArrowRight,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
+import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import { mainCategories, subCategories, galleryData } from '@/data/ShopGallery';
 // NEW IMPORTS: Added to enable communication with CustomizedSeat component
 import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
@@ -166,65 +167,19 @@ const ShopGallery = () => {
       <Header />
       
              {/* Hero Section */}
-       <Box
-         sx={{
-           background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-           color: 'white',
-           height: { xs: '20vh', sm: '22vh', md: '20vh', lg: '22vh' },
-           py: { xs: 2, sm: 3, md: 4, lg: 5 },
-           px: { xs: 1, sm: 2, md: 3, lg: 4 },
-           textAlign: 'center',
-           display: 'flex',
-           alignItems: 'center',
-           justifyContent: 'center',
-           mt: { xs: '56px', sm: '64px', md: '64px' },
-           mb: { xs: 1, sm: 1, md: 1, lg: 1 },
-           position: 'relative',
-           zIndex: 1,
+       <HeroSectionCommon
+         title="Shop Specials"
+         description="Discover our exclusive collection of premium seats with special pricing and unique features"
+         height={{
+          xs: '18vh',
+          sm: '20vh',
+          md: '18vh',
+          lg: '20vh'
          }}
-       >
-        <Container maxWidth="lg">
-          <Typography
-            variant="h1"
-            sx={{
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem', lg: '3rem', xl: '3rem' },
-              fontWeight: 'bold',
-              mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              minWidth: 0,
-              px: { xs: 0.5, sm: 1 },
-              display: 'block',
-            }}
-          >
-            Shop Specials
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
-              opacity: 0.9,
-              maxWidth: '100%',
-              mx: 'auto',
-              lineHeight: { xs: 1.3, sm: 1.4, md: 1.3, lg: 1.4 },
-              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
-              px: { xs: 0.5, sm: 1 },
-              whiteSpace: 'normal',
-              overflow: 'visible',
-              textOverflow: 'clip',
-              display: 'block',
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-            }}
-          >
-            Discover our exclusive collection of premium seats with special pricing and unique features
-          </Typography>
-        </Container>
-      </Box>
+       />
 
-      {/* Category Dropdown Filter */}
+      {/* Category Dropdown Filter - HIDDEN FOR NOW */}
+      {/* 
       <Box sx={{ 
         backgroundColor: 'white', 
         borderBottom: '1px solid #e0e0e0',
@@ -245,7 +200,6 @@ const ShopGallery = () => {
           }}>
          
             
-            {/* Main Category Dropdown */}
             <FormControl 
               sx={{ 
                 minWidth: { xs: '100%', sm: '140px', md: '160px', lg: '180px' },
@@ -320,7 +274,6 @@ const ShopGallery = () => {
               </Select>
             </FormControl>
 
-            {/* Sub Category Dropdown */}
             {selectedMainCategory !== 'all' && availableSubCategories.length > 0 && (
               <FormControl 
                 sx={{ 
@@ -400,6 +353,7 @@ const ShopGallery = () => {
           </Box>
         </Container>
       </Box>
+      */}
 
       {/* Gallery Grid */}
       <Box sx={{ py: { xs: 1, sm: 1.5, md: 2, lg: 2 }, px: { xs: 1, sm: 2, md: 3 } }}>
