@@ -18,6 +18,7 @@ import { Person, Business, Send, Phone, Email, LocationOn, AccessTime } from '@m
 import { contactInfo, initialFormData, ContactFormData } from '@/data/ContactPage';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import HeroSectionCommon from './common/HeroSectionaCommon';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
@@ -62,65 +63,17 @@ const ContactPage = () => {
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
+       <HeroSectionCommon
+         title="Get In Touch"
+         description="Contact us today for a free consultation and quote. We're here to help bring your vision to life."
+         height={{
+          xs: '18vh',
+          sm: '20vh',
+          md: '18vh',
+          lg: '20vh'
+         }}
+          />
       
-      {/* Hero Section */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-          color: 'white',
-          height: { xs: '18vh', sm: '20vh', md: '18vh', lg: '20vh' },
-          py: { xs: 2, sm: 3, md: 4, lg: 5 },
-          px: { xs: 1, sm: 2, md: 3, lg: 4 },
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mt: { xs: '56px', sm: '64px', md: '64px' },
-          mb: { xs: 0, sm: 0.5, md: 1, lg: 1.5 },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Typography
-            variant="h1"
-            sx={{
-              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' },
-              fontWeight: 'bold',
-              mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              minWidth: 0,
-              px: { xs: 0.5, sm: 1 },
-              display: 'block',
-            }}
-          >
-            Get In Touch
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
-              opacity: 0.9,
-              maxWidth: '100%',
-              mx: 'auto',
-              lineHeight: { xs: 1.3, sm: 1.4, md: 1.3, lg: 1.4 },
-              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', xl: '1.25rem' },
-              px: { xs: 0.5, sm: 1 },
-              whiteSpace: 'normal',
-              overflow: 'visible',
-              textOverflow: 'clip',
-              display: 'block',
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-            }}
-          >
-           Contact us today for a free consultation and quote. We&apos;re here to help bring your vision to life.
-          </Typography>
-        </Container>
-      </Box>
-
-     
 
       {/* Contact Form */}
       <Box sx={{ py: { xs: 2, md: 2 }, backgroundColor: '#fafafa' }}>
@@ -658,6 +611,9 @@ const ContactPage = () => {
           </Box>
         </Container>
       </Box>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Success Snackbar */}
       <Snackbar

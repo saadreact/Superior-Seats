@@ -95,6 +95,20 @@ const AboutPage = () => {
             Superior Seating LLc
           </MotionTypography>
           <MotionTypography
+            variant="h1"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            sx={{
+              fontSize: { xs: '1.5rem', sm: '2.0rem', md: '2.5rem' },
+              fontWeight: 'bold',
+              mb: { xs: 1, sm: 2 },
+            }}
+          >
+            Sit Better
+          </MotionTypography>
+          <MotionTypography
             variant="h5"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
