@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { stats, values, process } from '@/data/About';
 
 const MotionTypography = motion.create(Typography);
@@ -55,6 +56,7 @@ const AboutPage = () => {
       {/* Hero Section */}
       <Box
         sx={{
+          mt: { xs: '56px', sm: '64px', md: '64px' },
           height: { xs: '50vh', sm: '60vh', md: '70vh' },
           backgroundImage: 'url(../TruckImages/Seatset.jpg)',
           backgroundSize: 'cover',
@@ -66,7 +68,6 @@ const AboutPage = () => {
           textAlign: 'center',
           position: 'relative',
           overflow: 'hidden',
-          mt: { xs: '56px', sm: '64px', md: '64px' },
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -94,20 +95,7 @@ const AboutPage = () => {
           >
             Superior Seating LLc
           </MotionTypography>
-          <MotionTypography
-            variant="h1"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            sx={{
-              fontSize: { xs: '1.5rem', sm: '2.0rem', md: '2.5rem' },
-              fontWeight: 'bold',
-              mb: { xs: 1, sm: 2 },
-            }}
-          >
-            Sit Better
-          </MotionTypography>
+         
           <MotionTypography
             variant="h5"
             initial={{ opacity: 0, y: 30 }}
@@ -125,8 +113,29 @@ const AboutPage = () => {
           >
             Crafting the perfect seat for every driver, ensuring comfort meets quality
           </MotionTypography>
+          <MotionTypography
+            variant="h3"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            sx={{
+              fontSize: { xs: '1.5rem', sm: '2.0rem', md: '2.5rem' },
+              fontWeight: 'bold',
+              mb: { xs: 1, sm: 2 },
+            }}
+          >
+            Sit Better
+          </MotionTypography>
         </Container>
       </Box>
+
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        items={[
+          { label: 'About Us' }
+        ]}
+      />
 
       {/* Company Stats */}
       <Box sx={{ 
@@ -586,316 +595,593 @@ const AboutPage = () => {
            >
              Why Choose Superior Seats?
            </MotionTypography>
-                       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Box sx={{ 
-                display: 'grid',
-                gridTemplateColumns: { 
-                  xs: '1fr', 
-                  sm: 'repeat(2, 1fr)', 
-                  md: 'repeat(3, 1fr)', 
-                  lg: 'repeat(6, 1fr)' 
-                },
-                gap: { xs: 2, sm: 3, md: 4 },
-                maxWidth: 1400,
-                width: '100%',
-                justifyContent: 'center'
-              }}>
-                                 {/* Custom Fit Design */}
-                 <Card sx={{ 
-                   width: '100%', 
-                   height: { xs: 150, sm: 160, md: 180 }, 
-                   textAlign: 'center', 
-                   display: 'flex', 
-                   flexDirection: 'column', 
-                   justifyContent: 'center', 
-                   alignItems: 'center', 
-                   p: { xs: 1.5, sm: 2 },
-                   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                   transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+             <Box
+               sx={{
+                 display: 'grid',
+                 gridTemplateColumns: {
+                   xs: '1fr',
+                   sm: 'repeat(2, 1fr)',
+                   md: 'repeat(3, 1fr)',
+                   lg: 'repeat(6, 1fr)',
+                 },
+                 gap: { xs: 2, sm: 3, md: 4 },
+                 width: '100%',
+                 maxWidth: 1400,
+               }}
+             >
+               {/* Custom Fit Design */}
+               <Card
+                 sx={{
+                   height: '100%',
+                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   display: 'flex',
+                   flexDirection: 'column',
+                   justifyContent: 'flex-start',
+                   alignItems: 'center',
+                   textAlign: 'center',
+                   p: { xs: 2, sm: 2.5, md: 3 },
+                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
+                   transition: 'all 0.3s ease',
                    cursor: 'pointer',
                    '&:hover': {
-                     transform: 'translateY(-8px) scale(1.05)',
+                     transform: 'translateY(-4px) scale(1.02)',
                      boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
                      '& .icon': {
-                       transform: 'rotate(360deg) scale(1.2)',
+                       transform: 'rotate(360deg) scale(1.1)',
                      },
                      '& .title': {
                        color: '#d32f2f',
                      },
                    },
-                 }}>
-                 <CheckCircle 
+                 }}
+               >
+                 {/* Icon Circle */}
+                 <Box
                    className="icon"
-                   sx={{ 
-                     color: 'primary.main', 
-                     mb: { xs: 0.5, sm: 1 }, 
-                     fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
-                     transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                   }} 
-                 />
-                 <Typography className="title" variant="h6" sx={{ 
-                   fontWeight: 'bold', 
-                   mb: { xs: 0.5, sm: 1 }, 
-                   fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' }, 
-                   transition: 'color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
-                 }}>
+                   sx={{
+                     position: 'relative',
+                     width: 60,
+                     height: 60,
+                     borderRadius: '50%',
+                     backgroundColor: '#d32f2f',
+                     color: 'white',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     fontSize: '1.2rem',
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     border: '3px solid white',
+                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
+                     transition: 'all 0.3s ease',
+                     '&::before': {
+                       content: '""',
+                       position: 'absolute',
+                       top: '-6px',
+                       left: '-6px',
+                       right: '-6px',
+                       bottom: '-6px',
+                       borderRadius: '50%',
+                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                       zIndex: -1,
+                       opacity: 0.8,
+                       transform: 'scale(0.8)',
+                       transition: 'all 0.3s ease',
+                     },
+                     '&:hover::before': {
+                       opacity: 1,
+                       transform: 'scale(1.1)',
+                     },
+                   }}
+                 >
+                   <CheckCircle sx={{ fontSize: '1.5rem' }} />
+                 </Box>
+
+                 {/* Title */}
+                 <Typography
+                   className="title"
+                   variant="h6"
+                   sx={{
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                     transition: 'color 0.3s ease',
+                   }}
+                 >
                    Custom Fit Design
                  </Typography>
-                 <Typography variant="body2" sx={{ 
-                   color: 'text.secondary', 
-                   lineHeight: 1.3, 
-                   fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.8rem' } 
-                 }}>
+
+                 {/* Description */}
+                 <Typography
+                   variant="body1"
+                   sx={{
+                     color: 'text.secondary',
+                     fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
+                     lineHeight: 1.5,
+                     flexGrow: 1,
+                   }}
+                 >
                    Designed specifically for your vehicle and body type.
                  </Typography>
                </Card>
 
-                                {/* Premium Materials */}
-                 <Card sx={{ 
-                   width: '100%', 
-                   height: { xs: 150, sm: 160, md: 180 }, 
-                   textAlign: 'center', 
-                   display: 'flex', 
-                   flexDirection: 'column', 
-                   justifyContent: 'center', 
-                   alignItems: 'center', 
-                   p: { xs: 1.5, sm: 2 },
-                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                 cursor: 'pointer',
-                 '&:hover': {
-                   transform: 'translateY(-8px) scale(1.05)',
-                   boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                   '& .icon': {
-                     transform: 'rotate(360deg) scale(1.2)',
+               {/* Premium Materials */}
+               <Card
+                 sx={{
+                   height: '100%',
+                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   display: 'flex',
+                   flexDirection: 'column',
+                   justifyContent: 'flex-start',
+                   alignItems: 'center',
+                   textAlign: 'center',
+                   p: { xs: 2, sm: 2.5, md: 3 },
+                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
+                   transition: 'all 0.3s ease',
+                   cursor: 'pointer',
+                   '&:hover': {
+                     transform: 'translateY(-4px) scale(1.02)',
+                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
+                     '& .icon': {
+                       transform: 'rotate(360deg) scale(1.1)',
+                     },
+                     '& .title': {
+                       color: '#d32f2f',
+                     },
                    },
-                   '& .title': {
-                     color: '#d32f2f',
-                   },
-                 },
-               }}>
-                 <CheckCircle 
+                 }}
+               >
+                 {/* Icon Circle */}
+                 <Box
                    className="icon"
-                   sx={{ 
-                     color: 'primary.main', 
-                     mb: { xs: 0.5, sm: 1 }, 
-                     fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
-                     transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                   }} 
-                 />
-                 <Typography className="title" variant="h6" sx={{ 
-                   fontWeight: 'bold', 
-                   mb: { xs: 0.5, sm: 1 }, 
-                   fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' }, 
-                   transition: 'color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
-                 }}>
+                   sx={{
+                     position: 'relative',
+                     width: 60,
+                     height: 60,
+                     borderRadius: '50%',
+                     backgroundColor: '#d32f2f',
+                     color: 'white',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     fontSize: '1.2rem',
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     border: '3px solid white',
+                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
+                     transition: 'all 0.3s ease',
+                     '&::before': {
+                       content: '""',
+                       position: 'absolute',
+                       top: '-6px',
+                       left: '-6px',
+                       right: '-6px',
+                       bottom: '-6px',
+                       borderRadius: '50%',
+                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                       zIndex: -1,
+                       opacity: 0.8,
+                       transform: 'scale(0.8)',
+                       transition: 'all 0.3s ease',
+                     },
+                     '&:hover::before': {
+                       opacity: 1,
+                       transform: 'scale(1.1)',
+                     },
+                   }}
+                 >
+                   <CheckCircle sx={{ fontSize: '1.5rem' }} />
+                 </Box>
+
+                 {/* Title */}
+                 <Typography
+                   className="title"
+                   variant="h6"
+                   sx={{
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                     transition: 'color 0.3s ease',
+                   }}
+                 >
                    Premium Materials
                  </Typography>
-                 <Typography variant="body2" sx={{ 
-                   color: 'text.secondary', 
-                   lineHeight: 1.3, 
-                   fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.8rem' } 
-                 }}>
+
+                 {/* Description */}
+                 <Typography
+                   variant="body1"
+                   sx={{
+                     color: 'text.secondary',
+                     fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
+                     lineHeight: 1.5,
+                     flexGrow: 1,
+                   }}
+                 >
                    Highest quality leather, fabric, and materials.
                  </Typography>
                </Card>
 
-                                {/* Expert Craftsmanship */}
-                 <Card sx={{ 
-                   width: '100%', 
-                   height: { xs: 150, sm: 160, md: 180 }, 
-                   textAlign: 'center', 
-                   display: 'flex', 
-                   flexDirection: 'column', 
-                   justifyContent: 'center', 
-                   alignItems: 'center', 
-                   p: { xs: 1.5, sm: 2 },
-                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                 cursor: 'pointer',
-                 '&:hover': {
-                   transform: 'translateY(-8px) scale(1.05)',
-                   boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                   '& .icon': {
-                     transform: 'rotate(360deg) scale(1.2)',
+               {/* Expert Craftsmanship */}
+               <Card
+                 sx={{
+                   height: '100%',
+                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   display: 'flex',
+                   flexDirection: 'column',
+                   justifyContent: 'flex-start',
+                   alignItems: 'center',
+                   textAlign: 'center',
+                   p: { xs: 2, sm: 2.5, md: 3 },
+                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
+                   transition: 'all 0.3s ease',
+                   cursor: 'pointer',
+                   '&:hover': {
+                     transform: 'translateY(-4px) scale(1.02)',
+                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
+                     '& .icon': {
+                       transform: 'rotate(360deg) scale(1.1)',
+                     },
+                     '& .title': {
+                       color: '#d32f2f',
+                     },
                    },
-                   '& .title': {
-                     color: '#d32f2f',
-                   },
-                 },
-               }}>
-                 <CheckCircle 
+                 }}
+               >
+                 {/* Icon Circle */}
+                 <Box
                    className="icon"
-                   sx={{ 
-                     color: 'primary.main', 
-                     mb: { xs: 0.5, sm: 1 }, 
-                     fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
-                     transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                   }} 
-                 />
-                 <Typography className="title" variant="h6" sx={{ 
-                   fontWeight: 'bold', 
-                   mb: { xs: 0.5, sm: 1 }, 
-                   fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' }, 
-                   transition: 'color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
-                 }}>
+                   sx={{
+                     position: 'relative',
+                     width: 60,
+                     height: 60,
+                     borderRadius: '50%',
+                     backgroundColor: '#d32f2f',
+                     color: 'white',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     fontSize: '1.2rem',
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     border: '3px solid white',
+                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
+                     transition: 'all 0.3s ease',
+                     '&::before': {
+                       content: '""',
+                       position: 'absolute',
+                       top: '-6px',
+                       left: '-6px',
+                       right: '-6px',
+                       bottom: '-6px',
+                       borderRadius: '50%',
+                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                       zIndex: -1,
+                       opacity: 0.8,
+                       transform: 'scale(0.8)',
+                       transition: 'all 0.3s ease',
+                     },
+                     '&:hover::before': {
+                       opacity: 1,
+                       transform: 'scale(1.1)',
+                     },
+                   }}
+                 >
+                   <CheckCircle sx={{ fontSize: '1.5rem' }} />
+                 </Box>
+
+                 {/* Title */}
+                 <Typography
+                   className="title"
+                   variant="h6"
+                   sx={{
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                     transition: 'color 0.3s ease',
+                   }}
+                 >
                    Expert Craftsmanship
                  </Typography>
-                 <Typography variant="body2" sx={{ 
-                   color: 'text.secondary', 
-                   lineHeight: 1.3, 
-                   fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.8rem' } 
-                 }}>
+
+                 {/* Description */}
+                 <Typography
+                   variant="body1"
+                   sx={{
+                     color: 'text.secondary',
+                     fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
+                     lineHeight: 1.5,
+                     flexGrow: 1,
+                   }}
+                 >
                    Skilled artisans handcraft each seat with precision.
                  </Typography>
                </Card>
 
-                                {/* Comprehensive Warranty */}
-                 <Card sx={{ 
-                   width: '100%', 
-                   height: { xs: 150, sm: 160, md: 180 }, 
-                   textAlign: 'center', 
-                   display: 'flex', 
-                   flexDirection: 'column', 
-                   justifyContent: 'center', 
-                   alignItems: 'center', 
-                   p: { xs: 1.5, sm: 2 },
-                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                 cursor: 'pointer',
-                 '&:hover': {
-                   transform: 'translateY(-8px) scale(1.05)',
-                   boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                   '& .icon': {
-                     transform: 'rotate(360deg) scale(1.2)',
+               {/* Comprehensive Warranty */}
+               <Card
+                 sx={{
+                   height: '100%',
+                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   display: 'flex',
+                   flexDirection: 'column',
+                   justifyContent: 'flex-start',
+                   alignItems: 'center',
+                   textAlign: 'center',
+                   p: { xs: 2, sm: 2.5, md: 3 },
+                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
+                   transition: 'all 0.3s ease',
+                   cursor: 'pointer',
+                   '&:hover': {
+                     transform: 'translateY(-4px) scale(1.02)',
+                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
+                     '& .icon': {
+                       transform: 'rotate(360deg) scale(1.1)',
+                     },
+                     '& .title': {
+                       color: '#d32f2f',
+                     },
                    },
-                   '& .title': {
-                     color: '#d32f2f',
-                   },
-                 },
-               }}>
-                 <CheckCircle 
+                 }}
+               >
+                 {/* Icon Circle */}
+                 <Box
                    className="icon"
-                   sx={{ 
-                     color: 'primary.main', 
-                     mb: { xs: 0.5, sm: 1 }, 
-                     fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
-                     transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                   }} 
-                 />
-                 <Typography className="title" variant="h6" sx={{ 
-                   fontWeight: 'bold', 
-                   mb: { xs: 0.5, sm: 1 }, 
-                   fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' }, 
-                   transition: 'color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
-                 }}>
+                   sx={{
+                     position: 'relative',
+                     width: 60,
+                     height: 60,
+                     borderRadius: '50%',
+                     backgroundColor: '#d32f2f',
+                     color: 'white',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     fontSize: '1.2rem',
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     border: '3px solid white',
+                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
+                     transition: 'all 0.3s ease',
+                     '&::before': {
+                       content: '""',
+                       position: 'absolute',
+                       top: '-6px',
+                       left: '-6px',
+                       right: '-6px',
+                       bottom: '-6px',
+                       borderRadius: '50%',
+                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                       zIndex: -1,
+                       opacity: 0.8,
+                       transform: 'scale(0.8)',
+                       transition: 'all 0.3s ease',
+                     },
+                     '&:hover::before': {
+                       opacity: 1,
+                       transform: 'scale(1.1)',
+                     },
+                   }}
+                 >
+                   <CheckCircle sx={{ fontSize: '1.5rem' }} />
+                 </Box>
+
+                 {/* Title */}
+                 <Typography
+                   className="title"
+                   variant="h6"
+                   sx={{
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                     transition: 'color 0.3s ease',
+                   }}
+                 >
                    Comprehensive Warranty
                  </Typography>
-                 <Typography variant="body2" sx={{ 
-                   color: 'text.secondary', 
-                   lineHeight: 1.3, 
-                   fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.8rem' } 
-                 }}>
+
+                 {/* Description */}
+                 <Typography
+                   variant="body1"
+                   sx={{
+                     color: 'text.secondary',
+                     fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
+                     lineHeight: 1.5,
+                     flexGrow: 1,
+                   }}
+                 >
                    We stand behind our work with full warranty.
                  </Typography>
                </Card>
 
                {/* Professional Installation */}
-                 <Card sx={{ 
-                   width: '100%', 
-                   height: { xs: 150, sm: 160, md: 180 }, 
-                   textAlign: 'center', 
-                   display: 'flex', 
-                   flexDirection: 'column', 
-                   justifyContent: 'center', 
-                   alignItems: 'center', 
-                   p: { xs: 1.5, sm: 2 },
-                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                 cursor: 'pointer',
-                 '&:hover': {
-                   transform: 'translateY(-8px) scale(1.05)',
-                   boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                   '& .icon': {
-                     transform: 'rotate(360deg) scale(1.2)',
+               <Card
+                 sx={{
+                   height: '100%',
+                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   display: 'flex',
+                   flexDirection: 'column',
+                   justifyContent: 'flex-start',
+                   alignItems: 'center',
+                   textAlign: 'center',
+                   p: { xs: 2, sm: 2.5, md: 3 },
+                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
+                   transition: 'all 0.3s ease',
+                   cursor: 'pointer',
+                   '&:hover': {
+                     transform: 'translateY(-4px) scale(1.02)',
+                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
+                     '& .icon': {
+                       transform: 'rotate(360deg) scale(1.1)',
+                     },
+                     '& .title': {
+                       color: '#d32f2f',
+                     },
                    },
-                   '& .title': {
-                     color: '#d32f2f',
-                   },
-                 },
-               }}>
-                 <CheckCircle 
+                 }}
+               >
+                 {/* Icon Circle */}
+                 <Box
                    className="icon"
-                   sx={{ 
-                     color: 'primary.main', 
-                     mb: { xs: 0.5, sm: 1 }, 
-                     fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
-                     transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                   }} 
-                 />
-                 <Typography className="title" variant="h6" sx={{ 
-                   fontWeight: 'bold', 
-                   mb: { xs: 0.5, sm: 1 }, 
-                   fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' }, 
-                   transition: 'color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
-                 }}>
+                   sx={{
+                     position: 'relative',
+                     width: 60,
+                     height: 60,
+                     borderRadius: '50%',
+                     backgroundColor: '#d32f2f',
+                     color: 'white',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     fontSize: '1.2rem',
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     border: '3px solid white',
+                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
+                     transition: 'all 0.3s ease',
+                     '&::before': {
+                       content: '""',
+                       position: 'absolute',
+                       top: '-6px',
+                       left: '-6px',
+                       right: '-6px',
+                       bottom: '-6px',
+                       borderRadius: '50%',
+                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                       zIndex: -1,
+                       opacity: 0.8,
+                       transform: 'scale(0.8)',
+                       transition: 'all 0.3s ease',
+                     },
+                     '&:hover::before': {
+                       opacity: 1,
+                       transform: 'scale(1.1)',
+                     },
+                   }}
+                 >
+                   <CheckCircle sx={{ fontSize: '1.5rem' }} />
+                 </Box>
+
+                 {/* Title */}
+                 <Typography
+                   className="title"
+                   variant="h6"
+                   sx={{
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                     transition: 'color 0.3s ease',
+                   }}
+                 >
                    Professional Installation
                  </Typography>
-                 <Typography variant="body2" sx={{ 
-                   color: 'text.secondary', 
-                   lineHeight: 1.3, 
-                   fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.8rem' } 
-                 }}>
+
+                 {/* Description */}
+                 <Typography
+                   variant="body1"
+                   sx={{
+                     color: 'text.secondary',
+                     fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
+                     lineHeight: 1.5,
+                     flexGrow: 1,
+                   }}
+                 >
                    Expert installation and setup for optimal performance.
                  </Typography>
                </Card>
 
-                                {/* Ongoing Support */}
-                 <Card sx={{ 
-                   width: '100%', 
-                   height: { xs: 150, sm: 160, md: 180 }, 
-                   textAlign: 'center', 
-                   display: 'flex', 
-                   flexDirection: 'column', 
-                   justifyContent: 'center', 
-                   alignItems: 'center', 
-                   p: { xs: 1.5, sm: 2 },
-                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                 cursor: 'pointer',
-                 '&:hover': {
-                   transform: 'translateY(-8px) scale(1.05)',
-                   boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                   '& .icon': {
-                     transform: 'rotate(360deg) scale(1.2)',
+               {/* Ongoing Support */}
+               <Card
+                 sx={{
+                   height: '100%',
+                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   display: 'flex',
+                   flexDirection: 'column',
+                   justifyContent: 'flex-start',
+                   alignItems: 'center',
+                   textAlign: 'center',
+                   p: { xs: 2, sm: 2.5, md: 3 },
+                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
+                   transition: 'all 0.3s ease',
+                   cursor: 'pointer',
+                   '&:hover': {
+                     transform: 'translateY(-4px) scale(1.02)',
+                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
+                     '& .icon': {
+                       transform: 'rotate(360deg) scale(1.1)',
+                     },
+                     '& .title': {
+                       color: '#d32f2f',
+                     },
                    },
-                   '& .title': {
-                     color: '#d32f2f',
-                   },
-                 },
-               }}>
-                 <CheckCircle 
+                 }}
+               >
+                 {/* Icon Circle */}
+                 <Box
                    className="icon"
-                   sx={{ 
-                     color: 'primary.main', 
-                     mb: { xs: 0.5, sm: 1 }, 
-                     fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
-                     transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                   }} 
-                 />
-                 <Typography className="title" variant="h6" sx={{ 
-                   fontWeight: 'bold', 
-                   mb: { xs: 0.5, sm: 1 }, 
-                   fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' }, 
-                   transition: 'color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
-                 }}>
+                   sx={{
+                     position: 'relative',
+                     width: 60,
+                     height: 60,
+                     borderRadius: '50%',
+                     backgroundColor: '#d32f2f',
+                     color: 'white',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     fontSize: '1.2rem',
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     border: '3px solid white',
+                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
+                     transition: 'all 0.3s ease',
+                     '&::before': {
+                       content: '""',
+                       position: 'absolute',
+                       top: '-6px',
+                       left: '-6px',
+                       right: '-6px',
+                       bottom: '-6px',
+                       borderRadius: '50%',
+                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                       zIndex: -1,
+                       opacity: 0.8,
+                       transform: 'scale(0.8)',
+                       transition: 'all 0.3s ease',
+                     },
+                     '&:hover::before': {
+                       opacity: 1,
+                       transform: 'scale(1.1)',
+                     },
+                   }}
+                 >
+                   <CheckCircle sx={{ fontSize: '1.5rem' }} />
+                 </Box>
+
+                 {/* Title */}
+                 <Typography
+                   className="title"
+                   variant="h6"
+                   sx={{
+                     fontWeight: 'bold',
+                     mb: { xs: 1.5, sm: 2 },
+                     fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                     transition: 'color 0.3s ease',
+                   }}
+                 >
                    Ongoing Support
                  </Typography>
-                 <Typography variant="body2" sx={{ 
-                   color: 'text.secondary', 
-                   lineHeight: 1.3, 
-                   fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.8rem' } 
-                 }}>
+
+                 {/* Description */}
+                 <Typography
+                   variant="body1"
+                   sx={{
+                     color: 'text.secondary',
+                     fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
+                     lineHeight: 1.5,
+                     flexGrow: 1,
+                   }}
+                 >
                    We&apos;re here for you even after purchase.
                  </Typography>
                </Card>

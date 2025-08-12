@@ -13,7 +13,9 @@ import { useRouter } from 'next/navigation'; // Next.js router for programmatic 
 // NEW IMPORT: Added to enable cart functionality
 import { useDispatch } from 'react-redux';
 import { addItem } from '@/store/cartSlice';
-import HeroSection from './common/HeroSectionaCommon';
+import HeroSectionCommon from './common/HeroSectionaCommon';
+import Breadcrumbs from './Breadcrumbs';
+import Footer from './Footer';
 import {
   Box,
   Container,
@@ -97,19 +99,27 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       {showHeader && <Header />}
       
-      {showHero && (
+            {showHero && (
         /* Hero Section */
-        <HeroSection
+        <HeroSectionCommon
          title="Customize Your Seat"
          description="Design your perfect seat with our interactive 3D configurator"
          height={{
-          xs: '18vh',
-          sm: '20vh',
-          md: '18vh',
-          lg: '20vh'
-         }}
-         />
+           xs: '18vh',
+           sm: '20vh',
+           md: '18vh',
+           lg: '20vh'
+          }}
+          />
       )}
+
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        items={[
+          { label: 'Shop', href: '/shop' },
+          { label: 'Customize Your Seat' }
+        ]}
+      />
 
       {/* Main Configuration Section */}
       <Container maxWidth="xl" sx={{ 
@@ -118,12 +128,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       }}>
         <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ 
           display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, 
+          gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr', md: '1fr 1fr', lg: '1fr 1fr' }, 
           gap: { xs: 2, sm: 3 },
           alignItems: 'start'
         }}>
           {/* Left Column - 3D Viewer */}
-          <Grid sx={{ gridColumn: { xs: 'span 12', lg: 'span 1' } }}>
+          <Grid sx={{ gridColumn: { xs: 'span 1', sm: 'span 1', md: 'span 1', lg: 'span 1' } }}>
             <Card sx={{ 
               height: { xs: '350px', sm: '400px', md: '500px', lg: '600px' }, 
               position: 'relative', 
@@ -298,7 +308,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           </Grid>
 
           {/* Right Column - Customization Options */}
-          <Grid sx={{ gridColumn: { xs: 'span 12', lg: 'span 1' } }}>
+          <Grid sx={{ gridColumn: { xs: 'span 1', sm: 'span 1', md: 'span 1', lg: 'span 1' } }}>
             <Card sx={{ 
               height: { xs: '350px', sm: '400px', md: '500px', lg: '600px' },
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
@@ -966,9 +976,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         </Grid>
       </Container>
 
-
-
-      
+      <Footer />
 
     </Box>
   );

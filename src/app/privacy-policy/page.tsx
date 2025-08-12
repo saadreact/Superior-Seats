@@ -10,9 +10,10 @@ import {
   useTheme,
 } from '@mui/material';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 import { motion } from 'framer-motion';
-import { Security, Shield } from '@mui/icons-material';
+import { Security, Shield, Policy } from '@mui/icons-material';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -23,60 +24,61 @@ const PrivacyPolicy = () => {
 
   const sections = [
     {
+      title: 'Your Privacy Matters',
+      content: [
+        'At Superior Seating LLC, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, and safeguard your information when you visit our website or use our services.'
+      ]
+    },
+    {
       title: 'Information We Collect',
       content: [
-        'Personal information (name, email, phone number) when you contact us or place orders',
-        'Technical information (IP address, browser type, device information) for website functionality',
-        'Usage data to improve our services and user experience',
-        'Payment information processed securely through our payment partners'
+        'We collect information you provide directly to us, such as when you:',
+        'Contact us through our website forms',
+        'Request quotes or place orders',
+        'Sign up for our newsletter',
+        'Create an account on our platform'
       ]
     },
     {
       title: 'How We Use Your Information',
       content: [
-        'Process and fulfill your orders for custom seating solutions',
-        'Communicate with you about your orders and customer service inquiries',
-        'Send you updates about our products and services (with your consent)',
-        'Improve our website functionality and user experience',
-        'Comply with legal obligations and protect our rights'
+        'We use the information we collect to:',
+        'Provide and improve our services',
+        'Process your orders and payments',
+        'Communicate with you about your orders',
+        'Send you marketing communications (with your consent)'
       ]
     },
     {
       title: 'Information Sharing',
       content: [
-        'We do not sell, trade, or rent your personal information to third parties',
-        'We may share information with trusted service providers who assist in our operations',
-        'Information may be disclosed if required by law or to protect our rights',
-        'We maintain strict confidentiality agreements with all service providers'
+        'We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy or as required by law.'
       ]
     },
     {
       title: 'Data Security',
       content: [
-        'We implement industry-standard security measures to protect your information',
-        'All data is encrypted during transmission and storage',
-        'Regular security audits and updates to maintain protection',
-        'Limited access to personal information on a need-to-know basis'
+        'We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.'
       ]
     },
     {
       title: 'Your Rights',
       content: [
-        'Access and review your personal information',
-        'Request correction of inaccurate information',
-        'Request deletion of your personal information (subject to legal requirements)',
-        'Opt-out of marketing communications',
-        'File a complaint with relevant authorities'
+        'You have the right to:',
+        'Access your personal information',
+        'Correct inaccurate information',
+        'Request deletion of your information',
+        'Opt out of marketing communications'
       ]
     },
     {
-      title: 'Cookies and Tracking',
+      title: 'Contact Us',
       content: [
-        'We use cookies to enhance your browsing experience',
-        'Essential cookies for website functionality',
-        'Analytics cookies to understand website usage',
-        'Marketing cookies (with your consent) for personalized content',
-        'You can control cookie settings through your browser'
+        'If you have any questions about this Privacy Policy or our data practices, please contact us at:',
+        'Superior Seating LLC',
+        '21468 C Street, Elkhart, IN 46516',
+        'Email: info@superiorseatingllc.com',
+        'Phone: 574-389-9011'
       ]
     }
   ];
@@ -104,7 +106,11 @@ const PrivacyPolicy = () => {
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
       
-      <Box sx={{ flex: 1, py: { xs: 4, md: 6 } }}>
+      <Box sx={{ 
+        flex: 1, 
+        mt: { xs: '56px', sm: '64px', md: '64px' },
+        py: { xs: 1, sm: 1.5, md: 2, lg: 2.5 } 
+      }}>
         <Container maxWidth="lg">
           <MotionBox
             initial="hidden"
@@ -116,28 +122,36 @@ const PrivacyPolicy = () => {
               variants={itemVariants}
               sx={{
                 textAlign: 'center',
-                mb: 6,
+                mb: { xs: 1, sm: 1.5, md: 2 },
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 2,
+                gap: { xs: 0.5, sm: 1 },
               }}
             >
               <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 2,
-                  mb: 2,
+                  justifyContent: 'center',
+                  gap: { xs: 1.5, sm: 2 },
+                  mb: { xs: 1, sm: 1.5 },
+                  flexDirection: { xs: 'column', sm: 'row' },
                 }}
               >
-                <Security sx={{ fontSize: 48, color: '#DA291C' }} />
+                <Security sx={{ 
+                  fontSize: { xs: 32, sm: 40, md: 48 }, 
+                  color: '#DA291C' 
+                }} />
                 <Typography
-                  variant="h2"
+                  variant="h3"
                   sx={{
                     fontWeight: 'bold',
-                    fontSize: { xs: '2rem', md: '3rem' },
+                    fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' },
                     color: '#DA291C',
+                    textAlign: 'center',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.2,
                   }}
                 >
                   Privacy Policy
@@ -147,17 +161,23 @@ const PrivacyPolicy = () => {
                 variant="h6"
                 sx={{
                   color: 'text.secondary',
-                  maxWidth: 600,
+                  maxWidth: 700,
                   textAlign: 'center',
+                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
+                  px: { xs: 2, sm: 0 },
+                  lineHeight: 1.6,
+                  fontWeight: 400,
                 }}
               >
-                Your privacy is important to us. This policy explains how we collect, use, and protect your information.
+                We are committed to protecting your privacy and ensuring the security of your personal information.
               </Typography>
               <Typography
                 variant="body2"
                 sx={{
                   color: 'text.secondary',
-                  opacity: 0.8,
+                  opacity: 0.7,
+                  fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                  fontWeight: 500,
                 }}
               >
                 Last updated: {new Date().toLocaleDateString()}
@@ -168,44 +188,80 @@ const PrivacyPolicy = () => {
             <MotionPaper
               variants={itemVariants}
               sx={{
-                p: { xs: 3, md: 4 },
+                p: { xs: 2, sm: 3, md: 4 },
                 backgroundColor: 'background.paper',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                 borderRadius: 2,
+                border: '1px solid rgba(0,0,0,0.05)',
               }}
             >
               {sections.map((section, index) => (
                 <MotionBox
                   key={index}
                   variants={itemVariants}
-                  sx={{ mb: index < sections.length - 1 ? 4 : 0 }}
+                  sx={{ mb: index < sections.length - 1 ? { xs: 2, sm: 2.5 } : 0 }}
                 >
-                  <Typography
-                    variant="h5"
+                  <Box
                     sx={{
-                      fontWeight: 'bold',
-                      mb: 2,
-                      color: '#DA291C',
+                      textAlign: 'center',
+                      mb: { xs: 1.5, sm: 2 },
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: 1,
+                      gap: { xs: 0.5, sm: 1 },
                     }}
                   >
-                    {index === 3 && <Security sx={{ fontSize: 24 }} />}
-                    {index === 4 && <Shield sx={{ fontSize: 24 }} />}
-                    {section.title}
-                  </Typography>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 'bold',
+                        color: '#DA291C',
+                        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                        textAlign: 'center',
+                        letterSpacing: '-0.01em',
+                        lineHeight: 1.3,
+                        position: 'relative',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: -4,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 40,
+                          height: 2,
+                          backgroundColor: '#DA291C',
+                          borderRadius: 1,
+                        }
+                      }}
+                    >
+                      {section.title}
+                    </Typography>
+                  </Box>
                   
-                  <Box component="ul" sx={{ pl: 3, m: 0 }}>
+                  <Box 
+                    sx={{ 
+                      m: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: { xs: 1, sm: 1.5 },
+                    }}
+                  >
                     {section.content.map((item, itemIndex) => (
                       <Typography
                         key={itemIndex}
-                        component="li"
                         variant="body1"
                         sx={{
-                          mb: 1,
-                          lineHeight: 1.6,
-                          color: 'text.primary',
+                          lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                          color: 'text.secondary',
+                          fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                          fontWeight: 400,
+                          textAlign: 'center',
+                          maxWidth: { xs: '100%', sm: '90%', md: '85%' },
+                          px: { xs: 1, sm: 2 },
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                          hyphens: 'auto',
                         }}
                       >
                         {item}
@@ -214,40 +270,23 @@ const PrivacyPolicy = () => {
                   </Box>
                   
                   {index < sections.length - 1 && (
-                    <Divider sx={{ mt: 3, borderColor: 'divider' }} />
+                    <Divider 
+                      sx={{ 
+                        mt: { xs: 2, sm: 2.5 }, 
+                        mb: { xs: 2, sm: 2.5 },
+                        borderColor: 'rgba(218, 41, 28, 0.2)',
+                        borderWidth: 1,
+                      }} 
+                    />
                   )}
                 </MotionBox>
               ))}
             </MotionPaper>
-
-            {/* Contact Section */}
-            <MotionBox
-              variants={itemVariants}
-              sx={{
-                mt: 6,
-                textAlign: 'center',
-                p: 4,
-                backgroundColor: 'primary.main',
-                color: 'white',
-                borderRadius: 2,
-              }}
-            >
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Questions About Our Privacy Policy?
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
-                If you have any questions about this privacy policy or our data practices, 
-                please contact us at privacy@superiorseats.com
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                We&apos;re committed to protecting your privacy and will respond to your inquiries promptly.
-              </Typography>
-            </MotionBox>
           </MotionBox>
         </Container>
       </Box>
       
-      
+      <Footer />
     </Box>
   );
 };

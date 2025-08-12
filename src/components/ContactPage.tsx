@@ -18,6 +18,7 @@ import { Person, Business, Send, Phone, Email, LocationOn, AccessTime } from '@m
 import { contactInfo, initialFormData, ContactFormData } from '@/data/ContactPage';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import HeroSectionCommon from './common/HeroSectionaCommon';
 
 const ContactPage = () => {
@@ -62,17 +63,24 @@ const ContactPage = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
-      <Header />
+            <Header />
        <HeroSectionCommon
          title="Get In Touch"
          description="Contact us today for a free consultation and quote. We're here to help bring your vision to life."
          height={{
-          xs: '18vh',
-          sm: '20vh',
-          md: '18vh',
-          lg: '20vh'
-         }}
-          />
+           xs: '18vh',
+           sm: '20vh',
+           md: '18vh',
+           lg: '20vh'
+          }}
+           />
+
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        items={[
+          { label: 'Contact Us' }
+        ]}
+      />
       
 
       {/* Contact Form */}
@@ -507,6 +515,11 @@ const ContactPage = () => {
                       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                       position: 'relative',
                       zIndex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '100%',
+                      height: '100%'
                     }}
                   >
                     {(() => {
@@ -514,6 +527,9 @@ const ContactPage = () => {
                                            return <IconComponent sx={{ 
                        fontSize: { xs: 30, sm: 40 },
                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                       display: 'flex',
+                       alignItems: 'center',
+                       justifyContent: 'center'
                      }} />;
                     })()}
                   </Box>
@@ -586,29 +602,7 @@ const ContactPage = () => {
               title="Superior Seating LLC Location"
             />
           </Box>
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography
-              variant="body1"
-              sx={{
-                color: 'text.secondary',
-                fontSize: { xs: '0.875rem', sm: '1rem' },
-                fontWeight: 500,
-              }}
-            >
-              21468 C Street, Elkhart, IN 46516, United States
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color: 'text.secondary',
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                mt: 0.5,
-                opacity: 0.8,
-              }}
-            >
-              Click on the map above to get directions
-            </Typography>
-          </Box>
+        
         </Container>
       </Box>
 

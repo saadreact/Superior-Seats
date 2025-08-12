@@ -21,6 +21,8 @@ import {
   ArrowForward,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import { workPictures, workPicturesTruck, WorkImage } from '@/data/Gallery';
 
@@ -112,6 +114,13 @@ const Gallery = () => {
             lg: '20vh'
           }}
         />
+
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        items={[
+          { label: 'Gallery' }
+        ]}
+      />
                                  {/* Horizontal Image Slider */}
       <Box sx={{ 
         backgroundColor: '#f8f9fa',
@@ -524,77 +533,9 @@ const Gallery = () => {
         </DialogContent>
       </Dialog>
 
-                   {/* Call to Action Section */}
-      <Box sx={{ 
-        background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-        color: 'white',
-        py: { xs: 1.5, sm: 2, md: 2.5 },
-      }}>
-         <Container maxWidth="xl">
-           <Box sx={{ textAlign: 'center' }}>
-                           <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 'bold',
-                  mb: { xs: 0.5, sm: 1, md: 1.5 },
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.5rem' },
-                }}
-              >
-                Ready to Start Your Project?
-              </Typography>
-                           <Typography
-                variant="body1"
-                sx={{
-                  mb: { xs: 1.5, sm: 2, md: 2.5 },
-                  opacity: 0.9,
-                  maxWidth: 600,
-                  mx: 'auto',
-                  lineHeight: 1.6,
-                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
-                }}
-              >
-               Get inspired by our gallery and let us bring your vision to life. Contact us for a custom quote today.
-             </Typography>
-            <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Button
-                variant="contained"
-                size="large"
-                sx={{
-                  backgroundColor: 'white',
-                  color: 'primary.main',
-                  px: { xs: 2.5, sm: 3, md: 4 },
-                  py: { xs: 1, sm: 1.25, md: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
-                  fontWeight: 'bold',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.9)',
-                  },
-                }}
-              >
-                Get a Quote
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={() => router.push('/contact')}
-                sx={{
-                  borderColor: 'white',
-                  color: 'white',
-                  px: { xs: 2.5, sm: 3, md: 4 },
-                  py: { xs: 1, sm: 1.25, md: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
-                  fontWeight: 'bold',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                  },
-                }}
-              >
-                Contact Us
-              </Button>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+      
+      {/* Footer Component */}
+      <Footer />
     </Box>
   );
 };
