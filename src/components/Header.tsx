@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
@@ -104,50 +105,51 @@ const Header = () => {
           style={{ objectFit: 'contain' }}
         />
       </Box>
-      <List sx={{ flex: 1 }}>
-        {menuItems.map((item) => (
-          <ListItem 
-            key={item.text} 
-            component="a" 
-            href={item.href}
-            sx={{
-              py: 1.5,
-              '&:hover': {
-                backgroundColor: 'rgba(218, 41, 28, 0.05)',
-              }
-            }}
-          >
-            <ListItemText 
-              primary={item.text}
-              primaryTypographyProps={{
-                fontSize: { xs: '0.9rem', sm: '1rem' },
-                fontWeight: 500,
-                color: '#DA291C'
-              }}
-            />
-          </ListItem>
-        ))}
-        <Divider sx={{ my: 1.5 }} />
-        <ListItem 
-          component="a" 
-          href="/admin" 
-          sx={{
-            backgroundColor: 'transparent',
-            py: 1.5,
-            '&:hover': {
-              backgroundColor: 'rgba(218, 41, 28, 0.05)',
-            }
-          }}
-        >
-          <ListItemText 
-            primary="Admin Panel" 
-            primaryTypographyProps={{ 
-              fontWeight: 'bold',
-              color: 'primary.main',
-              fontSize: { xs: '0.9rem', sm: '1rem' }
-            }} 
-          />
-        </ListItem>
+             <List sx={{ flex: 1 }}>
+         {menuItems.map((item) => (
+           <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
+             <ListItem 
+               sx={{
+                 py: 1.5,
+                 cursor: 'pointer',
+                 '&:hover': {
+                   backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                 }
+               }}
+             >
+               <ListItemText 
+                 primary={item.text}
+                 primaryTypographyProps={{
+                   fontSize: { xs: '0.9rem', sm: '1rem' },
+                   fontWeight: 650,
+                   color: '#DA291C'
+                 }}
+               />
+             </ListItem>
+           </Link>
+         ))}
+         <Divider sx={{ my: 1.5 }} />
+         <Link href="/admin" style={{ textDecoration: 'none' }}>
+           <ListItem 
+             sx={{
+               backgroundColor: 'transparent',
+               py: 1.5,
+               cursor: 'pointer',
+               '&:hover': {
+                 backgroundColor: 'rgba(218, 41, 28, 0.05)',
+               }
+             }}
+           >
+             <ListItemText 
+               primary="Admin Panel" 
+               primaryTypographyProps={{ 
+                 fontWeight: 'bold',
+                 color: 'primary.main',
+                 fontSize: { xs: '0.9rem', sm: '1rem' }
+               }} 
+             />
+           </ListItem>
+         </Link>
         <Divider sx={{ my: 1.5 }} />
         {isAuthenticated ? (
           <ListItem 
@@ -226,62 +228,76 @@ const Header = () => {
               justifyContent: 'space-between',
               minHeight: { xs: '55px', sm: '38px', md: '40px' },
               px: { xs: 2, sm: 3, md: 4 },
-              py: { xs: 0.75, sm: 0 }
+              py: { xs: 0.75, sm: 0 },
+              ml: { xs: 1, sm: 2, md: 3 }
             }}
           >
-            {/* Logo Section */}
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center',
-              flexShrink: 0
-            }}>
-                             <Image
-                 src="/superiorlogo/logored.png"
-                 alt="Superior Seating LLC"
-                 width={isSmallMobile ? 130 : isMobile ? 165 : isTablet ? 200 : 240}
-                 height={isSmallMobile ? 39 : isMobile ? 50 : isTablet ? 60 : 76}
-                 style={{ objectFit: 'contain' }}
-                 priority
-               />
-            </Box>
+
             
-            {/* Centered Menu Items - Desktop & Tablet */}
-            {!isMobile && (
+                                       {/* Left Side - Logo and Menu Items - Updated */}
               <Box sx={{ 
                 display: 'flex', 
-                gap: { md: 1.5, lg: 2 }, 
                 alignItems: 'center',
-                position: 'absolute',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                flexWrap: 'nowrap'
+                flexShrink: 0,
+                width: 'fit-content'
               }}>
-                {menuItems.map((item) => (
-                  <Button
-                    key={item.text}
-                    color="inherit"
-                    href={item.href}
-                    sx={{
-                      color: '#DA291C',
-                      fontWeight: 545,
-                      fontSize: { md: '0.8rem', lg: '0.875rem' },
-                      px: { md: 1, lg: 1.5 },
-                      py: { md: 0.75, lg: 1 },
-                      whiteSpace: 'nowrap',
-                      minWidth: 'auto',
-                      '&:hover': {
-                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                        color: '#DA291C',
-                        transform: 'translateY(-1px)',
-                      },
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {item.text}
-                  </Button>
-                ))}
-              </Box>
-            )}
+                               {/* Logo Section */}
+                <Link href="/" style={{ textDecoration: 'none' }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    flexShrink: 0,
+                    width: 'fit-content',
+                    ml: { xs: 1, sm: 2, md: 3 },
+                    cursor: 'pointer'
+                  }}>
+                   <Image
+                     src="/superiorlogo/logored.png"
+                     alt="Superior Seating LLC"
+                     width={isSmallMobile ? 130 : isMobile ? 165 : isTablet ? 200 : 240}
+                     height={isSmallMobile ? 32 : isMobile ? 42 : isTablet ? 50 : 64}
+                     style={{ objectFit: 'contain' }}
+                     priority
+                   />
+                 </Box>
+               </Link>
+               
+                               {/* Menu Items - Desktop & Tablet */}
+                                 {!isMobile && (
+                   <Box sx={{ 
+                     display: 'flex', 
+                     gap: { md: 1.5, lg: 2 }, 
+                     alignItems: 'center',
+                     flexWrap: 'nowrap',
+                     ml: { md: 0, lg: 0 }
+                   }}>
+                   {menuItems.map((item) => (
+                     <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
+                       <Button
+                         color="inherit"
+                         sx={{
+                           color: '#DA291C',
+                           fontWeight: 600,
+                           fontSize: { md: '0.8rem', lg: '0.875rem' },
+                           px: { md: 1, lg: 1.5 },
+                           py: { md: 0.75, lg: 1 },
+                           whiteSpace: 'nowrap',
+                           minWidth: 'auto',
+                           '&:hover': {
+                             backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                             color: '#DA291C',
+                             transform: 'translateY(-1px)',
+                           },
+                           transition: 'all 0.2s ease',
+                         }}
+                       >
+                         {item.text}
+                       </Button>
+                     </Link>
+                   ))}
+                 </Box>
+               )}
+             </Box>
             
             {/* Right Side Actions */}
             <Box sx={{ 
@@ -370,25 +386,23 @@ const Header = () => {
                       <ShoppingCartIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
                     </Badge>
                   </IconButton>
-                  <Button
-                    color="inherit"
-                    href="/admin"
-                    sx={{
-                      color: '#DA291C',
-                      fontWeight: 600,
-                      fontSize: { md: '0.8rem', lg: '0.875rem' },
-                      px: { md: 1.5, lg: 2 },
-                      py: { md: 0.75, lg: 1 },
-                      '&:hover': {
-                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                        color: '#DA291C',
-                        transform: 'translateY(-1px)',
-                      },
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    Admin
-                  </Button>
+                                     <Link href="/admin" style={{ textDecoration: 'none' }}>
+                     <IconButton
+                       color="inherit"
+                       sx={{
+                         color: '#DA291C',
+                         p: { md: 1, lg: 1.5 },
+                         '&:hover': {
+                           backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                           color: '#DA291C',
+                           transform: 'scale(1.05)',
+                         },
+                         transition: 'all 0.2s ease',
+                       }}
+                     >
+                       <AccountCircleIcon sx={{ fontSize: { md: '1.2rem', lg: '1.4rem' } }} />
+                     </IconButton>
+                   </Link>
                   {isAuthenticated ? (
                     <>
                       <Button
@@ -447,26 +461,22 @@ const Header = () => {
                       </Menu>
                     </>
                   ) : (
-                    <Button
+                    <IconButton
                       color="inherit"
                       onClick={handleAuthClick}
-                      startIcon={<PersonIcon sx={{ fontSize: { md: '1.2rem', lg: '1.4rem' } }} />}
                       sx={{
                         color: '#DA291C',
-                        fontWeight: 600,
-                        fontSize: { md: '0.8rem', lg: '0.875rem' },
-                        px: { md: 1.5, lg: 2 },
-                        py: { md: 0.75, lg: 1 },
+                        p: { md: 1, lg: 1.5 },
                         '&:hover': {
                           backgroundColor: 'rgba(218, 41, 28, 0.1)',
                           color: '#DA291C',
-                          transform: 'translateY(-1px)',
+                          transform: 'scale(1.05)',
                         },
                         transition: 'all 0.2s ease',
                       }}
                     >
-                      Login
-                    </Button>
+                      <PersonIcon sx={{ fontSize: { md: '1.2rem', lg: '1.4rem' } }} />
+                    </IconButton>
                   )}
                 </>
               )}

@@ -5,9 +5,9 @@ export const contactInfo = [
     title: 'Phone',
     details: [
       '+1 574-389-9011',
-      'Tue-Fri: 7AM-5PM',
-      'Sat: closed',
-      'Sun: Closed'
+      'Saturday - Sunday: closed',
+     
+      
     ]
   },
   {
@@ -33,8 +33,7 @@ export const contactInfo = [
     title: 'Business Hours',
     details: [
       'Tuesday - Friday: 7AM-5PM',
-      'Saturday: closed',
-      'Sunday: Closed'
+      'Saturday - Sunday: closed',
     ]
   }
 ];
