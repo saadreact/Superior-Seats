@@ -12,74 +12,58 @@ import {
 } from '@/components/common/FormComponents';
 
 interface CustomerFormProps {
-  customer?: Customer | null;
-  customerTypes: CustomerType[];
+  customer?: any;
   isViewMode?: boolean;
-  onSubmit: (customer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (customer: any) => void;
   onCancel: () => void;
 }
 
 const CustomerForm: React.FC<CustomerFormProps> = ({
   customer,
-  customerTypes,
   isViewMode = false,
   onSubmit,
   onCancel,
 }) => {
   const [formData, setFormData] = useState({
-    customerTypeId: '',
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
+    username: '',
+    password: '',
+    customer_type: 'retail',
     phone: '',
-    company: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: '',
-    },
-    isActive: true,
-    notes: '',
+    address: '',
+    company_name: '',
+    tax_id: '',
+    price_tier_id: 1,
+    credit_limit: 5000,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (customer) {
+      console.log('Customer data for form:', customer);
       setFormData({
-        customerTypeId: customer.customerTypeId,
-        firstName: customer.firstName,
-        lastName: customer.lastName,
-        email: customer.email,
-        phone: customer.phone,
-        company: customer.company || '',
-        address: customer.address,
-        isActive: customer.isActive,
-        notes: customer.notes || '',
+        name: customer.name || '',
+        email: customer.email || '',
+        username: customer.user?.username || '',
+        password: '', // Don't populate password for edit
+        customer_type: customer.customer_type || 'retail',
+        phone: customer.phone || '',
+        address: customer.address || '',
+        company_name: customer.company_name || '',
+        tax_id: customer.tax_id || '',
+        price_tier_id: customer.price_tier_id || 1,
+        credit_limit: customer.credit_limit || 5000,
       });
-    } else {
-      // Set default customer type if available
-      if (customerTypes.length > 0) {
-        setFormData(prev => ({ ...prev, customerTypeId: customerTypes[0].id }));
-      }
     }
-  }, [customer, customerTypes]);
+  }, [customer]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.customerTypeId) {
-      newErrors.customerTypeId = 'Customer type is required';
-    }
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
     }
 
     if (!formData.email.trim()) {
@@ -88,28 +72,20 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       newErrors.email = 'Email is invalid';
     }
 
+    if (!customer && !formData.username.trim()) {
+      newErrors.username = 'Username is required';
+    }
+
+    if (!customer && !formData.password.trim()) {
+      newErrors.password = 'Password is required';
+    }
+
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     }
 
-    if (!formData.address.street.trim()) {
-      newErrors.addressStreet = 'Street address is required';
-    }
-
-    if (!formData.address.city.trim()) {
-      newErrors.addressCity = 'City is required';
-    }
-
-    if (!formData.address.state.trim()) {
-      newErrors.addressState = 'State is required';
-    }
-
-    if (!formData.address.zipCode.trim()) {
-      newErrors.addressZipCode = 'ZIP code is required';
-    }
-
-    if (!formData.address.country.trim()) {
-      newErrors.addressCountry = 'Country is required';
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
     }
 
     setErrors(newErrors);
@@ -137,80 +113,30 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     }
   };
 
-  const handleAddressChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      address: { ...prev.address, [field]: value }
-    }));
-    // Clear error when user starts typing
-    const errorKey = `address${field.charAt(0).toUpperCase() + field.slice(1)}`;
-    if (errors[errorKey]) {
-      setErrors(prev => ({ ...prev, [errorKey]: '' }));
-    }
-  };
-
-  const customerTypeOptions = customerTypes.map(ct => ({
-    value: ct.id,
-    label: ct.name,
-  }));
+  const customerTypeOptions = [
+    { value: 'retail', label: 'Retail' },
+    { value: 'wholesale', label: 'Wholesale' },
+  ];
 
   return (
     <Box sx={{ pt: 2 }}>
-      {/* Customer Type Selection */}
+      {/* Basic Information */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-          Customer Classification
+          Basic Information
         </Typography>
         <Grid
           display="grid"
-          gridTemplateColumns="1fr"
-          gap={3}
-        >
-          <SelectField
-            name="customerTypeId"
-            label="Customer Type"
-            value={formData.customerTypeId}
-            onChange={(value) => handleFieldChange('customerTypeId', value)}
-            options={customerTypeOptions}
-            required
-            error={errors.customerTypeId}
-            disabled={isViewMode}
-          />
-        </Grid>
-      </Box>
-
-      {/* Personal Information */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-          Personal Information
-        </Typography>
-        <Grid
-          display="grid"
-          gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }}
-          gap={3}
-          sx={{
-            '& > *:nth-of-type(5)': {
-              gridColumn: { xs: '1', sm: '1 / -1' }
-            }
-          }}
+          gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+          gap={{ xs: 2, md: 3 }}
         >
           <FormField
-            name="firstName"
-            label="First Name"
-            value={formData.firstName}
-            onChange={(value) => handleFieldChange('firstName', value)}
+            name="name"
+            label="Full Name"
+            value={formData.name}
+            onChange={(value) => handleFieldChange('name', value)}
             required
-            error={errors.firstName}
-            disabled={isViewMode}
-          />
-
-          <FormField
-            name="lastName"
-            label="Last Name"
-            value={formData.lastName}
-            onChange={(value) => handleFieldChange('lastName', value)}
-            required
-            error={errors.lastName}
+            error={errors.name}
             disabled={isViewMode}
           />
 
@@ -225,6 +151,43 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isViewMode}
           />
 
+          {!customer && (
+            <>
+              <FormField
+                name="username"
+                label="Username"
+                value={formData.username}
+                onChange={(value) => handleFieldChange('username', value)}
+                required
+                error={errors.username}
+                disabled={isViewMode}
+              />
+
+              <FormField
+                name="password"
+                label="Password"
+                value={formData.password}
+                onChange={(value) => handleFieldChange('password', value)}
+                type="password"
+                required
+                error={errors.password}
+                disabled={isViewMode}
+              />
+            </>
+          )}
+        </Grid>
+      </Box>
+
+      {/* Contact Information */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+          Contact Information
+        </Typography>
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+          gap={{ xs: 2, md: 3 }}
+        >
           <FormField
             name="phone"
             label="Phone Number"
@@ -236,68 +199,71 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
           />
 
           <FormField
-            name="company"
-            label="Company Name (Optional)"
-            value={formData.company}
-            onChange={(value) => handleFieldChange('company', value)}
+            name="address"
+            label="Address"
+            value={formData.address}
+            onChange={(value) => handleFieldChange('address', value)}
+            required
+            error={errors.address}
             disabled={isViewMode}
           />
         </Grid>
       </Box>
 
-      {/* Address Information */}
+      {/* Business Information */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-          Address Information
+          Business Information
         </Typography>
         <Grid
           display="grid"
-          gridTemplateColumns="1fr"
-          gap={3}
-        >
-          <AddressFields
-            prefix="address"
-            address={formData.address}
-            onChange={handleAddressChange}
-            disabled={isViewMode}
-          />
-        </Grid>
-      </Box>
-
-      {/* Additional Information */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-          Additional Information
-        </Typography>
-        <Grid
-          display="grid"
-          gridTemplateColumns="1fr"
-          gap={3}
+          gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+          gap={{ xs: 2, md: 3 }}
         >
           <FormField
-            name="notes"
-            label="Notes (Optional)"
-            value={formData.notes}
-            onChange={(value) => handleFieldChange('notes', value)}
-            multiline
-            rows={3}
+            name="company_name"
+            label="Company Name"
+            value={formData.company_name}
+            onChange={(value) => handleFieldChange('company_name', value)}
             disabled={isViewMode}
           />
 
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            pl: 2,
-            pt: 1
-          }}>
-            <SwitchField
-              name="isActive"
-              label="Active Customer"
-              checked={formData.isActive}
-              onChange={(checked) => handleFieldChange('isActive', checked)}
-              disabled={isViewMode}
-            />
-          </Box>
+          <FormField
+            name="tax_id"
+            label="Tax ID"
+            value={formData.tax_id}
+            onChange={(value) => handleFieldChange('tax_id', value)}
+            disabled={isViewMode}
+          />
+
+          <SelectField
+            name="customer_type"
+            label="Customer Type"
+            value={formData.customer_type}
+            onChange={(value) => handleFieldChange('customer_type', value)}
+            options={customerTypeOptions}
+            required
+            error={errors.customer_type}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="price_tier_id"
+            label="Price Tier ID"
+            value={formData.price_tier_id}
+            onChange={(value) => handleFieldChange('price_tier_id', parseInt(value))}
+            type="number"
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="credit_limit"
+            label="Credit Limit"
+            value={formData.credit_limit}
+            onChange={(value) => handleFieldChange('credit_limit', parseInt(value))}
+            type="number"
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
