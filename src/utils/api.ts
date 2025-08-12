@@ -416,6 +416,92 @@ class ApiService {
     return response.data.data || response.data;
   }
 
+  // Customer Types API
+  async getCustomerTypes(params: Record<string, any> = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/customers?${queryString}`);
+    return response.data.data || response.data;
+  }
+
+  async getCustomerType(id: number) {
+    const response = await api.get(`/customers/${id}`);
+    return response.data.data || response.data;
+  }
+
+  async createCustomerType(data: {
+    name: string;
+    description?: string;
+    discount_percentage?: number;
+    is_active?: boolean;
+  }) {
+    const response = await api.post('/customers', data);
+    return response.data.data || response.data;
+  }
+
+  async updateCustomerType(id: number, data: {
+    name?: string;
+    description?: string;
+    discount_percentage?: number;
+    is_active?: boolean;
+  }) {
+    const response = await api.put(`/customers/${id}`, data);
+    return response.data.data || response.data;
+  }
+
+  async deleteCustomerType(id: number) {
+    const response = await api.delete(`/customers/${id}`);
+    return response.data.data || response.data;
+  }
+
+  // Customers API
+  async getCustomers(params: Record<string, any> = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/customers?${queryString}`);
+    return response.data;
+  }
+
+  async getCustomer(id: number) {
+    const response = await api.get(`/customers/${id}`);
+    return response.data;
+  }
+
+  async createCustomer(data: {
+    name: string;
+    email: string;
+    username: string;
+    password: string;
+    customer_type: string;
+    phone: string;
+    address: string;
+    company_name?: string;
+    tax_id?: string;
+    price_tier_id: number;
+    credit_limit: number;
+  }) {
+    const response = await api.post('/register', data);
+    return response.data;
+  }
+
+  async updateCustomer(id: number, data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    company_name?: string;
+    address?: string;
+    customer_type?: string;
+    tax_id?: string;
+    price_tier_id?: number;
+    credit_limit?: number;
+  }) {
+    const response = await api.put(`/customers/${id}`, data);
+    return response.data;
+  }
+
+  async deleteCustomer(id: number) {
+    const response = await api.delete(`/customers/${id}`);
+    return response.data.data || response.data;
+  }
+
   // Debug method
   debugAuthState(): void {
     if (typeof window !== 'undefined') {
