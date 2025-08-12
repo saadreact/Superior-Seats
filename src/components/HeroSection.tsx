@@ -201,8 +201,8 @@ const HeroSection = () => {
           overflow: 'hidden',
           userSelect: 'none',
           touchAction: 'none',
-          // Add top margin to account for fixed header in mobile view
-          mt: { xs: '56px', sm: '64px', md: '64px' },
+          // Position directly below fixed header
+          mt: { xs: '55px', sm: '38px', md: '40px' },
           // Global keyframes for slide animation
           '@keyframes slideFromRight': {
             '0%': { 

@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
+import Footer from '@/components/Footer';
 import { mainCategories, subCategories, galleryData } from '@/data/ShopGallery';
 // NEW IMPORTS: Added to enable communication with CustomizedSeat component
 import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
@@ -885,6 +886,8 @@ const ShopGallery = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      <Footer />
     </Box>
   );
 };

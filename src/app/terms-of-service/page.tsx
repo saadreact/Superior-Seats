@@ -10,9 +10,10 @@ import {
   useTheme,
 } from '@mui/material';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 import { motion } from 'framer-motion';
-import { Description, Gavel, Policy } from '@mui/icons-material';
+import { Gavel, Security, Policy } from '@mui/icons-material';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -126,7 +127,7 @@ const TermsOfService = () => {
       <Box sx={{ 
         flex: 1, 
         mt: { xs: '56px', sm: '64px', md: '64px' },
-        py: { xs: 2, sm: 3, md: 4, lg: 5 } 
+        py: { xs: 1.5, sm: 2, md: 2.5, lg: 3 } 
       }}>
         <Container maxWidth="lg">
           <MotionBox
@@ -139,56 +140,62 @@ const TermsOfService = () => {
               variants={itemVariants}
               sx={{
                 textAlign: 'center',
-                mb: { xs: 3, sm: 4, md: 5, lg: 6 },
+                mb: { xs: 2, sm: 2.5, md: 3, lg: 3.5 },
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: { xs: 1, sm: 2 },
+                gap: { xs: 1, sm: 1.5 },
               }}
             >
               <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: { xs: 1, sm: 2 },
-                  mb: { xs: 1, sm: 2 },
+                  justifyContent: 'center',
+                  gap: { xs: 2, sm: 3 },
+                  mb: { xs: 2, sm: 3 },
                   flexDirection: { xs: 'column', sm: 'row' },
                 }}
               >
                 <Gavel sx={{ 
-                  fontSize: { xs: 32, sm: 40, md: 48 }, 
+                  fontSize: { xs: 40, sm: 48, md: 56 }, 
                   color: '#DA291C' 
                 }} />
                 <Typography
-                  variant="h2"
+                  variant="h1"
                   sx={{
-                    fontWeight: 'bold',
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
+                    fontWeight: 800,
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
                     color: '#DA291C',
-                    textAlign: { xs: 'center', sm: 'left' },
+                    textAlign: 'center',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.2,
                   }}
                 >
                   Terms of Service
                 </Typography>
               </Box>
               <Typography
-                variant="h6"
+                variant="h5"
                 sx={{
                   color: 'text.secondary',
-                  maxWidth: 600,
+                  maxWidth: 700,
                   textAlign: 'center',
-                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                  fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' },
                   px: { xs: 2, sm: 0 },
+                  lineHeight: 1.6,
+                  fontWeight: 400,
                 }}
               >
-                Please read these terms carefully before using our services. These terms govern your use of Superior Seats.
+                Please read these terms carefully before using our services or purchasing our products.
               </Typography>
               <Typography
                 variant="body2"
                 sx={{
                   color: 'text.secondary',
-                  opacity: 0.8,
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  opacity: 0.7,
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  fontWeight: 500,
                 }}
               >
                 Last updated: {new Date().toLocaleDateString()}
@@ -199,46 +206,77 @@ const TermsOfService = () => {
             <MotionPaper
               variants={itemVariants}
               sx={{
-                p: { xs: 2, sm: 3, md: 4 },
+                p: { xs: 3, sm: 4, md: 5 },
                 backgroundColor: 'background.paper',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                borderRadius: 2,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                borderRadius: 3,
+                border: '1px solid rgba(0,0,0,0.05)',
               }}
             >
               {sections.map((section, index) => (
                 <MotionBox
                   key={index}
                   variants={itemVariants}
-                  sx={{ mb: index < sections.length - 1 ? { xs: 3, sm: 4 } : 0 }}
+                  sx={{ mb: index < sections.length - 1 ? { xs: 4, sm: 5 } : 0 }}
                 >
-                  <Typography
-                    variant="h5"
+                  <Box
                     sx={{
-                      fontWeight: 'bold',
-                      mb: { xs: 1, sm: 2 },
-                      color: '#DA291C',
+                      textAlign: 'center',
+                      mb: { xs: 3, sm: 4 },
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: { xs: 0.5, sm: 1 },
-                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                      gap: { xs: 1, sm: 2 },
                     }}
                   >
-                    {index === 0 && <Policy sx={{ fontSize: { xs: 20, sm: 24 } }} />}
-                    {index === 6 && <Description sx={{ fontSize: { xs: 20, sm: 24 } }} />}
-                    {section.title}
-                  </Typography>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 700,
+                        color: '#DA291C',
+                        fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+                        textAlign: 'center',
+                        letterSpacing: '-0.01em',
+                        lineHeight: 1.3,
+                        position: 'relative',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: -8,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 60,
+                          height: 3,
+                          backgroundColor: '#DA291C',
+                          borderRadius: 2,
+                        }
+                      }}
+                    >
+                      {section.title}
+                    </Typography>
+                  </Box>
                   
-                  <Box component="ul" sx={{ pl: { xs: 2, sm: 3 }, m: 0 }}>
+                  <Box 
+                    sx={{ 
+                      m: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: { xs: 2, sm: 2.5 },
+                    }}
+                  >
                     {section.content.map((item, itemIndex) => (
                       <Typography
                         key={itemIndex}
-                        component="li"
                         variant="body1"
                         sx={{
-                          mb: { xs: 0.5, sm: 1 },
-                          lineHeight: 1.6,
+                          lineHeight: 1.8,
                           color: 'text.primary',
-                          fontSize: { xs: '0.875rem', sm: '1rem' },
+                          fontSize: { xs: '1rem', sm: '1.1rem' },
+                          fontWeight: 400,
+                          textAlign: 'center',
+                          maxWidth: { xs: '100%', sm: '90%', md: '85%' },
+                          px: { xs: 2, sm: 3 },
                         }}
                       >
                         {item}
@@ -247,51 +285,24 @@ const TermsOfService = () => {
                   </Box>
                   
                   {index < sections.length - 1 && (
-                    <Divider sx={{ mt: { xs: 2, sm: 3 }, borderColor: 'divider' }} />
+                    <Divider 
+                      sx={{ 
+                        mt: { xs: 3, sm: 4 }, 
+                        mb: { xs: 3, sm: 4 },
+                        borderColor: 'rgba(218, 41, 28, 0.2)',
+                        borderWidth: 1,
+                      }} 
+                    />
                   )}
                 </MotionBox>
               ))}
             </MotionPaper>
-
-            {/* Contact Section */}
-            <MotionBox
-              variants={itemVariants}
-              sx={{
-                mt: { xs: 4, sm: 5, md: 6 },
-                textAlign: 'center',
-                p: { xs: 3, sm: 4 },
-                backgroundColor: 'primary.main',
-                color: 'white',
-                borderRadius: 2,
-              }}
-            >
-              <Typography variant="h6" sx={{ 
-                mb: { xs: 1, sm: 2 }, 
-                fontWeight: 'bold',
-                fontSize: { xs: '1rem', sm: '1.125rem' }
-              }}>
-                Questions About Our Terms?
-              </Typography>
-              <Typography variant="body1" sx={{ 
-                mb: { xs: 2, sm: 3 }, 
-                opacity: 0.9,
-                fontSize: { xs: '0.875rem', sm: '1rem' }
-              }}>
-                If you have any questions about these terms of service, 
-                please contact us at legal@superiorseats.com
-              </Typography>
-              <Typography variant="body2" sx={{ 
-                opacity: 0.8,
-                fontSize: { xs: '0.75rem', sm: '0.875rem' }
-              }}>
-                We&apos;re here to help clarify any concerns you may have about our terms and conditions.
-              </Typography>
-            </MotionBox>
+           
           </MotionBox>
         </Container>
       </Box>
       
-      
+      <Footer />
     </Box>
   );
 };

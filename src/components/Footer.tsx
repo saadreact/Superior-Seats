@@ -1,42 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Container,
   Typography,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { Close } from '@mui/icons-material';
+import { Instagram } from '@mui/icons-material';
+import Link from 'next/link';
 
 const MotionBox = motion.create(Box);
 
 interface FooterProps {
-  showPrivacyModal?: boolean;
-  onPrivacyModalClose?: () => void;
+  // Add any props if needed in the future
 }
 
-const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModalClose }) => {
-  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
-
-  const handlePrivacyClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsPrivacyModalOpen(true);
-  };
-
-  const handleClosePrivacyModal = () => {
-    setIsPrivacyModalOpen(false);
-    if (onPrivacyModalClose) {
-      onPrivacyModalClose();
-    }
-  };
-
+const Footer: React.FC<FooterProps> = () => {
   return (
     <>
       {/* Cool Footer Section */}
@@ -75,52 +56,54 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                       }}>
                         Superior Seating LLC
                       </Typography>
-                      <Typography variant="body1" sx={{
-                        opacity: 0.9,
-                        fontSize: { xs: '0.875rem', sm: '1rem' },
-                        mb: 0.5,
-                        lineHeight: 1.4
-                      }}>
-                        Crafting comfort, one seat at a time
-                      </Typography>
+                   
                       <Typography variant="body2" sx={{
-                        opacity: 0.7,
+                        opacity: 0.95,
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         lineHeight: 1.3,
-                        mb: 0.5
+                        mb: 0.5,
+                        fontWeight: 400,
+                        color: 'white'
                       }}>
                         21468 C Street<br />
                         Elkhart, IN 46516
                       </Typography>
                       <Typography variant="body2" sx={{
-                        opacity: 0.7,
+                        opacity: 0.95,
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         lineHeight: 1.3,
-                        mb: 0.5
+                        mb: 0.5,
+                        fontWeight: 400,
+                        color: 'white'
                       }}>
                         P. 574-389-9011
                       </Typography>
                       <Typography variant="body2" sx={{
-                        opacity: 0.7,
+                        opacity: 0.95,
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         lineHeight: 1.3,
-                        mb: 0.5
+                        mb: 0.5,
+                        fontWeight: 400,
+                        color: 'white'
                       }}>
                         info@superiorseatingllc.com
                       </Typography>
                       <Typography variant="body2" sx={{
-                        opacity: 0.7,
+                        opacity: 1,
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         lineHeight: 1.3,
                         fontWeight: 'bold',
-                        mt: 1
+                        mt: 1,
+                        color: 'white'
                       }}>
                         Office Hours
                       </Typography>
                       <Typography variant="body2" sx={{
-                        opacity: 0.7,
+                        opacity: 0.95,
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        lineHeight: 1.3
+                        lineHeight: 1.3,
+                        fontWeight: 400,
+                        color: 'white'
                       }}>
                         Tuesday to Friday<br />
                         7:00am to 5:00pm
@@ -148,80 +131,87 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                         gap: 0.5,
                         alignItems: { xs: 'center', md: 'flex-start' }
                       }}>
-                        <Typography
-                          component="a"
-                          href="#"
-                          onClick={handlePrivacyClick}
-                                                     sx={{
-                             color: 'white',
-                             textDecoration: 'none',
-                             fontSize: { xs: '0.875rem', sm: '1rem' },
-                             opacity: 0.8,
-                             transition: 'all 0.3s ease',
-                             cursor: 'pointer',
-                             '&:hover': {
-                               opacity: 1,
-                               textDecoration: 'underline',
-                               transform: 'translateX(5px)'
-                             }
-                           }}
-                        >
-                          Privacy Policy
-                        </Typography>
-                                                 <Typography
-                           component="a"
-                           href="/terms-of-service"
-                           sx={{
-                             color: 'white',
-                             textDecoration: 'none',
-                             fontSize: { xs: '0.875rem', sm: '1rem' },
-                             opacity: 0.8,
-                             transition: 'all 0.3s ease',
-                             '&:hover': {
-                               opacity: 1,
-                               textDecoration: 'underline',
-                               transform: 'translateX(5px)'
-                             }
-                           }}
-                         >
-                           Terms of Service
-                         </Typography>
-                                                 <Typography
-                           component="a"
-                           href="/warranty"
-                           sx={{
-                             color: 'white',
-                             textDecoration: 'none',
-                             fontSize: { xs: '0.875rem', sm: '1rem' },
-                             opacity: 0.8,
-                             transition: 'all 0.3s ease',
-                             '&:hover': {
-                               opacity: 1,
-                               textDecoration: 'underline',
-                               transform: 'translateX(5px)'
-                             }
-                           }}
-                         >
-                           Warranty
-                         </Typography>
-                                                 <Typography
-                           component="a"
-                           href="/contact"
-                           sx={{
-                             color: 'white',
-                             textDecoration: 'none',
-                             fontSize: { xs: '0.875rem', sm: '1rem' },
-                             opacity: 0.8,
-                             transition: 'all 0.3s ease',
-                             '&:hover': {
-                               opacity: 1,
-                               textDecoration: 'underline',
-                               transform: 'translateX(5px)'
-                             }
-                           }}
-                         >
-                           Contact Us
-                         </Typography>
+                        <Link href="/privacy-policy" style={{ textDecoration: 'none' }}>
+                          <Typography
+                            sx={{
+                              color: 'white',
+                              textDecoration: 'none',
+                              fontSize: { xs: '0.875rem', sm: '1rem' },
+                              opacity: 0.95,
+                              fontWeight: 500,
+                              transition: 'all 0.3s ease',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                opacity: 1,
+                                textDecoration: 'underline',
+                                transform: 'translateX(5px)',
+                                fontWeight: 600
+                              }
+                            }}
+                          >
+                            Privacy Policy
+                          </Typography>
+                        </Link>
+                        <Link href="/terms-of-service" style={{ textDecoration: 'none' }}>
+                          <Typography
+                            sx={{
+                              color: 'white',
+                              textDecoration: 'none',
+                              fontSize: { xs: '0.875rem', sm: '1rem' },
+                              opacity: 0.95,
+                              fontWeight: 500,
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                opacity: 1,
+                                textDecoration: 'underline',
+                                transform: 'translateX(5px)',
+                                fontWeight: 600
+                              }
+                            }}
+                          >
+                            Terms of Service
+                          </Typography>
+                        </Link>
+                        <Link href="/warranty" style={{ textDecoration: 'none' }}>
+                          <Typography
+                            sx={{
+                              color: 'white',
+                              textDecoration: 'none',
+                              fontSize: { xs: '0.875rem', sm: '1rem' },
+                              opacity: 0.95,
+                              fontWeight: 500,
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                opacity: 1,
+                                textDecoration: 'underline',
+                                transform: 'translateX(5px)',
+                                fontWeight: 600
+                              }
+                            }}
+                          >
+                            Warranty
+                          </Typography>
+                        </Link>
+                        <Link href="/contact" style={{ textDecoration: 'none' }}>
+                          <Typography
+                            sx={{
+                              color: 'white',
+                              textDecoration: 'none',
+                              fontSize: { xs: '0.875rem', sm: '1rem' },
+                              opacity: 0.95,
+                              fontWeight: 500,
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                opacity: 1,
+                                textDecoration: 'underline',
+                                transform: 'translateX(5px)',
+                                fontWeight: 600
+                              }
+                            }}
+                          >
+                            Contact Us
+                          </Typography>
+                        </Link>
                       </Box>
                     </Box>
 
@@ -263,64 +253,98 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                                transition: 'all 0.3s ease',
                                width: { xs: 48, sm: 52 },
                                height: { xs: 48, sm: 52 },
-                             
+                               display: 'flex',
+                               alignItems: 'center',
+                               justifyContent: 'center',
+                               p: 0
                              }}
                            >
                           <Box component="span" sx={{
                             fontSize: { xs: '1.5rem', sm: '1.75rem' },
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            height: '100%',
+                            lineHeight: 1,
+                            textAlign: 'center',
+                            position: 'relative',
+                            top: '1px'
                           }}>f</Box>
                         </IconButton>
 
-                                                   <IconButton
-                             component="a"
-                             href="https://instagram.com"
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             sx={{
-                               color: 'white',
-                               backgroundColor: 'rgba(255,255,255,0.15)',
-                               backdropFilter: 'blur(10px)',
-                               border: '1px solid rgba(255,255,255,0.2)',
-                               '&:hover': {
-                                 backgroundColor: 'rgba(255,255,255,0.25)',
-                                 transform: 'scale(1.1) translateY(-2px)',
-                                 boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
-                               },
-                               transition: 'all 0.3s ease',
-                               width: { xs: 48, sm: 52 },
-                               height: { xs: 48, sm: 52 },
-                             }}
-                           >
-                          <Box component="span" sx={{
-                            fontSize: { xs: '1.5rem', sm: '1.75rem' }
-                          }}>📷</Box>
-                        </IconButton>
+                                                                                                                                                                                                               <IconButton
+                               component="a"
+                               href="https://instagram.com"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               sx={{
+                                 color: 'white',
+                                 backgroundColor: 'rgba(255,255,255,0.15)',
+                                 backdropFilter: 'blur(10px)',
+                                 border: '1px solid rgba(255,255,255,0.2)',
+                                 '&:hover': {
+                                   backgroundColor: 'rgba(255,255,255,0.25)',
+                                   transform: 'scale(1.1) translateY(-2px)',
+                                   boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                                 },
+                                 transition: 'all 0.3s ease',
+                                 width: { xs: 48, sm: 52 },
+                                 height: { xs: 48, sm: 52 },
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 justifyContent: 'center',
+                                 p: 0
+                               }}
+                             >
+                                                                                                                                                                                                                                       <Instagram sx={{
+                                 fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 justifyContent: 'center'
+                               }} />
+                          </IconButton>
 
-                                                   <IconButton
-                             component="a"
-                             href="https://youtube.com"
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             sx={{
-                               color: 'white',
-                               backgroundColor: 'rgba(255,255,255,0.15)',
-                               backdropFilter: 'blur(10px)',
-                               border: '1px solid rgba(255,255,255,0.2)',
-                               '&:hover': {
-                                 backgroundColor: 'rgba(255,255,255,0.25)',
-                                 transform: 'scale(1.1) translateY(-2px)',
-                                 boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
-                               },
-                               transition: 'all 0.3s ease',
-                               width: { xs: 48, sm: 52 },
-                               height: { xs: 48, sm: 52 },
-                             }}
-                           >
-                          <Box component="span" sx={{
-                            fontSize: { xs: '1.5rem', sm: '1.75rem' }
-                          }}>▶</Box>
-                        </IconButton>
+                                                                                                                                                                                                               <IconButton
+                               component="a"
+                               href="https://youtube.com"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               sx={{
+                                 color: 'white',
+                                 backgroundColor: 'rgba(255,255,255,0.15)',
+                                 backdropFilter: 'blur(10px)',
+                                 border: '1px solid rgba(255,255,255,0.2)',
+                                 '&:hover': {
+                                   backgroundColor: 'rgba(255,255,255,0.25)',
+                                   transform: 'scale(1.1) translateY(-2px)',
+                                   boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                                 },
+                                 transition: 'all 0.3s ease',
+                                 width: { xs: 48, sm: 52 },
+                                 height: { xs: 48, sm: 52 },
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 justifyContent: 'center',
+                                 p: 0
+                               }}
+                             >
+                            <Box component="span" sx={{
+                              fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                              fontWeight: 'bold',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '100%',
+                              height: '100%',
+                              lineHeight: 1,
+                              textAlign: 'center',
+                              position: 'relative',
+                              top: '1px',
+                              left: '1px'
+                            }}>▶</Box>
+                          </IconButton>
 
                         
                       </Box>
@@ -335,170 +359,17 @@ const Footer: React.FC<FooterProps> = ({ showPrivacyModal = false, onPrivacyModa
                      textAlign: 'center'
                    }}>
                      <Typography variant="body2" sx={{
-                       opacity: 0.8,
+                       opacity: 0.95,
                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                       fontWeight: 500
+                       fontWeight: 500,
+                       color: 'white'
                      }}>
                        © 2024 Superior Seating LLC. All rights reserved.
                      </Typography>
                    </Box>
                 </Container>
               </MotionBox>
-
-      {/* Privacy Policy Modal */}
-      <Dialog
-        open={isPrivacyModalOpen}
-        onClose={handleClosePrivacyModal}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-            maxHeight: '80vh',
-            overflow: 'hidden'
-          }
-        }}
-      >
-        <DialogTitle sx={{ 
-          backgroundColor: '#DA291C',
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          py: 2
-        }}>
-          <Typography variant="body1" sx={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
-            Privacy Policy
-          </Typography>
-          <IconButton
-            onClick={handleClosePrivacyModal}
-            sx={{ color: 'white' }}
-          >
-            <Close />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ py: 3, px: 3 }}>
-          <Box sx={{ maxHeight: '60vh', overflowY: 'auto' }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#DA291C' }}>
-              Your Privacy Matters
-            </Typography>
-            
-            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
-              At Superior Seating LLC, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, and safeguard your information when you visit our website or use our services.
-            </Typography>
-
-            <Typography variant="h6" sx={{ mb: 1, mt: 3, fontWeight: 'bold' }}>
-              Information We Collect
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.6 }}>
-              We collect information you provide directly to us, such as when you:
-            </Typography>
-            <Box component="ul" sx={{ pl: 3, mb: 2 }}>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Contact us through our website forms
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Request quotes or place orders
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Sign up for our newsletter
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Create an account on our platform
-              </Typography>
-            </Box>
-
-            <Typography variant="h6" sx={{ mb: 1, mt: 3, fontWeight: 'bold' }}>
-              How We Use Your Information
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.6 }}>
-              We use the information we collect to:
-            </Typography>
-            <Box component="ul" sx={{ pl: 3, mb: 2 }}>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Provide and improve our services
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Process your orders and payments
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Communicate with you about your orders
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Send you marketing communications (with your consent)
-              </Typography>
-            </Box>
-
-            <Typography variant="h6" sx={{ mb: 1, mt: 3, fontWeight: 'bold' }}>
-              Information Sharing
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.6 }}>
-              We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy or as required by law.
-            </Typography>
-
-            <Typography variant="h6" sx={{ mb: 1, mt: 3, fontWeight: 'bold' }}>
-              Data Security
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.6 }}>
-              We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
-            </Typography>
-
-            <Typography variant="h6" sx={{ mb: 1, mt: 3, fontWeight: 'bold' }}>
-              Your Rights
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.6 }}>
-              You have the right to:
-            </Typography>
-            <Box component="ul" sx={{ pl: 3, mb: 2 }}>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Access your personal information
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Correct inaccurate information
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Request deletion of your information
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Opt out of marketing communications
-              </Typography>
-            </Box>
-
-            <Typography variant="h6" sx={{ mb: 1, mt: 3, fontWeight: 'bold' }}>
-              Contact Us
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.6 }}>
-              If you have any questions about this Privacy Policy or our data practices, please contact us at:
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.6 }}>
-              Superior Seating LLC<br />
-              21468 C Street, Elkhart, IN 46516<br />
-              Email: privacy@superiorseating.com<br />
-              Phone: (555) 123-4567
-            </Typography>
-
-            <Typography variant="body2" sx={{ mt: 3, fontStyle: 'italic', color: 'text.secondary' }}>
-              This Privacy Policy was last updated on January 1, 2024.
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2, backgroundColor: '#f5f5f5' }}>
-          <Button
-            onClick={handleClosePrivacyModal}
-            variant="contained"
-            sx={{
-              backgroundColor: '#DA291C',
-              '&:hover': {
-                backgroundColor: '#B71C1C'
-              }
-            }}
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 };
-
 export default Footer; 

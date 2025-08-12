@@ -7,14 +7,15 @@ import {
   Typography,
   Paper,
   Divider,
-  useTheme,
-  Alert,
   Chip,
+  Alert,
+  useTheme,
 } from '@mui/material';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 import { motion } from 'framer-motion';
-import { Security, Build, Warning, CheckCircle, Schedule } from '@mui/icons-material';
+import { Security, Build, Warning, CheckCircle, Schedule, Shield } from '@mui/icons-material';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -27,43 +28,46 @@ const Warranty = () => {
     {
       type: 'Standard Warranty',
       duration: '1 Year',
-      coverage: [
-        'Manufacturing defects in materials and workmanship',
-        'Structural integrity of seat frames',
-        'Stitching and upholstery defects',
-        'Mechanical components and adjustments'
-      ],
-      icon: <CheckCircle sx={{ fontSize: 24 }} />
+      description: 'Covers manufacturing defects and material failures',
+      icon: <CheckCircle />,
+      features: [
+        'Manufacturing defects',
+        'Material failures',
+        'Structural issues',
+        'Stitching problems'
+      ]
     },
     {
       type: 'Extended Warranty',
       duration: '3 Years',
-      coverage: [
+      description: 'Comprehensive coverage for extended peace of mind',
+      icon: <Security />,
+      features: [
         'All standard warranty coverage',
-        'Extended protection on high-wear components',
-        'Additional coverage for commercial use',
-        'Priority customer service support'
-      ],
-      icon: <Security sx={{ fontSize: 24 }} />
+        'Extended wear and tear',
+        'Additional parts coverage',
+        'Priority service support'
+      ]
     },
     {
-      type: 'Commercial Warranty',
-      duration: '2 Years',
-      coverage: [
-        'Enhanced durability for commercial applications',
-        'Extended coverage for heavy-duty use',
-        'Specialized support for fleet operations',
-        'Custom warranty terms for large orders'
-      ],
-      icon: <Build sx={{ fontSize: 24 }} />
+      type: 'Premium Warranty',
+      duration: '5 Years',
+      description: 'Maximum protection with premium service',
+      icon: <Shield />,
+      features: [
+        'Complete coverage',
+        'Accidental damage protection',
+        'Free maintenance service',
+        'Lifetime customer support'
+      ]
     }
   ];
 
   const warrantyExclusions = [
-    'Damage from improper installation or use',
-    'Normal wear and tear from regular use',
-    'Damage from accidents, misuse, or abuse',
-    'Modifications made to the product',
+    'Damage caused by improper installation or use',
+    'Normal wear and tear beyond reasonable expectations',
+    'Damage from accidents, misuse, or neglect',
+    'Modifications made without authorization',
     'Damage from exposure to extreme conditions',
     'Cosmetic damage that doesn\'t affect functionality'
   ];
@@ -72,22 +76,26 @@ const Warranty = () => {
     {
       step: '1',
       title: 'Contact Support',
-      description: 'Reach out to our warranty team with your claim details'
+      description: 'Reach out to our warranty team with your issue',
+      icon: <CheckCircle />
     },
     {
       step: '2',
-      title: 'Provide Documentation',
-      description: 'Submit proof of purchase and detailed description of the issue'
+      title: 'Document Issue',
+      description: 'Provide photos and detailed description of the problem',
+      icon: <Security />
     },
     {
       step: '3',
       title: 'Assessment',
-      description: 'Our team will review your claim and determine coverage'
+      description: 'Our team will review and determine coverage',
+      icon: <Build />
     },
     {
       step: '4',
       title: 'Resolution',
-      description: 'Repair, replacement, or refund as appropriate'
+      description: 'We\'ll repair, replace, or provide appropriate solution',
+      icon: <Schedule />
     }
   ];
 
@@ -117,7 +125,7 @@ const Warranty = () => {
       <Box sx={{ 
         flex: 1, 
         mt: { xs: '56px', sm: '64px', md: '64px' },
-        py: { xs: 2, sm: 3, md: 4, lg: 5 } 
+        py: { xs: 1, sm: 1.5, md: 2, lg: 2.5 } 
       }}>
         <Container maxWidth="lg">
           <MotionBox
@@ -130,19 +138,20 @@ const Warranty = () => {
               variants={itemVariants}
               sx={{
                 textAlign: 'center',
-                mb: { xs: 3, sm: 4, md: 5, lg: 6 },
+                mb: { xs: 1, sm: 1.5, md: 2 },
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: { xs: 1, sm: 2 },
+                gap: { xs: 0.5, sm: 1 },
               }}
             >
               <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: { xs: 1, sm: 2 },
-                  mb: { xs: 1, sm: 2 },
+                  justifyContent: 'center',
+                  gap: { xs: 1.5, sm: 2 },
+                  mb: { xs: 1, sm: 1.5 },
                   flexDirection: { xs: 'column', sm: 'row' },
                 }}
               >
@@ -151,303 +160,312 @@ const Warranty = () => {
                   color: '#DA291C' 
                 }} />
                 <Typography
-                  variant="h2"
+                  variant="h3"
                   sx={{
                     fontWeight: 'bold',
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
+                    fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' },
                     color: '#DA291C',
-                    textAlign: { xs: 'center', sm: 'left' },
+                    textAlign: 'center',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.2,
                   }}
                 >
-                  Warranty Information
+                  Warranty
                 </Typography>
               </Box>
               <Typography
                 variant="h6"
                 sx={{
                   color: 'text.secondary',
-                  maxWidth: 600,
+                  maxWidth: 700,
                   textAlign: 'center',
-                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
                   px: { xs: 2, sm: 0 },
+                  lineHeight: 1.6,
+                  fontWeight: 400,
                 }}
               >
-                We stand behind the quality of our products with comprehensive warranty coverage.
+                We stand behind the quality of our custom seating solutions with comprehensive warranty coverage.
               </Typography>
               <Typography
                 variant="body2"
                 sx={{
                   color: 'text.secondary',
-                  opacity: 0.8,
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  opacity: 0.7,
+                  fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                  fontWeight: 500,
                 }}
               >
                 Last updated: {new Date().toLocaleDateString()}
               </Typography>
             </MotionBox>
 
-            {/* Warranty Types */}
-            <MotionBox variants={itemVariants} sx={{ mb: { xs: 4, sm: 5, md: 6 } }}>
-              <Typography variant="h4" sx={{ 
-                mb: { xs: 2, sm: 3, md: 4 }, 
-                fontWeight: 'bold', 
-                textAlign: 'center', 
-                color: '#DA291C',
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.125rem' }
-              }}>
-                Warranty Coverage Options
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-                  gap: { xs: 2, sm: 3 },
-                }}
-              >
-                {warrantyTypes.map((warranty, index) => (
-                  <MotionPaper
-                    key={index}
-                    variants={itemVariants}
+            {/* Content */}
+            <MotionPaper
+              variants={itemVariants}
+              sx={{
+                p: { xs: 2, sm: 3, md: 4 },
+                backgroundColor: 'background.paper',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                borderRadius: 2,
+                border: '1px solid rgba(0,0,0,0.05)',
+              }}
+            >
+              {warrantyTypes.map((warranty, index) => (
+                <MotionBox
+                  key={index}
+                  variants={itemVariants}
+                  sx={{ mb: index < warrantyTypes.length - 1 ? { xs: 2, sm: 2.5 } : 0 }}
+                >
+                  <Box
                     sx={{
-                      p: { xs: 2, sm: 3 },
                       textAlign: 'center',
-                      height: '100%',
+                      mb: { xs: 1.5, sm: 2 },
                       display: 'flex',
                       flexDirection: 'column',
-                      transition: 'transform 0.3s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                      },
+                      alignItems: 'center',
+                      gap: { xs: 0.5, sm: 1 },
                     }}
                   >
-                    <Box sx={{ mb: { xs: 1, sm: 2 } }}>
-                      {React.cloneElement(warranty.icon, { 
-                        sx: { fontSize: { xs: 20, sm: 24 } } 
-                      })}
-                    </Box>
-                    <Typography variant="h6" sx={{ 
-                      mb: { xs: 0.5, sm: 1 }, 
-                      fontWeight: 'bold', 
-                      color: '#DA291C',
-                      fontSize: { xs: '1rem', sm: '1.125rem' }
-                    }}>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 'bold',
+                        color: '#DA291C',
+                        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                        textAlign: 'center',
+                        letterSpacing: '-0.01em',
+                        lineHeight: 1.3,
+                        position: 'relative',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: -4,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 40,
+                          height: 2,
+                          backgroundColor: '#DA291C',
+                          borderRadius: 1,
+                        }
+                      }}
+                    >
                       {warranty.type}
                     </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      m: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: { xs: 1, sm: 1.5 },
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                        color: 'text.secondary',
+                        fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                        fontWeight: 400,
+                        textAlign: 'center',
+                        maxWidth: { xs: '100%', sm: '90%', md: '85%' },
+                        px: { xs: 1, sm: 2 },
+                        wordWrap: 'break-word',
+                        overflowWrap: 'break-word',
+                        hyphens: 'auto',
+                      }}
+                    >
+                      {warranty.description}
+                    </Typography>
+                    
                     <Chip
                       label={warranty.duration}
                       sx={{
-                        mb: { xs: 1, sm: 2 },
                         backgroundColor: '#DA291C',
                         color: 'white',
                         fontWeight: 'bold',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' },
+                        mb: { xs: 1, sm: 1.5 },
                       }}
                     />
-                    <Box component="ul" sx={{ pl: { xs: 1.5, sm: 2 }, textAlign: 'left' }}>
-                      {warranty.coverage.map((item, itemIndex) => (
+                    
+                    <Box sx={{ 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: { xs: 0.5, sm: 1 },
+                    }}>
+                      {warranty.features.map((feature, featureIndex) => (
                         <Typography
-                          key={itemIndex}
-                          component="li"
+                          key={featureIndex}
                           variant="body2"
                           sx={{
-                            mb: { xs: 0.5, sm: 1 },
-                            lineHeight: 1.4,
+                            lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
                             color: 'text.secondary',
-                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem' },
+                            fontWeight: 400,
+                            textAlign: 'center',
+                            wordWrap: 'break-word',
+                            overflowWrap: 'break-word',
+                            hyphens: 'auto',
                           }}
                         >
-                          {item}
+                          • {feature}
                         </Typography>
                       ))}
                     </Box>
-                  </MotionPaper>
-                ))}
-              </Box>
-            </MotionBox>
+                  </Box>
+                  
+                  {index < warrantyTypes.length - 1 && (
+                    <Divider 
+                      sx={{ 
+                        mt: { xs: 2, sm: 2.5 }, 
+                        mb: { xs: 2, sm: 2.5 },
+                        borderColor: 'rgba(218, 41, 28, 0.2)',
+                        borderWidth: 1,
+                      }} 
+                    />
+                  )}
+                </MotionBox>
+              ))}
+            </MotionPaper>
 
             {/* Warranty Process */}
-            <MotionBox variants={itemVariants} sx={{ mb: { xs: 4, sm: 5, md: 6 } }}>
-              <Typography variant="h4" sx={{ 
-                mb: { xs: 2, sm: 3, md: 4 }, 
-                fontWeight: 'bold', 
-                textAlign: 'center', 
-                color: '#DA291C',
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.125rem' }
-              }}>
-                Warranty Claim Process
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                  gap: { xs: 2, sm: 3 },
+            <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  textAlign: 'center', 
+                  fontWeight: 'bold', 
+                  mb: { xs: 2, sm: 2.5, md: 3 },
+                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                  color: '#DA291C',
                 }}
               >
+                Warranty Process
+              </Typography>
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+                gap: { xs: 1.5, sm: 2, md: 3 },
+                mt: { xs: 2, sm: 3 },
+              }}>
                 {warrantyProcess.map((step, index) => (
-                  <MotionPaper
+                  <MotionBox
                     key={index}
                     variants={itemVariants}
                     sx={{
-                      p: { xs: 2, sm: 3 },
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: { xs: 1.5, sm: 2 },
-                      transition: 'transform 0.3s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                      },
+                      textAlign: 'center',
+                      p: { xs: 1.5, sm: 2 },
+                      backgroundColor: 'background.paper',
+                      borderRadius: 2,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      border: '1px solid rgba(0,0,0,0.05)',
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: { xs: 32, sm: 40 },
-                        height: { xs: 32, sm: 40 },
-                        borderRadius: '50%',
-                        backgroundColor: '#DA291C',
-                        color: 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                    <Box sx={{ 
+                      color: '#DA291C', 
+                      mb: { xs: 0.5, sm: 1 },
+                      fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                    }}>
+                      {step.icon}
+                    </Box>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
                         fontWeight: 'bold',
-                        fontSize: { xs: '1rem', sm: '1.2rem' },
-                        flexShrink: 0,
+                        fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                        mb: { xs: 0.5, sm: 1 },
+                        color: '#DA291C',
                       }}
                     >
-                      {step.step}
-                    </Box>
-                    <Box>
-                      <Typography variant="h6" sx={{ 
-                        mb: { xs: 0.5, sm: 1 }, 
-                        fontWeight: 'bold',
-                        fontSize: { xs: '1rem', sm: '1.125rem' }
-                      }}>
-                        {step.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ 
+                      {step.title}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' },
                         color: 'text.secondary',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                      }}>
-                        {step.description}
-                      </Typography>
-                    </Box>
-                  </MotionPaper>
+                        lineHeight: { xs: 1.2, sm: 1.4, md: 1.6 },
+                      }}
+                    >
+                      {step.description}
+                    </Typography>
+                  </MotionBox>
                 ))}
               </Box>
             </MotionBox>
 
-            {/* Exclusions */}
-            <MotionBox variants={itemVariants} sx={{ mb: { xs: 4, sm: 5, md: 6 } }}>
-              <Typography variant="h4" sx={{ 
-                mb: { xs: 2, sm: 3, md: 4 }, 
-                fontWeight: 'bold', 
-                textAlign: 'center', 
-                color: '#DA291C',
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.125rem' }
-              }}>
+            {/* Warranty Exclusions */}
+            <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  textAlign: 'center', 
+                  fontWeight: 'bold', 
+                  mb: { xs: 2, sm: 2.5, md: 3 },
+                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                  color: '#DA291C',
+                }}
+              >
                 Warranty Exclusions
               </Typography>
-              <MotionPaper
-                variants={itemVariants}
-                sx={{
-                  p: { xs: 2, sm: 3, md: 4 },
-                  backgroundColor: 'background.paper',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  borderRadius: 2,
-                }}
-              >
-                <Box component="ul" sx={{ pl: { xs: 2, sm: 3 }, m: 0 }}>
-                  {warrantyExclusions.map((exclusion, index) => (
-                    <Typography
-                      key={index}
-                      component="li"
-                      variant="body1"
-                      sx={{
-                        mb: { xs: 1, sm: 2 },
-                        lineHeight: 1.6,
-                        color: 'text.primary',
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: { xs: 0.5, sm: 1 },
-                        fontSize: { xs: '0.875rem', sm: '1rem' },
-                      }}
-                    >
-                      <Warning sx={{ 
-                        fontSize: { xs: 14, sm: 16 }, 
-                        color: 'warning.main', 
-                        mt: 0.5, 
-                        flexShrink: 0 
-                      }} />
-                      {exclusion}
-                    </Typography>
-                  ))}
-                </Box>
-              </MotionPaper>
-            </MotionBox>
-
-            {/* Important Notice */}
-            <MotionBox variants={itemVariants} sx={{ mb: { xs: 3, sm: 4 } }}>
-              <Alert 
-                severity="info" 
-                sx={{ 
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  '& .MuiAlert-icon': { fontSize: { xs: 20, sm: 28 } }
-                }}
-              >
-                <Typography variant="h6" sx={{ 
-                  mb: { xs: 0.5, sm: 1 }, 
-                  fontWeight: 'bold',
-                  fontSize: { xs: '1rem', sm: '1.125rem' }
-                }}>
-                  Important Information
-                </Typography>
-                <Typography variant="body1" sx={{
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
-                }}>
-                  Warranty coverage begins from the date of delivery. Keep your proof of purchase for warranty claims. 
-                  Custom products may have specific warranty terms based on materials and construction.
-                </Typography>
+                             <Alert 
+                 severity="warning" 
+                 icon={false}
+                 sx={{ 
+                   display: 'flex',
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                   textAlign: 'center',
+                   mb: { xs: 2, sm: 3 },
+                   '& .MuiAlert-message': {
+                     fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                     lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                     textAlign: 'center',
+                     width: '100%',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                   }
+                 }}
+               >
+                The following items are not covered under our warranty:
               </Alert>
-            </MotionBox>
-
-            {/* Contact Section */}
-            <MotionBox
-              variants={itemVariants}
-              sx={{
-                mt: { xs: 4, sm: 5, md: 6 },
-                textAlign: 'center',
-                p: { xs: 3, sm: 4 },
-                backgroundColor: 'primary.main',
-                color: 'white',
-                borderRadius: 2,
-              }}
-            >
-              <Typography variant="h6" sx={{ 
-                mb: { xs: 1, sm: 2 }, 
-                fontWeight: 'bold',
-                fontSize: { xs: '1rem', sm: '1.125rem' }
+              <Box sx={{ 
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: { xs: 1, sm: 1.5 },
               }}>
-                Need Warranty Support?
-              </Typography>
-              <Typography variant="body1" sx={{ 
-                mb: { xs: 2, sm: 3 }, 
-                opacity: 0.9,
-                fontSize: { xs: '0.875rem', sm: '1rem' }
-              }}>
-                Our warranty team is here to help with any warranty claims or questions. 
-                Contact us at warranty@superiorseats.com or call +1 (555) 123-4567
-              </Typography>
-              <Typography variant="body2" sx={{ 
-                opacity: 0.8,
-                fontSize: { xs: '0.75rem', sm: '0.875rem' }
-              }}>
-                We&apos;re committed to ensuring your satisfaction with our products and services.
-              </Typography>
+                {warrantyExclusions.map((exclusion, index) => (
+                  <Typography
+                    key={index}
+                    variant="body2"
+                    sx={{
+                      lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                      fontWeight: 400,
+                      textAlign: 'center',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                    }}
+                  >
+                    {exclusion}
+                  </Typography>
+                ))}
+              </Box>
             </MotionBox>
           </MotionBox>
         </Container>
       </Box>
       
-      
+      <Footer />
     </Box>
   );
 };
