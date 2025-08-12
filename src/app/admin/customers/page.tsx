@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogActions,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -30,83 +31,69 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { Customer, CustomerType } from '@/data/types';
 import { useRouter } from 'next/navigation';
-
-// Mock data - replace with API calls
-const mockCustomerTypes: CustomerType[] = [
-  {
-    id: '1',
-    name: 'Retail Customer',
-    description: 'Individual retail customers',
-    discountPercentage: 0,
-    isActive: true,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
-  {
-    id: '2',
-    name: 'Wholesale Customer',
-    description: 'Business customers with wholesale pricing',
-    discountPercentage: 15,
-    isActive: true,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
-];
-
-const mockCustomers: Customer[] = [
-  {
-    id: '1',
-    customerTypeId: '1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '(555) 123-4567',
-    company: 'ABC Company',
-    address: {
-      street: '123 Main St',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'USA',
-    },
-    isActive: true,
-    notes: 'Regular customer',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
-  {
-    id: '2',
-    customerTypeId: '2',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    email: 'jane.smith@example.com',
-    phone: '(555) 987-6543',
-    company: 'XYZ Corporation',
-    address: {
-      street: '456 Business Ave',
-      city: 'Los Angeles',
-      state: 'CA',
-      zipCode: '90210',
-      country: 'USA',
-    },
-    isActive: true,
-    notes: 'Wholesale customer',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
-];
+import { apiService } from '@/utils/api';
 
 const CustomersPage = () => {
   const router = useRouter();
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
-  const [customerTypes, setCustomerTypes] = useState<CustomerType[]>(mockCustomerTypes);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customerTypes, setCustomerTypes] = useState<CustomerType[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await apiService.getCustomers();
+        
+        console.log('API Response:', response);
+        
+        // The API returns paginated data, so we need to access response.data.data
+        const customersData = response.data?.data || [];
+        
+        console.log('Customers Data:', customersData);
+        
+        // Transform API data to match our interface
+        const transformedCustomers = customersData.map((customer: any) => ({
+          id: customer.id.toString(),
+          customerTypeId: customer.customer_type || 'retail',
+          firstName: customer.name.split(' ')[0] || customer.name,
+          lastName: customer.name.split(' ').slice(1).join(' ') || '',
+          email: customer.email,
+          phone: customer.phone,
+          company: customer.company_name,
+          address: {
+            street: customer.address,
+            city: '',
+            state: '',
+            zipCode: '',
+            country: 'USA',
+          },
+          isActive: customer.is_active,
+          notes: '',
+          createdAt: new Date(customer.created_at),
+          updatedAt: new Date(customer.updated_at),
+        }));
+
+        setCustomers(transformedCustomers);
+        setCustomerTypes([]); // No customer types available
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setAlert({ type: 'error', message: 'Failed to load customers data' });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const getCustomerTypeName = (customerTypeId: string) => {
     const customerType = customerTypes.find(ct => ct.id === customerTypeId);
-    return customerType?.name || 'Unknown';
+    return customerType?.name || 'Standard';
   };
 
   const handleAdd = () => {
@@ -118,8 +105,7 @@ const CustomersPage = () => {
   };
 
   const handleView = (customer: Customer) => {
-    // For now, we'll use edit page in view mode
-    router.push(`/admin/customers/${customer.id}/edit`);
+    router.push(`/admin/customers/${customer.id}`);
   };
 
   const handleDelete = (customer: Customer) => {
@@ -127,11 +113,16 @@ const CustomersPage = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (customerToDelete) {
-      // Mock API call - replace with actual API
-      setCustomers(prev => prev.filter(c => c.id !== customerToDelete.id));
-      setAlert({ type: 'success', message: 'Customer deleted successfully' });
+      try {
+        await apiService.deleteCustomer(parseInt(customerToDelete.id));
+        setCustomers(prev => prev.filter(c => c.id !== customerToDelete.id));
+        setAlert({ type: 'success', message: 'Customer deleted successfully' });
+      } catch (error) {
+        console.error('Error deleting customer:', error);
+        setAlert({ type: 'error', message: 'Failed to delete customer' });
+      }
     }
     setIsDeleteDialogOpen(false);
     setCustomerToDelete(null);
@@ -145,10 +136,10 @@ const CustomersPage = () => {
         <Box sx={{ 
           mb: 3, 
           display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
+          flexDirection: { xs: 'column', md: 'row' },
           justifyContent: 'space-between', 
-          alignItems: { xs: 'stretch', sm: 'center' },
-          gap: { xs: 2, sm: 0 }
+          alignItems: { xs: 'stretch', md: 'center' },
+          gap: { xs: 2, md: 0 }
         }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
             Customers
@@ -157,7 +148,7 @@ const CustomersPage = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
-            sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
+            sx={{ alignSelf: { xs: 'stretch', md: 'auto' } }}
           >
             Add Customer
           </Button>
@@ -173,8 +164,14 @@ const CustomersPage = () => {
           </Alert>
         )}
 
-        {/* Desktop Table View */}
-        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+        <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
           <TableContainer component={Paper} sx={{ 
             borderRadius: 2, 
             overflow: 'auto',
@@ -252,7 +249,7 @@ const CustomersPage = () => {
         </Box>
 
         {/* Mobile Card View */}
-        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+        <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
           <Box sx={{ display: 'grid', gap: 2 }}>
             {customers.map((customer) => (
               <Paper key={customer.id} sx={{ p: 2, borderRadius: 2 }}>
@@ -275,7 +272,7 @@ const CustomersPage = () => {
                   />
                 </Box>
                 
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1, mb: 2 }}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
                       Company
@@ -292,7 +289,7 @@ const CustomersPage = () => {
                       {getCustomerTypeName(customer.customerTypeId)}
                     </Typography>
                   </Box>
-                  <Box>
+                  <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
                     <Typography variant="caption" color="text.secondary">
                       Created
                     </Typography>
@@ -355,6 +352,8 @@ const CustomersPage = () => {
             </Button>
           </DialogActions>
         </Dialog>
+          </>
+        )}
       </Box>
     </AdminLayout>
   );
