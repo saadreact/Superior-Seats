@@ -43,43 +43,12 @@ const TruckCarousel = () => {
   return (
     <Box
       sx={{
-        py: { xs: 8, md: 10 },
+        py: { xs: 1, md: 2, lg: 2, xl: 3 },
         backgroundColor: '#f8f9fa',
         overflow: 'hidden',
       }}
     >
       <Container maxWidth="lg">
-        <MotionBox
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          sx={{ textAlign: 'center', mb: 4 }}
-        >
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 700,
-              color: '#DA291C', // Pantone 485C
-              mb: 2,
-              fontSize: { xs: '2rem', md: '2.5rem' },
-            }}
-          >
-            Trusted by Leading Truck Manufacturers
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'text.secondary',
-              fontSize: { xs: '1rem', md: '1.125rem' },
-              maxWidth: 600,
-              mx: 'auto',
-            }}
-          >
-            Superior Seating provides custom seating solutions for all major truck brands worldwide
-          </Typography>
-        </MotionBox>
-
         <Box
           sx={{
             position: 'relative',

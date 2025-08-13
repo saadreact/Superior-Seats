@@ -5,7 +5,7 @@ export const contactInfo = [
     title: 'Phone',
     details: [
       '+1 574-389-9011',
-      'Saturday - Sunday: closed',
+      
      
       
     ]
@@ -15,17 +15,16 @@ export const contactInfo = [
     title: 'Email',
     details: [
       'info@superiorseatingllc.com',
-      'support@superiorseats.com',
-      'sales@superiorseats.com'
+      
     ]
   },
   {
     icon: 'LocationOn',
     title: 'Address',
     details: [
-      '21468 C Street Elkhart, IN',
-      'United States',
-      'Indiana 46516'
+      '21468 C Street',
+      'Elkhart, IN 46516',
+      'U.S.A.'
     ]
   },
   {

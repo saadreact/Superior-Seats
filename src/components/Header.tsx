@@ -19,12 +19,14 @@ import {
   Menu,
   MenuItem,
   Container,
+  Tooltip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   ShoppingCart as ShoppingCartIcon,
   Logout as LogoutIcon,
   AccountCircle as AccountCircleIcon,
+  AdminPanelSettingsOutlined as AdminPanelSettingsIcon,
 } from '@mui/icons-material';
 import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
@@ -95,7 +97,7 @@ const Header = () => {
         my: 2, 
         display: 'flex', 
         justifyContent: 'center',
-        px: 2
+        px: 2,
       }}>
         <Image
           src="/superiorlogo/logored.png"
@@ -222,199 +224,75 @@ const Header = () => {
           borderBottom: '1px solid rgba(218, 41, 28, 0.1)',
         }}
       >
-        <Container maxWidth="xl" disableGutters>
+        <Container maxWidth={false} disableGutters>
           <Toolbar 
             sx={{ 
-              justifyContent: 'space-between',
-              minHeight: { xs: '55px', sm: '38px', md: '40px' },
-              px: { xs: 2, sm: 3, md: 4 },
-              py: { xs: 0.75, sm: 0 },
-              ml: { xs: 1, sm: 2, md: 3 }
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              gap: 0,
+              minHeight: { xs: '60px', sm: '65px', md: '70px', lg: '75px' },
+              px: { xs: 1, sm: 2, md: 0 },
+              py: { xs: 1, sm: 1.5, md: 0 },
+              width: '100%'
             }}
           >
-
-            
-                                       {/* Left Side - Logo and Menu Items - Updated */}
+            {/* Left Section - Logo and Menu Items */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              gap: 0,
+              mx: 0,
+              pl: 0,
+              ml: 0
+            }}>
+              {/* Logo Section */}
               <Box sx={{ 
                 display: 'flex', 
                 alignItems: 'center',
+                justifyContent: 'center',
+                width: '65px',
+                height: '65px',
                 flexShrink: 0,
-                width: 'fit-content'
+                cursor: 'pointer',
+                pl: 0,
+                ml: 3
               }}>
-                               {/* Logo Section */}
-                <Link href="/" style={{ textDecoration: 'none' }}>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    flexShrink: 0,
-                    width: 'fit-content',
-                    ml: { xs: 1, sm: 2, md: 3 },
-                    cursor: 'pointer'
-                  }}>
-                   <Image
-                     src="/superiorlogo/logored.png"
-                     alt="Superior Seating LLC"
-                     width={isSmallMobile ? 130 : isMobile ? 165 : isTablet ? 200 : 240}
-                     height={isSmallMobile ? 32 : isMobile ? 42 : isTablet ? 50 : 64}
-                     style={{ objectFit: 'contain' }}
-                     priority
-                   />
-                 </Box>
-               </Link>
-               
-                               {/* Menu Items - Desktop & Tablet */}
-                                 {!isMobile && (
-                   <Box sx={{ 
-                     display: 'flex', 
-                     gap: { md: 1.5, lg: 2 }, 
-                     alignItems: 'center',
-                     flexWrap: 'nowrap',
-                     ml: { md: 0, lg: 0 }
-                   }}>
-                   {menuItems.map((item) => (
-                     <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
-                       <Button
-                         color="inherit"
-                         sx={{
-                           color: '#DA291C',
-                           fontWeight: 600,
-                           fontSize: { md: '0.8rem', lg: '0.875rem' },
-                           px: { md: 1, lg: 1.5 },
-                           py: { md: 0.75, lg: 1 },
-                           whiteSpace: 'nowrap',
-                           minWidth: 'auto',
-                           '&:hover': {
-                             backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                             color: '#DA291C',
-                             transform: 'translateY(-1px)',
-                           },
-                           transition: 'all 0.2s ease',
-                         }}
-                       >
-                         {item.text}
-                       </Button>
-                     </Link>
-                   ))}
-                 </Box>
-               )}
-             </Box>
-            
-            {/* Right Side Actions */}
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: { xs: 0.5, sm: 1, md: 1.5 },
-              flexShrink: 0
-            }}>
-              {isMobile ? (
-                <>
-                  <IconButton
-                    color="inherit"
-                    aria-label="open drawer"
-                    edge="start"
-                    onClick={handleDrawerToggle}
-                    sx={{ 
-                      color: '#DA291C',
-                      p: { xs: 1, sm: 1.5 },
-                      '&:hover': {
-                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                      }
-                    }}
-                  >
-                    <MenuIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
-                  </IconButton>
-                  <IconButton
-                    color="inherit"
-                    onClick={handleCartToggle}
-                    sx={{ 
-                      color: '#DA291C',
-                      p: { xs: 1, sm: 1.5 },
-                      '&:hover': {
-                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                      }
-                    }}
-                  >
-                    <Badge 
-                      badgeContent={totalItems} 
-                      color="primary"
-                      sx={{
-                        '& .MuiBadge-badge': {
-                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                          minWidth: { xs: '16px', sm: '18px' },
-                          height: { xs: '16px', sm: '18px' },
-                        }
-                      }}
-                    >
-                      <ShoppingCartIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
-                    </Badge>
-                  </IconButton>
-                </>
-              ) : (
-                <>
-                  <Divider 
-                    orientation="vertical" 
-                    flexItem 
-                    sx={{ 
-                      mx: { md: 1, lg: 1.5 },
-                      height: { md: '32px', lg: '36px' }
-                    }} 
-                  />
-                  <IconButton
-                    color="inherit"
-                    onClick={handleCartToggle}
-                    sx={{ 
-                      color: '#DA291C',
-                      p: { md: 1, lg: 1.5 },
-                      '&:hover': {
-                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                        transform: 'scale(1.05)',
-                      },
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <Badge 
-                      badgeContent={totalItems} 
-                      color="primary"
-                      sx={{
-                        '& .MuiBadge-badge': {
-                          fontSize: { md: '0.7rem', lg: '0.75rem' },
-                          minWidth: { md: '18px', lg: '20px' },
-                          height: { md: '18px', lg: '20px' },
-                        }
-                      }}
-                    >
-                      <ShoppingCartIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
-                    </Badge>
-                  </IconButton>
-                                     <Link href="/admin" style={{ textDecoration: 'none' }}>
-                     <IconButton
-                       color="inherit"
-                       sx={{
-                         color: '#DA291C',
-                         p: { md: 1, lg: 1.5 },
-                         '&:hover': {
-                           backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                           color: '#DA291C',
-                           transform: 'scale(1.05)',
-                         },
-                         transition: 'all 0.2s ease',
-                       }}
-                     >
-                       <AccountCircleIcon sx={{ fontSize: { md: '1.2rem', lg: '1.4rem' } }} />
-                     </IconButton>
-                   </Link>
-                  {isAuthenticated ? (
-                    <>
+                <Image
+                  src="/superiorlogo/logored.png"
+                  alt="Superior Seating LLC"
+                  width={60}
+                  height={60}
+                  style={{ 
+                    objectFit: 'contain',
+                    maxWidth: '100%',
+                    maxHeight: '100%'
+                  }}
+                  priority
+                />
+              </Box>
+             
+              {/* Menu Items - Desktop & Tablet */}
+              {!isMobile && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 0, 
+                  alignItems: 'center',
+                  flexWrap: 'nowrap',
+                  mx: { md: -2, lg: -1 },
+                  ml: { md: 2, lg: 3 }
+                }}>
+                  {menuItems.map((item) => (
+                    <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
                       <Button
                         color="inherit"
-                        onClick={handleUserMenuClick}
-                        startIcon={<AccountCircleIcon sx={{ fontSize: { md: '1.2rem', lg: '1.4rem' } }} />}
                         sx={{
                           color: '#DA291C',
                           fontWeight: 600,
                           fontSize: { md: '0.8rem', lg: '0.875rem' },
-                          px: { md: 1.5, lg: 2 },
-                          py: { md: 0.75, lg: 1 },
+                          px: { md: 1, lg: 1.5 },
+                          py: { md: 1, lg: 1.25 },
+                          whiteSpace: 'nowrap',
+                          minWidth: 'auto',
                           '&:hover': {
                             backgroundColor: 'rgba(218, 41, 28, 0.1)',
                             color: '#DA291C',
@@ -423,8 +301,139 @@ const Header = () => {
                           transition: 'all 0.2s ease',
                         }}
                       >
-                        {user?.name}
+                        {item.text}
                       </Button>
+                    </Link>
+                  ))}
+                </Box>
+              )}
+            </Box>
+            
+            {/* Right Section - Icons */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'flex-end',
+              gap: { xs: 1, sm: 1.5, md: 1, lg: 1.5 },
+              pr: { xs: 1, sm: 1.5, md: 2, lg: 3 }
+            }}>
+              {isMobile ? (
+                <>
+                  <Tooltip title="Menu" arrow>
+                    <IconButton
+                      color="inherit"
+                      aria-label="open drawer"
+                      edge="start"
+                      onClick={handleDrawerToggle}
+                      sx={{ 
+                        color: '#DA291C',
+                        p: { xs: 1, sm: 1.25 },
+                        '&:hover': {
+                          backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                        }
+                      }}
+                    >
+                      <MenuIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Shopping Cart" arrow>
+                    <IconButton
+                      color="inherit"
+                      onClick={handleCartToggle}
+                      sx={{ 
+                        color: '#DA291C',
+                        p: { xs: 1, sm: 1.25 },
+                        '&:hover': {
+                          backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                        }
+                      }}
+                    >
+                      <Badge 
+                        badgeContent={totalItems} 
+                        color="primary"
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            minWidth: { xs: '16px', sm: '18px' },
+                            height: { xs: '16px', sm: '18px' },
+                          }
+                        }}
+                      >
+                        <ShoppingCartIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />
+                      </Badge>
+                    </IconButton>
+                  </Tooltip>
+                </>
+              ) : (
+                <>
+                  <Tooltip title="Shopping Cart" arrow>
+                    <IconButton
+                      color="inherit"
+                      onClick={handleCartToggle}
+                      sx={{ 
+                        color: '#DA291C',
+                        p: { md: 1, lg: 1.5 },
+                        '&:hover': {
+                          backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                          transform: 'scale(1.05)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Badge 
+                        badgeContent={totalItems} 
+                        color="primary"
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            fontSize: { md: '0.7rem', lg: '0.75rem' },
+                            minWidth: { md: '16px', lg: '18px' },
+                            height: { md: '16px', lg: '18px' },
+                          }
+                        }}
+                      >
+                        <ShoppingCartIcon sx={{ fontSize: { md: '1.3rem', lg: '1.5rem' } }} />
+                      </Badge>
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Admin Panel" arrow>
+                    <Link href="/admin" style={{ textDecoration: 'none' }}>
+                      <IconButton
+                        color="inherit"
+                        sx={{
+                          color: '#DA291C',
+                          p: { md: 1, lg: 1.5 },
+                          '&:hover': {
+                            backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                            color: '#DA291C',
+                            transform: 'scale(1.05)',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <AdminPanelSettingsIcon sx={{ fontSize: { md: '1.8rem', lg: '2rem' } }} />
+                      </IconButton>
+                    </Link>
+                  </Tooltip>
+                  {isAuthenticated ? (
+                    <>
+                      <Tooltip title={`${user?.name} (Click to logout)`} arrow>
+                        <IconButton
+                          color="inherit"
+                          onClick={handleUserMenuClick}
+                          sx={{
+                            color: '#DA291C',
+                            p: { md: 1, lg: 1.5 },
+                            '&:hover': {
+                              backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                              color: '#DA291C',
+                              transform: 'scale(1.05)',
+                            },
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          <AccountCircleIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
+                        </IconButton>
+                      </Tooltip>
                       <Menu
                         anchorEl={userMenuAnchor}
                         open={Boolean(userMenuAnchor)}
@@ -461,22 +470,24 @@ const Header = () => {
                       </Menu>
                     </>
                   ) : (
-                    <IconButton
-                      color="inherit"
-                      onClick={handleAuthClick}
-                      sx={{
-                        color: '#DA291C',
-                        p: { md: 1, lg: 1.5 },
-                        '&:hover': {
-                          backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                    <Tooltip title="Login / Sign Up" arrow>
+                      <IconButton
+                        color="inherit"
+                        onClick={handleAuthClick}
+                        sx={{
                           color: '#DA291C',
-                          transform: 'scale(1.05)',
-                        },
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      <PersonIcon sx={{ fontSize: { md: '1.2rem', lg: '1.4rem' } }} />
-                    </IconButton>
+                          p: { md: 1, lg: 1.5 },
+                          '&:hover': {
+                            backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                            color: '#DA291C',
+                            transform: 'scale(1.05)',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <PersonIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
+                      </IconButton>
+                    </Tooltip>
                   )}
                 </>
               )}

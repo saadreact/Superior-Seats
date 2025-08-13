@@ -66,7 +66,7 @@ const ContactPage = () => {
             <Header />
        <HeroSectionCommon
          title="Get In Touch"
-         description="Contact us today for a free consultation and quote. We're here to help bring your vision to life."
+         description="Contact us today for design help and a quote.  We’re here to help bring your vision to life."
          height={{
            xs: '18vh',
            sm: '20vh',

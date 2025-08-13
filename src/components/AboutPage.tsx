@@ -63,6 +63,7 @@ const AboutPage = () => {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           color: 'white',
+          mb:1.5,
           py: { xs: 4, sm: 6, md: 8 },
           px: { xs: 2, sm: 3, md: 4 },
           textAlign: 'center',
@@ -148,10 +149,11 @@ const AboutPage = () => {
         <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center' }}>
           <Box sx={{ 
             display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: { xs: 1.5, sm: 2, md: 4 },
-            maxWidth: 1200,
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)' },
+            gap: { xs: 3, sm: 4, md: 6, lg: 10 },
+            maxWidth: 600,
             width: '100%',
+            mx: 'auto',
             justifyContent: 'center'
           }}>
             {stats.map((stat, index) => (

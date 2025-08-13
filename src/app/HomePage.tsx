@@ -25,6 +25,7 @@ import {
   Star,
   ArrowForward 
 } from '@mui/icons-material';
+import Footer from '@/components/Footer';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -160,10 +161,10 @@ const HomePage = () => {
   ];
 
   const stats = [
-    { number: 1000, label: 'Custom Seats Built', suffix: '+' },
+    { number: 20000, label: 'Custom Seats Built', suffix: '+' },
     { number: 25, label: 'Years Experience', suffix: '+' },
     { number: 50, label: 'Seat Models', suffix: '+' },
-    { number: 99, label: 'Customer Satisfaction', suffix: '%' },
+    // { number: 99, label: 'Customer Satisfaction', suffix: '%' },
   ];
 
   return (
@@ -174,7 +175,14 @@ const HomePage = () => {
       </Box>
       
       {/* Stats Section */}
-      <Box sx={{ py: { xs: 2, md: 3 }, backgroundColor: 'background.default' }}>
+      <Box sx={{ 
+        py: { xs: 2, md: 3 },
+        backgroundColor: 'background.default',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+      }}>
         <Container maxWidth="lg">
           <MotionBox
             variants={statsContainerVariants}
@@ -182,11 +190,15 @@ const HomePage = () => {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
           >
-            <Grid
-              display="grid"
-              gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }}
-              gap={4}
-            >
+                         <Grid
+               display="grid"
+               gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr' }}
+               sx={{
+                 maxWidth: { md: '800px' },
+                 mx: 'auto',
+                 gap: { xs: 3, sm: 4, md: 6, lg: 8, xl: 10 },
+               }}
+             >
               {stats.map((stat, index) => (
                 <StatItem key={index} stat={stat} />
               ))}
@@ -211,6 +223,7 @@ const HomePage = () => {
                 mb: { xs: 1, md: 2 },
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 'bold',
+                color:'#DA291C',
               }}
             >
               Our Seating Solutions
@@ -317,80 +330,52 @@ const HomePage = () => {
         </Container>
       </Box>
 
-      {/* Truck Carousel Section */}
-      <TruckCarousel />
-
-      {/* CTA Section */}
-      <MotionBox
-        initial="hidden"
-        whileInView="visible"
-        variants={ctaVariants}
-        viewport={{ once: true }}
-        sx={{
-          py: { xs: 2, sm: 3, md: 4, lg: 5 },
-          background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
-          color: 'white',
-        }}
-      >
+      {/* Trusted by Leading Truck Manufacturers Section */}
+      <Box sx={{ py: { xs: 2, md: 3 } }}>
         <Container maxWidth="lg">
           <MotionBox
-            variants={ctaVariants}
+            variants={sectionVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
-            sx={{ textAlign: 'center' }}
+            sx={{ textAlign: 'center', mb: { xs: 2, md: 1.5, lg: 1.5, xl: 3 } }}
           >
-            <MotionTypography
-              variants={sectionVariants}
+            <Typography
               variant="h2"
               sx={{
-                mb: { xs: 1, sm: 1.5, md: 2 },
+                mb: { xs: 1, md: 2 },
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 'bold',
+                color:'#DA291C',
               }}
             >
-              Ready to Build Your Custom Seat?
-            </MotionTypography>
-            <MotionTypography
-              variants={sectionVariants}
+              Trusted by Leading Truck Manufacturers
+            </Typography>
+            <Typography
               variant="h6"
               sx={{
-                mb: { xs: 2, sm: 2.5, md: 3 },
-                opacity: 0.9,
-                maxWidth: { xs: '100%', sm: 600 },
+                color: 'text.secondary',
+                maxWidth: { xs: '100%', sm: '100%', md: '100%' },
                 mx: 'auto',
                 fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
                 px: { xs: 2, sm: 0 },
+                whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow text to wrap on mobile
+                overflow: 'visible',
+                textOverflow: 'clip',
+                textAlign: 'center', // Center the text
+                lineHeight: { xs: 1.4, sm: 1.5 }, // Better line height for readability
               }}
             >
-              Join hundreds of satisfied customers who have transformed their vehicles with our premium seating.
-            </MotionTypography>
-            <motion.div
-              variants={sectionVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForward />}
-                sx={{
-                  backgroundColor: 'white',
-                  color: 'primary.main',
-                  px: { xs: 3, sm: 4 },
-                  py: { xs: 1, sm: 1.5 },
-                  fontSize: { xs: '1rem', sm: '1.1rem' },
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  },
-                }}
-              >
-                Build Your Custom Seat
-              </Button>
-            </motion.div>
+              Superior Seating provides custom seating solutions for all major truck brands worldwide
+            </Typography>
           </MotionBox>
         </Container>
-      </MotionBox>
+      </Box>
+
+      {/* Truck Carousel Section */}
+      <TruckCarousel />
+   <Footer/>
+  
     </Box>
   );
 };
