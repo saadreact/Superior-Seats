@@ -4,6 +4,7 @@ import React from 'react';
 import { Box, Button, Tooltip } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const MotionButton = motion.create(Button);
 
@@ -53,8 +54,8 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
           backgroundColor: 'white',
           color: '#DA291C',
           borderRadius: '50%',
-          width: { xs: 85, sm: 65, md: 70, lg: 85, xl: 100 },
-          height: { xs: 85, sm: 65, md: 70, lg: 85, xl: 100 },
+          width: { xs: 85, sm: 65, md: 70, lg: 85, xl: 120 },
+          height: { xs: 85, sm: 65, md: 70, lg: 85, xl: 120 },
           minWidth: 'unset',
           position: 'relative',
           overflow: 'hidden',
@@ -66,20 +67,30 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
           boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
         }}
       >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            fontSize: { xs: '2.5rem', sm: '1.6rem', md: '2rem', lg: '2.3rem', xl: '3rem' },
-            fontWeight: 'bold',
-            color: '#DA291C',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-          }}
-        >
-          S
-        </Box>
+                 <Box
+                   sx={{
+                     position: 'absolute',
+                     top: '50%',
+                     left: '50%',
+                     transform: 'translate(-50%, -50%)',
+                     width: { xs: 50, sm: 40, md: 45, lg: 50, xl: 70 },
+                     height: { xs: 50, sm: 40, md: 45, lg: 50, xl: 70 },
+                     filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
+                   }}
+                 >
+                                       <Image
+                      src="/superiorlogo/SButton.png"
+                      alt="Superior Seating Logo"
+                      width={70}
+                      height={70}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      }}
+                      priority
+                    />
+                 </Box>
       </MotionButton>
     </Tooltip>
   );

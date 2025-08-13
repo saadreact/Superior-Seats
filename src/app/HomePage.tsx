@@ -161,10 +161,10 @@ const HomePage = () => {
   ];
 
   const stats = [
-    { number: 1000, label: 'Custom Seats Built', suffix: '+' },
+    { number: 20000, label: 'Custom Seats Built', suffix: '+' },
     { number: 25, label: 'Years Experience', suffix: '+' },
     { number: 50, label: 'Seat Models', suffix: '+' },
-    { number: 99, label: 'Customer Satisfaction', suffix: '%' },
+    // { number: 99, label: 'Customer Satisfaction', suffix: '%' },
   ];
 
   return (
@@ -175,7 +175,14 @@ const HomePage = () => {
       </Box>
       
       {/* Stats Section */}
-      <Box sx={{ py: { xs: 2, md: 3 }, backgroundColor: 'background.default' }}>
+      <Box sx={{ 
+        py: { xs: 2, md: 3 },
+        backgroundColor: 'background.default',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+      }}>
         <Container maxWidth="lg">
           <MotionBox
             variants={statsContainerVariants}
@@ -183,11 +190,15 @@ const HomePage = () => {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
           >
-            <Grid
-              display="grid"
-              gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }}
-              gap={4}
-            >
+                         <Grid
+               display="grid"
+               gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr' }}
+               sx={{
+                 maxWidth: { md: '800px' },
+                 mx: 'auto',
+                 gap: { xs: 3, sm: 4, md: 6, lg: 8, xl: 10 },
+               }}
+             >
               {stats.map((stat, index) => (
                 <StatItem key={index} stat={stat} />
               ))}
@@ -212,6 +223,7 @@ const HomePage = () => {
                 mb: { xs: 1, md: 2 },
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 'bold',
+                color:'#DA291C',
               }}
             >
               Our Seating Solutions
@@ -314,6 +326,48 @@ const HomePage = () => {
                 </MotionCard>
               ))}
             </Grid>
+          </MotionBox>
+        </Container>
+      </Box>
+
+      {/* Trusted by Leading Truck Manufacturers Section */}
+      <Box sx={{ py: { xs: 2, md: 3 } }}>
+        <Container maxWidth="lg">
+          <MotionBox
+            variants={sectionVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            sx={{ textAlign: 'center', mb: { xs: 2, md: 1.5, lg: 1.5, xl: 3 } }}
+          >
+            <Typography
+              variant="h2"
+              sx={{
+                mb: { xs: 1, md: 2 },
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
+                fontWeight: 'bold',
+                color:'#DA291C',
+              }}
+            >
+              Trusted by Leading Truck Manufacturers
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                color: 'text.secondary',
+                maxWidth: { xs: '100%', sm: '100%', md: '100%' },
+                mx: 'auto',
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                px: { xs: 2, sm: 0 },
+                whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow text to wrap on mobile
+                overflow: 'visible',
+                textOverflow: 'clip',
+                textAlign: 'center', // Center the text
+                lineHeight: { xs: 1.4, sm: 1.5 }, // Better line height for readability
+              }}
+            >
+              Superior Seating provides custom seating solutions for all major truck brands worldwide
+            </Typography>
           </MotionBox>
         </Container>
       </Box>

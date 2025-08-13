@@ -224,93 +224,99 @@ const Header = () => {
           borderBottom: '1px solid rgba(218, 41, 28, 0.1)',
         }}
       >
-                 <Container maxWidth={false} disableGutters>
-                     <Toolbar 
-             sx={{ 
-               display: 'grid',
-               gridTemplateColumns: '1fr auto',
-               gap: 0,
-               minHeight: { xs: '55px', sm: '38px', md: '40px' },
-               px: 0,
-               py: { xs: 0.75, sm: 0 },
-               width: '100%'
-             }}
-           >
-
-                         {/* Left Section - Logo and Menu Items */}
-             <Box sx={{ 
-               display: 'flex', 
-               alignItems: 'center',
-               gap: 0,
-               mx:0,
-               pl: 0,
-               ml: 0
-             }}>
-                                            {/* Logo Section */}
-               <Box sx={{ 
-                 display: 'flex', 
-                 alignItems: 'center',
-                 flexShrink: 0,
-                 cursor: 'pointer',
-                 pl: 0,
-                 ml: 0
-               }}>
-                                 <Image
-                   src="/superiorlogo/logored.png"
-                   alt="Superior Seating LLC"
-                   width={isSmallMobile ? 130 : isMobile ? 165 : isTablet ? 150 : 200}
-                   height={isSmallMobile ? 32 : isMobile ? 42 : isTablet ? 50 : 64}
-                   style={{ objectFit: 'contain' }}
-                   priority
-                 />
+        <Container maxWidth={false} disableGutters>
+          <Toolbar 
+            sx={{ 
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              gap: 0,
+              minHeight: { xs: '60px', sm: '65px', md: '70px', lg: '75px' },
+              px: { xs: 1, sm: 2, md: 0 },
+              py: { xs: 1, sm: 1.5, md: 0 },
+              width: '100%'
+            }}
+          >
+            {/* Left Section - Logo and Menu Items */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              gap: 0,
+              mx: 0,
+              pl: 0,
+              ml: 0
+            }}>
+              {/* Logo Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '65px',
+                height: '65px',
+                flexShrink: 0,
+                cursor: 'pointer',
+                pl: 0,
+                ml: 3
+              }}>
+                <Image
+                  src="/superiorlogo/logored.png"
+                  alt="Superior Seating LLC"
+                  width={60}
+                  height={60}
+                  style={{ 
+                    objectFit: 'contain',
+                    maxWidth: '100%',
+                    maxHeight: '100%'
+                  }}
+                  priority
+                />
               </Box>
              
-                             {/* Menu Items - Desktop & Tablet */}
-               {!isMobile && (
-                                  <Box sx={{ 
-                    display: 'flex', 
-                    gap: 0, 
-                    alignItems: 'center',
-                    flexWrap: 'nowrap',
-                  
-                    mx:-3.5,
-                  }}>
-                 {menuItems.map((item) => (
-                   <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
-                     <Button
-                       color="inherit"
-                       sx={{
-                         color: '#DA291C',
-                         fontWeight: 600,
-                         fontSize: { md: '0.8rem', lg: '0.875rem' },
-                         px: { md: 0.5, lg: 1 },
-                         py: { md: 0.75, lg: 1 },
-                         whiteSpace: 'nowrap',
-                         minWidth: 'auto',
-                         '&:hover': {
-                           backgroundColor: 'rgba(218, 41, 28, 0.1)',
-                           color: '#DA291C',
-                           transform: 'translateY(-1px)',
-                         },
-                         transition: 'all 0.2s ease',
-                       }}
-                     >
-                       {item.text}
-                     </Button>
-                   </Link>
-                 ))}
-               </Box>
-             )}
+              {/* Menu Items - Desktop & Tablet */}
+              {!isMobile && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 0, 
+                  alignItems: 'center',
+                  flexWrap: 'nowrap',
+                  mx: { md: -2, lg: -1 },
+                  ml: { md: 2, lg: 3 }
+                }}>
+                  {menuItems.map((item) => (
+                    <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
+                      <Button
+                        color="inherit"
+                        sx={{
+                          color: '#DA291C',
+                          fontWeight: 600,
+                          fontSize: { md: '0.8rem', lg: '0.875rem' },
+                          px: { md: 1, lg: 1.5 },
+                          py: { md: 1, lg: 1.25 },
+                          whiteSpace: 'nowrap',
+                          minWidth: 'auto',
+                          '&:hover': {
+                            backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                            color: '#DA291C',
+                            transform: 'translateY(-1px)',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        {item.text}
+                      </Button>
+                    </Link>
+                  ))}
+                </Box>
+              )}
             </Box>
             
-                         {/* Right Section - Icons */}
-                           <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'flex-end',
-                gap: { xs: 1.5, sm: 2, md: 1 },
-                pr: { xs: 1, sm: 1.5, md: 0 }
-              }}>
+            {/* Right Section - Icons */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'flex-end',
+              gap: { xs: 1, sm: 1.5, md: 1, lg: 1.5 },
+              pr: { xs: 1, sm: 1.5, md: 2, lg: 3 }
+            }}>
               {isMobile ? (
                 <>
                   <Tooltip title="Menu" arrow>
@@ -321,7 +327,7 @@ const Header = () => {
                       onClick={handleDrawerToggle}
                       sx={{ 
                         color: '#DA291C',
-                        p: { xs: 1, sm: 1.5 },
+                        p: { xs: 1, sm: 1.25 },
                         '&:hover': {
                           backgroundColor: 'rgba(218, 41, 28, 0.1)',
                         }
@@ -336,7 +342,7 @@ const Header = () => {
                       onClick={handleCartToggle}
                       sx={{ 
                         color: '#DA291C',
-                        p: { xs: 1, sm: 1.5 },
+                        p: { xs: 1, sm: 1.25 },
                         '&:hover': {
                           backgroundColor: 'rgba(218, 41, 28, 0.1)',
                         }

@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 import { motion } from 'framer-motion';
 import { Gavel, Security, Policy } from '@mui/icons-material';
@@ -102,6 +103,11 @@ const TermsOfService = () => {
         py: { xs: 1, sm: 1.5, md: 2, lg: 2.5 } 
       }}>
         <Container maxWidth="lg">
+          <Breadcrumbs 
+            items={[
+              { label: 'Terms of Service', href: '/terms-of-service' }
+            ]}
+          />
           <MotionBox
             initial="hidden"
             animate="visible"
@@ -217,13 +223,18 @@ const TermsOfService = () => {
                         key={itemIndex}
                         variant="body1"
                         sx={{
-                          lineHeight: 1.8,
-                          color: 'text.primary',
-                          fontSize: { xs: '1rem', sm: '1.1rem' },
+                          lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                          color: 'text.secondary',
+                          fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
                           fontWeight: 400,
                           textAlign: 'center',
-                          maxWidth: { xs: '100%', sm: '90%', md: '85%' },
-                          px: { xs: 2, sm: 3 },
+                          maxWidth: '100%',
+                          px: { xs: 1, sm: 2 },
+                          whiteSpace: 'normal',
+                          overflow: 'visible',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                          hyphens: 'auto',
                         }}
                       >
                         {item}

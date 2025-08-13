@@ -48,7 +48,7 @@ const Footer: React.FC<FooterProps> = () => {
   }}
 >
   <Typography
-    variant="h3"
+    variant="h1"
     sx={{
       fontWeight: 'bold',
       mb: 0.5,
@@ -58,7 +58,7 @@ const Footer: React.FC<FooterProps> = () => {
         md: '1.25rem',
         lg: '1.5rem'
       },
-      background: 'linear-gradient(45deg, #ffffff 30%, #f0f0f0 90%)',
+      background: 'linear-gradient(45deg, #ffffff 30%,rgb(255, 255, 255) 90%)',
       backgroundClip: 'text',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent'
@@ -123,12 +123,16 @@ const Footer: React.FC<FooterProps> = () => {
     </Box>
 
     {/* Office Hours */}
-    <Box>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: { xs: 'center', sm: 'flex-start' }
+    }}>
       <Typography
         variant="body2"
         sx={{
           opacity: 1,
-          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          fontSize: { xs: '0.75rem', sm: '0.875rem' ,md: '0.875rem', lg: '1rem'},
           lineHeight: 1.3,
           fontWeight: 'bold',
           mb: 0.5,
@@ -141,14 +145,28 @@ const Footer: React.FC<FooterProps> = () => {
         variant="body2"
         sx={{
           opacity: 0.95,
-          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          fontSize: { xs: '0.75rem', sm: '0.875rem'},
           lineHeight: 1.3,
           fontWeight: 550,
-          color: 'white'
+          color: 'white',
+          mb: 0.25,
+             minWidth: '150px',
         }}
       >
-        Tuesday to Friday<br />
-        7:00am to 5:00pm
+        Tuesday-Friday
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          opacity: 0.95,
+          fontSize: { xs: '0.75rem', sm: '0.875rem' ,},
+          lineHeight: 1.3,
+          fontWeight: 550,
+          color: 'white',
+          minWidth: '200px'
+        }}
+      >
+        7:00AM - 5:00PM
       </Typography>
     </Box>
   </Box>
@@ -161,11 +179,13 @@ const Footer: React.FC<FooterProps> = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: { xs: 'center', md: 'flex-start' },
-                      flex: { md: '1' }
+                      flex: { md: '1' },
+                      ml:8,
                     }}>
                                              <Typography variant="h3" sx={{
                          fontWeight: 'bold',
-                         mb: 0.5,
+                         mb: 1,
+                        
                          fontSize: { xs: '1rem', sm: '1.125rem' , md: '1.25rem', lg: '1.5rem'},
                          textAlign: { xs: 'center', md: 'left' }
                        }}>
@@ -184,7 +204,7 @@ const Footer: React.FC<FooterProps> = () => {
                               textDecoration: 'none',
                               fontSize: { xs: '0.875rem', sm: '1rem' },
                               opacity: 0.95,
-                              fontWeight: 500,
+                              fontWeight: 550,
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
                               '&:hover': {
@@ -205,7 +225,7 @@ const Footer: React.FC<FooterProps> = () => {
                               textDecoration: 'none',
                               fontSize: { xs: '0.875rem', sm: '1rem' },
                               opacity: 0.95,
-                              fontWeight: 500,
+                              fontWeight: 550,
                               transition: 'all 0.3s ease',
                               '&:hover': {
                                 opacity: 1,
@@ -225,7 +245,7 @@ const Footer: React.FC<FooterProps> = () => {
                               textDecoration: 'none',
                               fontSize: { xs: '0.875rem', sm: '1rem' },
                               opacity: 0.95,
-                              fontWeight: 500,
+                              fontWeight: 550,
                               transition: 'all 0.3s ease',
                               '&:hover': {
                                 opacity: 1,
@@ -245,7 +265,7 @@ const Footer: React.FC<FooterProps> = () => {
                               textDecoration: 'none',
                               fontSize: { xs: '0.875rem', sm: '1rem' },
                               opacity: 0.95,
-                              fontWeight: 500,
+                              fontWeight: 550,
                               transition: 'all 0.3s ease',
                               '&:hover': {
                                 opacity: 1,

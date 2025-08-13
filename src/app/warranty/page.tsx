@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 import { motion } from 'framer-motion';
 import { Security, Build, Warning, CheckCircle, Schedule, Shield } from '@mui/icons-material';
@@ -105,6 +106,11 @@ const Warranty = () => {
         py: { xs: 1, sm: 1.5, md: 2, lg: 2.5 } 
       }}>
         <Container maxWidth="lg">
+          <Breadcrumbs 
+            items={[
+              { label: 'Warranty', href: '/warranty' }
+            ]}
+          />
           <MotionBox
             initial="hidden"
             animate="visible"

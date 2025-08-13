@@ -1,8 +1,8 @@
 export const stats = [
-    { label: 'Years Experience', value: '15+', icon: 'TrendingUp' },
-    { label: 'Seats Manufactured', value: '10,000+', icon: 'CheckCircle' },
-    { label: 'Happy Customers', value: '98%', icon: 'Star' },
-    { label: 'Team Members', value: '25+', icon: 'People' },
+    { label: 'Years Experience', value: '25+', icon: 'TrendingUp' },
+    { label: 'Seats Manufactured', value: '20,000+', icon: 'CheckCircle' },
+    // { label: 'Happy Customers', value: '98%', icon: 'Star' },
+    // { label: 'Team Members', value: '25+', icon: 'People' },
   ];
 
  export const values = [
@@ -32,7 +32,7 @@ export const stats = [
     {
       step: '02',
       title: 'Handcrafted Design',
-      description: 'Every seat is manually designed with care and precision, just pure craftsmanship.',
+      description: 'Every seat is manually designed with care and precision.',
     },
     {
       step: '03',

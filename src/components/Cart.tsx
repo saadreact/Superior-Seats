@@ -26,7 +26,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { removeItem, updateQuantity } from '@/store/cartSlice';
 import { CartItem } from '@/store/cartSlice';
-import { processImageUrl } from '@/services/api';
 
 interface CartProps {
   open: boolean;
@@ -132,31 +131,10 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
             </Typography>
             <Typography variant="body2" sx={{ 
               color: '#999',
-              fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.95rem' },
-              mb: 3
+              fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.95rem' }
             }}>
               Add some items to get started
             </Typography>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                onClose();
-                router.push('/ShopGallery');
-              }}
-              sx={{
-                borderColor: 'primary.main',
-                color: 'primary.main',
-                fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.95rem' },
-                px: { xs: 2, sm: 2.5, md: 3 },
-                py: { xs: 0.75, sm: 1, md: 1.25 },
-                '&:hover': {
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                },
-              }}
-            >
-              Continue Shopping
-            </Button>
           </Box>
         ) : (
           <>
@@ -185,20 +163,9 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                           objectFit: 'cover',
                           mr: { xs: 2, sm: 2.5, md: 3 },
                           boxShadow: { xs: '0 1px 4px rgba(0,0,0,0.08)', sm: '0 2px 8px rgba(0,0,0,0.1)' },
-                          backgroundColor: '#f5f5f5',
                         }}
-                        image={processImageUrl(item.image)}
+                        image={item.image}
                         alt={item.title}
-                        onError={(e) => {
-                          console.error('Image failed to load:', item.image);
-                          console.error('Item details:', item);
-                          // Set a fallback image or hide the image
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                        onLoad={() => {
-                          console.log('Image loaded successfully:', item.image);
-                        }}
                       />
                       
                       {/* Item Details */}
@@ -329,58 +296,32 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                 </Typography>
               </Box>
               
-              <Box sx={{ display: 'flex', gap: { xs: 1, sm: 1.5, md: 2 }, flexDirection: { xs: 'column', sm: 'row' } }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  size="large"
-                  onClick={() => {
-                    onClose();
-                    router.push('/ShopGallery');
-                  }}
-                  sx={{
-                    borderColor: 'primary.main',
-                    color: 'primary.main',
-                    py: { xs: 1.5, sm: 1.75, md: 2 },
-                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },
-                    fontWeight: 600,
-                    borderRadius: { xs: 1.5, sm: 2 },
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: 'primary.main',
-                      color: 'white',
-                    },
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  Continue Shopping
-                </Button>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  size="large"
-                  onClick={() => {
-                    onClose();
-                    router.push('/checkout');
-                  }}
-                  sx={{
-                    backgroundColor: 'primary.main',
-                    py: { xs: 1.5, sm: 1.75, md: 2 },
-                    fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
-                    fontWeight: 600,
-                    borderRadius: { xs: 1.5, sm: 2 },
-                    textTransform: 'none',
-                    boxShadow: { xs: '0 2px 8px rgba(211, 47, 47, 0.25)', sm: '0 4px 12px rgba(211, 47, 47, 0.3)' },
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                      boxShadow: { xs: '0 4px 12px rgba(211, 47, 47, 0.35)', sm: '0 6px 20px rgba(211, 47, 47, 0.4)' },
-                    },
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  Proceed to Checkout
-                </Button>
-              </Box>
+              <Button
+                variant="contained"
+                fullWidth
+                size="large"
+                onClick={() => {
+                  onClose();
+                  router.push('/checkout');
+                }}
+                sx={{
+                  backgroundColor: 'primary.main',
+                  py: { xs: 1.5, sm: 1.75, md: 2 },
+                  fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
+                  fontWeight: 600,
+                  borderRadius: { xs: 1.5, sm: 2 },
+                  textTransform: 'none',
+                  boxShadow: { xs: '0 2px 8px rgba(211, 47, 47, 0.25)', sm: '0 4px 12px rgba(211, 47, 47, 0.3)' },
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                    boxShadow: { xs: '0 4px 12px rgba(211, 47, 47, 0.35)', sm: '0 6px 20px rgba(211, 47, 47, 0.4)' },
+                    transform: 'translateY(-1px)'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Proceed to Checkout
+              </Button>
             </Box>
           </>
         )}

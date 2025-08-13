@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 import { motion } from 'framer-motion';
 import { Security, Shield, Policy } from '@mui/icons-material';
@@ -91,6 +92,11 @@ const PrivacyPolicy = () => {
         py: { xs: 1, sm: 1.5, md: 2, lg: 2.5 } 
       }}>
         <Container maxWidth="lg">
+          <Breadcrumbs 
+            items={[
+              { label: 'Privacy Policy', href: '/privacy-policy' }
+            ]}
+          />
           <MotionBox
             initial="hidden"
             animate="visible"
@@ -226,8 +232,10 @@ const PrivacyPolicy = () => {
                           fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
                           fontWeight: 400,
                           textAlign: 'center',
-                          maxWidth: { xs: '100%', sm: '90%', md: '85%' },
+                          maxWidth: '100%',
                           px: { xs: 1, sm: 2 },
+                          whiteSpace: 'normal',
+                          overflow: 'visible',
                           wordWrap: 'break-word',
                           overflowWrap: 'break-word',
                           hyphens: 'auto',
