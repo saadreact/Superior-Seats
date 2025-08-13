@@ -260,7 +260,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                   >
                     <ListItemAvatar>
                       <Avatar
-                        src={item.image}
+                        src={item.image && item.image.trim() !== '' ? item.image : undefined}
                         alt={item.title}
                         sx={{ 
                           width: { xs: 40, sm: 50, md: 60 }, 
@@ -270,7 +270,13 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                           borderColor: 'primary.100',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                         }}
-                      />
+                      >
+                        {(!item.image || item.image.trim() === '') && (
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' } }}>
+                            {item.title.charAt(0).toUpperCase()}
+                          </Typography>
+                        )}
+                      </Avatar>
                     </ListItemAvatar>
                     <ListItemText
                       primary={

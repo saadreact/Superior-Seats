@@ -209,15 +209,31 @@ const Gallery = () => {
                 }}
                 onClick={() => handleImageClick(item, index)}
               >
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  style={{
-                    objectFit: 'cover',
-                    backgroundColor: '#f5f5f5',
-                  }}
-                />
+                {item.image && item.image.trim() !== '' ? (
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    style={{
+                      objectFit: 'cover',
+                      backgroundColor: '#f5f5f5',
+                    }}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#f5f5f5',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    <Typography variant="body2">No image</Typography>
+                  </Box>
+                )}
                 
                 {/* Hover Overlay */}
                 <Box
@@ -278,15 +294,31 @@ const Gallery = () => {
                 }}
                 onClick={() => handleImageClick(item, index)}
               >
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  style={{
-                    objectFit: 'cover',
-                    backgroundColor: '#f5f5f5',
-                  }}
-                />
+                {item.image && item.image.trim() !== '' ? (
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    style={{
+                      objectFit: 'cover',
+                      backgroundColor: '#f5f5f5',
+                    }}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#f5f5f5',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    <Typography variant="body2">No image</Typography>
+                  </Box>
+                )}
                 
                 {/* Hover Overlay */}
                 <Box
@@ -516,18 +548,34 @@ const Gallery = () => {
 
           {selectedImage && (
             <Box sx={{ position: 'relative' }}>
-              <Image
-                src={selectedImage.image}
-                alt={selectedImage.title}
-                width={800}
-                height={600}
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  maxHeight: '80vh',
-                  objectFit: 'contain',
-                }}
-              />
+              {selectedImage.image && selectedImage.image.trim() !== '' ? (
+                <Image
+                  src={selectedImage.image}
+                  alt={selectedImage.title}
+                  width={800}
+                  height={600}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: '80vh',
+                    objectFit: 'contain',
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '80vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#f5f5f5',
+                    color: 'text.secondary',
+                  }}
+                >
+                  <Typography variant="h6">No image available</Typography>
+                </Box>
+              )}
             </Box>
           )}
         </DialogContent>

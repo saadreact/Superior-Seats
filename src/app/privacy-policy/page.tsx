@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 import { motion } from 'framer-motion';
 import { Security, Shield, Policy } from '@mui/icons-material';
@@ -32,21 +33,13 @@ const PrivacyPolicy = () => {
     {
       title: 'Information We Collect',
       content: [
-        'We collect information you provide directly to us, such as when you:',
-        'Contact us through our website forms',
-        'Request quotes or place orders',
-        'Sign up for our newsletter',
-        'Create an account on our platform'
+        'We collect information you provide directly to us, such as when you contact us through our website forms, request quotes or place orders, sign up for our newsletter, or create an account on our platform.'
       ]
     },
     {
       title: 'How We Use Your Information',
       content: [
-        'We use the information we collect to:',
-        'Provide and improve our services',
-        'Process your orders and payments',
-        'Communicate with you about your orders',
-        'Send you marketing communications (with your consent)'
+        'We use the information we collect to provide and improve our services, process your orders and payments, communicate with you about your orders, and send you marketing communications (with your consent).'
       ]
     },
     {
@@ -64,23 +57,10 @@ const PrivacyPolicy = () => {
     {
       title: 'Your Rights',
       content: [
-        'You have the right to:',
-        'Access your personal information',
-        'Correct inaccurate information',
-        'Request deletion of your information',
-        'Opt out of marketing communications'
+        'You have the right to access your personal information, correct inaccurate information, request deletion of your information, and opt out of marketing communications.'
       ]
     },
-    {
-      title: 'Contact Us',
-      content: [
-        'If you have any questions about this Privacy Policy or our data practices, please contact us at:',
-        'Superior Seating LLC',
-        '21468 C Street, Elkhart, IN 46516',
-        'Email: info@superiorseatingllc.com',
-        'Phone: 574-389-9011'
-      ]
-    }
+ 
   ];
 
   const containerVariants = {
@@ -112,6 +92,11 @@ const PrivacyPolicy = () => {
         py: { xs: 1, sm: 1.5, md: 2, lg: 2.5 } 
       }}>
         <Container maxWidth="lg">
+          <Breadcrumbs 
+            items={[
+              { label: 'Privacy Policy', href: '/privacy-policy' }
+            ]}
+          />
           <MotionBox
             initial="hidden"
             animate="visible"
@@ -157,20 +142,22 @@ const PrivacyPolicy = () => {
                   Privacy Policy
                 </Typography>
               </Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  color: 'text.secondary',
-                  maxWidth: 700,
-                  textAlign: 'center',
-                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
-                  px: { xs: 2, sm: 0 },
-                  lineHeight: 1.6,
-                  fontWeight: 400,
-                }}
-              >
-                We are committed to protecting your privacy and ensuring the security of your personal information.
-              </Typography>
+                                                                                                                       <Typography
+                   variant="h6"
+                   sx={{
+                     color: 'text.secondary',
+                     maxWidth: '100%',
+                     textAlign: 'center',
+                     fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
+                     px: { xs: 2, sm: 0 },
+                     lineHeight: 1.2,
+                     fontWeight: 400,
+                     whiteSpace: 'nowrap',
+                     overflow: 'visible',
+                   }}
+                 >
+                   We are committed to protecting your privacy and ensuring the security of your personal information.
+                 </Typography>
               <Typography
                 variant="body2"
                 sx={{
@@ -211,29 +198,17 @@ const PrivacyPolicy = () => {
                       gap: { xs: 0.5, sm: 1 },
                     }}
                   >
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        fontWeight: 'bold',
-                        color: '#DA291C',
-                        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                        textAlign: 'center',
-                        letterSpacing: '-0.01em',
-                        lineHeight: 1.3,
-                        position: 'relative',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: -4,
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: 40,
-                          height: 2,
-                          backgroundColor: '#DA291C',
-                          borderRadius: 1,
-                        }
-                      }}
-                    >
+                                         <Typography
+                       variant="h4"
+                       sx={{
+                         fontWeight: 'bold',
+                         color: '#DA291C',
+                         fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                         textAlign: 'center',
+                         letterSpacing: '-0.01em',
+                         lineHeight: 1.3,
+                       }}
+                     >
                       {section.title}
                     </Typography>
                   </Box>
@@ -257,8 +232,10 @@ const PrivacyPolicy = () => {
                           fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
                           fontWeight: 400,
                           textAlign: 'center',
-                          maxWidth: { xs: '100%', sm: '90%', md: '85%' },
+                          maxWidth: '100%',
                           px: { xs: 1, sm: 2 },
+                          whiteSpace: 'normal',
+                          overflow: 'visible',
                           wordWrap: 'break-word',
                           overflowWrap: 'break-word',
                           hyphens: 'auto',
