@@ -40,75 +40,121 @@ const Footer: React.FC<FooterProps> = () => {
                     alignItems: { xs: 'center', md: 'flex-start' },
                     gap: { xs: 2, md: 4 }
                   }}>
-                    {/* Company Info */}
-                    <Box sx={{
-                      textAlign: { xs: 'center', md: 'left' },
-                      flex: { md: '1' }
-                    }}>
-                      <Typography variant="h3" sx={{
-                        fontWeight: 'bold',
-                        mb: 0.5,
-                        fontSize: { xs: '1rem', sm: '1.125rem' , md: '1.25rem', lg: '1.5rem'},
-                        background: 'linear-gradient(45deg, #ffffff 30%, #f0f0f0 90%)',
-                        backgroundClip: 'text',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                      }}>
-                        Superior Seating LLC
-                      </Typography>
-                   
-                      <Typography variant="body2" sx={{
-                        opacity: 0.95,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        lineHeight: 1.3,
-                        mb: 0.5,
-                        fontWeight: 400,
-                        color: 'white'
-                      }}>
-                        21468 C Street<br />
-                        Elkhart, IN 46516
-                      </Typography>
-                      <Typography variant="body2" sx={{
-                        opacity: 0.95,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        lineHeight: 1.3,
-                        mb: 0.5,
-                        fontWeight: 400,
-                        color: 'white'
-                      }}>
-                        P. 574-389-9011
-                      </Typography>
-                      <Typography variant="body2" sx={{
-                        opacity: 0.95,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        lineHeight: 1.3,
-                        mb: 0.5,
-                        fontWeight: 400,
-                        color: 'white'
-                      }}>
-                        info@superiorseatingllc.com
-                      </Typography>
-                      <Typography variant="body2" sx={{
-                        opacity: 1,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        lineHeight: 1.3,
-                        fontWeight: 'bold',
-                        mt: 1,
-                        color: 'white'
-                      }}>
-                        Office Hours
-                      </Typography>
-                      <Typography variant="body2" sx={{
-                        opacity: 0.95,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        lineHeight: 1.3,
-                        fontWeight: 400,
-                        color: 'white'
-                      }}>
-                        Tuesday to Friday<br />
-                        7:00am to 5:00pm
-                      </Typography>
-                    </Box>
+{/* Company Info */}
+<Box
+  sx={{
+    textAlign: { xs: 'center', md: 'left' },
+    flex: { md: '1' }
+  }}
+>
+  <Typography
+    variant="h3"
+    sx={{
+      fontWeight: 'bold',
+      mb: 0.5,
+      fontSize: {
+        xs: '1rem',
+        sm: '1.125rem',
+        md: '1.25rem',
+        lg: '1.5rem'
+      },
+      background: 'linear-gradient(45deg, #ffffff 30%, #f0f0f0 90%)',
+      backgroundClip: 'text',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
+    }}
+  >
+    Superior Seating LLC
+  </Typography>
+
+  {/* Address + Office Hours in parallel */}
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: { xs: 'column', sm: 'row' },
+      gap: { xs: 2, sm: 4 },
+      py:1,
+      alignItems: { xs: 'center', sm: 'flex-start' },
+      justifyContent: 'flex-start'
+    }}
+  >
+    {/* Address */}
+    <Box>
+      <Typography
+        variant="body2"
+        sx={{
+          opacity: 0.95,
+          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          lineHeight: 1.3,
+          mb: 0.5,
+          fontWeight: 550,
+          color: 'white'
+        }}
+      >
+        21468 C Street<br />
+        Elkhart, IN 46516
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          opacity: 0.95,
+          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          lineHeight: 1.3,
+          mb: 0.5,
+          fontWeight: 550,
+          color: 'white'
+        }}
+      >
+        P. 574-389-9011
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          opacity: 0.99,
+          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          lineHeight: 1.3,
+          mb: 0.5,
+          fontWeight: 600,
+          color: 'white'
+        }}
+      >
+        info@superiorseatingllc.com
+      </Typography>
+    </Box>
+
+    {/* Office Hours */}
+    <Box>
+      <Typography
+        variant="body2"
+        sx={{
+          opacity: 1,
+          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          lineHeight: 1.3,
+          fontWeight: 'bold',
+          mb: 0.5,
+          color: 'white'
+        }}
+      >
+        Office Hours
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          opacity: 0.95,
+          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          lineHeight: 1.3,
+          fontWeight: 550,
+          color: 'white'
+        }}
+      >
+        Tuesday to Friday<br />
+        7:00am to 5:00pm
+      </Typography>
+    </Box>
+  </Box>
+</Box>
+
+
 
                     {/* Quick Links */}
                     <Box sx={{
@@ -220,7 +266,8 @@ const Footer: React.FC<FooterProps> = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: { xs: 'center', md: 'flex-start' },
-                      flex: { md: '1' }
+                      flex: { md: '1' },
+                    
                     }}>
                                              <Typography variant="h3" sx={{
                          fontWeight: 'bold',
@@ -233,7 +280,8 @@ const Footer: React.FC<FooterProps> = () => {
                       <Box sx={{
                         display: 'flex',
                         gap: 2,
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        py:1.2,
                       }}>
                                                    <IconButton
                              component="a"

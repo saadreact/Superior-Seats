@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Box,
   Container,
   Typography,
-  Grid,
   Card,
   CardMedia,
   CardContent,
@@ -19,98 +18,164 @@ import {
   IconButton,
   Stack,
   Pagination,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Close,
   ZoomIn,
   ArrowBack,
   ArrowForward,
-  FilterList,
   KeyboardArrowLeft,
   KeyboardArrowRight,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import Footer from '@/components/Footer';
-import { mainCategories, subCategories, galleryData } from '@/data/ShopGallery';
-// NEW IMPORTS: Added to enable communication with CustomizedSeat component
-import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
-import { useRouter } from 'next/navigation'; // Next.js router for programmatic navigation
-import { useDispatch } from 'react-redux';
+import { mainCategories } from '@/data/ShopGallery';
+import { apiService, Product, ProductsParams, processImageUrl } from '@/services/api';
+import { useSelectedItem } from '@/contexts/SelectedItemContext';
+import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
 import { addItem } from '@/store/cartSlice';
+import { RootState } from '@/store/store';
 
 const ShopGallery = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const dispatch = useDispatch();
-  // NEW CONTEXT USAGE: Access functions to set selected item and navigate
-  const { setSelectedItem } = useSelectedItem(); // Destructure setSelectedItem from context
-  const router = useRouter(); // Initialize Next.js router for navigation
+  const { setSelectedItem } = useSelectedItem();
+  const router = useRouter();
+  const { totalItems } = useSelector((state: RootState) => state.cart);
+  const { token: userToken } = useSelector((state: RootState) => state.auth);
   
-  const [selectedMainCategory, setSelectedMainCategory] = useState('all');
-  const [selectedSubCategory, setSelectedSubCategory] = useState('all');
-  const [selectedImage, setSelectedImage] = useState<typeof galleryData[0] | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(9);   // cards per page
+  // State for API data
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filter images based on selected categories
-  const filteredImages = galleryData.filter(item => {
-    if (selectedMainCategory === 'all') {
-      return true; // Show all products
+  // Debug error state changes
+  useEffect(() => {
+    if (error) {
+      console.log('🚨 Error state set:', error);
     }
-    
-    if (item.mainCategory !== selectedMainCategory) {
-      return false; // Filter by main category
-    }
-    
-    if (selectedSubCategory === 'all' || selectedSubCategory.startsWith('all-')) {
-      return true; // Show all sub-categories for the selected main category
-    }
-    
-    return item.subCategory === selectedSubCategory;
+  }, [error]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(9);
+  
+  // State for lightbox
+  const [selectedImage, setSelectedImage] = useState<Product | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // State for notifications
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success'
   });
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredImages.length / itemsPerPage);
+    // Fetch products from API
+  useEffect(() => {
+    const timestamp = new Date().toLocaleTimeString();
+    console.log(`🔄 useEffect triggered at ${timestamp} with dependencies:`, { currentPage, itemsPerPage, userToken: userToken ? 'present' : 'not present' });
+    
+    let isMounted = true;
+    let abortController = new AbortController();
+
+    const fetchProducts = async () => {
+      // Don't show loading if we already have products (for better UX)
+      if (products.length === 0) {
+        setLoading(true);
+      }
+      setError(null);
+      
+      try {
+        const params: ProductsParams = {
+          page: currentPage,
+          limit: itemsPerPage,
+        };
+        
+        const response = await apiService.getProducts(params, userToken || undefined);
+        
+        // Check if component is still mounted before updating state
+        if (!isMounted) return;
+        
+        if (response.success) {
+          const timestamp = new Date().toLocaleTimeString();
+          console.log(`✅ API call completed successfully at ${timestamp}, setting products`);
+          setProducts(response.data);
+          setTotalProducts(response.total);
+          setTotalPages(response.totalPages);
+          setError(null);
+        } else {
+          console.log('❌ API call failed:', response.error);
+          if (isMounted) {
+            // Only show error if we don't have any products
+            if (products.length === 0) {
+              setError(response.error || 'Failed to fetch products');
+              setProducts([]);
+              setTotalProducts(0);
+              setTotalPages(0);
+            } else {
+              // If we have existing products, just log the error but don't show it to user
+              console.warn('⚠️ API error but keeping existing products:', response.error);
+            }
+          }
+        }
+      } catch (err: any) {
+        console.error('API Error in ShopGallery:', err);
+        // Check if component is still mounted before updating state
+        if (!isMounted) return;
+        
+        // Only show error if we don't have any products
+        if (products.length === 0) {
+          setError(err.message || 'Failed to fetch products. Please try again later.');
+          setProducts([]);
+          setTotalProducts(0);
+          setTotalPages(0);
+        } else {
+          // If we have existing products, just log the error but don't show it to user
+          console.warn('⚠️ Fetch error but keeping existing products:', err.message);
+        }
+      } finally {
+        // Check if component is still mounted before updating state
+        if (isMounted) {
+          const timestamp = new Date().toLocaleTimeString();
+          console.log(`✅ Setting loading to false at ${timestamp} - API call completed`);
+          setLoading(false);
+        } else {
+          const timestamp = new Date().toLocaleTimeString();
+          console.log(`⚠️ Component unmounted at ${timestamp}, not setting loading to false`);
+        }
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      console.log('🧹 useEffect cleanup - component unmounting or dependencies changed');
+      isMounted = false;
+      abortController.abort();
+    };
+  }, [currentPage, itemsPerPage, userToken]);
+
+  // Calculate pagination info
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredImages.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + itemsPerPage, totalProducts);
 
-  // Get available sub-categories for the selected main category
-  const availableSubCategories = selectedMainCategory === 'all' 
-    ? [] 
-    : subCategories[selectedMainCategory as keyof typeof subCategories] || [];
 
-  const handleMainCategoryChange = (event: any) => {
-    const newMainCategory = event.target.value;
-    setSelectedMainCategory(newMainCategory);
-    
-    // Auto-select the appropriate "all" sub-category based on the main category
-    if (newMainCategory === 'seats') {
-      setSelectedSubCategory('all-seats');
-    } else if (newMainCategory === 'spare-parts') {
-      setSelectedSubCategory('all-spare-parts');
-    } else if (newMainCategory === 'accessories') {
-      setSelectedSubCategory('all-accessories');
-    } else {
-      setSelectedSubCategory('all'); // For 'all' main category
-    }
-    
-    setCurrentPage(1); // Reset to first page
-  };
 
-  const handleSubCategoryChange = (event: any) => {
-    setSelectedSubCategory(event.target.value);
-    setCurrentPage(1); // Reset to first page when sub-category changes
-  };
-
-  const handleImageClick = (image: typeof galleryData[0], index: number) => {
+  const handleImageClick = (image: Product, index: number) => {
     setSelectedImage(image);
     setCurrentImageIndex(index);
   };
@@ -120,46 +185,69 @@ const ShopGallery = () => {
   };
 
   const handleNextImage = () => {
-    const nextIndex = (currentImageIndex + 1) % filteredImages.length;
+    const nextIndex = (currentImageIndex + 1) % products.length;
     setCurrentImageIndex(nextIndex);
-    setSelectedImage(filteredImages[nextIndex]);
+    setSelectedImage(products[nextIndex]);
   };
 
   const handlePrevImage = () => {
-    const prevIndex = currentImageIndex === 0 ? filteredImages.length - 1 : currentImageIndex - 1;
+    const prevIndex = currentImageIndex === 0 ? products.length - 1 : currentImageIndex - 1;
     setCurrentImageIndex(prevIndex);
-    setSelectedImage(filteredImages[prevIndex]);
+    setSelectedImage(products[prevIndex]);
   };
 
-  const handleAddToCart = (item: typeof galleryData[0]) => {
+  const handleAddToCart = (item: Product) => {
+    const processedImageUrl = processImageUrl(item.image || item.images?.[0] || '');
+    const formattedPrice = item.price.startsWith('$') ? item.price : `$${item.price}`;
+    
+    console.log('Adding item to cart:', {
+      id: item.id,
+      title: item.title || item.name,
+      originalImage: item.image || item.images?.[0] || '',
+      processedImage: processedImageUrl,
+      price: formattedPrice,
+      description: item.description
+    });
+    
     dispatch(addItem({
       id: item.id,
-      title: item.title,
-      price: item.price,
-      image: item.image,
+      title: item.title || item.name,
+      price: formattedPrice,
+      image: processedImageUrl,
       description: item.description,
       category: item.category,
+      subCategory: item.subCategory || '',
+      mainCategory: item.mainCategory || '',
     }));
+    
+    // Show success notification
+    setSnackbar({
+      open: true,
+      message: `${item.title || item.name} added to cart!`,
+      severity: 'success'
+    });
   };
 
-  // NEW FUNCTION: Handles item selection and navigation to customization page
-  const handleCustomize = (item: typeof galleryData[0]) => {
-    setSelectedItem({ // FUNCTION: Set the selected item in global context
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const handleCustomize = (item: Product) => {
+    setSelectedItem({
       id: item.id,
-      title: item.title,
+      title: item.title || item.name,
       category: item.category,
-      subCategory: item.subCategory,
-      mainCategory: item.mainCategory,
-      image: item.image,
+      subCategory: item.subCategory || '',
+      mainCategory: item.mainCategory || '',
+      image: item.image || item.images?.[0] || '',
       description: item.description,
       price: item.price,
     });
-    router.push('/customize-your-seat'); // FUNCTION: Navigate to customization page
+    router.push('/customize-your-seat');
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
-    // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -167,197 +255,21 @@ const ShopGallery = () => {
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
       
-             {/* Hero Section */}
-       <HeroSectionCommon
-         title="Shop Specials"
-         description="Discover our exclusive collection of premium seats with special pricing and unique features"
-         height={{
+      <HeroSectionCommon
+        title="Shop Specials"
+        description="Discover our exclusive collection of premium seats with special pricing and unique features"
+        height={{
           xs: '18vh',
           sm: '20vh',
           md: '18vh',
           lg: '20vh'
-         }}
-       />
+        }}
+      />
 
-      {/* Category Dropdown Filter - HIDDEN FOR NOW */}
-      {/* 
-      <Box sx={{ 
-        backgroundColor: 'white', 
-        borderBottom: '1px solid #e0e0e0',
-        position: 'sticky',
-        top: { xs: '56px', sm: '64px', md: '64px' },
-        zIndex: 10,
-        py: { xs: 0.5, sm: 1, md: 1.5, lg: 1 },
-        px: { xs: 0.5, sm: 1, md: 2, lg: 3 },
-        mt: 0,
-      }}>
-        <Container maxWidth="lg">
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: { xs: 1, sm: 1.5, md: 2, lg: 3 },
-            flexWrap: 'wrap',
-            flexDirection: { xs: 'column', sm: 'row' },
-          }}>
-         
-            
-            <FormControl 
-              sx={{ 
-                minWidth: { xs: '100%', sm: '140px', md: '160px', lg: '180px' },
-                width: { xs: '100%', sm: 'auto' },
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'white',
-                  height: { xs: '32px', sm: '36px', md: '40px', lg: '44px' },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main',
-                    borderWidth: 2,
-                  },
-                },
-                '& .MuiSelect-select': {
-                  fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem', lg: '1rem' },
-                  fontWeight: 500,
-                  color: 'text.primary',
-                  py: { xs: 0.25, sm: 0.375, md: 0.7, lg: 0.7 },
-                },
-              }}
-            >
-              <InputLabel 
-                id="main-category-select-label"
-                sx={{ 
-                  fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
-                  fontWeight: 500,
-                  color: 'text.secondary',
-                }}
-              >
-                Main Category
-              </InputLabel>
-              <Select
-                labelId="main-category-select-label"
-                id="main-category-select"
-                value={selectedMainCategory}
-                label="Main Category"
-                onChange={handleMainCategoryChange}
-                startAdornment={
-                  <FilterList 
-                    sx={{ 
-                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem' }, 
-                      mr: 1,
-                      color: 'primary.main'
-                    }} 
-                  />
-                }
-              >
-                {mainCategories.map((category) => (
-                  <MenuItem 
-                    key={category.value} 
-                    value={category.value}
-                    sx={{
-                      fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
-                      fontWeight: category.value === selectedMainCategory ? 600 : 400,
-                      color: category.value === selectedMainCategory ? 'primary.main' : 'text.primary',
-                      '&:hover': {
-                        backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                      },
-                      '&.Mui-selected': {
-                        backgroundColor: 'rgba(211, 47, 47, 0.12)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(211, 47, 47, 0.16)',
-                        },
-                      },
-                    }}
-                  >
-                    {category.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
 
-            {selectedMainCategory !== 'all' && availableSubCategories.length > 0 && (
-              <FormControl 
-                sx={{ 
-                  minWidth: { xs: '100%', sm: '140px', md: '160px', lg: '180px' },
-                  width: { xs: '100%', sm: 'auto' },
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'white',
-                    height: { xs: '32px', sm: '36px', md: '40px', lg: '44px' },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'primary.main',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'primary.main',
-                      borderWidth: 2,
-                    },
-                  },
-                  '& .MuiSelect-select': {
-                    fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem', lg: '1rem' },
-                    fontWeight: 500,
-                    color: 'text.primary',
-                    py: { xs: 0.25, sm: 0.375, md: 0.7, lg: 0.7 },
-                
-                  },
-                }}
-              >
-                <InputLabel 
-                  id="sub-category-select-label"
-                  sx={{ 
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
-                    fontWeight: 500,
-                    color: 'text.secondary',
-                  }}
-                >
-                  Sub Category
-                </InputLabel>
-                <Select
-                  labelId="sub-category-select-label"
-                  id="sub-category-select"
-                  value={selectedSubCategory}
-                  label="Sub Category"
-                  onChange={handleSubCategoryChange}
-                  startAdornment={
-                    <FilterList 
-                      sx={{ 
-                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem' }, 
-                        mr: 1,
-                        color: 'primary.main'
-                      }} 
-                    />
-                  }
-                >
-                  {availableSubCategories.map((category) => (
-                    <MenuItem 
-                      key={category.value} 
-                      value={category.value}
-                      sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
-                        fontWeight: category.value === selectedSubCategory ? 600 : 400,
-                        color: category.value === selectedSubCategory ? 'primary.main' : 'text.primary',
-                        '&:hover': {
-                          backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                        },
-                        '&.Mui-selected': {
-                          backgroundColor: 'rgba(211, 47, 47, 0.12)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(211, 47, 47, 0.16)',
-                          },
-                        },
-                      }}
-                    >
-                      {category.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-          </Box>
-        </Container>
-      </Box>
-      */}
 
       {/* Gallery Grid */}
-      <Box sx={{ py: { xs: 1, sm: 1.5, md: 2, lg: 2 }, px: { xs: 1, sm: 2, md: 3 } }}>
+      <Box sx={{ py: { xs: 2, sm: 3, md: 4 }, px: { xs: 1, sm: 2, md: 3 } }}>
         <Container maxWidth="lg">
           {/* Gallery Header */}
           <Box sx={{ 
@@ -376,197 +288,321 @@ const ShopGallery = () => {
                 fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
                 textAlign: { xs: 'center', sm: 'left' },
                 width: { xs: '100%', sm: 'auto' },
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
               }}
             >
-              {selectedMainCategory === 'all' 
-                ? 'All Products' 
-                : selectedSubCategory === 'all' || selectedSubCategory.startsWith('all-')
-                  ? mainCategories.find(cat => cat.value === selectedMainCategory)?.label
-                  : availableSubCategories.find(cat => cat.value === selectedSubCategory)?.label || 'Products'
-              }
+              All Products
             </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: 'text.secondary',
-                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                textAlign: { xs: 'center', sm: 'right' },
-                width: { xs: '100%', sm: 'auto' },
-              }}
-            >
-              {filteredImages.length} product{filteredImages.length !== 1 ? 's' : ''} found
-            </Typography>
+                <Typography 
+      variant="body2" 
+      sx={{ 
+        color: 'text.secondary',
+        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+        textAlign: { xs: 'center', sm: 'right' },
+        width: { xs: '100%', sm: 'auto' },
+      }}
+    >
+      {totalProducts} product{totalProducts !== 1 ? 's' : ''} found
+    </Typography>
           </Box>
 
-          <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)' },
-            gap: { xs: 1.5, sm: 2, md: 3, lg: 4 },
-            justifyContent: 'center',
-            width: '100%'
-          }}>
-            {currentItems.map((item, index) => (
-              <Box key={item.id} sx={{ width: '100%' }}>
-                <Card
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          {/* Loading State */}
+          {loading && (
+            <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
+              <CircularProgress size={60} sx={{ mb: 2 }} />
+              <Typography variant="h5" sx={{ 
+                color: 'text.secondary', 
+                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+              }}>
+                Loading products...
+              </Typography>
+            </Box>
+          )}
+
+          {/* Error State */}
+          {error && !loading && products.length === 0 && (
+            <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
+              <Typography variant="h5" sx={{ 
+                color: 'error.main', 
+                mb: 2,
+                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+              }}>
+                Unable to Load Products
+              </Typography>
+              <Typography variant="body1" sx={{ 
+                color: 'text.secondary', 
+                mb: 3,
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                maxWidth: '600px',
+                mx: 'auto',
+              }}>
+                {error}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setError(null);
+                    setCurrentPage(1);
+                  }}
+                  sx={{ 
+                    backgroundColor: 'primary.main',
+                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    px: { xs: 2, sm: 3, md: 4 },
+                    py: { xs: 0.75, sm: 1, md: 1.5 },
+                  }}
+                >
+                  Try Again
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => router.push('/')}
+                  sx={{ 
+                    borderColor: 'primary.main',
+                    color: 'primary.main',
+                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    px: { xs: 2, sm: 3, md: 4 },
+                    py: { xs: 0.75, sm: 1, md: 1.5 },
                     '&:hover': {
-                      transform: { xs: 'none', sm: 'translateY(-8px)' },
-                      boxShadow: { xs: '0 4px 20px rgba(0,0,0,0.1)', sm: '0 12px 40px rgba(211, 47, 47, 0.25)' },
-                      '& .zoom-icon': {
-                        opacity: 1,
-                      },
-                      '& .card-media': {
-                        transform: { xs: 'none', sm: 'scale(1.05)' },
-                      },
+                      backgroundColor: 'primary.main',
+                      color: 'white',
                     },
                   }}
-                  onClick={() => handleImageClick(item, startIndex + index)}
                 >
-                  <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                    <CardMedia
-                      component="img"
-                      height="250"
-                      image={item.image}
-                      alt={item.title}
-                      className="card-media"
-                      sx={{
-                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        objectFit: 'contain',
-                        width: '100%',
-                        height: { xs: '180px', sm: '200px', md: '220px', lg: '250px' },
-                        backgroundColor: '#f5f5f5',
-                      }}
-                    />
-                    <Box
-                      className="zoom-icon"
-                      sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        opacity: 0,
-                        transition: 'opacity 0.3s ease',
-                        backgroundColor: 'rgba(211, 47, 47, 0.9)',
-                        borderRadius: '50%',
-                        p: { xs: 0.5, sm: 1 },
-                        color: 'white',
-                        display: { xs: 'none', sm: 'flex' },
-                      }}
-                    >
-                      <ZoomIn sx={{ fontSize: { xs: 18, sm: 24 } }} />
-                    </Box>
-                    <Chip
-                      label={item.price}
-                      sx={{
-                        position: 'absolute',
-                        top: { xs: 8, sm: 12, md: 16 },
-                        right: { xs: 8, sm: 12, md: 16 },
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                        height: { xs: 20, sm: 24, md: 28, lg: 32 },
-                        '& .MuiChip-label': {
-                          px: { xs: 1, sm: 1.5 },
+                  Go to Home
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => router.push('/gallery')}
+                  sx={{ 
+                    borderColor: 'primary.main',
+                    color: 'primary.main',
+                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    px: { xs: 2, sm: 3, md: 4 },
+                    py: { xs: 0.75, sm: 1, md: 1.5 },
+                    '&:hover': {
+                      backgroundColor: 'primary.main',
+                      color: 'white',
+                    },
+                  }}
+                >
+                  View Gallery
+                </Button>
+              </Box>
+            </Box>
+          )}
+
+          {/* Non-blocking Error Message (when we have products but API fails) */}
+          {error && !loading && products.length > 0 && (
+            <Box sx={{ 
+              textAlign: 'center', 
+              py: 1, 
+              mb: 2,
+              backgroundColor: 'warning.light',
+              borderRadius: 1,
+              mx: 2
+            }}>
+              <Typography variant="body2" sx={{ 
+                color: 'warning.dark',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              }}>
+                ⚠️ Some products may not be up to date. Showing cached results.
+              </Typography>
+            </Box>
+          )}
+
+          {/* Products Grid */}
+          {!loading && products.length > 0 && (
+            <Box sx={{ 
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)' },
+              gap: { xs: 1.5, sm: 2, md: 3, lg: 4 },
+              justifyContent: 'center',
+              width: '100%'
+            }}>
+              {products.map((item: Product, index: number) => (
+                <Box key={item.id} sx={{ width: '100%' }}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                      '&:hover': {
+                        transform: { xs: 'none', sm: 'translateY(-8px)' },
+                        boxShadow: { xs: '0 4px 20px rgba(0,0,0,0.1)', sm: '0 12px 40px rgba(211, 47, 47, 0.25)' },
+                        '& .zoom-icon': {
+                          opacity: 1,
                         },
-                      }}
-                    />
-                  </Box>
-                  <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2, md: 2.5, lg: 3 } }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 'bold',
-                        mb: 1,
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
-                        color: 'text.primary',
-                        lineHeight: { xs: 1.3, sm: 1.4 },
-                        wordBreak: 'break-word',
-                        overflowWrap: 'break-word',
-                      }}
-                    >
-                      {item.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        lineHeight: 1.5,
-                        mb: 2,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                        display: { xs: '-webkit-box', sm: 'block' },
-                        WebkitLineClamp: { xs: 2, sm: 'none' },
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        wordBreak: 'break-word',
-                        overflowWrap: 'break-word',
-                      }}
-                    >
-                      {item.description}
-                    </Typography>
-                    <Stack 
-                      direction={{ xs: 'column', sm: 'row' }} 
-                      spacing={{ xs: 1, sm: 1 }}
-                      sx={{ flexWrap: 'wrap', gap: { xs: 1, sm: 1 } }}
-                    >
-                      {/* MODIFIED BUTTON: Changed from "View Details" to "Customize" with new functionality */}
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation(); // PREVENT: Stop card click event from firing
-                          handleCustomize(item); // FUNCTION: Call the new customize handler
-                        }}
+                        '& .card-media': {
+                          transform: { xs: 'none', sm: 'scale(1.05)' },
+                        },
+                      },
+                    }}
+                    onClick={() => handleImageClick(item, index)}
+                  >
+                    <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+                      {(item.image || item.images?.[0]) && (item.image || item.images?.[0]).trim() !== '' ? (
+                        <CardMedia
+                          component="img"
+                          height="250"
+                          image={processImageUrl(item.image || item.images?.[0] || '')}
+                          alt={item.title || item.name}
+                          className="card-media"
+                          sx={{
+                            transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            objectFit: 'contain',
+                            width: '100%',
+                            height: { xs: '180px', sm: '200px', md: '220px', lg: '250px' },
+                            backgroundColor: '#f5f5f5',
+                          }}
+                          onError={(e) => {
+                            console.error('ShopGallery image failed to load:', item.image || item.images?.[0]);
+                            console.error('Processed URL:', processImageUrl(item.image || item.images?.[0] || ''));
+                          }}
+                          onLoad={() => {
+                            console.log('ShopGallery image loaded successfully:', processImageUrl(item.image || item.images?.[0] || ''));
+                          }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            width: '100%',
+                            height: { xs: '180px', sm: '200px', md: '220px', lg: '250px' },
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#f5f5f5',
+                            color: 'text.secondary',
+                          }}
+                        >
+                          <Typography variant="body2">No image</Typography>
+                        </Box>
+                      )}
+                      <Box
+                        className="zoom-icon"
                         sx={{
-                          borderColor: 'primary.main',
-                          color: 'primary.main',
-                          fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                          py: { xs: 0.5, sm: 0.75, md: 1 },
-                          px: { xs: 1, sm: 1.5, md: 2 },
-                          '&:hover': {
-                            backgroundColor: 'primary.main',
-                            color: 'white',
-                          },
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          opacity: 0,
+                          transition: 'opacity 0.3s ease',
+                          backgroundColor: 'rgba(211, 47, 47, 0.9)',
+                          borderRadius: '50%',
+                          p: { xs: 0.5, sm: 1 },
+                          color: 'white',
+                          display: { xs: 'none', sm: 'flex' },
                         }}
                       >
-                        Customize {/* TEXT: Changed button text from "View Details" */}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(item);
-                        }}
+                        <ZoomIn sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                      </Box>
+                      <Chip
+                        label={`$${item.price}`}
                         sx={{
+                          position: 'absolute',
+                          top: { xs: 8, sm: 12, md: 16 },
+                          right: { xs: 8, sm: 12, md: 16 },
                           backgroundColor: 'primary.main',
                           color: 'white',
+                          fontWeight: 'bold',
                           fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                          py: { xs: 0.5, sm: 0.75, md: 1 },
-                          px: { xs: 1, sm: 1.5, md: 2 },
-                          '&:hover': {
-                            backgroundColor: 'primary.dark',
+                          height: { xs: 20, sm: 24, md: 28, lg: 32 },
+                          '& .MuiChip-label': {
+                            px: { xs: 1, sm: 1.5 },
                           },
                         }}
+                      />
+                    </Box>
+                    <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2, md: 2.5, lg: 3 } }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 'bold',
+                          mb: 1,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
+                          color: 'text.primary',
+                          lineHeight: { xs: 1.3, sm: 1.4 },
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
+                        }}
                       >
-                        Add to Cart
-                      </Button>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Box>
-            ))}
-          </Box>
+                        {item.title || item.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          lineHeight: 1.5,
+                          mb: 2,
+                          fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                          display: { xs: '-webkit-box', sm: 'block' },
+                          WebkitLineClamp: { xs: 2, sm: 'none' },
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
+                        }}
+                      >
+                        {item.description}
+                      </Typography>
+                      <Stack 
+                        direction={{ xs: 'column', sm: 'row' }} 
+                        spacing={{ xs: 1, sm: 1 }}
+                        sx={{ flexWrap: 'wrap', gap: { xs: 1, sm: 1 } }}
+                      >
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCustomize(item);
+                          }}
+                          sx={{
+                            borderColor: 'primary.main',
+                            color: 'primary.main',
+                            fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                            py: { xs: 0.5, sm: 0.75, md: 1 },
+                            px: { xs: 1, sm: 1.5, md: 2 },
+                            '&:hover': {
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                            },
+                          }}
+                        >
+                          Customize
+                        </Button>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(item);
+                          }}
+                          sx={{
+                            backgroundColor: 'primary.main',
+                            color: 'white',
+                            fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                            py: { xs: 0.5, sm: 0.75, md: 1 },
+                            px: { xs: 1, sm: 1.5, md: 2 },
+                            '&:hover': {
+                              backgroundColor: 'primary.dark',
+                            },
+                          }}
+                        >
+                          Add to Cart
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Box>
+              ))}
+            </Box>
+          )}
 
-          {filteredImages.length === 0 && (
+          {/* No Products Found */}
+          {products.length === 0 && !loading && !error && (
             <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
               <Typography variant="h5" sx={{ 
                 color: 'text.secondary', 
@@ -575,27 +611,55 @@ const ShopGallery = () => {
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}>
-                No products found for this category
+                No Products Available
               </Typography>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  setSelectedMainCategory('all');
-                  setSelectedSubCategory('all');
-                }}
-                sx={{ 
-                  backgroundColor: 'primary.main',
-                  fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
-                  px: { xs: 2, sm: 3, md: 4 },
-                  py: { xs: 0.75, sm: 1, md: 1.5 },
-                }}
-              >
-                View All Products
-              </Button>
+              <Typography variant="body1" sx={{ 
+                color: 'text.secondary', 
+                mb: 3,
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                maxWidth: '600px',
+                mx: 'auto',
+              }}>
+                No products are currently available. Please check back later or try refreshing the page.
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setCurrentPage(1);
+                  }}
+                  sx={{ 
+                    backgroundColor: 'primary.main',
+                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    px: { xs: 2, sm: 3, md: 4 },
+                    py: { xs: 0.75, sm: 1, md: 1.5 },
+                  }}
+                >
+                  Refresh Products
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => router.push('/')}
+                  sx={{ 
+                    borderColor: 'primary.main',
+                    color: 'primary.main',
+                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                    px: { xs: 2, sm: 3, md: 4 },
+                    py: { xs: 0.75, sm: 1, md: 1.5 },
+                    '&:hover': {
+                      backgroundColor: 'primary.main',
+                      color: 'white',
+                    },
+                  }}
+                >
+                  Go to Home
+                </Button>
+              </Box>
             </Box>
           )}
 
-          {totalPages > 1 && (
+          {/* Pagination */}
+          {totalPages > 1 && !loading && !error && (
             <Box sx={{ 
               display: 'flex', 
               flexDirection: { xs: 'column', sm: 'row' },
@@ -604,7 +668,6 @@ const ShopGallery = () => {
               mt: { xs: 3, sm: 4, md: 5 },
               gap: { xs: 2, sm: 0 }
             }}>
-              {/* Pagination Info */}
               <Typography 
                 variant="body2" 
                 sx={{ 
@@ -614,10 +677,9 @@ const ShopGallery = () => {
                   width: { xs: '100%', sm: 'auto' },
                 }}
               >
-                Showing {startIndex + 1} to {Math.min(endIndex, filteredImages.length)} of {filteredImages.length} products
+                Showing {startIndex + 1} to {endIndex} of {totalProducts} products
               </Typography>
 
-              {/* Pagination Controls */}
               <Box sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -733,69 +795,83 @@ const ShopGallery = () => {
 
           {selectedImage && (
             <Box sx={{ position: 'relative' }}>
-              <Image
-                src={selectedImage.image}
-                alt={selectedImage.title}
-                width={800}
-                height={600}
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  maxHeight: isSmallMobile ? '50vh' : isMobile ? '60vh' : '80vh',
-                  objectFit: 'contain',
-                }}
-              />
+              {(selectedImage.image || selectedImage.images?.[0]) && (selectedImage.image || selectedImage.images?.[0]).trim() !== '' ? (
+                <Image
+                  src={processImageUrl(selectedImage.image || selectedImage.images?.[0] || '')}
+                  alt={selectedImage.title || selectedImage.name}
+                  width={800}
+                  height={600}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: isSmallMobile ? '50vh' : isMobile ? '60vh' : '80vh',
+                    objectFit: 'contain',
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: isSmallMobile ? '50vh' : isMobile ? '60vh' : '80vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#f5f5f5',
+                    color: 'text.secondary',
+                  }}
+                >
+                  <Typography variant="h6">No image available</Typography>
+                </Box>
+              )}
               
-              {/* Navigation Arrows */}
-                             <IconButton
-                 onClick={handlePrevImage}
-                 sx={{
-                   position: 'absolute',
-                   left: { xs: 16, sm: 24, md: 32 },
-                   top: '50%',
-                   transform: 'translateY(-50%)',
-                   color: 'white',
-                   backgroundColor: 'primary.main',
-                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                   width: { xs: 28, sm: 32, md: 40 },
-                   height: { xs: 28, sm: 32, md: 40 },
-                   display: { xs: 'none', sm: 'flex' },
-                   '&:hover': {
-                     backgroundColor: 'primary.dark',
-                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                     transform: 'translateY(-50%) scale(1.1)',
-                   },
-                   transition: 'all 0.2s ease',
-                 }}
-               >
-                 <ArrowBack sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
-               </IconButton>
-               
-               <IconButton
-                 onClick={handleNextImage}
-                 sx={{
-                   position: 'absolute',
-                   right: { xs: 16, sm: 24, md: 32 },
-                   top: '50%',
-                   transform: 'translateY(-50%)',
-                   color: 'white',
-                   backgroundColor: 'primary.main',
-                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                   width: { xs: 28, sm: 32, md: 40 },
-                   height: { xs: 28, sm: 32, md: 40 },
-                   display: { xs: 'none', sm: 'flex' },
-                   '&:hover': {
-                     backgroundColor: 'primary.dark',
-                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                     transform: 'translateY(-50%) scale(1.1)',
-                   },
-                   transition: 'all 0.2s ease',
-                 }}
-               >
-                 <ArrowForward sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
-               </IconButton>
+              <IconButton
+                onClick={handlePrevImage}
+                sx={{
+                  position: 'absolute',
+                  left: { xs: 16, sm: 24, md: 32 },
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'white',
+                  backgroundColor: 'primary.main',
+                  boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                  width: { xs: 28, sm: 32, md: 40 },
+                  height: { xs: 28, sm: 32, md: 40 },
+                  display: { xs: 'none', sm: 'flex' },
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                    boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                    transform: 'translateY(-50%) scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <ArrowBack sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
+              </IconButton>
+              
+              <IconButton
+                onClick={handleNextImage}
+                sx={{
+                  position: 'absolute',
+                  right: { xs: 16, sm: 24, md: 32 },
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'white',
+                  backgroundColor: 'primary.main',
+                  boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                  width: { xs: 28, sm: 32, md: 40 },
+                  height: { xs: 28, sm: 32, md: 40 },
+                  display: { xs: 'none', sm: 'flex' },
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                    boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                    transform: 'translateY(-50%) scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <ArrowForward sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
+              </IconButton>
 
-              {/* Image Info */}
               <Box
                 sx={{
                   position: 'absolute',
@@ -813,7 +889,7 @@ const ShopGallery = () => {
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                 }}>
-                  {selectedImage.title}
+                  {selectedImage.title || selectedImage.name}
                 </Typography>
                 <Typography variant="body1" sx={{ 
                   mb: 2, 
@@ -856,7 +932,7 @@ const ShopGallery = () => {
                       },
                     }}
                   >
-                    {selectedImage.price}
+                    ${selectedImage.price}
                   </Button>
                   <Button
                     variant="contained"
@@ -886,6 +962,22 @@ const ShopGallery = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Success Notification */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
       
       <Footer />
     </Box>

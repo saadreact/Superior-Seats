@@ -25,6 +25,7 @@ import {
   Star,
   ArrowForward 
 } from '@mui/icons-material';
+import Footer from '@/components/Footer';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -319,78 +320,8 @@ const HomePage = () => {
 
       {/* Truck Carousel Section */}
       <TruckCarousel />
-
-      {/* CTA Section */}
-      <MotionBox
-        initial="hidden"
-        whileInView="visible"
-        variants={ctaVariants}
-        viewport={{ once: true }}
-        sx={{
-          py: { xs: 2, sm: 3, md: 4, lg: 5 },
-          background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
-          color: 'white',
-        }}
-      >
-        <Container maxWidth="lg">
-          <MotionBox
-            variants={ctaVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            sx={{ textAlign: 'center' }}
-          >
-            <MotionTypography
-              variants={sectionVariants}
-              variant="h2"
-              sx={{
-                mb: { xs: 1, sm: 1.5, md: 2 },
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
-                fontWeight: 'bold',
-              }}
-            >
-              Ready to Build Your Custom Seat?
-            </MotionTypography>
-            <MotionTypography
-              variants={sectionVariants}
-              variant="h6"
-              sx={{
-                mb: { xs: 2, sm: 2.5, md: 3 },
-                opacity: 0.9,
-                maxWidth: { xs: '100%', sm: 600 },
-                mx: 'auto',
-                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
-                px: { xs: 2, sm: 0 },
-              }}
-            >
-              Join hundreds of satisfied customers who have transformed their vehicles with our premium seating.
-            </MotionTypography>
-            <motion.div
-              variants={sectionVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForward />}
-                sx={{
-                  backgroundColor: 'white',
-                  color: 'primary.main',
-                  px: { xs: 3, sm: 4 },
-                  py: { xs: 1, sm: 1.5 },
-                  fontSize: { xs: '1rem', sm: '1.1rem' },
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  },
-                }}
-              >
-                Build Your Custom Seat
-              </Button>
-            </motion.div>
-          </MotionBox>
-        </Container>
-      </MotionBox>
+   <Footer/>
+  
     </Box>
   );
 };

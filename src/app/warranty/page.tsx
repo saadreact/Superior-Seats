@@ -28,48 +28,25 @@ const Warranty = () => {
     {
       type: 'Standard Warranty',
       duration: '1 Year',
-      description: 'Covers manufacturing defects and material failures',
-      icon: <CheckCircle />,
-      features: [
-        'Manufacturing defects',
-        'Material failures',
-        'Structural issues',
-        'Stitching problems'
-      ]
+      description: 'Covers manufacturing defects and material failures. Includes manufacturing defects, material failures, structural issues, and stitching problems.',
+      icon: <CheckCircle />
     },
     {
       type: 'Extended Warranty',
       duration: '3 Years',
-      description: 'Comprehensive coverage for extended peace of mind',
-      icon: <Security />,
-      features: [
-        'All standard warranty coverage',
-        'Extended wear and tear',
-        'Additional parts coverage',
-        'Priority service support'
-      ]
+      description: 'Comprehensive coverage for extended peace of mind. Includes all standard warranty coverage, extended wear and tear, additional parts coverage, and priority service support.',
+      icon: <Security />
     },
     {
       type: 'Premium Warranty',
       duration: '5 Years',
-      description: 'Maximum protection with premium service',
-      icon: <Shield />,
-      features: [
-        'Complete coverage',
-        'Accidental damage protection',
-        'Free maintenance service',
-        'Lifetime customer support'
-      ]
+      description: 'Maximum protection with premium service. Includes complete coverage, accidental damage protection, free maintenance service, and lifetime customer support.',
+      icon: <Shield />
     }
   ];
 
   const warrantyExclusions = [
-    'Damage caused by improper installation or use',
-    'Normal wear and tear beyond reasonable expectations',
-    'Damage from accidents, misuse, or neglect',
-    'Modifications made without authorization',
-    'Damage from exposure to extreme conditions',
-    'Cosmetic damage that doesn\'t affect functionality'
+    'The following items are not covered under our warranty: Damage caused by improper installation or use, normal wear and tear beyond reasonable expectations, damage from accidents, misuse, or neglect, modifications made without authorization, damage from exposure to extreme conditions, and cosmetic damage that doesn\'t affect functionality.'
   ];
 
   const warrantyProcess = [
@@ -177,12 +154,14 @@ const Warranty = () => {
                 variant="h6"
                 sx={{
                   color: 'text.secondary',
-                  maxWidth: 700,
+                  maxWidth: '100%',
                   textAlign: 'center',
                   fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
                   px: { xs: 2, sm: 0 },
-                  lineHeight: 1.6,
+                  lineHeight: 1.2,
                   fontWeight: 400,
+                  whiteSpace: 'nowrap',
+                  overflow: 'visible',
                 }}
               >
                 We stand behind the quality of our custom seating solutions with comprehensive warranty coverage.
@@ -236,18 +215,6 @@ const Warranty = () => {
                         textAlign: 'center',
                         letterSpacing: '-0.01em',
                         lineHeight: 1.3,
-                        position: 'relative',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: -4,
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: 40,
-                          height: 2,
-                          backgroundColor: '#DA291C',
-                          borderRadius: 1,
-                        }
                       }}
                     >
                       {warranty.type}
@@ -263,23 +230,25 @@ const Warranty = () => {
                       gap: { xs: 1, sm: 1.5 },
                     }}
                   >
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
-                        color: 'text.secondary',
-                        fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
-                        fontWeight: 400,
-                        textAlign: 'center',
-                        maxWidth: { xs: '100%', sm: '90%', md: '85%' },
-                        px: { xs: 1, sm: 2 },
-                        wordWrap: 'break-word',
-                        overflowWrap: 'break-word',
-                        hyphens: 'auto',
-                      }}
-                    >
-                      {warranty.description}
-                    </Typography>
+                                                                                                                                                                                                                                                                                                                                               <Typography
+                          variant="body1"
+                          sx={{
+                            lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                            color: 'text.secondary',
+                            fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                            fontWeight: 400,
+                            textAlign: 'center',
+                            maxWidth: '100%',
+                            px: { xs: 1, sm: 2 },
+                            whiteSpace: 'normal',
+                            overflow: 'visible',
+                            wordWrap: 'break-word',
+                            overflowWrap: 'break-word',
+                            hyphens: 'auto',
+                          }}
+                        >
+                          {warranty.description}
+                        </Typography>
                     
                     <Chip
                       label={warranty.duration}
@@ -291,32 +260,6 @@ const Warranty = () => {
                         mb: { xs: 1, sm: 1.5 },
                       }}
                     />
-                    
-                    <Box sx={{ 
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: { xs: 0.5, sm: 1 },
-                    }}>
-                      {warranty.features.map((feature, featureIndex) => (
-                        <Typography
-                          key={featureIndex}
-                          variant="body2"
-                          sx={{
-                            lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
-                            color: 'text.secondary',
-                            fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem' },
-                            fontWeight: 400,
-                            textAlign: 'center',
-                            wordWrap: 'break-word',
-                            overflowWrap: 'break-word',
-                            hyphens: 'auto',
-                          }}
-                        >
-                          • {feature}
-                        </Typography>
-                      ))}
-                    </Box>
                   </Box>
                   
                   {index < warrantyTypes.length - 1 && (
@@ -399,68 +342,51 @@ const Warranty = () => {
               </Box>
             </MotionBox>
 
-            {/* Warranty Exclusions */}
-            <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  textAlign: 'center', 
-                  fontWeight: 'bold', 
-                  mb: { xs: 2, sm: 2.5, md: 3 },
-                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                  color: '#DA291C',
-                }}
-              >
-                Warranty Exclusions
-              </Typography>
-                             <Alert 
-                 severity="warning" 
-                 icon={false}
+                         {/* Warranty Exclusions */}
+             <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
+               <Typography 
+                 variant="h4" 
                  sx={{ 
-                   display: 'flex',
-                   alignItems: 'center',
-                   justifyContent: 'center',
-                   textAlign: 'center',
-                   mb: { xs: 2, sm: 3 },
-                   '& .MuiAlert-message': {
-                     fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
-                     lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
-                     textAlign: 'center',
-                     width: '100%',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                   }
+                   textAlign: 'center', 
+                   fontWeight: 'bold', 
+                   mb: { xs: 2, sm: 2.5, md: 3 },
+                   fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                   color: '#DA291C',
                  }}
                >
-                The following items are not covered under our warranty:
-              </Alert>
-              <Box sx={{ 
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: { xs: 1, sm: 1.5 },
-              }}>
-                {warrantyExclusions.map((exclusion, index) => (
-                  <Typography
-                    key={index}
-                    variant="body2"
-                    sx={{
-                      lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
-                      color: 'text.secondary',
-                      fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
-                      fontWeight: 400,
-                      textAlign: 'center',
-                      wordWrap: 'break-word',
-                      overflowWrap: 'break-word',
-                      hyphens: 'auto',
-                    }}
-                  >
-                    {exclusion}
-                  </Typography>
-                ))}
-              </Box>
-            </MotionBox>
+                 Warranty Exclusions
+               </Typography>
+               <MotionPaper
+                 variants={itemVariants}
+                 sx={{
+                   p: { xs: 2, sm: 3, md: 4 },
+                   backgroundColor: 'background.paper',
+                   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                   borderRadius: 2,
+                   border: '1px solid rgba(0,0,0,0.05)',
+                 }}
+               >
+                 <Typography
+                   variant="body2"
+                   sx={{
+                     lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
+                     color: 'text.secondary',
+                     fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
+                     fontWeight: 400,
+                     textAlign: 'center',
+                     maxWidth: '100%',
+                     px: { xs: 1, sm: 2 },
+                     whiteSpace: 'normal',
+                     overflow: 'visible',
+                     wordWrap: 'break-word',
+                     overflowWrap: 'break-word',
+                     hyphens: 'auto',
+                   }}
+                 >
+                   {warrantyExclusions[0]}
+                 </Typography>
+               </MotionPaper>
+             </MotionBox>
           </MotionBox>
         </Container>
       </Box>

@@ -268,15 +268,14 @@ const HeroSection = () => {
               zIndex: 1,
             }}
           />
-               <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, px: { xs: 2, sm: 3, md: 4, lg: 6 } }}>
+               <Container maxWidth="xl" disableGutters sx={{ position: 'relative', zIndex: 2 }}>
                                          <Box
                sx={{
                  display: 'flex',
                  alignItems: 'center',
                  justifyContent: 'flex-start',
                  width: '100%',
-                 pl: { xs: 0, sm: 0, md: 0, lg: 0 },
-                 ml: { xs: 0, sm: 0, md: 0, lg: 0 },
+                 pl: { xs: 2, sm: 3, md: 4 },
                }}
              >
                       {/* Left: Headline, Description, Buttons */}
@@ -296,6 +295,7 @@ const HeroSection = () => {
                     mb: { xs: 0.5, sm: 1, md: 1.5, lg: 2 },
                     width: '100%',
                     flexDirection: { xs: 'column', sm: 'row' },
+                    ml: { md: 4, lg: 6 }, // Match header menu items spacing
                   }}
                 >
                   {/* Logo on Left */}
@@ -303,7 +303,7 @@ const HeroSection = () => {
                      sx={{
                        filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
                        marginTop: { xs: '-8px', sm: '-6px', md: '-4px' },
-                       marginLeft: { xs: '0px', sm: '-8px', md: '-12px' },
+                       marginLeft: { xs: '0px', sm: '0px', md: '0px' },
                        flexShrink: 0,
                        alignSelf: { xs: 'center', sm: 'flex-start' },
                      }}
