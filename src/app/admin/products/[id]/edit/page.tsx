@@ -66,7 +66,8 @@ const EditProductPage = () => {
       setError(null);
       
       const response = await apiService.getProduct(parseInt(productId));
-      const productData = response.product;
+      console.log('Product API response:', response);
+      const productData = response.data || response.product || response;
       
       // Extract variation_ids from the nested variations array
       const variationIds = productData.variations?.map((variation: any) => variation.id) || [];

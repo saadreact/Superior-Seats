@@ -113,7 +113,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
   disabled = false,
   size = 'medium',
 }) => (
-  <FormControl fullWidth sx={{ mb: size === 'small' ? 0 : 2, width: '100%' }} error={!!error}>
+  <FormControl fullWidth sx={{ mb: size === 'small' ? 0 : 2, width: '100%', minWidth: 0 }} error={!!error}>
     {label && <InputLabel sx={{ fontWeight: 500 }}>{label}</InputLabel>}
     <Select
       name={name}
@@ -123,7 +123,29 @@ export const SelectField: React.FC<SelectFieldProps> = ({
       required={required}
       disabled={disabled}
       size={size}
+      MenuProps={{
+        PaperProps: {
+          sx: {
+            maxHeight: 300,
+            minWidth: 250,
+            '& .MuiMenuItem-root': {
+              whiteSpace: 'normal',
+              wordWrap: 'break-word',
+              minHeight: 'auto',
+              py: 1,
+            },
+          },
+        },
+      }}
       sx={{
+        width: '100%',
+        minWidth: 0,
+        '& .MuiSelect-select': {
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          minWidth: 0,
+        },
         '& .MuiOutlinedInput-root': {
           borderRadius: 2,
           '&:hover .MuiOutlinedInput-notchedOutline': {
@@ -142,7 +164,17 @@ export const SelectField: React.FC<SelectFieldProps> = ({
       }}
     >
       {options.map((option) => (
-        <MenuItem key={option.value} value={option.value}>
+        <MenuItem 
+          key={option.value} 
+          value={option.value}
+          sx={{
+            whiteSpace: 'normal',
+            wordWrap: 'break-word',
+            maxWidth: '100%',
+            padding: '8px 12px',
+            lineHeight: 1.4,
+          }}
+        >
           {option.label}
         </MenuItem>
       ))}

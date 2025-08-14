@@ -71,7 +71,8 @@ const ProductDetailPage = () => {
       setError(null);
       
       const response = await apiService.getProduct(parseInt(productId));
-      setProduct(response.product);
+      console.log('Product view API response:', response);
+      setProduct(response.data || response.product || response);
     } catch (err: any) {
       if (err.message.includes('404')) {
         setError('Product not found');

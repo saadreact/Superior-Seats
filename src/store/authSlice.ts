@@ -4,13 +4,42 @@ import { apiService } from '@/utils/api';
 // Types
 export interface User {
   id: number;
-  name: string;
   email: string;
+  username: string;
+  role_id: number;
+  role_type: string;
   email_verified_at: string | null;
-  customer_type: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  // Optional fields that might exist
+  name?: string;
+  customer_type?: string;
+  role?: {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    designation: string;
+    permissions: string[];
+    is_super_admin: boolean;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+  };
+  roles?: Array<{
+    id: number;
+    name: string;
+    guard_name: string;
+    created_at: string;
+    updated_at: string;
+    pivot: {
+      model_type: string;
+      model_id: number;
+      role_id: number;
+    };
+  }>;
 }
 
 export interface AuthState {
