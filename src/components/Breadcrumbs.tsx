@@ -252,6 +252,12 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                 component={NextLink}
                 href={item.href}
                 underline="hover"
+                onClick={() => {
+                  // Clear breadcrumb history when clicking on Home
+                  if (item.href === '/') {
+                    clearBreadcrumbHistory();
+                  }
+                }}
                 sx={{
                   color: 'text.secondary',
                   fontSize: { xs: '0.75rem', sm: '0.875rem' },

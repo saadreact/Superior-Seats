@@ -218,7 +218,7 @@ const ShopGallery = () => {
          title="Shop Specials"
          description="Discover our exclusive collection of premium seats with special pricing and unique features"
          height={{
-          xs: '10vh',
+          xs: '18vh',
           sm: '20vh',
           md: '18vh',
           lg: '18vh',
@@ -305,20 +305,20 @@ const ShopGallery = () => {
                   onClick={() => handleImageClick(item, startIndex + index)}
                 >
                   <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                                         <CardMedia
-                       component="img"
-                       height="250"
-                       image={item.image}
-                       alt={item.title}
-                       className="card-media"
-                       sx={{
-                         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                         objectFit: 'contain',
-                         width: '100%',
-                         height: { xs: '10px', sm: '200px', md: '220px', lg: '250px' },
-                         backgroundColor: '#f5f5f5',
-                       }}
-                     />
+                    <CardMedia
+                      component="img"
+                      height="250"
+                      image={item.image}
+                      alt={item.title}
+                      className="card-media"
+                      sx={{
+                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        objectFit: 'contain',
+                        width: '100%',
+                        height: { xs: '180px', sm: '200px', md: '220px', lg: '250px' },
+                        backgroundColor: '#f5f5f5',
+                      }}
+                    />
                     <Box
                       className="zoom-icon"
                       sx={{
@@ -355,24 +355,31 @@ const ShopGallery = () => {
                     />
                   </Box>
                   <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2, md: 2.5, lg: 3 } }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 'bold',
-                        mb: 1,
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
-                        color: 'text.primary',
-                        lineHeight: { xs: 1.3, sm: 1.4 },
-                        wordBreak: 'break-word',
-                        overflowWrap: 'break-word',
-                      }}
-                    >
-                      {item.title}
-                    </Typography>
+                                         <Typography
+                       variant="h6"
+                       sx={{
+                         fontWeight: 'bold',
+                         mb: 1,
+                         fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                         color: 'text.primary',
+                         lineHeight: { xs: 1.2, sm: 1.3 },
+                         wordBreak: 'break-word',
+                         overflowWrap: 'break-word',
+                         display: '-webkit-box',
+                         WebkitLineClamp: 2,
+                         WebkitBoxOrient: 'vertical',
+                         overflow: 'hidden',
+                         textOverflow: 'ellipsis',
+                         height: { xs: '2.4rem', sm: '2.6rem', md: '2.8rem' },
+                         minHeight: { xs: '2.4rem', sm: '2.6rem', md: '2.8rem' },
+                       }}
+                     >
+                       {item.title}
+                     </Typography>
 
                                          <Stack 
-                       direction="column" 
-                       spacing={1}
+                       direction="row" 
+                       spacing={3}
                        sx={{ width: '100%' }}
                      >
                                               {/* DETAILS BUTTON: Changed from "Customize" to "Details" */}
@@ -387,8 +394,8 @@ const ShopGallery = () => {
                             borderColor: 'primary.main',
                             color: 'primary.main',
                             fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
-                            height: { xs: '36px', sm: '40px' },
-                            width: '100%',
+                            height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                            width: { xs: '110px', sm: '110px', md: '110px', lg: '110px', xl: '110px' },
                             '&:hover': {
                               backgroundColor: 'primary.main',
                               color: 'white',
@@ -408,8 +415,8 @@ const ShopGallery = () => {
                             backgroundColor: 'primary.main',
                             color: 'white',
                             fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
-                            height: { xs: '36px', sm: '40px' },
-                            width: '100%',
+                            height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                            width: { xs: '100px', sm: '100px', md: '100px', lg: '100px', xl: '100px' },
                             '&:hover': {
                               backgroundColor: 'primary.dark',
                             },
@@ -597,29 +604,29 @@ const ShopGallery = () => {
                onTouchEnd={handleTouchEnd}
              >
                {/* Main Product Image */}
-               <Image
-                 src={getProductImages(selectedImage)[modalImageIndex]}
-                 alt={`${selectedImage.title} - Image ${modalImageIndex + 1}`}
-                 width={800}
-                 height={600}
-                 style={{
-                   width: '100%',
-                   height: 'auto',
-                   maxHeight: isSmallMobile ? '60vh' : isMobile ? '70vh' : '80vh',
-                   objectFit: 'contain',
-                 }}
-               />
+                                                <Image
+                   src={getProductImages(selectedImage)[modalImageIndex]}
+                   alt={`${selectedImage.title} - Image ${modalImageIndex + 1}`}
+                   width={800}
+                   height={600}
+                   style={{
+                     width: '100%',
+                     height: 'auto',
+                     maxHeight: isSmallMobile ? '45vh' : isMobile ? '50vh' : '80vh',
+                     objectFit: 'contain',
+                   }}
+                 />
               
                              {/* Image Navigation Dots */}
-               <Box sx={{
-                 position: 'absolute',
-                 bottom: { xs: '100px', sm: '120px', md: '140px' },
-                 left: '50%',
-                 transform: 'translateX(-50%)',
-                 display: 'flex',
-                 gap: { xs: 0.5, sm: 1 },
-                 zIndex: 2,
-               }}>
+                               <Box sx={{
+                  position: 'absolute',
+                  bottom: { xs: '70px', sm: '120px', md: '140px' },
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: { xs: 0.5, sm: 1 },
+                  zIndex: 2,
+                }}>
                  {getProductImages(selectedImage).map((_, index) => (
                    <Box
                      key={index}
@@ -692,85 +699,90 @@ const ShopGallery = () => {
                
 
                              {/* Image Info */}
-               <Box
-                 sx={{
-                   position: 'absolute',
-                   bottom: 0,
-                   left: 0,
-                   right: 0,
-                   background: 'linear-gradient(transparent, rgba(255,255,255,0.95))',
-                   p: { xs: 2, sm: 2.5, md: 3 },
-                 }}
-               >
+                               <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(transparent, rgba(255,255,255,0.98))',
+                    p: { xs: 2, sm: 2.5, md: 3 },
+                    minHeight: { xs: '120px', sm: 'auto' },
+                    borderTop: { xs: '1px solid rgba(0,0,0,0.1)', sm: 'none' },
+                  }}
+                >
                  <Typography variant="h5" sx={{ 
                    fontWeight: 'bold', 
                    mb: 1,
-                   fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+                   fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
                    wordBreak: 'break-word',
                    overflowWrap: 'break-word',
+                   color: { xs: 'text.primary', sm: 'inherit' },
                  }}>
                    {selectedImage.title}
                  </Typography>
                  <Typography variant="body1" sx={{ 
                    mb: 2, 
-                   opacity: 0.9,
-                   fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                   opacity: { xs: 0.8, sm: 0.9 },
+                   fontSize: { xs: '0.75rem', sm: '0.9rem', md: '1rem' },
                    lineHeight: 1.6,
                    wordBreak: 'break-word',
                    overflowWrap: 'break-word',
+                   color: { xs: 'text.secondary', sm: 'inherit' },
                  }}>
                    {selectedImage.description}
                  </Typography>
-                 <Stack 
-                   direction="column" 
-                   spacing={1}
-                   sx={{ width: '100%' }}
-                 >
-                   <Button
-                     variant="contained"
-                     size="small"
-                     disabled
-                     sx={{
-                       backgroundColor: 'primary.main',
-                       color: 'white',
-                       fontWeight: 'bold',
-                       fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.875rem' },
-                       py: { xs: 1, sm: 1.25, md: 1.5 },
-                       width: '100%',
-                       '&:hover': {
-                         backgroundColor: 'primary.main',
-                       },
-                       '&.Mui-disabled': {
+                                   <Stack 
+                    direction="row" 
+                    spacing={2}
+                    sx={{ width: '100%', mt: 2 }}
+                  >
+                                         <Button
+                       variant="outlined"
+                       size="small"
+                       disabled
+                       sx={{
+                         borderColor: 'primary.main',
+                         color: 'primary.main',
+                         fontWeight: 'bold',
+                         fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                         height: { xs: '40px', sm: '40px', md: '40px' },
+                         width: { xs: '110px', sm: '110px', md: '130px', lg: '140px' },
+                         '&:hover': {
+                           backgroundColor: 'primary.main',
+                           color: 'white',
+                         },
+                         '&.Mui-disabled': {
+                           borderColor: 'primary.main',
+                           color: 'primary.main',
+                           opacity: 1,
+                         },
+                       }}
+                     >
+                       {selectedImage.price}
+                     </Button>
+                     <Button
+                       variant="contained"
+                       size="small"
+                       onClick={() => {
+                         handleAddToCart(selectedImage);
+                         handleCloseLightbox();
+                       }}
+                       sx={{
                          backgroundColor: 'primary.main',
                          color: 'white',
-                         opacity: 1,
-                       },
-                     }}
-                   >
-                     {selectedImage.price}
-                   </Button>
-                   <Button
-                     variant="contained"
-                     size="small"
-                     onClick={() => {
-                       handleAddToCart(selectedImage);
-                       handleCloseLightbox();
-                     }}
-                     sx={{
-                       backgroundColor: 'primary.main',
-                       color: 'white',
-                       fontWeight: 'bold',
-                       fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.875rem' },
-                       py: { xs: 1, sm: 1.25, md: 1.5 },
-                       width: '100%',
-                       '&:hover': {
-                         backgroundColor: 'primary.dark',
-                       },
-                     }}
-                   >
-                     Add to Cart
-                   </Button>
-                 </Stack>
+                         fontWeight: 'bold',
+                         fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                         height: { xs: '40px', sm: '40px', md: '40px' },
+                         width: { xs: '100px', sm: '100px', md: '120px', lg: '130px' },
+                         '&:hover': {
+                           backgroundColor: 'primary.dark',
+                         },
+                       }}
+                     >
+                       Add to Cart
+                     </Button>
+                  </Stack>
                </Box>
             </Box>
           )}
