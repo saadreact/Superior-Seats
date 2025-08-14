@@ -15,7 +15,7 @@ import {
   Home as HomeIcon,
 } from '@mui/icons-material';
 import NextLink from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export interface BreadcrumbItem {
   label: string;
@@ -64,103 +64,134 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const router = useRouter();
   const pathname = usePathname();
   const [breadcrumbHistory, setBreadcrumbHistory] = useState<BreadcrumbItem[]>([]);
 
-  // Load breadcrumb history from localStorage on component mount
+  // Clear localStorage immediately on mount if on home page
   useEffect(() => {
-    if (useHistory) {
-      const savedHistory = localStorage.getItem('breadcrumbHistory');
-      if (savedHistory) {
+    if (pathname === '/' || pathname === '/home') {
+      // Clear localStorage immediately when component mounts on home page
+      localStorage.removeItem('breadcrumbHistory');
+      localStorage.removeItem('breadcrumb');
+      localStorage.removeItem('navigationHistory');
+      // Set to empty and remove again
+      localStorage.setItem('breadcrumbHistory', '');
+      localStorage.removeItem('breadcrumbHistory');
+      // Set state to home only
+      setBreadcrumbHistory([{ label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> }]);
+      
+      // Additional timeout to ensure it's cleared after navigation
+      setTimeout(() => {
+        localStorage.removeItem('breadcrumbHistory');
+        localStorage.removeItem('breadcrumb');
+        localStorage.removeItem('navigationHistory');
+      }, 100);
+    }
+  }, []); // Empty dependency array - runs only once on mount
+
+  // Clear breadcrumb history
+  const clearBreadcrumbHistory = () => {
+    const homeItem = { label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> };
+    setBreadcrumbHistory([homeItem]);
+    // Aggressively clear localStorage
+    localStorage.removeItem('breadcrumbHistory');
+    localStorage.removeItem('breadcrumb');
+    localStorage.removeItem('navigationHistory');
+    // Set to empty and remove again
+    localStorage.setItem('breadcrumbHistory', '');
+    localStorage.removeItem('breadcrumbHistory');
+  };
+
+  // Handle history on route change
+  useEffect(() => {
+    if (!useHistory || !pathname) return;
+
+    // If on home page, clear everything and return early
+    if (pathname === '/' || pathname === '/home') {
+      clearBreadcrumbHistory();
+      return;
+    }
+
+    // Resolve page title
+    let currentPageTitle =
+      pageTitles[pathname] ||
+      pageTitles[pathname + '/'] ||
+      pageTitles[pathname.replace(/\/$/, '')];
+
+    if (!currentPageTitle) {
+      const parts = pathname.split('/').filter(Boolean);
+      currentPageTitle = parts.length > 0 ? parts[parts.length - 1] : 'Page';
+      currentPageTitle = currentPageTitle
+        .split('-')
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    }
+
+    const currentItem: BreadcrumbItem = { label: currentPageTitle, href: pathname };
+    const homeItem = { label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> };
+
+    // Load previous history - but not if we're on home page
+    let prevHistory: BreadcrumbItem[] = [];
+    if (pathname !== '/' && pathname !== '/home') {
+      const saved = localStorage.getItem('breadcrumbHistory');
+      if (saved) {
         try {
-          const parsedHistory = JSON.parse(savedHistory);
-          // Validate that the history starts with Home
-          if (parsedHistory.length > 0 && parsedHistory[0].href === '/') {
-            // Add icons to the loaded history
-            const historyWithIcons = parsedHistory.map((item: BreadcrumbItem, index: number) => ({
-              ...item,
-              icon: item.href === '/' ? <HomeIcon sx={{ fontSize: '1rem' }} /> : undefined
-            }));
-            setBreadcrumbHistory(historyWithIcons);
-          } else {
-            // If history doesn't start with Home, reset it
-            const homeItem = { label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> };
-            setBreadcrumbHistory([homeItem]);
-            // Save without icon to avoid circular reference
-            localStorage.setItem('breadcrumbHistory', JSON.stringify([{ label: 'Home', href: '/' }]));
-          }
-        } catch (error) {
-          console.error('Error parsing breadcrumb history:', error);
-          // Reset to Home if there's an error
-          const homeItem = { label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> };
-          setBreadcrumbHistory([homeItem]);
-          localStorage.setItem('breadcrumbHistory', JSON.stringify([{ label: 'Home', href: '/' }]));
+          prevHistory = JSON.parse(saved);
+        } catch {
+          prevHistory = [];
         }
-      } else {
-        // No saved history, start with Home
-        const homeItem = { label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> };
-        setBreadcrumbHistory([homeItem]);
-        localStorage.setItem('breadcrumbHistory', JSON.stringify([{ label: 'Home', href: '/' }]));
       }
     }
-  }, [useHistory]);
 
-  // Update breadcrumb history when pathname changes
-  useEffect(() => {
-    if (useHistory && pathname) {
-      const currentPageTitle = pageTitles[pathname] || pathname.split('/').pop() || 'Page';
-      const currentItem: BreadcrumbItem = {
-        label: currentPageTitle,
-        href: pathname,
-      };
+    // Build new history
+    let newHistory = [homeItem, ...prevHistory.filter((x) => x.href !== '/' && x.href !== pathname), currentItem];
 
-      setBreadcrumbHistory(prevHistory => {
-        // Always start with Home if we're not already there
-        let newHistory = prevHistory;
-        
-        // If we're at home page, reset history
-        if (pathname === '/') {
-          newHistory = [{ label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> }];
-        } else {
-          // Check if this page is already in history (back navigation)
-          const existingIndex = prevHistory.findIndex(item => item.href === pathname);
-          
-          if (existingIndex !== -1) {
-            // User went back to a previous page - truncate history to that point
-            newHistory = prevHistory.slice(0, existingIndex + 1);
-          } else {
-            // New page - add to history
-            // Ensure Home is always first
-            const homeItem = { label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> };
-            
-            // Remove any existing Home entry and add current page
-            const historyWithoutHome = prevHistory.filter(item => item.href !== '/');
-            newHistory = [homeItem, ...historyWithoutHome, currentItem];
-          }
-        }
+    // Remove duplicates
+    newHistory = newHistory.filter(
+      (item, index, arr) => arr.findIndex((p) => p.href === item.href) === index
+    );
 
-        // Limit history to last 8 items (including Home)
-        if (newHistory.length > 8) {
-          newHistory = newHistory.slice(-8);
-        }
-
-        // Save to localStorage without icons to avoid circular reference
-        const historyForStorage = newHistory.map(item => ({
-          label: item.label,
-          href: item.href
-        }));
-        localStorage.setItem('breadcrumbHistory', JSON.stringify(historyForStorage));
-        
-        return newHistory;
-      });
+    // Limit to maxItems
+    if (newHistory.length > maxItems) {
+      newHistory = newHistory.slice(-maxItems);
     }
-  }, [pathname, useHistory]);
 
-  // Determine which items to show
-  const allItems = useHistory && breadcrumbHistory.length > 0 
-    ? breadcrumbHistory
-    : showHome
+    setBreadcrumbHistory(newHistory);
+
+    // Save without icons
+    localStorage.setItem(
+      'breadcrumbHistory',
+      JSON.stringify(newHistory.map(({ label, href }) => ({ label, href })))
+    );
+  }, [pathname, useHistory, maxItems]);
+
+  // Additional effect to aggressively clear localStorage when on home page
+  useEffect(() => {
+    if (pathname === '/' || pathname === '/home') {
+      // Force clear localStorage multiple times to ensure it's gone
+      localStorage.removeItem('breadcrumbHistory');
+      localStorage.removeItem('breadcrumb');
+      localStorage.removeItem('navigationHistory');
+      // Set to empty and remove again
+      localStorage.setItem('breadcrumbHistory', '');
+      localStorage.removeItem('breadcrumbHistory');
+      // Clear the state as well
+      setBreadcrumbHistory([{ label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> }]);
+      
+      // Additional timeout to ensure it's cleared after navigation
+      setTimeout(() => {
+        localStorage.removeItem('breadcrumbHistory');
+        localStorage.removeItem('breadcrumb');
+        localStorage.removeItem('navigationHistory');
+      }, 100);
+    }
+  }, [pathname]);
+
+  // Items to display
+  const allItems =
+    useHistory && breadcrumbHistory.length > 0
+      ? breadcrumbHistory
+      : showHome
       ? [{ label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> }, ...items]
       : items;
 

@@ -108,10 +108,11 @@ const Gallery = () => {
           title="Our Work Gallery"
           description="Explore our custom seating solutions across different vehicle types and see our craftsmanship in action."
           height={{
-            xs: '18vh',
+            xs: '10vh',
             sm: '20vh',
-            md: '18vh',
-            lg: '20vh'
+            md: '15vh',
+            lg: '18vh',
+            xl: '15vh'
           }}
         />
 

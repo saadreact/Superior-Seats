@@ -55,7 +55,7 @@ const Header = () => {
   
   // Redux state
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, loading } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, loading } = useAppSelector((state: any) => state.auth);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -91,6 +91,17 @@ const Header = () => {
     handleUserMenuClose();
   };
 
+  // Function to clear breadcrumb history when Home is clicked
+  const handleHomeClick = () => {
+    // Clear all breadcrumb-related localStorage
+    localStorage.removeItem('breadcrumbHistory');
+    localStorage.removeItem('breadcrumb');
+    localStorage.removeItem('navigationHistory');
+    // Set to empty and remove again to ensure it's completely cleared
+    localStorage.setItem('breadcrumbHistory', '');
+    localStorage.removeItem('breadcrumbHistory');
+  };
+
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center', height: '100%' }}>
       <Box sx={{ 
@@ -111,6 +122,7 @@ const Header = () => {
          {menuItems.map((item) => (
            <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
              <ListItem 
+               onClick={item.text === 'Home' ? handleHomeClick : undefined}
                sx={{
                  py: 1.5,
                  cursor: 'pointer',
@@ -230,7 +242,7 @@ const Header = () => {
               display: 'grid',
               gridTemplateColumns: '1fr auto',
               gap: 0,
-              minHeight: { xs: '60px', sm: '65px', md: '70px', lg: '75px' },
+              minHeight: { xs: '50px', sm: '50px', md: '50px', lg: '40px' },
               px: { xs: 1, sm: 2, md: 0 },
               py: { xs: 1, sm: 1.5, md: 0 },
               width: '100%'
@@ -246,30 +258,35 @@ const Header = () => {
               ml: 0
             }}>
               {/* Logo Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '65px',
-                height: '65px',
-                flexShrink: 0,
-                cursor: 'pointer',
-                pl: 0,
-                ml: 3
-              }}>
-                <Image
-                  src="/superiorlogo/logored.png"
-                  alt="Superior Seating LLC"
-                  width={60}
-                  height={60}
-                  style={{ 
-                    objectFit: 'contain',
-                    maxWidth: '100%',
-                    maxHeight: '100%'
+              <Link href="/" style={{ textDecoration: 'none' }}>
+                <Box 
+                  onClick={handleHomeClick}
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '60px',
+                    height: '60px',
+                    flexShrink: 0,
+                    cursor: 'pointer',
+                    pl: 0,
+                    ml: 3
                   }}
-                  priority
-                />
-              </Box>
+                >
+                  <Image
+                    src="/superiorlogo/logored.png"
+                    alt="Superior Seating LLC"
+                    width={65}
+                    height={65}
+                    style={{ 
+                      objectFit: 'contain',
+                      maxWidth: '100%',
+                      maxHeight: '100%'
+                    }}
+                    priority
+                  />
+                </Box>
+              </Link>
              
               {/* Menu Items - Desktop & Tablet */}
               {!isMobile && (
@@ -285,6 +302,7 @@ const Header = () => {
                     <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
                       <Button
                         color="inherit"
+                        onClick={item.text === 'Home' ? handleHomeClick : undefined}
                         sx={{
                           color: '#DA291C',
                           fontWeight: 600,

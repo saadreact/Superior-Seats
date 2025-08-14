@@ -105,10 +105,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
          title="Customize Your Seat"
          description="Design your perfect seat with our interactive 3D configurator"
          height={{
-           xs: '18vh',
+          xs: '10vh',
            sm: '20vh',
            md: '18vh',
-           lg: '20vh'
+           lg: '18vh',
+           xl: '15vh'
           }}
           />
       )}

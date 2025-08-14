@@ -436,7 +436,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                justifyContent: 'space-between', 
                alignItems: 'center',
                p: { xs: 1.5, sm: 2 },
-               background: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)',
+              // background: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)',
                borderRadius: { xs: 2, sm: 3 },
                border: '1px solid',
                borderColor: 'error.200',
@@ -495,7 +495,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
         </Box>
 
         {/* Security Notice */}
-        <Box sx={{ 
+        {/* <Box sx={{ 
           textAlign: 'center', 
           mt: { xs: 1.5, sm: 2 }, 
           width: '100%' 
@@ -520,7 +520,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
               Your payment information is secure and encrypted. We use industry-standard security protocols.
             </Typography>
           </Alert>
-        </Box>
+        </Box> */}
         </Box>
       </Box>
     </Fade>
