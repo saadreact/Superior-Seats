@@ -48,7 +48,12 @@ interface Customer {
   name: string;
   email: string;
   customer_type: string;
+  phone?: string;
+  address?: string;
   company_name?: string;
+  tax_id?: string;
+  price_tier_id?: number;
+  credit_limit?: number;
 }
 
 interface VehicleMake {
@@ -518,7 +523,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
           firstName: selectedCustomer.name?.split(' ')[0] || 'Customer',
           lastName: selectedCustomer.name?.split(' ').slice(1).join(' ') || 'Name',
           email: selectedCustomer.email || 'customer@example.com',
-          phone: selectedCustomer.phone || '000-000-0000',
+          phone: (selectedCustomer as any).phone || '000-000-0000',
           shippingAddress: {
             street: formData.shipping_address.street || 'Unknown Street',
             city: formData.shipping_address.city || 'Unknown City',
