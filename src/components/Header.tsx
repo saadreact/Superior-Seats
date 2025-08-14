@@ -182,7 +182,7 @@ const Header = () => {
             }}
           >
             <ListItemText 
-              primary={`Logout (${user?.name})`}
+                                  primary={`Logout (${user?.username || user?.name || user?.email})`}
               primaryTypographyProps={{ 
                 fontWeight: 'bold',
                 color: 'primary.main',
@@ -434,7 +434,7 @@ const Header = () => {
                   </Tooltip>
                   {isAuthenticated ? (
                     <>
-                      <Tooltip title={`${user?.name} (Click to logout)`} arrow>
+                      <Tooltip title={`${user?.username || user?.name || user?.email} (Click to logout)`} arrow>
                         <IconButton
                           color="inherit"
                           onClick={handleUserMenuClick}

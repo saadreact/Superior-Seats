@@ -49,12 +49,13 @@ const CustomersPage = () => {
         setLoading(true);
         const response = await apiService.getCustomers();
         
-        console.log('API Response:', response);
+        console.log('Customers API Response:', response);
         
-        // The API returns paginated data, so we need to access response.data.data
+        // The API returns customers in response.data.data (nested structure)
         const customersData = response.data?.data || [];
         
-        console.log('Customers Data:', customersData);
+        console.log('Extracted Customers Data:', customersData);
+        console.log('Total customers from API:', response.data?.total || 0);
         
         // Transform API data to match our interface
         const transformedCustomers = customersData.map((customer: any) => ({

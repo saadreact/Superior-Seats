@@ -13,34 +13,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Replace this with your actual authentication logic
-    // This is a placeholder implementation
-    console.log('Sign in attempt:', { email, password });
+    // Make request to the actual backend authentication service
+    const response = await fetch('https://superiorseats.ali-khalid.com/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-    // Example: Make a request to your authentication service
-    // const response = await fetch('YOUR_AUTH_SERVICE_URL/signin', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ email, password }),
-    // });
+    const data = await response.json();
 
-    // For demo purposes, simulate a successful response
-    // Replace this with actual authentication logic
-    if (email && password) {
-      return NextResponse.json(
-        { 
-          message: 'Sign in successful',
-          user: { email, id: 'demo-user-id' },
-          token: 'demo-jwt-token'
-        },
-        { status: 200 }
-      );
+    if (response.ok) {
+      // Success - return the actual response from backend
+      return NextResponse.json(data, { status: 200 });
     } else {
+      // Error - return the error message from backend
       return NextResponse.json(
-        { message: 'Invalid credentials' },
-        { status: 401 }
+        { message: data.message || 'Login failed' },
+        { status: response.status }
       );
     }
 
