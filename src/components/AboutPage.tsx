@@ -57,14 +57,14 @@ const AboutPage = () => {
       <Box
         sx={{
           mt: { xs: '56px', sm: '64px', md: '64px' },
-          height: { xs: '50vh', sm: '60vh', md: '70vh' },
+          height: { xs: '25vh', sm: '60vh', md: '70vh', lg: '50vh', xl: '40vh' },
           backgroundImage: 'url(../TruckImages/Seatset.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           color: 'white',
           mb:1.5,
-          py: { xs: 4, sm: 6, md: 8 },
+          py: { xs: 4, sm: 6, md: 8, lg: 10 , xl: 12},
           px: { xs: 2, sm: 3, md: 4 },
           textAlign: 'center',
           position: 'relative',
@@ -104,7 +104,7 @@ const AboutPage = () => {
             viewport={{ once: false, amount: 0.1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             sx={{
-              mb: { xs: 2, sm: 3 },
+              mb: { xs: 2, sm: 3 , md: 3, lg: 1, xl: 1},
               opacity: 0.9,
               maxWidth: 800,
               mx: 'auto',
@@ -123,7 +123,7 @@ const AboutPage = () => {
             sx={{
               fontSize: { xs: '1.5rem', sm: '2.0rem', md: '2.5rem' },
               fontWeight: 'bold',
-              mb: { xs: 1, sm: 2 },
+              mb: { xs: 1, sm: 2 , md: 3, lg: 0, xl: 0},
             }}
           >
             Sit Better
@@ -615,14 +615,14 @@ const AboutPage = () => {
                {/* Custom Fit Design */}
                <Card
                  sx={{
-                   height: '100%',
-                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   height:{ xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
+                   minHeight: { xs: 160, sm: 250, md: 280 },
                    display: 'flex',
                    flexDirection: 'column',
                    justifyContent: 'flex-start',
                    alignItems: 'center',
                    textAlign: 'center',
-                   p: { xs: 2, sm: 2.5, md: 3 },
+                   p: { xs: 1.5, sm: 2.5, md: 3 },
                    boxShadow: '0 4px 20px rgba(0,0,0,0)',
                    transition: 'all 0.3s ease',
                    cursor: 'pointer',
@@ -711,14 +711,14 @@ const AboutPage = () => {
                {/* Premium Materials */}
                <Card
                  sx={{
-                   height: '100%',
-                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
+                   minHeight: { xs: 160, sm: 250, md: 280 },
                    display: 'flex',
                    flexDirection: 'column',
                    justifyContent: 'flex-start',
                    alignItems: 'center',
                    textAlign: 'center',
-                   p: { xs: 2, sm: 2.5, md: 3 },
+                   p: { xs: 1.5, sm: 2.5, md: 3 },
                    boxShadow: '0 4px 20px rgba(0,0,0,0)',
                    transition: 'all 0.3s ease',
                    cursor: 'pointer',
@@ -807,14 +807,14 @@ const AboutPage = () => {
                {/* Expert Craftsmanship */}
                <Card
                  sx={{
-                   height: '100%',
-                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
+                   minHeight: { xs: 160, sm: 250, md: 280 },
                    display: 'flex',
                    flexDirection: 'column',
                    justifyContent: 'flex-start',
                    alignItems: 'center',
                    textAlign: 'center',
-                   p: { xs: 2, sm: 2.5, md: 3 },
+                   p: { xs: 1.5, sm: 2.5, md: 3 },
                    boxShadow: '0 4px 20px rgba(0,0,0,0)',
                    transition: 'all 0.3s ease',
                    cursor: 'pointer',
@@ -903,14 +903,14 @@ const AboutPage = () => {
                {/* Comprehensive Warranty */}
                <Card
                  sx={{
-                   height: '100%',
-                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
+                   minHeight: { xs: 160, sm: 250, md: 280 },
                    display: 'flex',
                    flexDirection: 'column',
                    justifyContent: 'flex-start',
                    alignItems: 'center',
                    textAlign: 'center',
-                   p: { xs: 2, sm: 2.5, md: 3 },
+                   p: { xs: 1.5, sm: 2.5, md: 3 },
                    boxShadow: '0 4px 20px rgba(0,0,0,0)',
                    transition: 'all 0.3s ease',
                    cursor: 'pointer',
@@ -999,14 +999,14 @@ const AboutPage = () => {
                {/* Professional Installation */}
                <Card
                  sx={{
-                   height: '100%',
-                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
+                   minHeight: { xs: 160, sm: 250, md: 280 },
                    display: 'flex',
                    flexDirection: 'column',
                    justifyContent: 'flex-start',
                    alignItems: 'center',
                    textAlign: 'center',
-                   p: { xs: 2, sm: 2.5, md: 3 },
+                   p: { xs: 1.5, sm: 2.5, md: 3 },
                    boxShadow: '0 4px 20px rgba(0,0,0,0)',
                    transition: 'all 0.3s ease',
                    cursor: 'pointer',
@@ -1095,14 +1095,14 @@ const AboutPage = () => {
                {/* Ongoing Support */}
                <Card
                  sx={{
-                   height: '100%',
-                   minHeight: { xs: 220, sm: 250, md: 280 },
+                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
+                   minHeight: { xs: 160, sm: 250, md: 280 },
                    display: 'flex',
                    flexDirection: 'column',
                    justifyContent: 'flex-start',
                    alignItems: 'center',
                    textAlign: 'center',
-                   p: { xs: 2, sm: 2.5, md: 3 },
+                   p: { xs: 1.5, sm: 2.5, md: 3 },
                    boxShadow: '0 4px 20px rgba(0,0,0,0)',
                    transition: 'all 0.3s ease',
                    cursor: 'pointer',

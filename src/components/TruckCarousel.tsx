@@ -43,9 +43,10 @@ const TruckCarousel = () => {
   return (
     <Box
       sx={{
-        py: { xs: 1, md: 2, lg: 2, xl: 3 },
+        py: { xs: 1, md: 2, lg: 1.5, xl: 2 },
         backgroundColor: '#f8f9fa',
         overflow: 'hidden',
+        marginBottom: { xs: 1, md: 1, lg: 1.5, xl: 1 },
       }}
     >
       <Container maxWidth="lg">

@@ -12,6 +12,7 @@ import {
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 
 import { motion } from 'framer-motion';
 import { Gavel, Security, Policy } from '@mui/icons-material';
@@ -97,10 +98,20 @@ const TermsOfService = () => {
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
       
+      <HeroSectionCommon
+        title="Terms of Service"
+        description="Please read these terms carefully before using our services or purchasing our products."
+        height={{
+          xs: '18vh',
+          sm: '20vh',
+          md: '18vh',
+          lg: '20vh'
+        }}
+      />
+
       <Box sx={{ 
         flex: 1, 
-        mt: { xs: '56px', sm: '64px', md: '64px' },
-        py: { xs: 1, sm: 1.5, md: 2, lg: 2.5 } 
+        py: { xs: 1, sm: 1.5, md: 2, lg: 0 } 
       }}>
         <Container maxWidth="lg">
           <Breadcrumbs 
@@ -113,59 +124,6 @@ const TermsOfService = () => {
             animate="visible"
             variants={containerVariants}
           >
-            {/* Header */}
-            <MotionBox
-              variants={itemVariants}
-              sx={{
-                textAlign: 'center',
-                mb: { xs: 1, sm: 1.5, md: 2 },
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: { xs: 0.5, sm: 1 },
-              }}
-            >
-                                             <Typography
-                 variant="h3"
-                 sx={{
-                   fontWeight: 'bold',
-                   fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' },
-                   color: '#DA291C',
-                   textAlign: 'center',
-                   letterSpacing: '-0.02em',
-                   lineHeight: 1.2,
-                 }}
-               >
-                 Terms of Service
-               </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  color: 'text.secondary',
-                  maxWidth: '100%',
-                  textAlign: 'center',
-                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
-                  px: { xs: 2, sm: 0 },
-                  lineHeight: 1.2,
-                  fontWeight: 400,
-                  whiteSpace: 'nowrap',
-                  overflow: 'visible',
-                }}
-              >
-                Please read these terms carefully before using our services or purchasing our products.
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'text.secondary',
-                  opacity: 0.7,
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  fontWeight: 500,
-                }}
-              >
-                Last updated: {new Date().toLocaleDateString()}
-              </Typography>
-            </MotionBox>
 
             {/* Content */}
             <MotionPaper
@@ -218,28 +176,30 @@ const TermsOfService = () => {
                       gap: { xs: 1, sm: 1.5 },
                     }}
                   >
-                    {section.content.map((item, itemIndex) => (
-                      <Typography
-                        key={itemIndex}
-                        variant="body1"
-                        sx={{
-                          lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
-                          color: 'text.secondary',
-                          fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
-                          fontWeight: 400,
-                          textAlign: 'center',
-                          maxWidth: '100%',
-                          px: { xs: 1, sm: 2 },
-                          whiteSpace: 'normal',
-                          overflow: 'visible',
-                          wordWrap: 'break-word',
-                          overflowWrap: 'break-word',
-                          hyphens: 'auto',
-                        }}
-                      >
-                        {item}
-                      </Typography>
-                    ))}
+                                         {section.content.map((item, itemIndex) => (
+                       <Typography
+                         key={itemIndex}
+                         variant="body1"
+                         sx={{
+                           lineHeight: 1.6,
+                           color: 'text.secondary',
+                           fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem', lg: '1rem' },
+                           fontWeight: 400,
+                           textAlign: 'justify',
+                           maxWidth: '100%',
+                           px: { xs: 1, sm: 2 },
+                           whiteSpace: 'normal',
+                           overflow: 'visible',
+                           wordWrap: 'break-word',
+                           overflowWrap: 'break-word',
+                           hyphens: 'auto',
+                           textJustify: 'inter-word',
+                           letterSpacing: '0.01em',
+                         }}
+                       >
+                         {item}
+                       </Typography>
+                     ))}
                   </Box>
                   
                   {index < sections.length - 1 && (

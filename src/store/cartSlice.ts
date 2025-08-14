@@ -39,7 +39,7 @@ const cartSlice = createSlice({
 
       state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
       state.totalPrice = state.items.reduce((sum, item) => {
-        const price = parseFloat(item.price.replace('$', ''));
+        const price = parseFloat(item.price.replace(/[$,]/g, ''));
         return sum + (price * item.quantity);
       }, 0);
     },
@@ -49,7 +49,7 @@ const cartSlice = createSlice({
 
       state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
       state.totalPrice = state.items.reduce((sum, item) => {
-        const price = parseFloat(item.price.replace('$', ''));
+        const price = parseFloat(item.price.replace(/[$,]/g, ''));
         return sum + (price * item.quantity);
       }, 0);
     },
@@ -61,7 +61,7 @@ const cartSlice = createSlice({
 
         state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
         state.totalPrice = state.items.reduce((sum, item) => {
-          const price = parseFloat(item.price.replace('$', ''));
+          const price = parseFloat(item.price.replace(/[$,]/g, ''));
           return sum + (price * item.quantity);
         }, 0);
       }

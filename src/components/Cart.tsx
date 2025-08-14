@@ -47,8 +47,9 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
   };
 
   const formatPrice = (price: string, quantity: number) => {
-    const numericPrice = parseFloat(price.replace('$', ''));
-    return `$${(numericPrice * quantity).toFixed(2)}`;
+    const numericPrice = parseFloat(price.replace(/[$,]/g, ''));
+    const totalPrice = numericPrice * quantity;
+    return `$${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   return (
@@ -153,41 +154,49 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                     }
                   }}>
                     <Box sx={{ display: 'flex', p: { xs: 2, sm: 2.5, md: 3 } }}>
-                      {/* Item Image */}
-                      <CardMedia
-                        component="img"
-                        sx={{
-                          width: { xs: 70, sm: 80, md: 90 },
-                          height: { xs: 70, sm: 80, md: 90 },
-                          borderRadius: { xs: 1.5, sm: 2 },
-                          objectFit: 'cover',
-                          mr: { xs: 2, sm: 2.5, md: 3 },
-                          boxShadow: { xs: '0 1px 4px rgba(0,0,0,0.08)', sm: '0 2px 8px rgba(0,0,0,0.1)' },
-                        }}
-                        image={item.image}
-                        alt={item.title}
-                      />
+                                             {/* Item Image */}
+                       <CardMedia
+                         component="img"
+                         sx={{
+                           width: { xs: 70, sm: 80, md: 90 },
+                           height: { xs: 70, sm: 80, md: 90 },
+                           borderRadius: { xs: 1.5, sm: 2 },
+                           objectFit: 'contain',
+                           objectPosition: 'center',
+                           mr: { xs: 2, sm: 2.5, md: 3 },
+                           boxShadow: { xs: '0 1px 4px rgba(0,0,0,0.08)', sm: '0 2px 8px rgba(0,0,0,0.1)' },
+                           backgroundColor: '#f8f9fa',
+                           border: '1px solid rgba(0,0,0,0.05)',
+                           display: 'flex',
+                           alignItems: 'center',
+                           justifyContent: 'center',
+                           overflow: 'hidden',
+                         }}
+                         image={item.image}
+                         alt={item.title}
+                       />
                       
                       {/* Item Details */}
                       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <Box>
-                          <Typography variant="subtitle1" sx={{ 
-                            fontWeight: 600, 
-                            mb: 0.5,
-                            fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
-                            color: '#1a1a1a'
-                          }}>
-                            {item.title}
-                          </Typography>
-                          <Typography variant="body2" sx={{ 
-                            color: '#666', 
-                            mb: 1.5,
-                            fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' },
-                            lineHeight: 1.4
-                          }}>
-                            {item.description}
-                          </Typography>
-                        </Box>
+                                                 <Box>
+                           <Typography variant="subtitle1" sx={{ 
+                             fontWeight: 600, 
+                             mb: 1.5,
+                             fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },
+                             color: '#1a1a1a',
+                             lineHeight: 1.3,
+                             wordWrap: 'break-word',
+                             overflowWrap: 'break-word',
+                             hyphens: 'auto',
+                             display: '-webkit-box',
+                             WebkitLineClamp: 2,
+                             WebkitBoxOrient: 'vertical',
+                             overflow: 'hidden',
+                             textOverflow: 'ellipsis'
+                           }}>
+                             {item.title}
+                           </Typography>
+                         </Box>
                         
                         {/* Quantity Controls */}
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
@@ -292,7 +301,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   color: 'primary.main',
                   fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' }
                 }}>
-                  ${totalPrice.toFixed(2)}
+                  ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
               

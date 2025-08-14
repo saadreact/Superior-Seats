@@ -11,6 +11,7 @@ import {
   Alert,
 } from '@mui/material';
 import Header from '@/components/Header';
+import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 
 import { motion } from 'framer-motion';
 import { Warning, CheckCircle, Info } from '@mui/icons-material';
@@ -114,65 +115,24 @@ const ReturnPolicy = () => {
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
       
-      <Box sx={{ flex: 1, py: { xs: 4, md: 6 } }}>
+      <HeroSectionCommon
+        title="Return Policy"
+        description="We want you to be completely satisfied with your purchase. Here's everything you need to know about returns."
+        height={{
+          xs: '18vh',
+          sm: '20vh',
+          md: '18vh',
+          lg: '20vh'
+        }}
+      />
+
+      <Box sx={{ flex: 1, py: { xs: 2, md: 3 } }}>
         <Container maxWidth="lg">
           <MotionBox
             initial="hidden"
             animate="visible"
             variants={containerVariants}
           >
-            {/* Header */}
-            <MotionBox
-              variants={itemVariants}
-              sx={{
-                textAlign: 'center',
-                mb: 6,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  mb: 2,
-                }}
-              >
-                <Info sx={{ fontSize: 48, color: '#DA291C' }} />
-                <Typography
-                  variant="h2"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: { xs: '2rem', md: '3rem' },
-                    color: '#DA291C',
-                  }}
-                >
-                  Return Policy
-                </Typography>
-              </Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  color: 'text.secondary',
-                  maxWidth: 600,
-                  textAlign: 'center',
-                }}
-              >
-                We want you to be completely satisfied with your purchase. Here&apos;s everything you need to know about returns.
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'text.secondary',
-                  opacity: 0.8,
-                }}
-              >
-                Last updated: {new Date().toLocaleDateString()}
-              </Typography>
-            </MotionBox>
 
             {/* Important Notice */}
             <MotionBox variants={itemVariants} sx={{ mb: 4 }}>
@@ -226,18 +186,23 @@ const ReturnPolicy = () => {
                   
                   <Box component="ul" sx={{ pl: 3, m: 0 }}>
                     {section.content.map((item, itemIndex) => (
-                      <Typography
-                        key={itemIndex}
-                        component="li"
-                        variant="body1"
-                        sx={{
-                          mb: 1,
-                          lineHeight: 1.6,
-                          color: 'text.primary',
-                        }}
-                      >
-                        {item}
-                      </Typography>
+                                             <Typography
+                         key={itemIndex}
+                         component="li"
+                         variant="body1"
+                         sx={{
+                           mb: 1,
+                           lineHeight: 1.6,
+                           color: 'text.primary',
+                           fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem', lg: '1rem' },
+                           fontWeight: 400,
+                           textAlign: 'justify',
+                           textJustify: 'inter-word',
+                           letterSpacing: '0.01em',
+                         }}
+                       >
+                         {item}
+                       </Typography>
                     ))}
                   </Box>
                   

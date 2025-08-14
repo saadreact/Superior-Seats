@@ -17,6 +17,7 @@ interface HeroSectionProps {
     sm?: string;
     md?: string;
     lg?: string;
+    xl?: string;
   };
   titleFontSize?: {
     xs?: string;
@@ -41,7 +42,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     xs: '18vh',
     sm: '20vh', 
     md: '18vh',
-    lg: '20vh'
+    lg: '15vh',
+    xl: '15vh'
+
   },
   titleFontSize = {
     xs: '1.25rem',
