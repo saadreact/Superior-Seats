@@ -25,6 +25,36 @@ const ContactPage = () => {
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
+  // Common styles for text fields (excluding Message field)
+  const commonTextFieldStyles = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 2,
+      height: '35px',
+      backgroundColor: 'rgba(255,255,255,0.8)',
+      '&:hover fieldset': {
+        borderColor: 'primary.main',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: 'primary.main',
+        borderWidth: 2,
+      },
+      '&.Mui-focused': {
+        backgroundColor: 'white',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      color: 'text.secondary',
+      transform: 'translate(14px, 8px) scale(1)',
+      '&.Mui-focused': {
+        color: 'primary.main',
+        transform: 'translate(14px, -9px) scale(0.75)',
+      },
+      '&.MuiFormLabel-filled': {
+        transform: 'translate(14px, -9px) scale(0.75)',
+      },
+    },
+  };
+
   // Helper function to get icon component
   const getIcon = (iconName: string) => {
     const icons: { [key: string]: React.ComponentType<any> } = {
@@ -68,10 +98,12 @@ const ContactPage = () => {
          title="Get In Touch"
          description="Contact us today for design help and a quote.  We’re here to help bring your vision to life."
          height={{
-           xs: '18vh',
+          xs: '10vh',
            sm: '20vh',
            md: '18vh',
-           lg: '20vh'
+           lg: '18vh',
+           xl: '15vh',
+          
           }}
            />
 
@@ -84,7 +116,7 @@ const ContactPage = () => {
       
 
       {/* Contact Form */}
-      <Box sx={{ py: { xs: 2, md: 2 }, backgroundColor: '#fafafa' }}>
+      <Box sx={{ py: { xs: 2, md: 2, lg: 2, xl: 4 }, backgroundColor: '#fafafa' }}>
         <Container maxWidth="md">
           <Typography
             variant="h3"
@@ -130,70 +162,30 @@ const ContactPage = () => {
                    gap: { xs: 2, sm: 3 },
                    flexDirection: { xs: 'column', sm: 'row' }
                  }}>
-                   <TextField
-                     label="First Name"
-                     value={formData.firstName}
-                     onChange={handleInputChange('firstName')}
-                     required
-                     variant="outlined"
-                     size="small"
-                     sx={{
-                       flex: 1,
-                       '& .MuiOutlinedInput-root': {
-                         borderRadius: 2,
-                         height: '50px',
-                         backgroundColor: 'rgba(255,255,255,0.8)',
-                         '&:hover fieldset': {
-                           borderColor: 'primary.main',
-                         },
-                         '&.Mui-focused fieldset': {
-                           borderColor: 'primary.main',
-                           borderWidth: 2,
-                         },
-                         '&.Mui-focused': {
-                           backgroundColor: 'white',
-                         },
-                       },
-                       '& .MuiInputLabel-root': {
-                         color: 'text.secondary',
-                         '&.Mui-focused': {
-                           color: 'primary.main',
-                         },
-                       },
-                     }}
-                   />
-                   <TextField
-                     label="Last Name"
-                     value={formData.lastName}
-                     onChange={handleInputChange('lastName')}
-                     required
-                     variant="outlined"
-                     size="small"
-                     sx={{
-                       flex: 1,
-                       '& .MuiOutlinedInput-root': {
-                         borderRadius: 2,
-                         height: '50px',
-                         backgroundColor: 'rgba(255,255,255,0.8)',
-                         '&:hover fieldset': {
-                           borderColor: 'primary.main',
-                         },
-                         '&.Mui-focused fieldset': {
-                           borderColor: 'primary.main',
-                           borderWidth: 2,
-                         },
-                         '&.Mui-focused': {
-                           backgroundColor: 'white',
-                         },
-                       },
-                       '& .MuiInputLabel-root': {
-                         color: 'text.secondary',
-                         '&.Mui-focused': {
-                           color: 'primary.main',
-                         },
-                       },
-                     }}
-                   />
+                                       <TextField
+                      label="First Name"
+                      value={formData.firstName}
+                      onChange={handleInputChange('firstName')}
+                      required
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        flex: 1,
+                        ...commonTextFieldStyles,
+                      }}
+                    />
+                                       <TextField
+                      label="Last Name"
+                      value={formData.lastName}
+                      onChange={handleInputChange('lastName')}
+                      required
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        flex: 1,
+                        ...commonTextFieldStyles,
+                      }}
+                    />
                  </Box>
 
                                  {/* Contact Fields */}
@@ -202,140 +194,56 @@ const ContactPage = () => {
                    gap: { xs: 2, sm: 3 },
                    flexDirection: { xs: 'column', md: 'row' }
                  }}>
-                  <TextField
-                    label="Email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange('email')}
-                    required
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      flex: 1,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        height: '50px',
-                        backgroundColor: 'rgba(255,255,255,0.8)',
-                        '&:hover fieldset': {
-                          borderColor: 'primary.main',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'primary.main',
-                          borderWidth: 2,
-                        },
-                        '&.Mui-focused': {
-                          backgroundColor: 'white',
-                        },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'text.secondary',
-                        '&.Mui-focused': {
-                          color: 'primary.main',
-                        },
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="Phone"
-                    value={formData.phone}
-                    onChange={handleInputChange('phone')}
-                    required
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      flex: 1,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        height: '50px',
-                        backgroundColor: 'rgba(255,255,255,0.8)',
-                        '&:hover fieldset': {
-                          borderColor: 'primary.main',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'primary.main',
-                          borderWidth: 2,
-                        },
-                        '&.Mui-focused': {
-                          backgroundColor: 'white',
-                        },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'text.secondary',
-                        '&.Mui-focused': {
-                          color: 'primary.main',
-                        },
-                      },
-                    }}
-                  />
+                                     <TextField
+                     label="Email"
+                     type="email"
+                     value={formData.email}
+                     onChange={handleInputChange('email')}
+                     required
+                     variant="outlined"
+                     size="small"
+                     sx={{
+                       flex: 1,
+                       ...commonTextFieldStyles,
+                     }}
+                   />
+                                     <TextField
+                     label="Phone"
+                     value={formData.phone}
+                     onChange={handleInputChange('phone')}
+                     required
+                     variant="outlined"
+                     size="small"
+                     sx={{
+                       flex: 1,
+                       ...commonTextFieldStyles,
+                     }}
+                   />
                 </Box>
 
                                  {/* Company Field */}
-                 <TextField
-                   fullWidth
-                   label="Company (Optional)"
-                   value={formData.company}
-                   onChange={handleInputChange('company')}
-                   required={false}
-                   variant="outlined"
-                   size="small"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      height: '50px',
-                      backgroundColor: 'rgba(255,255,255,0.8)',
-                      '&:hover fieldset': {
-                        borderColor: 'primary.main',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: 'primary.main',
-                        borderWidth: 2,
-                      },
-                      '&.Mui-focused': {
-                        backgroundColor: 'white',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'text.secondary',
-                      '&.Mui-focused': {
-                        color: 'primary.main',
-                      },
-                    },
-                  }}
-                />
+                                   <TextField
+                    fullWidth
+                    label="Company (Optional)"
+                    value={formData.company}
+                    onChange={handleInputChange('company')}
+                    required={false}
+                    variant="outlined"
+                    size="small"
+                    sx={commonTextFieldStyles}
+                  />
 
                 {/* Subject */}
-                <TextField
-                  fullWidth
-                  label="Subject"
-                  value={formData.subject}
-                  onChange={handleInputChange('subject')}
-                  required
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      height: '50px',
-                      backgroundColor: 'rgba(255,255,255,0.8)',
-                      '&:hover fieldset': {
-                        borderColor: 'primary.main',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: 'primary.main',
-                        borderWidth: 2,
-                      },
-                      '&.Mui-focused': {
-                        backgroundColor: 'white',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'text.secondary',
-                      '&.Mui-focused': {
-                        color: 'primary.main',
-                      },
-                    },
-                  }}
-                />
+                                                                 <TextField
+                   fullWidth
+                   label="Subject"
+                   value={formData.subject}
+                   onChange={handleInputChange('subject')}
+                   required
+                   variant="outlined"
+                   size="small"
+                   sx={commonTextFieldStyles}
+                 />
 
                 {/* Message */}
                 <TextField
@@ -345,10 +253,10 @@ const ContactPage = () => {
                   onChange={handleInputChange('message')}
                   required
                   multiline
-                  rows={4}
+                  rows={3}
                   variant="outlined"
                   size="small"
-                  placeholder="Tell us about your project, requirements, or any questions you have..."
+                  placeholder="Tell us about your query, requirements, or any questions you have..."
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -376,7 +284,7 @@ const ContactPage = () => {
                 {/* Submit Button */}
                                  <Box sx={{ 
                    textAlign: 'center', 
-                   mt: { xs: 3, sm: 4 },
+                   mt: { xs: 1, sm: 1 ,lg: 0,md: 1},
                    display: 'flex',
                    flexDirection: 'column',
                    alignItems: 'center',
@@ -388,9 +296,10 @@ const ContactPage = () => {
                      size="medium"
                      startIcon={<Send />}
                      sx={{
-                       background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+                     // background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+                     background: 'primary.main',
                        px: { xs: 4, sm: 6 },
-                       py: { xs: 1.2, sm: 1.5 },
+                       py: { xs: 1, sm: 1.5,lg: 1,md: 1.2 },
                        fontSize: { xs: '0.9rem', sm: '1rem' },
                        fontWeight: 'bold',
                        borderRadius: 2,
@@ -398,9 +307,9 @@ const ContactPage = () => {
                        textTransform: 'none',
                        letterSpacing: 0.5,
                        '&:hover': {
-                         background: 'linear-gradient(135deg, #b71c1c 0%, #7b0000 100%)',
+                       //  background: 'linear-gradient(135deg, #b71c1c 0%, #7b0000 100%)',
                          transform: 'translateY(-2px)',
-                         boxShadow: '0 8px 30px rgba(211, 47, 47, 0.4)',
+                         boxShadow: '0 8px 30px rgba(231, 43, 43, 0.4)',
                        },
                        transition: 'all 0.3s ease',
                        minWidth: { xs: 160, sm: 180 },
@@ -428,7 +337,7 @@ const ContactPage = () => {
         </Container>
       </Box>
      {/* Contact Information */}
-   <Box sx={{ py: { xs: 2, md: 2 }, backgroundColor: 'white' }}>
+   {/* <Box sx={{ py: { xs: 2, md: 2 }, backgroundColor: 'white' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
@@ -566,7 +475,7 @@ const ContactPage = () => {
             ))}
           </Box>
         </Container>
-      </Box>
+      </Box> */}
       {/* Map Section */}
       <Box sx={{ py: { xs: 2, md: 3 }, backgroundColor: 'white' }}>
         <Container maxWidth="lg">

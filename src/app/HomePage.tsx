@@ -176,7 +176,7 @@ const HomePage = () => {
       
       {/* Stats Section */}
       <Box sx={{ 
-        py: { xs: 2, md: 3 },
+        py: { xs: 2, md: 1 ,lg: 1, xl: 1},
         backgroundColor: 'background.default',
         display: 'flex',
         flexDirection: 'column',
@@ -208,7 +208,7 @@ const HomePage = () => {
       </Box>
 
       {/* Products Section */}
-      <Box sx={{ py: { xs: 2, md: 3 } }}>
+      <Box sx={{ py: { xs: 2, md: 3, lg: 1, xl: 2 } }}>
         <Container maxWidth="lg">
           <MotionBox
             variants={sectionVariants}
@@ -331,7 +331,7 @@ const HomePage = () => {
       </Box>
 
       {/* Trusted by Leading Truck Manufacturers Section */}
-      <Box sx={{ py: { xs: 2, md: 3 } }}>
+      {/* <Box sx={{ py: { xs: 2, md: 3 } }}>
         <Container maxWidth="lg">
           <MotionBox
             variants={sectionVariants}
@@ -370,7 +370,7 @@ const HomePage = () => {
             </Typography>
           </MotionBox>
         </Container>
-      </Box>
+      </Box> */}
 
       {/* Truck Carousel Section */}
       <TruckCarousel />
@@ -384,6 +384,9 @@ const HomePage = () => {
 const StatItem = ({ stat }: { stat: { number: number; label: string; suffix: string } }) => {
   const [isVisible, setIsVisible] = useState(false);
   const count = useCountUp(isVisible ? stat.number : 0, 2000);
+
+  // Format number with commas
+  const formattedCount = count.toLocaleString();
 
   return (
     <MotionBox
@@ -399,7 +402,7 @@ const StatItem = ({ stat }: { stat: { number: number; label: string; suffix: str
           fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
         }}
       >
-        {count}{stat.suffix}
+        {formattedCount}{stat.suffix}
       </Typography>
       <Typography
         variant="body1"

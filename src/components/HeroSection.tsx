@@ -193,7 +193,7 @@ const HeroSection = () => {
           backgroundRepeat: 'no-repeat',
           color: 'white',
           py: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
-          minHeight: { xs: '50vh', sm: '55vh', md: '60vh', lg: '65vh', xl: '70vh' },
+          minHeight: { xs: '50vh', sm: '55vh', md: '30vh', lg: '55vh', xl: '50vh' },
           display: 'flex',
           alignItems: 'center',
           position: 'relative',

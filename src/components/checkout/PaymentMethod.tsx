@@ -119,7 +119,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
     <Box sx={{ 
       maxWidth: { xs: '100%', sm: 500, md: 600 }, 
       mx: 'auto', 
-      p: { xs: 1, sm: 2, md: 3 } 
+      p: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 } 
     }}>
       <Typography variant="h4" sx={{ 
         mb: { xs: 2, sm: 3 }, 
@@ -135,10 +135,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
         borderRadius: { xs: 2, sm: 3 } 
       }}>
         <form onSubmit={handleSubmit}>
-          <Stack spacing={{ xs: 3, sm: 4 }}>
+          <Stack spacing={{ xs: 2, sm: 2, md: 2, lg: 2, xl: 2 }}>
             {/* Square Payment Info */}
             <Alert severity="info" sx={{ 
-              mb: { xs: 1, sm: 2 },
+              mb: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 },
               fontSize: { xs: '0.875rem', sm: '1rem' }
             }}>
               💳 Secure payment processing powered by Square
@@ -147,7 +147,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
             {/* Card Details */}
             <Box>
               <Typography variant="h6" sx={{ 
-                mb: { xs: 2, sm: 3 }, 
+                mb: { xs: 2, sm: 3, md: 3, lg: 0, xl: 0 }, 
                 fontWeight: 'bold',
                 fontSize: { xs: '1rem', sm: '1.25rem' }
               }}>
@@ -229,7 +229,9 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
                 fullWidth
                 sx={{ 
                   py: { xs: 1.25, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                  width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }
                 }}
               >
                 Back
@@ -241,7 +243,9 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
                 fullWidth
                 sx={{ 
                   py: { xs: 1.25, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                  width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }
                 }}
               >
                 {isProcessing ? (

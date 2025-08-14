@@ -59,6 +59,7 @@ const ShopGallery = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(9);   // cards per page
+  const [modalImageIndex, setModalImageIndex] = useState(0); // For multiple images in modal
 
   // Filter images based on selected categories
   const filteredImages = galleryData.filter(item => {
@@ -114,23 +115,67 @@ const ShopGallery = () => {
   const handleImageClick = (image: typeof galleryData[0], index: number) => {
     setSelectedImage(image);
     setCurrentImageIndex(index);
+    setModalImageIndex(0); // Reset modal image index when opening modal
   };
 
   const handleCloseLightbox = () => {
     setSelectedImage(null);
   };
 
-  const handleNextImage = () => {
-    const nextIndex = (currentImageIndex + 1) % filteredImages.length;
-    setCurrentImageIndex(nextIndex);
-    setSelectedImage(filteredImages[nextIndex]);
+  // Get multiple images for the selected product from the images array
+  const getProductImages = (product: typeof galleryData[0]) => {
+    // Return the specific images array for this product
+    return product.images || [product.image];
   };
 
-  const handlePrevImage = () => {
-    const prevIndex = currentImageIndex === 0 ? filteredImages.length - 1 : currentImageIndex - 1;
-    setCurrentImageIndex(prevIndex);
-    setSelectedImage(filteredImages[prevIndex]);
+  // Touch/swipe functionality for mobile
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const handleNextModalImage = () => {
+    if (selectedImage) {
+      const productImages = getProductImages(selectedImage);
+      const nextIndex = (modalImageIndex + 1) % productImages.length;
+      setModalImageIndex(nextIndex);
+    }
   };
+
+  const handlePrevModalImage = () => {
+    if (selectedImage) {
+      const productImages = getProductImages(selectedImage);
+      const prevIndex = modalImageIndex === 0 ? productImages.length - 1 : modalImageIndex - 1;
+      setModalImageIndex(prevIndex);
+    }
+  };
+
+  // Touch handlers for swipe functionality
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleNextModalImage();
+    }
+    if (isRightSwipe) {
+      handlePrevModalImage();
+    }
+
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+
 
   const handleAddToCart = (item: typeof galleryData[0]) => {
     dispatch(addItem({
@@ -176,189 +221,14 @@ const ShopGallery = () => {
           xs: '18vh',
           sm: '20vh',
           md: '18vh',
-          lg: '20vh'
+          lg: '18vh',
+          xl: '15vh'
          }}
        />
 
       {/* Breadcrumbs */}
       <Breadcrumbs />
 
-      {/* Category Dropdown Filter - HIDDEN FOR NOW */}
-      {/* 
-      <Box sx={{ 
-        backgroundColor: 'white', 
-        borderBottom: '1px solid #e0e0e0',
-        position: 'sticky',
-        top: { xs: '56px', sm: '64px', md: '64px' },
-        zIndex: 10,
-        py: { xs: 0.5, sm: 1, md: 1.5, lg: 1 },
-        px: { xs: 0.5, sm: 1, md: 2, lg: 3 },
-        mt: 0,
-      }}>
-        <Container maxWidth="lg">
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: { xs: 1, sm: 1.5, md: 2, lg: 3 },
-            flexWrap: 'wrap',
-            flexDirection: { xs: 'column', sm: 'row' },
-          }}>
-         
-            
-            <FormControl 
-              sx={{ 
-                minWidth: { xs: '100%', sm: '140px', md: '160px', lg: '180px' },
-                width: { xs: '100%', sm: 'auto' },
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'white',
-                  height: { xs: '32px', sm: '36px', md: '40px', lg: '44px' },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main',
-                    borderWidth: 2,
-                  },
-                },
-                '& .MuiSelect-select': {
-                  fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem', lg: '1rem' },
-                  fontWeight: 500,
-                  color: 'text.primary',
-                  py: { xs: 0.25, sm: 0.375, md: 0.7, lg: 0.7 },
-                },
-              }}
-            >
-              <InputLabel 
-                id="main-category-select-label"
-                sx={{ 
-                  fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
-                  fontWeight: 500,
-                  color: 'text.secondary',
-                }}
-              >
-                Main Category
-              </InputLabel>
-              <Select
-                labelId="main-category-select-label"
-                id="main-category-select"
-                value={selectedMainCategory}
-                label="Main Category"
-                onChange={handleMainCategoryChange}
-                startAdornment={
-                  <FilterList 
-                    sx={{ 
-                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem' }, 
-                      mr: 1,
-                      color: 'primary.main'
-                    }} 
-                  />
-                }
-              >
-                {mainCategories.map((category) => (
-                  <MenuItem 
-                    key={category.value} 
-                    value={category.value}
-                    sx={{
-                      fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
-                      fontWeight: category.value === selectedMainCategory ? 600 : 400,
-                      color: category.value === selectedMainCategory ? 'primary.main' : 'text.primary',
-                      '&:hover': {
-                        backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                      },
-                      '&.Mui-selected': {
-                        backgroundColor: 'rgba(211, 47, 47, 0.12)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(211, 47, 47, 0.16)',
-                        },
-                      },
-                    }}
-                  >
-                    {category.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            {selectedMainCategory !== 'all' && availableSubCategories.length > 0 && (
-              <FormControl 
-                sx={{ 
-                  minWidth: { xs: '100%', sm: '140px', md: '160px', lg: '180px' },
-                  width: { xs: '100%', sm: 'auto' },
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'white',
-                    height: { xs: '32px', sm: '36px', md: '40px', lg: '44px' },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'primary.main',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'primary.main',
-                      borderWidth: 2,
-                    },
-                  },
-                  '& .MuiSelect-select': {
-                    fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem', lg: '1rem' },
-                    fontWeight: 500,
-                    color: 'text.primary',
-                    py: { xs: 0.25, sm: 0.375, md: 0.7, lg: 0.7 },
-                
-                  },
-                }}
-              >
-                <InputLabel 
-                  id="sub-category-select-label"
-                  sx={{ 
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
-                    fontWeight: 500,
-                    color: 'text.secondary',
-                  }}
-                >
-                  Sub Category
-                </InputLabel>
-                <Select
-                  labelId="sub-category-select-label"
-                  id="sub-category-select"
-                  value={selectedSubCategory}
-                  label="Sub Category"
-                  onChange={handleSubCategoryChange}
-                  startAdornment={
-                    <FilterList 
-                      sx={{ 
-                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem' }, 
-                        mr: 1,
-                        color: 'primary.main'
-                      }} 
-                    />
-                  }
-                >
-                  {availableSubCategories.map((category) => (
-                    <MenuItem 
-                      key={category.value} 
-                      value={category.value}
-                      sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.875rem' },
-                        fontWeight: category.value === selectedSubCategory ? 600 : 400,
-                        color: category.value === selectedSubCategory ? 'primary.main' : 'text.primary',
-                        '&:hover': {
-                          backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                        },
-                        '&.Mui-selected': {
-                          backgroundColor: 'rgba(211, 47, 47, 0.12)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(211, 47, 47, 0.16)',
-                          },
-                        },
-                      }}
-                    >
-                      {category.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-          </Box>
-        </Container>
-      </Box>
-      */}
 
       {/* Gallery Grid */}
       <Box sx={{ py: { xs: 1, sm: 1.5, md: 2, lg: 2 }, px: { xs: 1, sm: 2, md: 3 } }}>
@@ -404,13 +274,13 @@ const ShopGallery = () => {
             </Typography>
           </Box>
 
-          <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)' },
-            gap: { xs: 1.5, sm: 2, md: 3, lg: 4 },
-            justifyContent: 'center',
-            width: '100%'
-          }}>
+                     <Box sx={{ 
+             display: 'grid',
+             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)' },
+             gap: { xs: 2, sm: 2, md: 3, lg: 4 },
+             justifyContent: 'center',
+             width: '100%'
+           }}>
             {currentItems.map((item, index) => (
               <Box key={item.id} sx={{ width: '100%' }}>
                 <Card
@@ -485,85 +355,76 @@ const ShopGallery = () => {
                     />
                   </Box>
                   <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2, md: 2.5, lg: 3 } }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 'bold',
-                        mb: 1,
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
-                        color: 'text.primary',
-                        lineHeight: { xs: 1.3, sm: 1.4 },
-                        wordBreak: 'break-word',
-                        overflowWrap: 'break-word',
-                      }}
-                    >
-                      {item.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        lineHeight: 1.5,
-                        mb: 2,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                        display: { xs: '-webkit-box', sm: 'block' },
-                        WebkitLineClamp: { xs: 2, sm: 'none' },
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        wordBreak: 'break-word',
-                        overflowWrap: 'break-word',
-                      }}
-                    >
-                      {item.description}
-                    </Typography>
-                    <Stack 
-                      direction={{ xs: 'column', sm: 'row' }} 
-                      spacing={{ xs: 1, sm: 1 }}
-                      sx={{ flexWrap: 'wrap', gap: { xs: 1, sm: 1 } }}
-                    >
-                      {/* MODIFIED BUTTON: Changed from "View Details" to "Customize" with new functionality */}
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation(); // PREVENT: Stop card click event from firing
-                          handleCustomize(item); // FUNCTION: Call the new customize handler
-                        }}
-                        sx={{
-                          borderColor: 'primary.main',
-                          color: 'primary.main',
-                          fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                          py: { xs: 0.5, sm: 0.75, md: 1 },
-                          px: { xs: 1, sm: 1.5, md: 2 },
-                          '&:hover': {
+                                         <Typography
+                       variant="h6"
+                       sx={{
+                         fontWeight: 'bold',
+                         mb: 1,
+                         fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                         color: 'text.primary',
+                         lineHeight: { xs: 1.2, sm: 1.3 },
+                         wordBreak: 'break-word',
+                         overflowWrap: 'break-word',
+                         display: '-webkit-box',
+                         WebkitLineClamp: 2,
+                         WebkitBoxOrient: 'vertical',
+                         overflow: 'hidden',
+                         textOverflow: 'ellipsis',
+                         height: { xs: '2.4rem', sm: '2.6rem', md: '2.8rem' },
+                         minHeight: { xs: '2.4rem', sm: '2.6rem', md: '2.8rem' },
+                       }}
+                     >
+                       {item.title}
+                     </Typography>
+
+                                         <Stack 
+                       direction="row" 
+                       spacing={3}
+                       sx={{ width: '100%' }}
+                     >
+                                              {/* DETAILS BUTTON: Changed from "Customize" to "Details" */}
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation(); // PREVENT: Stop card click event from firing
+                            handleImageClick(item, startIndex + index); // FUNCTION: Open modal with details
+                          }}
+                          sx={{
+                            borderColor: 'primary.main',
+                            color: 'primary.main',
+                            fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                            height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                            width: { xs: '110px', sm: '110px', md: '110px', lg: '110px', xl: '110px' },
+                            '&:hover': {
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                            },
+                          }}
+                        >
+                          Details {/* TEXT: Changed button text from "Customize" */}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(item);
+                          }}
+                          sx={{
                             backgroundColor: 'primary.main',
                             color: 'white',
-                          },
-                        }}
-                      >
-                        Customize {/* TEXT: Changed button text from "View Details" */}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(item);
-                        }}
-                        sx={{
-                          backgroundColor: 'primary.main',
-                          color: 'white',
-                          fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                          py: { xs: 0.5, sm: 0.75, md: 1 },
-                          px: { xs: 1, sm: 1.5, md: 2 },
-                          '&:hover': {
-                            backgroundColor: 'primary.dark',
-                          },
-                        }}
-                      >
-                        Add to Cart
-                      </Button>
-                    </Stack>
+                            fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                            height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                            width: { xs: '100px', sm: '100px', md: '100px', lg: '100px', xl: '100px' },
+                            '&:hover': {
+                              backgroundColor: 'primary.dark',
+                            },
+                          }}
+                        >
+                          Add to Cart
+                        </Button>
+                     </Stack>
                   </CardContent>
                 </Card>
               </Box>
@@ -735,157 +596,194 @@ const ShopGallery = () => {
             <Close sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
           </IconButton>
 
-          {selectedImage && (
-            <Box sx={{ position: 'relative' }}>
-              <Image
-                src={selectedImage.image}
-                alt={selectedImage.title}
-                width={800}
-                height={600}
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  maxHeight: isSmallMobile ? '50vh' : isMobile ? '60vh' : '80vh',
-                  objectFit: 'contain',
-                }}
-              />
+                     {selectedImage && (
+             <Box 
+               sx={{ position: 'relative' }}
+               onTouchStart={handleTouchStart}
+               onTouchMove={handleTouchMove}
+               onTouchEnd={handleTouchEnd}
+             >
+               {/* Main Product Image */}
+                                                <Image
+                   src={getProductImages(selectedImage)[modalImageIndex]}
+                   alt={`${selectedImage.title} - Image ${modalImageIndex + 1}`}
+                   width={800}
+                   height={600}
+                   style={{
+                     width: '100%',
+                     height: 'auto',
+                     maxHeight: isSmallMobile ? '45vh' : isMobile ? '50vh' : '80vh',
+                     objectFit: 'contain',
+                   }}
+                 />
               
-              {/* Navigation Arrows */}
-                             <IconButton
-                 onClick={handlePrevImage}
-                 sx={{
-                   position: 'absolute',
-                   left: { xs: 16, sm: 24, md: 32 },
-                   top: '50%',
-                   transform: 'translateY(-50%)',
-                   color: 'white',
-                   backgroundColor: 'primary.main',
-                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                   width: { xs: 28, sm: 32, md: 40 },
-                   height: { xs: 28, sm: 32, md: 40 },
-                   display: { xs: 'none', sm: 'flex' },
-                   '&:hover': {
-                     backgroundColor: 'primary.dark',
-                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                     transform: 'translateY(-50%) scale(1.1)',
-                   },
-                   transition: 'all 0.2s ease',
-                 }}
-               >
-                 <ArrowBack sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
-               </IconButton>
-               
-               <IconButton
-                 onClick={handleNextImage}
-                 sx={{
-                   position: 'absolute',
-                   right: { xs: 16, sm: 24, md: 32 },
-                   top: '50%',
-                   transform: 'translateY(-50%)',
-                   color: 'white',
-                   backgroundColor: 'primary.main',
-                   boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                   width: { xs: 28, sm: 32, md: 40 },
-                   height: { xs: 28, sm: 32, md: 40 },
-                   display: { xs: 'none', sm: 'flex' },
-                   '&:hover': {
-                     backgroundColor: 'primary.dark',
-                     boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                     transform: 'translateY(-50%) scale(1.1)',
-                   },
-                   transition: 'all 0.2s ease',
-                 }}
-               >
-                 <ArrowForward sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
-               </IconButton>
-
-              {/* Image Info */}
-              <Box
-                sx={{
+                             {/* Image Navigation Dots */}
+                               <Box sx={{
                   position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: 'linear-gradient(transparent, rgba(255,255,255,0.9))',
-                  p: { xs: 1.5, sm: 2, md: 3 },
-                }}
-              >
-                <Typography variant="h5" sx={{ 
-                  fontWeight: 'bold', 
-                  mb: 1,
-                  fontSize: { xs: '1rem', sm: '1.125rem', md: '1.5rem' },
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
+                  bottom: { xs: '70px', sm: '120px', md: '140px' },
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: { xs: 0.5, sm: 1 },
+                  zIndex: 2,
                 }}>
-                  {selectedImage.title}
-                </Typography>
-                <Typography variant="body1" sx={{ 
-                  mb: 2, 
-                  opacity: 0.9,
-                  fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                  display: { xs: '-webkit-box', sm: 'block' },
-                  WebkitLineClamp: { xs: 2, sm: 'none' },
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                }}>
-                  {selectedImage.description}
-                </Typography>
-                <Stack 
-                  direction={{ xs: 'column', sm: 'row' }} 
-                  spacing={{ xs: 1, sm: 2 }} 
-                  alignItems={{ xs: 'stretch', sm: 'center' }}
-                  sx={{ flexWrap: 'wrap' }}
+                 {getProductImages(selectedImage).map((_, index) => (
+                   <Box
+                     key={index}
+                     onClick={() => setModalImageIndex(index)}
+                     sx={{
+                       width: { xs: 10, sm: 12, md: 14 },
+                       height: { xs: 10, sm: 12, md: 14 },
+                       borderRadius: '50%',
+                       backgroundColor: index === modalImageIndex ? 'primary.main' : 'rgba(255, 255, 255, 0.7)',
+                       cursor: 'pointer',
+                       transition: 'all 0.2s ease',
+                       '&:hover': {
+                         backgroundColor: index === modalImageIndex ? 'primary.dark' : 'rgba(255, 255, 255, 0.9)',
+                       },
+                     }}
+                   />
+                 ))}
+               </Box>
+              
+                             {/* Navigation Arrows */}
+                              {/* Product Image Navigation Arrows */}
+                              <IconButton
+                  onClick={handlePrevModalImage}
+                  sx={{
+                    position: 'absolute',
+                    left: { xs: 8, sm: 16, md: 24 },
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'white',
+                    backgroundColor: 'primary.main',
+                    boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                    width: { xs: 32, sm: 36, md: 40 },
+                    height: { xs: 32, sm: 36, md: 40 },
+                    display: { xs: 'flex', sm: 'flex' },
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                      boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                      transform: 'translateY(-50%) scale(1.1)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
                 >
-                  <Button
-                    variant="contained"
-                    size="small"
-                    disabled
-                    sx={{
-                      backgroundColor: 'primary.main',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                      px: { xs: 1, sm: 1.5, md: 2 },
-                      py: { xs: 0.5, sm: 0.75, md: 1 },
-                      minWidth: { xs: '80px', sm: '90px', md: '100px' },
-                      '&:hover': {
-                        backgroundColor: 'primary.main',
-                      },
-                      '&.Mui-disabled': {
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                        opacity: 1,
-                      },
-                    }}
+                  <ArrowBack sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
+                </IconButton>
+                
+                <IconButton
+                  onClick={handleNextModalImage}
+                  sx={{
+                    position: 'absolute',
+                    right: { xs: 8, sm: 16, md: 24 },
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'white',
+                    backgroundColor: 'primary.main',
+                    boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                    width: { xs: 32, sm: 36, md: 40 },
+                    height: { xs: 32, sm: 36, md: 40 },
+                    display: { xs: 'flex', sm: 'flex' },
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                      boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                      transform: 'translateY(-50%) scale(1.1)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <ArrowForward sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
+                </IconButton>
+
+               
+
+                             {/* Image Info */}
+                               <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(transparent, rgba(255,255,255,0.98))',
+                    p: { xs: 2, sm: 2.5, md: 3 },
+                    minHeight: { xs: '120px', sm: 'auto' },
+                    borderTop: { xs: '1px solid rgba(0,0,0,0.1)', sm: 'none' },
+                  }}
+                >
+                 <Typography variant="h5" sx={{ 
+                   fontWeight: 'bold', 
+                   mb: 1,
+                   fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
+                   wordBreak: 'break-word',
+                   overflowWrap: 'break-word',
+                   color: { xs: 'text.primary', sm: 'inherit' },
+                 }}>
+                   {selectedImage.title}
+                 </Typography>
+                 <Typography variant="body1" sx={{ 
+                   mb: 2, 
+                   opacity: { xs: 0.8, sm: 0.9 },
+                   fontSize: { xs: '0.75rem', sm: '0.9rem', md: '1rem' },
+                   lineHeight: 1.6,
+                   wordBreak: 'break-word',
+                   overflowWrap: 'break-word',
+                   color: { xs: 'text.secondary', sm: 'inherit' },
+                 }}>
+                   {selectedImage.description}
+                 </Typography>
+                                   <Stack 
+                    direction="row" 
+                    spacing={2}
+                    sx={{ width: '100%', mt: 2 }}
                   >
-                    {selectedImage.price}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => {
-                      handleAddToCart(selectedImage);
-                      handleCloseLightbox();
-                    }}
-                    sx={{
-                      backgroundColor: 'primary.main',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                      px: { xs: 1, sm: 1.5, md: 2 },
-                      py: { xs: 0.5, sm: 0.75, md: 1 },
-                      minWidth: { xs: '80px', sm: '90px', md: '100px' },
-                      '&:hover': {
-                        backgroundColor: 'primary.dark',
-                      },
-                    }}
-                  >
-                    Add to Cart
-                  </Button>
-                </Stack>
-              </Box>
+                                         <Button
+                       variant="outlined"
+                       size="small"
+                       disabled
+                       sx={{
+                         borderColor: 'primary.main',
+                         color: 'primary.main',
+                         fontWeight: 'bold',
+                         fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                         height: { xs: '40px', sm: '40px', md: '40px' },
+                         width: { xs: '110px', sm: '110px', md: '130px', lg: '140px' },
+                         '&:hover': {
+                           backgroundColor: 'primary.main',
+                           color: 'white',
+                         },
+                         '&.Mui-disabled': {
+                           borderColor: 'primary.main',
+                           color: 'primary.main',
+                           opacity: 1,
+                         },
+                       }}
+                     >
+                       {selectedImage.price}
+                     </Button>
+                     <Button
+                       variant="contained"
+                       size="small"
+                       onClick={() => {
+                         handleAddToCart(selectedImage);
+                         handleCloseLightbox();
+                       }}
+                       sx={{
+                         backgroundColor: 'primary.main',
+                         color: 'white',
+                         fontWeight: 'bold',
+                         fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                         height: { xs: '40px', sm: '40px', md: '40px' },
+                         width: { xs: '100px', sm: '100px', md: '120px', lg: '130px' },
+                         '&:hover': {
+                           backgroundColor: 'primary.dark',
+                         },
+                       }}
+                     >
+                       Add to Cart
+                     </Button>
+                  </Stack>
+               </Box>
             </Box>
           )}
         </DialogContent>

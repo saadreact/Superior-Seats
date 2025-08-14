@@ -29,6 +29,8 @@ const Footer: React.FC<FooterProps> = () => {
                   py: { xs: 2, sm: 2.5, md: 3, lg: 3.5 },
                   background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
                   color: 'white',
+                  //py:1,
+                  
                 }}
               >
                 <Container maxWidth="lg">
@@ -38,7 +40,7 @@ const Footer: React.FC<FooterProps> = () => {
                     flexDirection: { xs: 'column', md: 'row' },
                     justifyContent: 'space-between',
                     alignItems: { xs: 'center', md: 'flex-start' },
-                    gap: { xs: 2, md: 4 }
+                    gap: { xs: 3, md: 0 },
                   }}>
 {/* Company Info */}
 <Box
@@ -73,7 +75,7 @@ const Footer: React.FC<FooterProps> = () => {
       display: 'flex',
       flexDirection: { xs: 'column', sm: 'row' },
       gap: { xs: 2, sm: 4 },
-      py:1,
+      py: { xs: 1.5, sm: 1 },
       alignItems: { xs: 'center', sm: 'flex-start' },
       justifyContent: 'flex-start'
     }}
@@ -153,7 +155,7 @@ const Footer: React.FC<FooterProps> = () => {
              minWidth: '150px',
         }}
       >
-        Tuesday-Friday
+        Tuesday - Friday
       </Typography>
       <Typography
         variant="body2"
@@ -166,7 +168,7 @@ const Footer: React.FC<FooterProps> = () => {
           minWidth: '200px'
         }}
       >
-        7:00AM - 5:00PM
+         7:00AM - 5:00PM
       </Typography>
     </Box>
   </Box>
@@ -180,7 +182,7 @@ const Footer: React.FC<FooterProps> = () => {
                       flexDirection: 'column',
                       alignItems: { xs: 'center', md: 'flex-start' },
                       flex: { md: '1' },
-                      ml:8,
+                      ml: { xs: 0, md: 8 },
                     }}>
                                              <Typography variant="h3" sx={{
                          fontWeight: 'bold',
@@ -194,7 +196,7 @@ const Footer: React.FC<FooterProps> = () => {
                       <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: 0.5,
+                        gap: { xs: 1, md: 0.5 },
                         alignItems: { xs: 'center', md: 'flex-start' }
                       }}>
                         <Link href="/privacy-policy" style={{ textDecoration: 'none' }}>
@@ -209,9 +211,11 @@ const Footer: React.FC<FooterProps> = () => {
                               cursor: 'pointer',
                               '&:hover': {
                                 opacity: 1,
-                                textDecoration: 'underline',
-                                transform: 'translateX(5px)',
-                                fontWeight: 600
+                                textDecoration: 'none',
+                                transform: 'scale(1.05) translateY(-2px)',
+                                fontWeight: 600,
+                               // boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                                textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4)'
                               }
                             }}
                           >
@@ -227,11 +231,14 @@ const Footer: React.FC<FooterProps> = () => {
                               opacity: 0.95,
                               fontWeight: 550,
                               transition: 'all 0.3s ease',
+                              cursor: 'pointer',
                               '&:hover': {
                                 opacity: 1,
-                                textDecoration: 'underline',
-                                transform: 'translateX(5px)',
-                                fontWeight: 600
+                                textDecoration: 'none',
+                                transform: 'scale(1.05) translateY(-2px)',
+                                fontWeight: 600,
+                             //   boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                                textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4)'
                               }
                             }}
                           >
@@ -247,37 +254,21 @@ const Footer: React.FC<FooterProps> = () => {
                               opacity: 0.95,
                               fontWeight: 550,
                               transition: 'all 0.3s ease',
+                              cursor: 'pointer',
                               '&:hover': {
                                 opacity: 1,
-                                textDecoration: 'underline',
-                                transform: 'translateX(5px)',
-                                fontWeight: 600
+                                textDecoration: 'none',
+                                transform: 'scale(1.05) translateY(-2px)',
+                                fontWeight: 600,
+                              //  boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                                textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4)'
                               }
                             }}
                           >
                             Warranty
                           </Typography>
                         </Link>
-                        <Link href="/contact" style={{ textDecoration: 'none' }}>
-                          <Typography
-                            sx={{
-                              color: 'white',
-                              textDecoration: 'none',
-                              fontSize: { xs: '0.875rem', sm: '1rem' },
-                              opacity: 0.95,
-                              fontWeight: 550,
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                opacity: 1,
-                                textDecoration: 'underline',
-                                transform: 'translateX(5px)',
-                                fontWeight: 600
-                              }
-                            }}
-                          >
-                            Contact Us
-                          </Typography>
-                        </Link>
+                       
                       </Box>
                     </Box>
 
@@ -299,9 +290,9 @@ const Footer: React.FC<FooterProps> = () => {
                        </Typography>
                       <Box sx={{
                         display: 'flex',
-                        gap: 2,
+                        gap: { xs: 1.5, sm: 2 },
                         justifyContent: 'center',
-                        py:1.2,
+                        py: { xs: 1.5, sm: 1.2 },
                       }}>
                                                    <IconButton
                              component="a"
@@ -319,8 +310,8 @@ const Footer: React.FC<FooterProps> = () => {
                                  boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
                                },
                                transition: 'all 0.3s ease',
-                               width: { xs: 48, sm: 52 },
-                               height: { xs: 48, sm: 52 },
+                               width: { xs: 44, sm: 48, md: 52 },
+                               height: { xs: 44, sm: 48, md: 52 },
                                display: 'flex',
                                alignItems: 'center',
                                justifyContent: 'center',
