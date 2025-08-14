@@ -220,7 +220,7 @@ const VariationsPage = () => {
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               {variation.image ? (
                 <Image
-                  src={`http://127.0.0.1:8000${variation.image}`}
+                                              src={`https://superiorseats.ali-khalid.com${variation.image}`}
                   alt={variation.name}
                   width={80}
                   height={80}

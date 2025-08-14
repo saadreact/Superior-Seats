@@ -133,7 +133,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
                   },
                 }}
               >
-                {user.name}
+                {user.username || user.name || user.email}
               </Button>
               <Menu
                 anchorEl={userMenuAnchor}
