@@ -1,93 +1,82 @@
 'use client';
 
-import React from 'react';
-import { Box, Typography, Button, CircularProgress } from '@mui/material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import React, { useState, useEffect } from 'react';
+import { Typography, Alert, Box, CircularProgress } from '@mui/material';
 import AdminLayout from '@/components/AdminLayout';
 import OrderForm from '@/components/admin/OrderForm';
-import { useRouter } from 'next/navigation';
-import { Order } from '@/data/types';
+import { apiService } from '@/utils/api';
+import { useRouter, useParams } from 'next/navigation';
 
-
-
-// Mock order data
-const mockOrder: Order = {
-  id: '1',
-  customerId: '1',
-  orderNumber: 'ORD-001',
-  orderDate: new Date('2024-01-15'),
-  status: 'pending',
-  items: [
-    {
-      id: '1',
-      productId: '1',
-      productName: 'Truck Seat - Standard',
-      quantity: 2,
-      unitPrice: 299.99,
-      totalPrice: 599.98,
-      specifications: 'Black leather',
-    },
-  ],
-  subtotal: 599.98,
-  tax: 59.99,
-  shipping: 25.00,
-  total: 684.97,
-  shippingAddress: {
-    street: '123 Main St',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'USA',
-  },
-  billingAddress: {
-    street: '123 Main St',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'USA',
-  },
-  paymentMethod: 'Credit Card',
-  paymentStatus: 'pending',
-  notes: 'Customer requested expedited shipping',
-  createdAt: new Date('2024-01-15'),
-  updatedAt: new Date('2024-01-15'),
-};
-
-interface EditOrderPageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-const EditOrderPage = ({ params }: EditOrderPageProps) => {
+const EditOrderPage = () => {
   const router = useRouter();
-  const [order, setOrder] = React.useState<Order | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const resolvedParams = React.use(params);
+  const params = useParams();
+  const orderId = params.id as string;
+  
+  // Helper function to safely parse order ID
+  const getOrderIdNum = () => {
+    const num = parseInt(orderId);
+    if (isNaN(num)) {
+      throw new Error(`Invalid order ID: ${orderId}`);
+    }
+    return num;
+  };
+  
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  React.useEffect(() => {
-    // Simulate API call to fetch order
-    setTimeout(() => {
-      setOrder(mockOrder);
-      setLoading(false);
-    }, 500);
-  }, [resolvedParams.id]);
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        setLoading(true);
+        const response = await apiService.getOrder(getOrderIdNum());
+        console.log('Edit page - API response:', response);
+        const orderData = response.data || response;
+        console.log('Edit page - Order data for form:', orderData);
+        setOrder(orderData);
+      } catch (error) {
+        console.error('Error fetching order:', error);
+        setAlert({ type: 'error', message: 'Failed to load order data' });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleSubmit = (updatedOrder: any) => {
-    // Handle order update
-    console.log('Updating order:', updatedOrder);
-    // Add API call here
-    router.push('/admin/orders');
+    if (orderId) {
+      fetchOrder();
+    }
+  }, [orderId]);
+
+  const handleSubmit = async (orderData: any) => {
+    try {
+      await apiService.updateOrder(getOrderIdNum(), orderData);
+      setAlert({ type: 'success', message: 'Order updated successfully!' });
+      
+      // Redirect to the order's view page after a short delay
+      setTimeout(() => {
+        router.push(`/admin/orders/${orderId}`);
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error updating order:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to update order. Please try again.';
+      setAlert({ type: 'error', message: errorMessage });
+    }
   };
 
   const handleCancel = () => {
-    router.push('/admin/orders');
+    router.push(`/admin/orders/${orderId}`);
   };
 
   if (loading) {
     return (
-      <AdminLayout title="Edit Order">
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+      <AdminLayout>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '50vh',
+          p: { xs: 2, md: 3 }
+        }}>
           <CircularProgress />
         </Box>
       </AdminLayout>
@@ -96,47 +85,49 @@ const EditOrderPage = ({ params }: EditOrderPageProps) => {
 
   if (!order) {
     return (
-      <AdminLayout title="Order Not Found">
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="h6" color="error">
-            Order not found
-          </Typography>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => router.push('/admin/orders')}
-            sx={{ mt: 2 }}
-          >
-            Back to Orders
-          </Button>
+      <AdminLayout>
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
+          <Alert severity="error">
+            Order not found or failed to load.
+          </Alert>
         </Box>
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout title="Edit Order">
-      <Box sx={{ mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.push('/admin/orders')}
-          sx={{ mb: 2 }}
+    <AdminLayout>
+      <Box sx={{ p: { xs: 2, md: 3 } }}>
+        {alert && (
+          <Alert 
+            severity={alert.type} 
+            sx={{ mb: 2 }}
+            onClose={() => setAlert(null)}
+          >
+            {alert.message}
+          </Alert>
+        )}
+
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            fontWeight: 600, 
+            color: 'primary.main',
+            mb: 3,
+            fontSize: { xs: '1.75rem', md: '2.125rem' }
+          }}
         >
-          Back to Orders
-        </Button>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Edit Order: {order.orderNumber}
+          Edit Order #{order.order_number}
         </Typography>
+
+        <OrderForm
+          order={order}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />
       </Box>
-      
-      <OrderForm
-        order={order}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-      />
     </AdminLayout>
   );
 };
-
-
 
 export default EditOrderPage; 
