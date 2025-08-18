@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import { SelectedItemProvider } from '@/contexts/SelectedItemContext';
 import ReduxProvider from '@/components/ReduxProvider';
+// import FloatingButtonWrapper from '@/components/FloatingButtonWrapper';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -24,6 +25,7 @@ export default function RootLayout({
           <ThemeRegistry>
             <SelectedItemProvider>
               {children}
+              {/* <FloatingButtonWrapper /> */}
             </SelectedItemProvider>
           </ThemeRegistry>
         </ReduxProvider>
