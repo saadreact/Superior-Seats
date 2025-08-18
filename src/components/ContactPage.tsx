@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { z } from 'zod';
 import {
   Box,
   Container,
@@ -21,8 +22,26 @@ import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import HeroSectionCommon from './common/HeroSectionaCommon';
 
+// Validation schema
+const contactFormSchema = z.object({
+  firstName: z.string().min(1, 'First name is required').min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(1, 'Last name is required').min(2, 'Last name must be at least 2 characters'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .regex(/^\d+$/, 'Phone number must contain only digits'),
+  company: z.string().optional(),
+  subject: z.string().min(1, 'Subject is required').min(3, 'Subject must be at least 3 characters'),
+  message: z.string().min(1, 'Message is required').min(10, 'Message must be at least 10 characters'),
+});
+
+type ContactFormErrors = {
+  [K in keyof ContactFormData]: string;
+};
+
 const ContactPage = () => {
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
+  const [errors, setErrors] = useState<ContactFormErrors>({} as ContactFormErrors);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   // Common styles for text fields (excluding Message field)
@@ -66,25 +85,57 @@ const ContactPage = () => {
     return icons[iconName] || Phone;
   };
 
-  const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: event.target.value
-    }));
+  const validateField = (field: keyof ContactFormData, value: string) => {
+    try {
+      if (field === 'phone') {
+        // Only allow digits for phone
+        const digitsOnly = value.replace(/\D/g, '');
+        setFormData(prev => ({ ...prev, [field]: digitsOnly }));
+        value = digitsOnly;
+      } else {
+        setFormData(prev => ({ ...prev, [field]: value }));
+      }
+      
+      // Validate the field
+      if (field in contactFormSchema.shape) {
+        const fieldSchema = contactFormSchema.shape[field as keyof typeof contactFormSchema.shape];
+        if (fieldSchema) {
+          fieldSchema.parse(value);
+          setErrors(prev => ({ ...prev, [field]: '' }));
+        }
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors(prev => ({ ...prev, [field]: error.issues[0].message }));
+      }
+    }
+  };
+
+  const handleInputChange = (field: keyof ContactFormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    validateField(field, value);
   };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     
-    // Validate that company name is provided for wholesale customers
-    if (formData.customerType === 'wholesale' && !formData.company.trim()) {
-      alert('Company name is required for wholesale customers.');
-      return;
+    try {
+      // Validate the entire form
+      const validatedData = contactFormSchema.parse(formData);
+      console.log('Form submitted:', validatedData);
+      setSnackbarOpen(true);
+      setFormData(initialFormData);
+      setErrors({} as ContactFormErrors);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: ContactFormErrors = {} as ContactFormErrors;
+        error.issues.forEach((issue) => {
+          const field = issue.path[0] as keyof ContactFormData;
+          newErrors[field] = issue.message;
+        });
+        setErrors(newErrors);
+      }
     }
-    
-    console.log('Form submitted:', formData);
-    setSnackbarOpen(true);
-    setFormData(initialFormData);
   };
 
   const handleCloseSnackbar = () => {
@@ -169,6 +220,8 @@ const ContactPage = () => {
                       required
                       variant="outlined"
                       size="small"
+                      error={!!errors.firstName}
+                      helperText={errors.firstName}
                       sx={{
                         flex: 1,
                         ...commonTextFieldStyles,
@@ -181,6 +234,8 @@ const ContactPage = () => {
                       required
                       variant="outlined"
                       size="small"
+                      error={!!errors.lastName}
+                      helperText={errors.lastName}
                       sx={{
                         flex: 1,
                         ...commonTextFieldStyles,
@@ -202,6 +257,8 @@ const ContactPage = () => {
                      required
                      variant="outlined"
                      size="small"
+                     error={!!errors.email}
+                     helperText={errors.email}
                      sx={{
                        flex: 1,
                        ...commonTextFieldStyles,
@@ -214,6 +271,12 @@ const ContactPage = () => {
                      required
                      variant="outlined"
                      size="small"
+                     error={!!errors.phone}
+                     helperText={errors.phone}
+                     inputProps={{
+                       inputMode: 'numeric',
+                       pattern: '[0-9]*'
+                     }}
                      sx={{
                        flex: 1,
                        ...commonTextFieldStyles,
@@ -242,6 +305,8 @@ const ContactPage = () => {
                    required
                    variant="outlined"
                    size="small"
+                   error={!!errors.subject}
+                   helperText={errors.subject}
                    sx={commonTextFieldStyles}
                  />
 
@@ -256,6 +321,8 @@ const ContactPage = () => {
                   rows={3}
                   variant="outlined"
                   size="small"
+                  error={!!errors.message}
+                  helperText={errors.message}
                   placeholder="Tell us about your query, requirements, or any questions you have..."
                   sx={{
                     '& .MuiOutlinedInput-root': {

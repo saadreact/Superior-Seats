@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   Container,
@@ -17,6 +18,7 @@ import {
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import TruckCarousel from '@/components/TruckCarousel';
+
 import { motion } from 'framer-motion';
 import { 
   Chair, 
@@ -129,6 +131,9 @@ const ctaVariants = {
 const HomePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const router = useRouter();
+
+
 
   const products = [
     {
@@ -374,6 +379,9 @@ const HomePage = () => {
 
       {/* Truck Carousel Section */}
       <TruckCarousel />
+      
+
+      
    <Footer/>
   
     </Box>

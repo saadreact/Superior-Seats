@@ -132,10 +132,37 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
             </Typography>
             <Typography variant="body2" sx={{ 
               color: '#999',
-              fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.95rem' }
+              fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.95rem' },
+              mb: { xs: 3, sm: 4 }
             }}>
               Add some items to get started
             </Typography>
+            <Button
+              variant="contained"
+              size="medium"
+              onClick={() => {
+                onClose();
+                router.push('/ShopGallery');
+              }}
+              sx={{
+                backgroundColor: 'primary.main',
+                py: { xs: 1, sm: 1.25, md: 1.5 },
+                px: { xs: 2, sm: 2.5, md: 3 },
+                fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.95rem' },
+                fontWeight: 600,
+                borderRadius: 1,
+                textTransform: 'none',
+                boxShadow: '0 2px 4px rgba(211, 47, 47, 0.2)',
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                  boxShadow: '0 4px 8px rgba(211, 47, 47, 0.3)',
+                  transform: 'translateY(-1px)'
+                },
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Add to Cart
+            </Button>
           </Box>
         ) : (
           <>

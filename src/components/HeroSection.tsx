@@ -383,6 +383,45 @@ const HeroSection = () => {
                         >
                           Premium truck, RV, and van seating with custom options and superior craftsmanship
                         </MotionTypography>
+                        
+                        {/* Customize Button */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                        >
+                          <Button
+                            variant="outlined"
+                            onClick={() => router.push('/custom-seats')}
+                            sx={{
+                              border: '2px solid white',
+                              color: 'white',
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              backdropFilter: 'blur(10px)',
+                              fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
+                              fontWeight: 600,
+                              px: { xs: 2, sm: 2.5, md: 3, lg: 3.5, xl: 4 },
+                              py: { xs: 1, sm: 1.25, md: 1, lg: 1, xl: 1 },
+                              mt: { xs: 1.5, sm: 2, md: 2.5, lg: 1, xl: 2 },
+                              borderRadius: { xs: 2, sm: 2.5, md: 3 },
+                              textTransform: 'none',
+                              letterSpacing: '0.5px',
+                              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                border: '2px solid white',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
+                              },
+                              '&:active': {
+                                transform: 'translateY(0px)',
+                              },
+                            }}
+                          >
+                            Start Customizing Your Seat
+                          </Button>
+                        </motion.div>
                       </MotionBox>
                     </MotionBox>
                   </Box>
