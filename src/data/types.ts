@@ -78,4 +78,18 @@ export interface Product {
   category: string;
   price: number;
   isActive: boolean;
+}
+
+export interface PriceTier {
+  id: number;
+  name: string;
+  display_name?: string;
+  description?: string;
+  discount_percentage?: number;
+  discount_off_retail_price: string | number;
+  minimum_order_amount?: number;
+  is_active?: boolean;
+  created_at: string;
+  updated_at: string;
+  customers_count?: number;
 } 
