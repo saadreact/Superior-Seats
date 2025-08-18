@@ -36,6 +36,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logoutUser } from '@/store/authSlice';
+import { isSuperAdmin } from '@/utils/auth';
 import Cart from './Cart';
 import AuthModal from './AuthModal';
 
@@ -66,6 +67,9 @@ const Header = () => {
   // Redux state
   const dispatch = useAppDispatch();
   const { user, isAuthenticated, loading } = useAppSelector((state: any) => state.auth);
+
+  // Check if user is super admin using utility function
+  const userIsSuperAdmin = isSuperAdmin(user, isAuthenticated);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -136,33 +140,29 @@ const Header = () => {
         />
       </Box>
              <List sx={{ flex: 1 }}>
-                                      {menuItems.map((item) => {
-                     const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
-                     return (
-             <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
-               <ListItem 
-                 onClick={item.text === 'Home' ? handleHomeClick : undefined}
-                 sx={{
-                   py: 1.5,
-                   cursor: 'pointer',
-                   backgroundColor: isActive ? 'rgba(218, 41, 28, 0.05)' : 'transparent',
-                   '&:hover': {
-                     backgroundColor: 'rgba(218, 41, 28, 0.05)',
-                   }
+         {menuItems.map((item) => (
+           <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
+             <ListItem 
+               onClick={item.text === 'Home' ? handleHomeClick : undefined}
+               sx={{
+                 py: 1.5,
+                 cursor: 'pointer',
+                 '&:hover': {
+                   backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                 }
+               }}
+             >
+               <ListItemText 
+                 primary={item.text}
+                 primaryTypographyProps={{
+                   fontSize: { xs: '0.9rem', sm: '1rem' },
+                   fontWeight: 650,
+                   color: '#DA291C'
                  }}
-               >
-                 <ListItemText 
-                   primary={item.text}
-                   primaryTypographyProps={{
-                     fontSize: { xs: '0.9rem', sm: '1rem' },
-                     fontWeight: 650,
-                     color: '#DA291C'
-                   }}
-                 />
-               </ListItem>
-             </Link>
-           );
-         })}
+               />
+             </ListItem>
+           </Link>
+         ))}
          <Divider sx={{ my: 1.5 }} />
          <Link href="/admin" style={{ textDecoration: 'none' }}>
            <ListItem 
@@ -452,27 +452,25 @@ const Header = () => {
                       </Badge>
                     </IconButton>
                   </Tooltip>
-                                     <Tooltip title="Admin Panel" arrow>
-                     <Link href="/admin" style={{ textDecoration: 'none' }}>
-                                               <IconButton
-                          color="inherit"
-                          sx={{
+                  <Tooltip title="Admin Panel" arrow>
+                    <Link href="/admin" style={{ textDecoration: 'none' }}>
+                      <IconButton
+                        color="inherit"
+                        sx={{
+                          color: '#DA291C',
+                          p: { md: 1, lg: 1.5 },
+                          '&:hover': {
+                            backgroundColor: 'rgba(218, 41, 28, 0.1)',
                             color: '#DA291C',
-                            // Reduced padding for smaller hover area
-                            p: { md: 0.6, lg: 0.8 },
-                            '&:hover': {
-                              backgroundColor: 'rgba(218, 41, 28, 0.08)',
-                              color: '#DA291C',
-                              // Reduced scale for subtler hover effect
-                              transform: 'scale(1.03)',
-                            },
-                            transition: 'all 0.2s ease',
-                          }}
-                        >
-                         <AdminPanelSettingsIcon sx={{ fontSize: { md: '1.8rem', lg: '1.8rem', xl: '1.8rem', sm: '1.8rem', xs: '1.8rem' } }} />
-                       </IconButton>
-                     </Link>
-                   </Tooltip>
+                            transform: 'scale(1.05)',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <AdminPanelSettingsIcon sx={{ fontSize: { md: '1.8rem', lg: '2rem' } }} />
+                      </IconButton>
+                    </Link>
+                  </Tooltip>
                   {isAuthenticated ? (
                     <>
                  <Tooltip title={`${user?.username || user?.name || user?.email} (Click to logout)`} arrow>
@@ -526,7 +524,7 @@ const Header = () => {
                           }}
                         >
                           <LogoutIcon sx={{ mr: 1.5, fontSize: '1.2rem' }} />
-                          Logout
+                          Logout ({user?.username || user?.name || user?.email})
                         </MenuItem>
                       </Menu>
                     </>
