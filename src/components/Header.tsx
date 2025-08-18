@@ -493,7 +493,7 @@ const Header = () => {
                           }}
                         >
                           <LogoutIcon sx={{ mr: 1.5, fontSize: '1.2rem' }} />
-                          Logout
+                          Logout ({user?.username || user?.name || user?.email})
                         </MenuItem>
                       </Menu>
                     </>

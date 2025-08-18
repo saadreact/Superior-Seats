@@ -12,10 +12,12 @@ import {
   Menu,
   MenuItem,
   Button,
+  Tooltip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   AccountCircle as AccountIcon,
+  AccountCircle as AccountCircleIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
   ChevronLeft as ChevronLeftIcon,
@@ -122,21 +124,24 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
             
             {isAuthenticated && user ? (
               <>
-                <Button
-                  color="inherit"
-                  onClick={handleUserMenuClick}
-                  startIcon={<PersonIcon />}
-                  sx={{
-                    color: 'text.primary',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                    },
-                  }}
-                >
-                  {user.username || user.name || user.email}
-                </Button>
+                <Tooltip title={`${user.username || user.name || user.email} (Click to logout)`} arrow>
+                  <IconButton
+                    color="inherit"
+                    onClick={handleUserMenuClick}
+                    sx={{
+                      color: '#DA291C',
+                      p: { xs: 1, sm: 1.25, md: 1.5 },
+                      '&:hover': {
+                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                        color: '#DA291C',
+                        transform: 'scale(1.05)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <AccountCircleIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem', md: '1.75rem' } }} />
+                  </IconButton>
+                </Tooltip>
                 <Menu
                   anchorEl={userMenuAnchor}
                   open={Boolean(userMenuAnchor)}
@@ -149,10 +154,26 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
                     vertical: 'top',
                     horizontal: 'right',
                   }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1,
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      borderRadius: 2,
+                    }
+                  }}
                 >
-                  <MenuItem onClick={handleLogout}>
-                    <LogoutIcon sx={{ mr: 1 }} />
-                    Logout
+                  <MenuItem 
+                    onClick={handleLogout}
+                    sx={{
+                      py: 1.5,
+                      px: 2,
+                      '&:hover': {
+                        backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                      }
+                    }}
+                  >
+                    <LogoutIcon sx={{ mr: 1.5, fontSize: '1.2rem' }} />
+                    Logout ({user?.username || user?.name || user?.email})
                   </MenuItem>
                 </Menu>
               </>
