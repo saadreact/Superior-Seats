@@ -162,30 +162,34 @@ const Header = () => {
                />
              </ListItem>
            </Link>
-         ))}
-         <Divider sx={{ my: 1.5 }} />
-         <Link href="/admin" style={{ textDecoration: 'none' }}>
-           <ListItem 
-             sx={{
-               backgroundColor: 'transparent',
-               py: 1.5,
-               cursor: 'pointer',
-               '&:hover': {
-                 backgroundColor: 'rgba(218, 41, 28, 0.05)',
-               }
-             }}
-           >
-             <ListItemText 
-               primary="Admin Panel" 
-               primaryTypographyProps={{ 
-                 fontWeight: 'bold',
-                 color: 'primary.main',
-                 fontSize: { xs: '0.9rem', sm: '1rem' }
-               }} 
-             />
-           </ListItem>
-         </Link>
+                 ))}
         <Divider sx={{ my: 1.5 }} />
+        {userIsSuperAdmin && (
+          <>
+            <Link href="/admin" style={{ textDecoration: 'none' }}>
+              <ListItem 
+                sx={{
+                  backgroundColor: 'transparent',
+                  py: 1.5,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                  }
+                }}
+              >
+                <ListItemText 
+                  primary="Admin Panel" 
+                  primaryTypographyProps={{ 
+                    fontWeight: 'bold',
+                    color: 'primary.main',
+                    fontSize: { xs: '0.9rem', sm: '1rem' }
+                  }} 
+                />
+              </ListItem>
+            </Link>
+            <Divider sx={{ my: 1.5 }} />
+          </>
+        )}
         {isAuthenticated ? (
           <ListItem 
             component="button" 
@@ -452,25 +456,27 @@ const Header = () => {
                       </Badge>
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Admin Panel" arrow>
-                    <Link href="/admin" style={{ textDecoration: 'none' }}>
-                      <IconButton
-                        color="inherit"
-                        sx={{
-                          color: '#DA291C',
-                          p: { md: 1, lg: 1.5 },
-                          '&:hover': {
-                            backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                  {userIsSuperAdmin && (
+                    <Tooltip title="Admin Panel" arrow>
+                      <Link href="/admin" style={{ textDecoration: 'none' }}>
+                        <IconButton
+                          color="inherit"
+                          sx={{
                             color: '#DA291C',
-                            transform: 'scale(1.05)',
-                          },
-                          transition: 'all 0.2s ease',
-                        }}
-                      >
-                        <AdminPanelSettingsIcon sx={{ fontSize: { md: '1.8rem', lg: '2rem' } }} />
-                      </IconButton>
-                    </Link>
-                  </Tooltip>
+                            p: { md: 1, lg: 1.5 },
+                            '&:hover': {
+                              backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                              color: '#DA291C',
+                              transform: 'scale(1.05)',
+                            },
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          <AdminPanelSettingsIcon sx={{ fontSize: { md: '1.8rem', lg: '2rem' } }} />
+                        </IconButton>
+                      </Link>
+                    </Tooltip>
+                  )}
                   {isAuthenticated ? (
                     <>
                  <Tooltip title={`${user?.username || user?.name || user?.email} (Click to logout)`} arrow>
