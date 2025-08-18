@@ -62,9 +62,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/products',
     },
     {
-      text: 'Customer Types',
-      icon: <PeopleIcon />,
-      href: '/admin/customer-types',
+      text: 'Price Tiers',
+      icon: <MoneyIcon />,
+      href: '/admin/price-tiers',
     },
     {
       text: 'Customers',
