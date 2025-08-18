@@ -310,13 +310,10 @@ const ProductsPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between', 
+          justifyContent: 'flex-end', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Products
-          </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -409,11 +406,11 @@ const ProductsPage = () => {
                   onClick={() => handleProductClick(product)}
                 >
                   <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                    <CardMedia
-                      component="img"
+                  <CardMedia
+                    component="img"
                       height="200"
                       image={getProductImages(product)[0]}
-                      alt={product.name}
+                    alt={product.name}
                       className="card-media"
                       sx={{
                         objectFit: 'contain',
@@ -502,9 +499,9 @@ const ProductsPage = () => {
                     </Box>
 
                     {product.variations && product.variations.length > 0 && (
-                      <Typography variant="caption" color="text.secondary">
-                        {product.variations.length} variation{product.variations.length !== 1 ? 's' : ''}
-                      </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {product.variations.length} variation{product.variations.length !== 1 ? 's' : ''}
+                        </Typography>
                     )}
                   </CardContent>
 
@@ -922,12 +919,12 @@ const ProductsPage = () => {
               Are you sure you want to delete &quot;{productToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
             <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
-                Cancel
-              </Button>
-              <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
-                {deleting ? 'Deleting...' : 'Delete'}
-              </Button>
+            <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
             </Stack>
           </Box>
         </Dialog>
