@@ -379,7 +379,7 @@ const ShopGallery = () => {
 
                                          <Stack 
                        direction="row" 
-                       spacing={3}
+                       spacing={2}
                        sx={{ width: '100%' }}
                      >
                                               {/* DETAILS BUTTON: Changed from "Customize" to "Details" */}
@@ -393,9 +393,9 @@ const ShopGallery = () => {
                           sx={{
                             borderColor: 'primary.main',
                             color: 'primary.main',
-                            fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
                             height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
-                            width: { xs: '110px', sm: '110px', md: '110px', lg: '110px', xl: '110px' },
+                            width: { xs: '80px', sm: '80px', md: '80px', lg: '80px', xl: '80px' },
                             '&:hover': {
                               backgroundColor: 'primary.main',
                               color: 'white',
@@ -404,6 +404,30 @@ const ShopGallery = () => {
                         >
                           Details {/* TEXT: Changed button text from "Customize" */}
                         </Button>
+                        
+                                                 {/* CUSTOMIZE BUTTON: New button to navigate to customize page */}
+                         <Button
+                           variant="outlined"
+                           size="small"
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             handleCustomize(item); // FUNCTION: Navigate to customize page with item details
+                           }}
+                           sx={{
+                             borderColor: 'primary.main',
+                             color: 'primary.main',
+                             fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                             height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                             width: { xs: '90px', sm: '90px', md: '90px', lg: '90px', xl: '90px' },
+                             '&:hover': {
+                               backgroundColor: 'primary.main',
+                               color: 'white',
+                             },
+                           }}
+                         >
+                           Customize
+                         </Button>
+                        
                         <Button
                           variant="contained"
                           size="small"
@@ -414,9 +438,9 @@ const ShopGallery = () => {
                           sx={{
                             backgroundColor: 'primary.main',
                             color: 'white',
-                            fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
                             height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
-                            width: { xs: '100px', sm: '100px', md: '100px', lg: '100px', xl: '100px' },
+                            width: { xs: '90px', sm: '90px', md: '90px', lg: '90px', xl: '90px' },
                             '&:hover': {
                               backgroundColor: 'primary.dark',
                             },
@@ -557,22 +581,24 @@ const ShopGallery = () => {
         </Container>
       </Box>
 
-      {/* Lightbox Dialog */}
-      <Dialog
-        open={!!selectedImage}
-        onClose={handleCloseLightbox}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: {
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            color: 'black',
-            margin: { xs: 1, sm: 2, md: 4 },
-            maxWidth: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)', md: 'calc(100% - 64px)' },
-          },
-        }}
-      >
-        <DialogContent sx={{ p: 0, position: 'relative' }}>
+             {/* Lightbox Dialog */}
+       <Dialog
+         open={!!selectedImage}
+         onClose={handleCloseLightbox}
+         maxWidth="lg"
+         fullWidth
+         PaperProps={{
+           sx: {
+             backgroundColor: 'rgba(255, 255, 255, 0.99)',
+             color: 'black',
+             margin: { xs: 1, sm: 2, md: 4 },
+             maxWidth: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)', md: 'calc(100% - 64px)' },
+             maxHeight: { xs: 'calc(100vh - 16px)', sm: 'calc(100vh - 32px)', md: 'calc(100vh - 64px)' },
+             height: { xs: 'auto', md: '80vh' },
+           },
+         }}
+       >
+         <DialogContent sx={{ p: 0, position: 'relative', height: '100%' }}>
           <IconButton
             onClick={handleCloseLightbox}
             sx={{
@@ -596,196 +622,294 @@ const ShopGallery = () => {
             <Close sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
           </IconButton>
 
-                     {selectedImage && (
-             <Box 
-               sx={{ position: 'relative' }}
-               onTouchStart={handleTouchStart}
-               onTouchMove={handleTouchMove}
-               onTouchEnd={handleTouchEnd}
-             >
-               {/* Main Product Image */}
-                                                <Image
-                   src={getProductImages(selectedImage)[modalImageIndex]}
-                   alt={`${selectedImage.title} - Image ${modalImageIndex + 1}`}
-                   width={800}
-                   height={600}
-                   style={{
-                     width: '100%',
-                     height: 'auto',
-                     maxHeight: isSmallMobile ? '45vh' : isMobile ? '50vh' : '80vh',
-                     objectFit: 'contain',
+                                                        {selectedImage && (
+               <Box 
+                 sx={{ 
+                   display: 'flex',
+                   flexDirection: { xs: 'column', md: 'row' },
+                   height: '100%',
+                   minHeight: { xs: 'auto', md: '100%' },
+                   maxHeight: '100%'
+                 }}
+               >
+                                 {/* Left Container - Text Content */}
+                 <Box
+                   sx={{
+                     flex: { xs: 'none', md: '0 0 40%' },
+                     p: { xs: 2, sm: 3, md: 4 },
+                     display: 'flex',
+                     flexDirection: 'column',
+                     justifyContent: 'center',
+                     backgroundColor: 'white',
+                     borderRight: { xs: 'none', md: '1px solid rgba(0,0,0,0.1)' },
+                     minHeight: { xs: 'auto', md: '100%' },
+                     overflow: 'auto',
+                     maxHeight: { xs: '40vh', md: '100%' }
                    }}
-                 />
-              
-                             {/* Image Navigation Dots */}
-                               <Box sx={{
-                  position: 'absolute',
-                  bottom: { xs: '70px', sm: '120px', md: '140px' },
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  gap: { xs: 0.5, sm: 1 },
-                  zIndex: 2,
-                }}>
-                 {getProductImages(selectedImage).map((_, index) => (
-                   <Box
-                     key={index}
-                     onClick={() => setModalImageIndex(index)}
-                     sx={{
-                       width: { xs: 10, sm: 12, md: 14 },
-                       height: { xs: 10, sm: 12, md: 14 },
-                       borderRadius: '50%',
-                       backgroundColor: index === modalImageIndex ? 'primary.main' : 'rgba(255, 255, 255, 0.7)',
-                       cursor: 'pointer',
-                       transition: 'all 0.2s ease',
-                       '&:hover': {
-                         backgroundColor: index === modalImageIndex ? 'primary.dark' : 'rgba(255, 255, 255, 0.9)',
-                       },
-                     }}
-                   />
-                 ))}
-               </Box>
-              
-                             {/* Navigation Arrows */}
-                              {/* Product Image Navigation Arrows */}
-                              <IconButton
-                  onClick={handlePrevModalImage}
-                  sx={{
-                    position: 'absolute',
-                    left: { xs: 8, sm: 16, md: 24 },
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'white',
-                    backgroundColor: 'primary.main',
-                    boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                    width: { xs: 32, sm: 36, md: 40 },
-                    height: { xs: 32, sm: 36, md: 40 },
-                    display: { xs: 'flex', sm: 'flex' },
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                      boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                      transform: 'translateY(-50%) scale(1.1)',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <ArrowBack sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
-                </IconButton>
-                
-                <IconButton
-                  onClick={handleNextModalImage}
-                  sx={{
-                    position: 'absolute',
-                    right: { xs: 8, sm: 16, md: 24 },
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'white',
-                    backgroundColor: 'primary.main',
-                    boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                    width: { xs: 32, sm: 36, md: 40 },
-                    height: { xs: 32, sm: 36, md: 40 },
-                    display: { xs: 'flex', sm: 'flex' },
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                      boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                      transform: 'translateY(-50%) scale(1.1)',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <ArrowForward sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
-                </IconButton>
-
-               
-
-                             {/* Image Info */}
-                               <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    background: 'linear-gradient(transparent, rgba(255,255,255,0.98))',
-                    p: { xs: 2, sm: 2.5, md: 3 },
-                    minHeight: { xs: '120px', sm: 'auto' },
-                    borderTop: { xs: '1px solid rgba(0,0,0,0.1)', sm: 'none' },
-                  }}
-                >
-                 <Typography variant="h5" sx={{ 
-                   fontWeight: 'bold', 
-                   mb: 1,
-                   fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
-                   wordBreak: 'break-word',
-                   overflowWrap: 'break-word',
-                   color: { xs: 'text.primary', sm: 'inherit' },
-                 }}>
-                   {selectedImage.title}
-                 </Typography>
-                 <Typography variant="body1" sx={{ 
-                   mb: 2, 
-                   opacity: { xs: 0.8, sm: 0.9 },
-                   fontSize: { xs: '0.75rem', sm: '0.9rem', md: '1rem' },
-                   lineHeight: 1.6,
-                   wordBreak: 'break-word',
-                   overflowWrap: 'break-word',
-                   color: { xs: 'text.secondary', sm: 'inherit' },
-                 }}>
-                   {selectedImage.description}
-                 </Typography>
-                                   <Stack 
-                    direction="row" 
-                    spacing={2}
-                    sx={{ width: '100%', mt: 2 }}
-                  >
-                                         <Button
-                       variant="outlined"
-                       size="small"
-                       disabled
-                       sx={{
-                         borderColor: 'primary.main',
-                         color: 'primary.main',
-                         fontWeight: 'bold',
-                         fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
-                         height: { xs: '40px', sm: '40px', md: '40px' },
-                         width: { xs: '110px', sm: '110px', md: '130px', lg: '140px' },
-                         '&:hover': {
+                 >
+                  <Typography variant="h5" sx={{ 
+                    fontWeight: 'bold', 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem' },
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    color: 'text.primary',
+                    lineHeight: 1.3,
+                  }}>
+                    {selectedImage.title}
+                  </Typography>
+                  
+                  <Typography variant="body1" sx={{ 
+                    mb: 3, 
+                    fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                    lineHeight: 1.6,
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    color: 'text.secondary',
+                    flex: 1,
+                  }}>
+                    {selectedImage.description}
+                  </Typography>
+                  
+                                     <Box sx={{ 
+                       display: 'flex', 
+                       gap: 2,
+                       flexDirection: { xs: 'column', sm: 'row' }
+                     }}>
+                                               {/* CUSTOMIZE BUTTON: Navigate to customize page */}
+                        <Button
+                          variant="outlined"
+                          size="medium"
+                          onClick={() => {
+                            handleCustomize(selectedImage);
+                            handleCloseLightbox();
+                          }}
+                          sx={{
+                            borderColor: 'primary.main',
+                            color: 'primary.main',
+                            fontWeight: 'bold',
+                            fontSize: { xs: '0.875rem', sm: '1rem' },
+                            height: { xs: '44px', sm: '48px' },
+                            flex: 1,
+                            '&:hover': {
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                            },
+                          }}
+                        >
+                          Customize
+                        </Button>
+                       
+                       {/* ADD TO CART BUTTON */}
+                       <Button
+                         variant="contained"
+                         size="medium"
+                         onClick={() => {
+                           handleAddToCart(selectedImage);
+                           handleCloseLightbox();
+                         }}
+                         sx={{
                            backgroundColor: 'primary.main',
                            color: 'white',
-                         },
-                         '&.Mui-disabled': {
-                           borderColor: 'primary.main',
-                           color: 'primary.main',
-                           opacity: 1,
-                         },
-                       }}
-                     >
-                       {selectedImage.price}
-                     </Button>
-                     <Button
-                       variant="contained"
-                       size="small"
-                       onClick={() => {
-                         handleAddToCart(selectedImage);
-                         handleCloseLightbox();
-                       }}
+                           fontWeight: 'bold',
+                           fontSize: { xs: '0.875rem', sm: '1rem' },
+                           height: { xs: '44px', sm: '48px' },
+                           flex: 1,
+                           '&:hover': {
+                             backgroundColor: 'primary.dark',
+                           },
+                         }}
+                       >
+                         Add to Cart
+                       </Button>
+                     </Box>
+                </Box>
+
+                                 {/* Right Container - Image */}
+                 <Box 
+                   sx={{ 
+                     flex: { xs: 'none', md: '0 0 60%' },
+                     position: 'relative',
+                     backgroundColor: '#f8f8f8',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     minHeight: { xs: '50vh', md: '100%' },
+                     overflow: 'hidden',
+                     p: { xs: 1, sm: 2, md: 3 }
+                   }}
+                   onTouchStart={handleTouchStart}
+                   onTouchMove={handleTouchMove}
+                   onTouchEnd={handleTouchEnd}
+                 >
+                                                            {/* Price Tag - Top Left */}
+                     <Box
                        sx={{
+                         position: 'absolute',
+                         top: { xs: 12, sm: 16, md: 20 },
+                         left: { xs: 12, sm: 16, md: 20 },
                          backgroundColor: 'primary.main',
                          color: 'white',
                          fontWeight: 'bold',
-                         fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
-                         height: { xs: '40px', sm: '40px', md: '40px' },
-                         width: { xs: '100px', sm: '100px', md: '120px', lg: '130px' },
-                         '&:hover': {
-                           backgroundColor: 'primary.dark',
+                         fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                         height: { xs: 32, sm: 36, md: 40 },
+                         zIndex: 3,
+                         px: { xs: 2, sm: 2.5, md: 3 },
+                         py: { xs: 0.5, sm: 0.75, md: 1 },
+                         borderRadius: '20px',
+                         display: 'flex',
+                         alignItems: 'center',
+                         gap: { xs: 0.5, sm: 0.75 },
+                         boxShadow: '0 4px 12px rgba(211, 47, 47, 0.4)',
+                         border: '2px solid rgba(255, 255, 255, 0.2)',
+                         '&::before': {
+                           content: '""',
+                           position: 'absolute',
+                           top: '50%',
+                           left: '-8px',
+                           transform: 'translateY(-50%)',
+                           width: 0,
+                           height: 0,
+                           borderTop: '8px solid transparent',
+                           borderBottom: '8px solid transparent',
+                           borderRight: '8px solid',
+                           borderRightColor: 'primary.main',
                          },
+                         '&::after': {
+                           content: '""',
+                           position: 'absolute',
+                           top: '50%',
+                           left: '-6px',
+                           transform: 'translateY(-50%)',
+                           width: '4px',
+                           height: '4px',
+                           borderRadius: '50%',
+                           backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                         }
                        }}
                      >
-                       Add to Cart
-                     </Button>
-                  </Stack>
-               </Box>
-            </Box>
-          )}
+                       <Typography
+                         component="span"
+                         sx={{
+                           fontWeight: 'bold',
+                           fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                           color: 'white',
+                           textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                         }}
+                       >
+                         ${selectedImage.price}
+                       </Typography>
+                     </Box>
+
+                    {/* Main Product Image */}
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: { xs: '45vh', md: '100%' }
+                      }}
+                    >
+                      <Image
+                        src={getProductImages(selectedImage)[modalImageIndex]}
+                        alt={`${selectedImage.title} - Image ${modalImageIndex + 1}`}
+                        width={800}
+                        height={600}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          maxWidth: '100%',
+                          maxHeight: '100%',
+                          objectFit: 'contain',
+                          objectPosition: 'center',
+                        }}
+                        priority
+                      />
+                    </Box>
+                  
+                  {/* Image Navigation Dots */}
+                  <Box sx={{
+                    position: 'absolute',
+                    bottom: { xs: 20, sm: 30, md: 40 },
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    gap: { xs: 0.5, sm: 1 },
+                    zIndex: 2,
+                  }}>
+                    {getProductImages(selectedImage).map((_, index) => (
+                      <Box
+                        key={index}
+                        onClick={() => setModalImageIndex(index)}
+                        sx={{
+                          width: { xs: 10, sm: 12, md: 14 },
+                          height: { xs: 10, sm: 12, md: 14 },
+                          borderRadius: '50%',
+                          backgroundColor: index === modalImageIndex ? 'primary.main' : 'rgba(255, 255, 255, 0.7)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            backgroundColor: index === modalImageIndex ? 'primary.dark' : 'rgba(255, 255, 255, 0.9)',
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  
+                  {/* Navigation Arrows */}
+                  <IconButton
+                    onClick={handlePrevModalImage}
+                    sx={{
+                      position: 'absolute',
+                      left: { xs: 8, sm: 16, md: 24 },
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'white',
+                      backgroundColor: 'primary.main',
+                      boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                      width: { xs: 32, sm: 36, md: 40 },
+                      height: { xs: 32, sm: 36, md: 40 },
+                      display: { xs: 'flex', sm: 'flex' },
+                      '&:hover': {
+                        backgroundColor: 'primary.dark',
+                        boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                        transform: 'translateY(-50%) scale(1.1)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <ArrowBack sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
+                  </IconButton>
+                  
+                  <IconButton
+                    onClick={handleNextModalImage}
+                    sx={{
+                      position: 'absolute',
+                      right: { xs: 8, sm: 16, md: 24 },
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'white',
+                      backgroundColor: 'primary.main',
+                      boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                      width: { xs: 32, sm: 36, md: 40 },
+                      height: { xs: 32, sm: 36, md: 40 },
+                      display: { xs: 'flex', sm: 'flex' },
+                      '&:hover': {
+                        backgroundColor: 'primary.dark',
+                        boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                        transform: 'translateY(-50%) scale(1.1)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <ArrowForward sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
+                  </IconButton>
+                </Box>
+              </Box>
+            )}
         </DialogContent>
       </Dialog>
       
