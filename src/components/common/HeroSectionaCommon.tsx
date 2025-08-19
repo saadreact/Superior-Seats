@@ -18,6 +18,7 @@ interface HeroSectionProps {
     md?: string;
     lg?: string;
     xl?: string;
+    xxl?: string;
   };
   titleFontSize?: {
     xs?: string;
@@ -25,6 +26,7 @@ interface HeroSectionProps {
     md?: string;
     lg?: string;
     xl?: string;
+    xxl?: string;
   };
   descriptionFontSize?: {
     xs?: string;
@@ -32,6 +34,7 @@ interface HeroSectionProps {
     md?: string;
     lg?: string;
     xl?: string;
+    xxl?: string;
   };
 }
 
@@ -39,26 +42,23 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   title,
   description,
   height = {
-    xs: '18vh',
-    sm: '20vh', 
-    md: '18vh',
-    lg: '15vh',
-    xl: '15vh'
-
+ 
   },
   titleFontSize = {
     xs: '1.25rem',
     sm: '1.5rem',
     md: '2rem',
     lg: '2.5rem',
-    xl: '3rem'
+    xl: '3rem',
+    xxl: '3rem'
   },
   descriptionFontSize = {
     xs: '0.75rem',
     sm: '0.875rem',
     md: '1rem',
     lg: '1.125rem',
-    xl: '1.25rem'
+    xl: '1.25rem',
+    xxl: '1.25rem'
   }
 }) => {
   const theme = useTheme();
@@ -122,7 +122,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           sx={{
             fontSize: titleFontSize,
             fontWeight: 'bold',
-            mb: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
+            mb: { xs: 0.25, sm: 0.5, md: 0.75, lg: 1 },
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
             lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },
             wordBreak: 'break-word',
@@ -137,7 +137,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <Typography
           variant="h5"
           sx={{
-            mb: { xs: 0, sm: 0.25, md: 0.5, lg: 0.75 },
+            mb: { xs: 0, sm: 0, md: 0, lg: 0 },
             opacity: 0.9,
             maxWidth: '100%',
             mx: 'auto',

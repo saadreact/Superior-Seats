@@ -203,22 +203,23 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
         mt: { xs: 0, sm: -0.5, md: -1, lg: -1.5 },
         backgroundColor: 'transparent',
         borderTop: '1px solid rgba(218, 41, 28, 0.1)',
+        pl: { xs: 2.5, sm: 3, md: 12, lg: 13.8, xl: 14, xxl: 15 }, // Fixed left padding
+        pr: { xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 5, xxl: 6 }, // Matching right padding for balance
       }}
     >
-      <Container maxWidth="lg">
-        <MuiBreadcrumbs
-          separator={separator}
-          maxItems={isMobile ? 3 : maxItems}
-          itemsBeforeCollapse={isMobile ? 1 : 2}
-          itemsAfterCollapse={isMobile ? 1 : 1}
-          sx={{
-            py: 1,
-            '& .MuiBreadcrumbs-separator': {
-              color: 'text.secondary',
-              mx: { xs: 0.5, sm: 1 },
-            },
-          }}
-        >
+      <MuiBreadcrumbs
+        separator={separator}
+        maxItems={isMobile ? 3 : maxItems}
+        itemsBeforeCollapse={isMobile ? 1 : 2}
+        itemsAfterCollapse={isMobile ? 1 : 1}
+        sx={{
+          py: 1,
+          '& .MuiBreadcrumbs-separator': {
+            color: 'text.secondary',
+            mx: { xs: 0.5, sm: 1 },
+          },
+        }}
+      >
           {allItems.map((item, index) => {
             const isLast = index === allItems.length - 1;
 
@@ -279,7 +280,6 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             );
           })}
         </MuiBreadcrumbs>
-      </Container>
     </Box>
   );
 };
