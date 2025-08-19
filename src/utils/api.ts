@@ -984,6 +984,58 @@ class ApiService {
     return response.data.data || response.data;
   }
 
+  // ========== PRICE TIERS MANAGEMENT APIs ==========
+
+  // Get all price tiers
+  async getPriceTiers(params: {
+    search?: string;
+    is_active?: boolean;
+    page?: number;
+    per_page?: number;
+  } = {}) {
+    const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
+    const response = await api.get(`/price-tiers${queryString ? `?${queryString}` : ''}`);
+    return response.data.data || response.data;
+  }
+
+  // Get single price tier
+  async getPriceTier(id: number) {
+    const response = await api.get(`/price-tiers/${id}`);
+    return response.data.data || response.data;
+  }
+
+  // Create price tier
+  async createPriceTier(data: {
+    name: string;
+    display_name: string;
+    description?: string;
+    discount_off_retail_price: number;
+    minimum_order_amount?: number;
+    is_active: boolean;
+  }) {
+    const response = await api.post('/price-tiers', data);
+    return response.data.data || response.data;
+  }
+
+  // Update price tier
+  async updatePriceTier(id: number, data: {
+    name?: string;
+    display_name?: string;
+    description?: string;
+    discount_off_retail_price?: number;
+    minimum_order_amount?: number;
+    is_active?: boolean;
+  }) {
+    const response = await api.put(`/price-tiers/${id}`, data);
+    return response.data.data || response.data;
+  }
+
+  // Delete price tier
+  async deletePriceTier(id: number) {
+    const response = await api.delete(`/price-tiers/${id}`);
+    return response.data.data || response.data;
+  }
+
   // ========== CUSTOMER MANAGEMENT APIs ==========
 
   // Get all customers
