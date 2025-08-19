@@ -108,11 +108,12 @@ const Gallery = () => {
           title="Our Work Gallery"
           description="Explore our custom seating solutions across different vehicle types and see our craftsmanship in action."
           height={{
-            xs: '10vh',
-            sm: '20vh',
-            md: '15vh',
-            lg: '18vh',
-            xl: '15vh'
+            xs: '75px',
+            sm: '70px', 
+            md: '75px',
+            lg: '90px',
+            xl: '100px',
+            xxl: '110px'
           }}
         />
 
@@ -514,7 +515,7 @@ const Gallery = () => {
         </Container>
       </Box>
           
-      {/* Lightbox Dialog */}
+      {/* Image View Modal - Gallery Lightbox Dialog */}
       <Dialog
         open={!!selectedImage}
         onClose={handleCloseLightbox}
@@ -522,10 +523,10 @@ const Gallery = () => {
         fullWidth
         PaperProps={{
           sx: {
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
             color: 'white',
-            border: '2px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 20px 60px rgba(202, 38, 38, 0.4)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 8px 25px rgba(202, 38, 38, 0.2)',
           },
         }}
       >
@@ -537,10 +538,10 @@ const Gallery = () => {
               top: 16,
               right: 16,
               color: 'white',
-              backgroundColor: 'rgba(0,0,0,0.5)',
+              backgroundColor: 'rgba(0,0,0,0.1)',
               zIndex: 1,
               '&:hover': {
-                backgroundColor: 'rgba(175, 40, 40, 0.7)',
+                backgroundColor: 'rgba(175, 40, 40, 0.3)',
               },
             }}
           >
@@ -577,6 +578,47 @@ const Gallery = () => {
                   <Typography variant="h6">No image available</Typography>
                 </Box>
               )}
+              
+              {/* Image Details Overlay - No Background */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: 'transparent',
+                  color: 'black',
+                  p: { xs: 2, sm: 3, md: 4 },
+                  transform: 'translateY(0)',
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
+                    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
+                    mb: { xs: 0.5, sm: 1 },
+                    lineHeight: 1.3,
+                    color: 'black',
+                  }}
+                >
+                  {selectedImage.title}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    opacity: 0.8,
+                    fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' },
+                    textShadow: '0 1px 2px rgba(255,255,255,0.6)',
+                    lineHeight: 1.5,
+                    maxWidth: '80%',
+                    color: 'text.secondary',
+                  }}
+                >
+                  {selectedImage.description}
+                </Typography>
+              </Box>
             </Box>
           )}
         </DialogContent>

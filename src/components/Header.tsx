@@ -452,7 +452,7 @@ const Header = () => {
                           }
                         }}
                       >
-                        <ShoppingCartIcon sx={{ fontSize: { md: '1.3rem', lg: '1.5rem', xl: '1.5rem' ,sm: '1.5rem',xs: '1.5rem'} }} />
+                        <ShoppingCartIcon sx={{ fontSize: { md: '1.4rem', lg: '1.6rem', xl: '1.6rem' ,sm: '1.5rem',xs: '1.5rem'} }} />
                       </Badge>
                     </IconButton>
                   </Tooltip>
