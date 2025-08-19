@@ -149,11 +149,12 @@ const ContactPage = () => {
          title="Get In Touch"
          description="Contact us today for design help and a quote.  We’re here to help bring your vision to life."
          height={{
-          xs: '10vh',
-           sm: '20vh',
-           md: '18vh',
-           lg: '18vh',
-           xl: '15vh',
+          xs: '75px',
+            sm: '70px', 
+            md: '75px',
+            lg: '90px',
+            xl: '100px',
+            xxl: '110px'
           
           }}
            />

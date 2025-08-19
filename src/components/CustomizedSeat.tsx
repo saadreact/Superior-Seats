@@ -105,11 +105,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
          title="Customize Your Seat"
          description="Design your perfect seat with our interactive 3D configurator"
          height={{
-          xs: '10vh',
-           sm: '20vh',
-           md: '18vh',
-           lg: '18vh',
-           xl: '15vh'
+          xs: '75px',
+          sm: '70px', 
+          md: '75px',
+          lg: '90px',
+          xl: '100px',
+          xxl: '110px'
           }}
           />
       )}
@@ -135,13 +136,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         }}>
           {/* Left Column - 3D Viewer */}
           <Grid sx={{ gridColumn: { xs: 'span 1', sm: 'span 1', md: 'span 1', lg: 'span 1' } }}>
-            <Card sx={{ 
-              height: { xs: '350px', sm: '400px', md: '500px', lg: '600px' }, 
-              position: 'relative', 
-              overflow: 'hidden', 
-              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-              borderRadius: { xs: 2, md: 3 }
-            }}>
+                         <Card sx={{ 
+               height: { xs: '350px', sm: '400px', md: '500px', lg: '600px' }, 
+               position: 'relative', 
+               overflow: 'hidden', 
+               boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+               borderRadius: { xs: 2, md: 3 },
+               display: 'flex',
+               flexDirection: 'column'
+             }}>
               <Box
                 sx={{
                   height: '100%',
@@ -182,64 +185,64 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                       }}
                     />
                   ) : (
-                    // PLACEHOLDER: Show message when no item is selected from shop
-                    <Typography variant="h6" sx={{ 
-                      color: 'text.secondary',
-                      textAlign: 'center',
-                      px: 2
-                    }}>
-                      Select an item from the shop to customize
-                    </Typography>
-                  )}
-                  
-                  {/* MODIFIED OBJECT NAME DISPLAY: Now shows selected item title when available */}
-                  {selectedItem && ( // CONDITIONAL RENDERING: Only show if an item is selected
+                    // ENHANCED PLACEHOLDER: Show better message when no item is selected
                     <Box sx={{
-                      position: 'absolute',
-                      top: { xs: 10, sm: 15, md: 20 },
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      bgcolor: 'rgba(0,0,0,0.7)',
-                      color: 'white',
-                      px: { xs: 2, sm: 3 },
-                      py: { xs: 0.5, sm: 1 },
-                      borderRadius: 2,
-                      backdropFilter: 'blur(10px)',
-                      maxWidth: { xs: '90%', sm: 'auto' }
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
+                      textAlign: 'center',
+                      px: 3
                     }}>
-                      <Typography variant="h6" sx={{ 
+                      <Typography variant="h5" sx={{ 
+                        color: 'text.primary',
                         fontWeight: 'bold',
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        mb: 2,
+                        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
                       }}>
-                        {selectedItem.title} {/* DISPLAY: Show selected item's title */}
+                        No Product Selected
                       </Typography>
+                      <Typography variant="body1" sx={{ 
+                        color: 'text.secondary',
+                        mb: 3,
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                        maxWidth: '400px'
+                      }}>
+                        Please select a model or product from our shop to start customizing your perfect seat.
+                      </Typography>
+                                             <Button
+                         variant="contained"
+                         size="large"
+                         onClick={() => router.push('/specials')}
+                         startIcon={<ArrowForward />}
+                         sx={{
+                           bgcolor: 'primary.main',
+                           color: 'white',
+                           minWidth: '80px',
+                           maxWidth: '110px',
+                           height: '40px',
+                           fontSize: '0.7rem',
+                           whiteSpace: 'nowrap',
+                           overflow: 'hidden',
+                           textOverflow: 'ellipsis',
+                           textTransform: 'none',
+                           '& .MuiButton-startIcon': {
+                             marginRight: '4px',
+                           },
+                           '&:hover': {
+                             bgcolor: 'primary.dark',
+                             transform: 'scale(1.05)',
+                           },
+                           transition: 'all 0.3s ease'
+                         }}
+                       >
+                         Browse Shop
+                       </Button>
                     </Box>
                   )}
                   
-                  {/* MODIFIED INSTRUCTIONS/INFO DISPLAY: Now shows selected item price and category */}
-                  {selectedItem && ( // CONDITIONAL RENDERING: Only show if an item is selected
-                    <Box sx={{
-                      position: 'absolute',
-                      bottom: { xs: 10, sm: 15, md: 20 },
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      textAlign: 'center',
-                      bgcolor: 'rgba(0,0,0,0.7)',
-                      color: 'white',
-                      px: { xs: 2, sm: 3 },
-                      py: { xs: 0.5, sm: 1 },
-                      borderRadius: 2,
-                      backdropFilter: 'blur(10px)',
-                      maxWidth: { xs: '90%', sm: 'auto' }
-                    }}>
-                      <Typography variant="body2" sx={{ 
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        lineHeight: 1.2
-                      }}>
-                        {selectedItem.price} • {selectedItem.category} {/* DISPLAY: Show selected item's price and category */}
-                      </Typography>
-                    </Box>
-                  )}
+                  {/* REMOVED: Overlapping title and info displays - will be shown below the image instead */}
                 </Box>
                 
                 {/* MODIFIED VIEWER CONTROLS: Added back to shop button, removed navigation arrows */}
@@ -303,9 +306,30 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                       <Favorite sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />
                     </IconButton>
                   </Tooltip>
-                </Box>
-              </Box>
-            </Card>
+                                 </Box>
+               </Box>
+
+                               {/* Product Title - Simple text overlay at bottom left */}
+                {selectedItem && (
+                  <Typography variant="h6" sx={{
+                    position: 'absolute',
+                    bottom: { xs: 8, sm: 12, md: 16 },
+                    left: { xs: 12, sm: 16, md: 20 },
+                    color: 'black',
+                    fontWeight: 'bold',
+                    fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' },
+                    textAlign: 'left',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    lineHeight: 1.2,
+                    maxWidth: '70%',
+                    textShadow: '1px 1px 2px rgba(255,255,255,0.8)',
+                    zIndex: 2
+                  }}>
+                    {selectedItem.title}
+                  </Typography>
+                )}
+             </Card>
           </Grid>
 
           {/* Right Column - Customization Options */}
@@ -343,7 +367,66 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                     },
                   },
                 }}>
-                  {/* Material Selection Section */}
+                  {!selectedItem ? (
+                    // Show message when no product is selected
+                    <Box sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
+                      textAlign: 'center',
+                      px: 2
+                    }}>
+                      <Typography variant="h6" sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 'bold',
+                        mb: 2,
+                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                      }}>
+                        Customization Options
+                      </Typography>
+                      <Typography variant="body2" sx={{ 
+                        color: 'text.secondary',
+                        mb: 2,
+                        fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                        maxWidth: '300px'
+                      }}>
+                        Choose a product from our shop to see available customization options including materials, colors, and stitching patterns.
+                      </Typography>
+                                             <Button
+                         variant="outlined"
+                         size="medium"
+                         onClick={() => router.push('/specials')}
+                         startIcon={<ArrowForward />}
+                         sx={{
+                           borderColor: 'primary.main',
+                           color: 'primary.main',
+                           minWidth: '80px',
+                           maxWidth: '110px',
+                           height: '40px',
+                           fontSize: '0.7rem',
+                           whiteSpace: 'nowrap',
+                           overflow: 'hidden',
+                           textOverflow: 'ellipsis',
+                           textTransform: 'none',
+                           '& .MuiButton-startIcon': {
+                             marginRight: '4px',
+                           },
+                           '&:hover': {
+                             borderColor: 'primary.dark',
+                             color: 'primary.dark',
+                             transform: 'scale(1.02)',
+                           },
+                           transition: 'all 0.3s ease'
+                         }}
+                       >
+                         Go to Shop
+                       </Button>
+                    </Box>
+                  ) : (
+                    <>
+                      {/* Material Selection Section */}
                   <Box sx={{ mb: 4 }}>
                     <Typography variant="h6" sx={{ 
                       mb: { xs: 2, sm: 3 }, 
@@ -970,6 +1053,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
                      </Box>
                    )}
+                    </>
+                  )}
                 </Box>
               </CardContent>
             </Card>
