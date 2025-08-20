@@ -121,7 +121,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           variant="h1"
           sx={{
             fontSize: titleFontSize,
-            fontWeight: 'bold',
+            fontWeight: 500,
             mb: { xs: 0.25, sm: 0.5, md: 0.75, lg: 1 },
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
             lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },

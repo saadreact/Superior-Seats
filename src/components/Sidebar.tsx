@@ -84,6 +84,17 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   ];
 
   const handleNavigation = (href: string) => {
+    // If navigating to home page, clear breadcrumb history
+    if (href === '/') {
+      
+      localStorage.removeItem('breadcrumbHistory');
+      localStorage.removeItem('breadcrumb');
+      localStorage.removeItem('navigationHistory');
+      // Set to empty and remove again to ensure it's cleared
+      localStorage.setItem('breadcrumbHistory', '');
+      localStorage.removeItem('breadcrumbHistory');
+    }
+    
     router.push(href);
     if (isMobile) {
       onClose();

@@ -153,10 +153,26 @@ const ShopGallery = () => {
 
   // Get multiple images for the selected product from the images array
   const getProductImages = (product: any) => {
-    // Return the specific images array for this product with full URLs
-    if (product.images && product.images.length > 0) {
-      return product.images.map((image: string) => `https://superiorseats.ali-khalid.com${image}`);
+    try {
+      // Parse the JSON string if it's a string, otherwise use as is
+      let imagesArray: string[] = [];
+      
+      if (typeof product.images === 'string') {
+        // Parse the JSON string
+        imagesArray = JSON.parse(product.images);
+      } else if (Array.isArray(product.images)) {
+        // Already an array
+        imagesArray = product.images;
+      }
+      
+      // Return the images array with full URLs
+      if (imagesArray && imagesArray.length > 0) {
+        return imagesArray.map((image: string) => `https://superiorseats.ali-khalid.com${image}`);
+      }
+    } catch (error) {
+      console.error('Error parsing images:', error);
     }
+    
     return ['/placeholder-image.jpg'];
   };
 
@@ -214,7 +230,7 @@ const ShopGallery = () => {
       id: item.id,
       title: item.name,
       price: item.price,
-      image: item.images && item.images.length > 0 ? `https://superiorseats.ali-khalid.com${item.images[0]}` : '/placeholder-image.jpg',
+      image: getProductImages(item)[0] || '/placeholder-image.jpg',
       description: item.description,
       category: item.category || 'seat',
     }));
@@ -222,13 +238,17 @@ const ShopGallery = () => {
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
   const handleCustomize = (item: any) => {
+    // Prepare images array with full URLs using the getProductImages function
+    const imagesArray = getProductImages(item);
+    
     setSelectedItem({ // FUNCTION: Set the selected item in global context
       id: item.id,
       title: item.name,
       category: item.category || 'seat',
       subCategory: item.category || 'seat',
       mainCategory: 'seats',
-      image: item.images && item.images.length > 0 ? `https://superiorseats.ali-khalid.com${item.images[0]}` : '/placeholder-image.jpg',
+      image: imagesArray.length > 0 ? imagesArray[0] : '/placeholder-image.jpg',
+      images: imagesArray, // ADDED: Pass the full images array
       description: item.description,
       price: item.price,
     });
@@ -381,7 +401,7 @@ const ShopGallery = () => {
                     <CardMedia
                       component="img"
                       height="250"
-                      image={item.images && item.images.length > 0 ? `https://superiorseats.ali-khalid.com${item.images[0]}` : '/placeholder-image.jpg'}
+                      image={getProductImages(item)[0] || '/placeholder-image.jpg'}
                       alt={item.name}
                       className="card-media"
                       sx={{
@@ -432,7 +452,7 @@ const ShopGallery = () => {
                     <Typography
                       variant="h6"
                       sx={{
-                        fontWeight: 600,
+                        fontWeight: 400,
                         mb: { xs: 1.5, sm: 1 },
                         fontSize: { xs: '0.9rem', sm: '0.8rem', md: '0.875rem' },
                         color: 'text.primary',
@@ -490,8 +510,7 @@ const ShopGallery = () => {
                            sx={{
                              borderColor: 'primary.main',
                              color: 'primary.main',
-                             minWidth: { xs: '90px', sm: '80px' },
-                             maxWidth: { xs: '120px', sm: '110px' },
+                             flex: 1,
                              height: { xs: '44px', sm: '40px' },
                              fontSize: { xs: '0.8rem', sm: '0.7rem' },
                              whiteSpace: 'nowrap',
@@ -509,7 +528,7 @@ const ShopGallery = () => {
                              },
                            }}
                          >
-                           Customize
+                           Details
                          </Button>
                         
                                                  <Button
@@ -522,8 +541,7 @@ const ShopGallery = () => {
                            sx={{
                              backgroundColor: 'primary.main',
                              color: 'white',
-                             minWidth: { xs: '90px', sm: '80px' },
-                             maxWidth: { xs: '120px', sm: '110px' },
+                             flex: 1,
                              height: { xs: '44px', sm: '40px' },
                              fontSize: { xs: '0.8rem', sm: '0.7rem' },
                              whiteSpace: 'nowrap',
@@ -745,12 +763,13 @@ const ShopGallery = () => {
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                   >
-                                                            {/* Price Tag - Top Left */}
+                                                            {/* Price Tag - Top Left (Mobile) / Top Right (Desktop) */}
                      <Box
                        sx={{
                          position: 'absolute',
                          top: { xs: 12, sm: 16, md: 20 },
-                         left: { xs: 12, sm: 16, md: 20 },
+                         left: { xs: 12, sm: 'auto' },
+                         right: { xs: 'auto', sm: 16, md: 20 },
                          backgroundColor: 'primary.main',
                          color: 'white',
                          fontWeight: 'bold',
@@ -769,20 +788,24 @@ const ShopGallery = () => {
                            content: '""',
                            position: 'absolute',
                            top: '50%',
-                           left: '-8px',
+                           left: { xs: '-8px', sm: 'auto' },
+                           right: { xs: 'auto', sm: '-8px' },
                            transform: 'translateY(-50%)',
                            width: 0,
                            height: 0,
                            borderTop: '8px solid transparent',
                            borderBottom: '8px solid transparent',
-                           borderRight: '8px solid',
-                           borderRightColor: 'primary.main',
+                           borderLeft: { xs: '8px solid', sm: 'none' },
+                           borderRight: { xs: 'none', sm: '8px solid' },
+                           borderLeftColor: { xs: 'primary.main', sm: 'transparent' },
+                           borderRightColor: { xs: 'transparent', sm: 'primary.main' },
                          },
                          '&::after': {
                            content: '""',
                            position: 'absolute',
                            top: '50%',
-                           left: '-6px',
+                           left: { xs: '-6px', sm: 'auto' },
+                           right: { xs: 'auto', sm: '-6px' },
                            transform: 'translateY(-50%)',
                            width: '4px',
                            height: '4px',
@@ -887,30 +910,68 @@ const ShopGallery = () => {
                     <ArrowBack sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
                   </IconButton>
                   
-                  <IconButton
-                    onClick={handleNextModalImage}
-                    sx={{
-                      position: 'absolute',
-                      right: { xs: 8, sm: 16, md: 24 },
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: 'white',
-                      backgroundColor: 'primary.main',
-                      boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                      width: { xs: 32, sm: 36, md: 40 },
-                      height: { xs: 32, sm: 36, md: 40 },
-                      display: { xs: 'flex', sm: 'flex' },
-                      '&:hover': {
-                        backgroundColor: 'primary.dark',
-                        boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                        transform: 'translateY(-50%) scale(1.1)',
-                      },
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <ArrowForward sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
-                                     </IconButton>
-                 </Box>
+                                     <IconButton
+                     onClick={handleNextModalImage}
+                     sx={{
+                       position: 'absolute',
+                       right: { xs: 8, sm: 16, md: 24 },
+                       top: '50%',
+                       transform: 'translateY(-50%)',
+                       color: 'white',
+                       backgroundColor: 'primary.main',
+                       boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                       width: { xs: 32, sm: 36, md: 40 },
+                       height: { xs: 32, sm: 36, md: 40 },
+                       display: { xs: 'flex', sm: 'flex' },
+                       '&:hover': {
+                         backgroundColor: 'primary.dark',
+                         boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                         transform: 'translateY(-50%) scale(1.1)',
+                       },
+                       transition: 'all 0.2s ease',
+                     }}
+                   >
+                     <ArrowForward sx={{ fontSize: { xs: 18, sm: 20, md: 24 } }} />
+                   </IconButton>
+
+                                       {/* Customize Button - Bottom Right of Image Container (Desktop Only) */}
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => {
+                        handleCustomize(selectedImage);
+                        handleCloseLightbox();
+                      }}
+                                             sx={{
+                         position: 'absolute',
+                         bottom: { xs: 20, sm: 30, md: 30, lg: 30, xl: 30 },
+                         right: { xs: 12, sm: 16, md: 20 },
+                         display: { xs: 'none', sm: 'flex' }, // Only show on desktop
+                        borderColor: 'primary.main',
+                        color: 'primary.main',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        fontWeight: 'bold',
+                        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                        height: { xs: 36, sm: 40, md: 44 },
+                        px: { xs: 2, sm: 2.5, md: 3 },
+                        py: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 , xl: 1.5},
+                        borderRadius: '10px',
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                        zIndex: 2,
+                        '&:hover': {
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          boxShadow: '0 6px 20px rgba(211, 47, 47, 0.3)',
+                          transform: 'translateY(-2px)',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      Start Customizing
+                    </Button>
+                   
+                  </Box>
 
                  {/* Bottom Container - Text Content (Mobile) / Left Container (Desktop) */}
                  <Box
@@ -952,74 +1013,67 @@ const ShopGallery = () => {
                     {selectedImage.description}
                   </Typography>
                   
-                                                                         <Box sx={{ 
-                       display: 'flex', 
-                       gap: 2,
-                       flexDirection: 'row'
-                     }}>
-                                              {/* CUSTOMIZE BUTTON: Navigate to customize page */}
-                                                <Button
-                          variant="outlined"
-                          size="medium"
-                          onClick={() => {
-                            handleCustomize(selectedImage);
-                            handleCloseLightbox();
-                          }}
-                                                     sx={{
-                             borderColor: 'primary.main',
-                             color: 'primary.main',
-                             fontWeight: 'bold',
-                             minWidth: { xs: '90px', sm: '80px' },
-                             maxWidth: { xs: '120px', sm: '110px' },
-                             height: { xs: '44px', sm: '40px' },
-                             fontSize: { xs: '0.8rem', sm: '0.7rem' },
-                             whiteSpace: 'nowrap',
-                             overflow: 'hidden',
-                             textOverflow: 'ellipsis',
-                             textTransform: 'none',
-                             boxShadow: 'none',
-                             flex: 1,
-                             '&:hover': {
-                               backgroundColor: 'primary.main',
-                               color: 'white',
-                               boxShadow: 'none',
-                             },
-                           }}
-                        >
-                          Customize
-                        </Button>
-                      
-                      {/* ADD TO CART BUTTON */}
-                                                                       <Button
-                          variant="contained"
-                          size="medium"
-                          onClick={() => {
-                            handleAddToCart(selectedImage);
-                            handleCloseLightbox();
-                          }}
-                                                     sx={{
+                                                                                                                                                   <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        width: '100%',
+                        gap: { xs: 2, sm: 0 } // Gap only for mobile
+                      }}>
+                       {/* CUSTOMIZE BUTTON - Only visible on mobile */}
+                       <Button
+                         variant="outlined"
+                         size="medium"
+                         onClick={() => {
+                           handleCustomize(selectedImage);
+                           handleCloseLightbox();
+                         }}
+                         sx={{
+                           display: { xs: 'flex', sm: 'none' }, // Only show on mobile
+                           borderColor: 'primary.main',
+                           color: 'primary.main',
+                           backgroundColor: 'white',
+                           fontWeight: 'bold',
+                           width: '100%',
+                           height: { xs: '44px', sm: '40px' },
+                           fontSize: { xs: '0.8rem', sm: '0.7rem' },
+                           textTransform: 'none',
+                           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                           '&:hover': {
                              backgroundColor: 'primary.main',
                              color: 'white',
-                             fontWeight: 'bold',
-                             minWidth: { xs: '90px', sm: '80px' },
-                             maxWidth: { xs: '120px', sm: '110px' },
-                             height: { xs: '44px', sm: '40px' },
-                             fontSize: { xs: '0.8rem', sm: '0.7rem' },
-                             whiteSpace: 'nowrap',
-                             overflow: 'hidden',
-                             textOverflow: 'ellipsis',
-                             textTransform: 'none',
+                             boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+                           },
+                         }}
+                       >
+                         Start Customizing Now
+                       </Button>
+                       
+                       {/* ADD TO CART BUTTON */}
+                       <Button
+                         variant="contained"
+                         size="medium"
+                         onClick={() => {
+                           handleAddToCart(selectedImage);
+                           handleCloseLightbox();
+                         }}
+                         sx={{
+                           backgroundColor: 'primary.main',
+                           color: 'white',
+                           fontWeight: 'bold',
+                           width: '100%',
+                           height: { xs: '44px', sm: '40px' },
+                           fontSize: { xs: '0.8rem', sm: '0.7rem' },
+                           textTransform: 'none',
+                           boxShadow: 'none',
+                           '&:hover': {
+                             backgroundColor: 'primary.dark',
                              boxShadow: 'none',
-                             flex: 1,
-                             '&:hover': {
-                               backgroundColor: 'primary.dark',
-                               boxShadow: 'none',
-                             },
-                           }}
-                        >
-                          Add to Cart
-                        </Button>
-                    </Box>
+                           },
+                         }}
+                       >
+                         Add to Cart
+                       </Button>
+                     </Box>
                </Box>
                </Box>
              )}
