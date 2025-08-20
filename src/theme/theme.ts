@@ -21,7 +21,7 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Raleway", "Roboto", sans-serif',
     h1: {
       fontSize: '2.5rem',
       fontWeight: 700,

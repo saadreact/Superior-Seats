@@ -10,6 +10,7 @@ export interface SelectedItem {
   subCategory: string;
   mainCategory: string;
   image: string;
+  images?: string[]; // Optional array of additional product images
   description: string;
   price: string;
 }

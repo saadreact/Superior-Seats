@@ -14,18 +14,24 @@ import {
   Chip,
   useTheme,
   useMediaQuery,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Stack,
 } from '@mui/material';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import TruckCarousel from '@/components/TruckCarousel';
+import { seatingProducts, stats } from '@/data/homepage';
 
 import { motion } from 'framer-motion';
 import { 
-  Chair, 
-  EventSeat, 
-  AirlineSeatReclineNormal,
   Star,
-  ArrowForward 
+  ArrowForward,
+  Chair,
+  EventSeat,
+  AirlineSeatReclineNormal,
+  Close
 } from '@mui/icons-material';
 import Footer from '@/components/Footer';
 
@@ -132,45 +138,41 @@ const HomePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
+  
+  // Modal state
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
 
 
-  const products = [
-    {
-      id: 1,
-      title: 'Truck Seats',
-      description: 'Premium truck seating with custom options and superior comfort.',
-      price: 'Custom',
-      rating: 4.9,
-      features: ['Custom', 'Comfort', 'Durable'],
-      icon: <Chair sx={{ fontSize: 60, color: 'primary.main' }} />,
-    },
-    {
-      id: 2,
-      title: 'RV Seats',
-      description: 'Luxury RV seating designed for long-haul comfort and style.',
-      price: 'Custom',
-      rating: 4.8,
-      features: ['Luxury', 'Comfort', 'Custom'],
-      icon: <EventSeat sx={{ fontSize: 60, color: 'primary.main' }} />,
-    },
-    {
-      id: 3,
-      title: 'Van Seats',
-      description: 'Professional van seating with integrated safety features.',
-      price: 'Custom',
-      rating: 4.7,
-      features: ['Professional', 'Safety', 'Custom'],
-      icon: <AirlineSeatReclineNormal sx={{ fontSize: 60, color: 'primary.main' }} />,
-    },
-  ];
+  // Using data from homepage.ts file
 
-  const stats = [
-    { number: 20000, label: 'Custom Seats Built', suffix: '+' },
-    { number: 25, label: 'Years Experience', suffix: '+' },
-    { number: 50, label: 'Seat Models', suffix: '+' },
-    // { number: 99, label: 'Customer Satisfaction', suffix: '%' },
-  ];
+  // Function to render icon based on iconName
+  const renderIcon = (iconName: string) => {
+    const iconProps = { sx: { fontSize: 60, color: 'primary.main' } };
+    
+    switch (iconName) {
+      case 'Chair':
+        return <Chair {...iconProps} />;
+      case 'EventSeat':
+        return <EventSeat {...iconProps} />;
+      case 'AirlineSeatReclineNormal':
+        return <AirlineSeatReclineNormal {...iconProps} />;
+      default:
+        return <Chair {...iconProps} />;
+    }
+  };
+
+  // Modal handlers
+  const handleOpenModal = (product: any) => {
+    setSelectedProduct(product);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedProduct(null);
+  };
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -187,8 +189,9 @@ const HomePage = () => {
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
+        width: '100%',
       }}>
-        <Container maxWidth="lg">
+        <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
           <MotionBox
             variants={statsContainerVariants}
             initial="hidden"
@@ -199,8 +202,7 @@ const HomePage = () => {
                display="grid"
                gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr' }}
                sx={{
-                 maxWidth: { md: '800px' },
-                 mx: 'auto',
+                 width: '100%',
                  gap: { xs: 3, sm: 4, md: 6, lg: 8, xl: 10 },
                }}
              >
@@ -213,8 +215,8 @@ const HomePage = () => {
       </Box>
 
       {/* Products Section */}
-      <Box sx={{ py: { xs: 2, md: 3, lg: 1, xl: 2 } }}>
-        <Container maxWidth="lg">
+      <Box sx={{ py: { xs: 2, md: 3, lg: 1, xl: 2 }, width: '100%' }}>
+        <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
           <MotionBox
             variants={sectionVariants}
             initial="hidden"
@@ -237,8 +239,7 @@ const HomePage = () => {
                variant="h6"
                sx={{
                  color: 'text.secondary',
-                 maxWidth: { xs: '100%', sm: '100%', md: '100%' },
-                 mx: 'auto',
+                 width: '100%',
                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
                  px: { xs: 2, sm: 0 },
                  whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow text to wrap on mobile
@@ -262,8 +263,9 @@ const HomePage = () => {
               display="grid"
               gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
               gap={{ xs: 2, sm: 3, md: 4 }}
+              sx={{ width: '100%' }}
             >
-              {products.map((product, index) => (
+              {seatingProducts.map((product, index) => (
                 <MotionCard
                   key={`product-${index}`}
                   variants={productCardVariants}
@@ -274,22 +276,21 @@ const HomePage = () => {
                     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
                     '&:hover': {
                       transform: 'translateY(-8px)',
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      boxShadow: '0 8px 25px rgba(218, 22, 22, 0.15)',
                     },
                   }}
                 >
                   <CardMedia
-                    component="div"
+                    component="img"
+                    image={product.image}
+                    alt={product.title}
                     sx={{
                       height: { xs: 150, sm: 180, md: 200 },
+                      objectFit: 'contain',
                       backgroundColor: 'grey.100',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      width: '100%',
                     }}
-                  >
-                    {product.icon}
-                  </CardMedia>
+                  />
                   <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
                       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -323,6 +324,7 @@ const HomePage = () => {
                         variant="contained"
                         size="small"
                         endIcon={<ArrowForward />}
+                        onClick={() => handleOpenModal(product)}
                       >
                         View Details
                       </Button>
@@ -336,8 +338,8 @@ const HomePage = () => {
       </Box>
 
       {/* Trusted by Leading Truck Manufacturers Section */}
-      {/* <Box sx={{ py: { xs: 2, md: 3 } }}>
-        <Container maxWidth="lg">
+      {/* <Box sx={{ py: { xs: 2, md: 3 }, width: '100%' }}>
+        <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
           <MotionBox
             variants={sectionVariants}
             initial="hidden"
@@ -380,7 +382,206 @@ const HomePage = () => {
       {/* Truck Carousel Section */}
       <TruckCarousel />
       
+      {/* Product Details Modal */}
+      <Dialog
+        open={modalOpen}
+        onClose={handleCloseModal}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: 'rgba(255, 255, 255, 0.99)',
+            color: 'black',
+            margin: { xs: 1, sm: 2, md: 4 },
+            maxWidth: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)', md: 'calc(100% - 64px)' },
+            maxHeight: { xs: 'calc(100vh - 16px)', sm: 'calc(100vh - 32px)', md: 'calc(100vh - 64px)' },
+            height: { xs: 'auto', md: '80vh' },
+          },
+        }}
+      >
+        <DialogContent sx={{ p: 0, position: 'relative', height: '100%' }}>
+          <IconButton
+            onClick={handleCloseModal}
+            sx={{
+              position: 'absolute',
+              top: { xs: 8, sm: 12, md: 16 },
+              right: { xs: 8, sm: 12, md: 16 },
+              color: 'white',
+              backgroundColor: 'primary.main',
+              zIndex: 1,
+              boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
+              width: { xs: 28, sm: 32, md: 40 },
+              height: { xs: 28, sm: 32, md: 40 },
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+                boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
+                transform: 'translateY(-1px)',
+              },
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <Close sx={{ fontSize: { xs: 16, sm: 18, md: 24 } }} />
+          </IconButton>
 
+          {selectedProduct && (
+            <Box 
+              sx={{ 
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                height: '100%',
+                minHeight: { xs: 'auto', md: '100%' },
+                maxHeight: '100%'
+              }}
+            >
+              {/* Image Container */}
+              <Box 
+                sx={{ 
+                  flex: { xs: 'none', md: '0 0 50%' },
+                  position: 'relative',
+                  backgroundColor: '#f8f8f8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: { xs: '50vh', md: '100%' },
+                  overflow: 'hidden',
+                  p: { xs: 1, sm: 2, md: 3 }
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: { xs: '40vh', md: '100%' }
+                  }}
+                >
+                  <img
+                    src={selectedProduct.image}
+                    alt={selectedProduct.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                      objectPosition: 'center',
+                    }}
+                  />
+                </Box>
+              </Box>
+
+              {/* Content Container */}
+              <Box
+                sx={{
+                  flex: { xs: 'none', md: '0 0 50%' },
+                  p: { xs: 1.5, sm: 3, md: 4 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  backgroundColor: 'white',
+                  borderTop: { xs: '1px solid rgba(0,0,0,0.1)', md: 'none' },
+                  borderLeft: { xs: 'none', md: '1px solid rgba(0,0,0,0.1)' },
+                  minHeight: { xs: 'auto', md: '100%' },
+                  overflow: 'auto',
+                  maxHeight: { xs: '50vh', md: '100%' }
+                }}
+              >
+                <Typography variant="h4" sx={{ 
+                  fontWeight: 'bold', 
+                  mb: 2,
+                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem' },
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  color: 'text.primary',
+                  lineHeight: 1.3,
+                }}>
+                  {selectedProduct.title}
+                </Typography>
+                
+                <Typography variant="h5" sx={{ 
+                  mb: 2, 
+                  fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+                  color: 'primary.main',
+                  fontWeight: 'bold',
+                }}>
+                  {selectedProduct.price}
+                </Typography>
+                
+                <Typography variant="body1" sx={{ 
+                  mb: 3, 
+                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                  lineHeight: 1.6,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  color: 'text.secondary',
+                  flex: 1,
+                }}>
+                  {selectedProduct.description}
+                </Typography>
+                
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold' }}>
+                    Features:
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {selectedProduct.features.map((feature: string, index: number) => (
+                      <Chip
+                        key={index}
+                        label={feature}
+                        size="small"
+                        sx={{ backgroundColor: 'primary.light', color: 'white' }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                  <Star sx={{ fontSize: 20, color: 'warning.main' }} />
+                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                    Rating: {selectedProduct.rating}
+                  </Typography>
+                </Box>
+
+                <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                      flex: 1,
+                      borderColor: 'primary.main',
+                      color: 'primary.main',
+                      fontWeight: 'bold',
+                      '&:hover': {
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    Customize
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      flex: 1,
+                      backgroundColor: 'primary.main',
+                      fontWeight: 'bold',
+                      '&:hover': {
+                        backgroundColor: 'primary.dark',
+                      },
+                    }}
+                  >
+                    Add to Cart
+                  </Button>
+                </Stack>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
       
    <Footer/>
   
