@@ -18,14 +18,15 @@ import {
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import TruckCarousel from '@/components/TruckCarousel';
+import { seatingProducts, stats } from '@/data/homepage';
 
 import { motion } from 'framer-motion';
 import { 
-  Chair, 
-  EventSeat, 
-  AirlineSeatReclineNormal,
   Star,
-  ArrowForward 
+  ArrowForward,
+  Chair,
+  EventSeat,
+  AirlineSeatReclineNormal
 } from '@mui/icons-material';
 import Footer from '@/components/Footer';
 
@@ -135,42 +136,23 @@ const HomePage = () => {
 
 
 
-  const products = [
-    {
-      id: 1,
-      title: 'Truck Seats',
-      description: 'Premium truck seating with custom options and superior comfort.',
-      price: 'Custom',
-      rating: 4.9,
-      features: ['Custom', 'Comfort', 'Durable'],
-      icon: <Chair sx={{ fontSize: 60, color: 'primary.main' }} />,
-    },
-    {
-      id: 2,
-      title: 'RV Seats',
-      description: 'Luxury RV seating designed for long-haul comfort and style.',
-      price: 'Custom',
-      rating: 4.8,
-      features: ['Luxury', 'Comfort', 'Custom'],
-      icon: <EventSeat sx={{ fontSize: 60, color: 'primary.main' }} />,
-    },
-    {
-      id: 3,
-      title: 'Van Seats',
-      description: 'Professional van seating with integrated safety features.',
-      price: 'Custom',
-      rating: 4.7,
-      features: ['Professional', 'Safety', 'Custom'],
-      icon: <AirlineSeatReclineNormal sx={{ fontSize: 60, color: 'primary.main' }} />,
-    },
-  ];
+  // Using data from homepage.ts file
 
-  const stats = [
-    { number: 20000, label: 'Custom Seats Built', suffix: '+' },
-    { number: 25, label: 'Years Experience', suffix: '+' },
-    { number: 50, label: 'Seat Models', suffix: '+' },
-    // { number: 99, label: 'Customer Satisfaction', suffix: '%' },
-  ];
+  // Function to render icon based on iconName
+  const renderIcon = (iconName: string) => {
+    const iconProps = { sx: { fontSize: 60, color: 'primary.main' } };
+    
+    switch (iconName) {
+      case 'Chair':
+        return <Chair {...iconProps} />;
+      case 'EventSeat':
+        return <EventSeat {...iconProps} />;
+      case 'AirlineSeatReclineNormal':
+        return <AirlineSeatReclineNormal {...iconProps} />;
+      default:
+        return <Chair {...iconProps} />;
+    }
+  };
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -263,7 +245,7 @@ const HomePage = () => {
               gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
               gap={{ xs: 2, sm: 3, md: 4 }}
             >
-              {products.map((product, index) => (
+              {seatingProducts.map((product, index) => (
                 <MotionCard
                   key={`product-${index}`}
                   variants={productCardVariants}
@@ -274,22 +256,21 @@ const HomePage = () => {
                     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
                     '&:hover': {
                       transform: 'translateY(-8px)',
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      boxShadow: '0 8px 25px rgba(218, 22, 22, 0.15)',
                     },
                   }}
                 >
                   <CardMedia
-                    component="div"
+                    component="img"
+                    image={product.image}
+                    alt={product.title}
                     sx={{
                       height: { xs: 150, sm: 180, md: 200 },
+                      objectFit: 'contain',
                       backgroundColor: 'grey.100',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      width: '100%',
                     }}
-                  >
-                    {product.icon}
-                  </CardMedia>
+                  />
                   <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
                       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>

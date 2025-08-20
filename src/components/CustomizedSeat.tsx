@@ -1095,12 +1095,13 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                      fontSize: '0.8rem',
                      whiteSpace: 'nowrap',
                      textOverflow: 'ellipsis',
+                     boxShadow: 'none',
                      '&:hover': {
                        bgcolor: '#b71c1c',
                        transform: 'scale(1.02)',
+                       boxShadow: 'none',
                      },
                      transition: 'all 0.2s ease-in-out',
-                     boxShadow: { xs: '0 4px 12px rgba(211, 47, 47, 0.35)', sm: '0 6px 20px rgba(211, 47, 47, 0.4)' },
                      '& .MuiButton-startIcon': {
                        marginRight: { xs: 0.25, sm: 0.5 },
                      }
