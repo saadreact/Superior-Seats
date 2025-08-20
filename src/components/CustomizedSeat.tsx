@@ -467,16 +467,16 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                      justifyContent: 'flex-start',
                      pt: { xs: 1.5, sm: 2 }
                    }}>
-                    {/* Product Title */}
-                    <Typography variant="h5" sx={{ 
-                      fontWeight: 400, 
-                      color: 'text.primary',
-                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
-                      mb: { xs: 1, sm: 1.5 },
-                      textAlign: 'center'
-                    }}>
-                      {selectedItem.title}
-                    </Typography>
+                                         {/* Product Title */}
+                     <Typography variant="h5" sx={{ 
+                       fontWeight: 400, 
+                       color: 'text.primary',
+                       fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                       mb: { xs: 1, sm: 1.5 },
+                       textAlign: 'left'
+                     }}>
+                       {selectedItem.title}
+                     </Typography>
                     
                                          {/* Product Description */}
                      <Box sx={{ 
@@ -1802,253 +1802,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   }}>
                                                                        
                    
-                   {/* TWO-ROW PRICE LAYOUT: Base Seat + Material + Color Price in first row, Total Price + Add to Cart in second row */}
-                   <Box sx={{
-                     display: 'flex',
-                     flexDirection: 'column',
-                     gap: { xs: 0.5, sm: 1 },
-                     mb: 0,
-                     width: '100%'
-                   }}>
-                    {/* FIRST ROW: Base Seat Price, Material Price, Color Price, and Stitching Pattern Price buttons */}
+                                       {/* SIMPLIFIED PRICE LAYOUT: Only Total Price and Add to Cart */}
                     <Box sx={{
-                      display: 'grid',
-                      gridTemplateColumns: { xs: '1fr', sm: 'repeat(4, 1fr)' },
-                      gap: { xs: 0.5, sm: 0.75 },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: { xs: 1, sm: 2 },
+                      mb: 0,
                       width: '100%'
                     }}>
-                      {/* BASE SEAT PRICE BUTTON */}
-                      <Button
-                        variant="outlined"
-                        disabled
-                        sx={{
-                          bgcolor: 'white',
-                          color: '#d32f2f',
-                          border: '2px solid #d32f2f',
-                          height: '50px',
-                          minHeight: '50px',
-                          maxHeight: '50px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          py: 0.75,
-                          px: 1,
-                          width: '100%',
-                          minWidth: 0,
-                          overflow: 'hidden',
-                          '&:hover': {
-                            bgcolor: 'white',
-                            borderColor: '#d32f2f',
-                          },
-                          '&.Mui-disabled': {
-                            bgcolor: 'white',
-                            color: '#d32f2f',
-                            borderColor: '#d32f2f',
-                            opacity: 1
-                          }
-                        }}
-                      >
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 500,
-                          fontSize: '1rem',
-                          lineHeight: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'center'
-                        }}>
-                          ${selectedItem ? parseFloat(selectedItem.price.replace('$', '')) : objects[currentObjectIndex].price}
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          opacity: 0.9,
-                          fontSize: '0.75rem',
-                          lineHeight: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'center'
-                        }}>
-                          Base Seat
-                        </Typography>
-                      </Button>
-                      
-                      {/* MATERIAL PRICE BUTTON */}
-                      <Button
-                        variant="outlined"
-                        disabled
-                        sx={{
-                          bgcolor: 'white',
-                          color: '#d32f2f',
-                          border: '2px solid #d32f2f',
-                          height: '50px',
-                          minHeight: '50px',
-                          maxHeight: '50px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          py: 0.75,
-                          px: 1,
-                          width: '100%',
-                          minWidth: 0,
-                          overflow: 'hidden',
-                          '&:hover': {
-                            bgcolor: 'white',
-                            borderColor: '#d32f2f',
-                          },
-                          '&.Mui-disabled': {
-                            bgcolor: 'white',
-                            color: '#d32f2f',
-                            borderColor: '#d32f2f',
-                            opacity: 1
-                          }
-                        }}
-                      >
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 500,
-                          fontSize: '1rem',
-                          lineHeight: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'center'
-                        }}>
-                          {selectedTexture === 'none' ? '$0' : `+$${textures.find(t => t.id === selectedTexture)?.price || 0}`}
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          opacity: 0.9,
-                          fontSize: '0.75rem',
-                          lineHeight: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'center'
-                        }}>
-                          Material
-                        </Typography>
-                      </Button>
-                      
-                      {/* COLOR PRICE BUTTON */}
-                      <Button
-                        variant="outlined"
-                        disabled
-                        sx={{
-                          bgcolor: 'white',
-                          color: '#d32f2f',
-                          border: '2px solid #d32f2f',
-                          height: '50px',
-                          minHeight: '50px',
-                          maxHeight: '50px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          py: 0.75,
-                          px: 1,
-                          width: '100%',
-                          minWidth: 0,
-                          overflow: 'hidden',
-                          '&:hover': {
-                            bgcolor: 'white',
-                            borderColor: '#d32f2f',
-                          },
-                          '&.Mui-disabled': {
-                            bgcolor: 'white',
-                            color: '#d32f2f',
-                            borderColor: '#d32f2f',
-                            opacity: 1
-                          }
-                        }}
-                      >
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 500,
-                          fontSize: '1rem',
-                          lineHeight: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'center'
-                        }}>
-                          {selectedColor === 'none' ? '$0' : `+$${colors.find(c => c.id === selectedColor)?.price || 0}`}
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          opacity: 0.9,
-                          fontSize: '0.75rem',
-                          lineHeight: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'center'
-                        }}>
-                          Color
-                        </Typography>
-                      </Button>
-                      
-                      {/* STITCHING PATTERN PRICE BUTTON */}
-                      <Button
-                        variant="outlined"
-                        disabled
-                        sx={{
-                          bgcolor: 'white',
-                          color: '#d32f2f',
-                          border: '2px solid #d32f2f',
-                          height: '50px',
-                          minHeight: '50px',
-                          maxHeight: '50px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          py: 0.75,
-                          px: 1,
-                          width: '100%',
-                          minWidth: 0,
-                          overflow: 'hidden',
-                          '&:hover': {
-                            bgcolor: 'white',
-                            borderColor: '#d32f2f',
-                          },
-                          '&.Mui-disabled': {
-                            bgcolor: 'white',
-                            color: '#d32f2f',
-                            borderColor: '#d32f2f',
-                            opacity: 1
-                          }
-                        }}
-                      >
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 500,
-                          fontSize: '1rem',
-                          lineHeight: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'center'
-                        }}>
-                          {selectedStitching === 'none' ? '$0' : `+$${stichtingtextures.find(s => s.id === selectedStitching)?.price || 0}`}
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          opacity: 0.9,
-                          fontSize: '0.75rem',
-                          lineHeight: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'center'
-                        }}>
-                          Stitching
-                        </Typography>
-                      </Button>
-                    </Box>
                                          <Typography variant="h4" sx={{ 
                        mb: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0 }, 
                        fontWeight: 500, 
@@ -2059,14 +1820,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                        US ${totalPrice.toFixed(2)}
                      </Typography>
                     
-                                         {/* SECOND ROW: Add to Cart button only */}
-                                                                  <Box sx={{
-                         display: 'flex',
-                         justifyContent: 'center',
-                         width: '100%',
-                         mt: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0 },
-                         mb: 0
-                       }}>
+                                                                                   {/* SECOND ROW: Add to Cart button only */}
+                                                                   <Box sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          width: '100%',
+                          mt: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0 },
+                          mb: 5
+                        }}>
                       {/* ADD TO CART BUTTON */}
                                              <Button
                          variant="contained"
