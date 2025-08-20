@@ -463,11 +463,11 @@ const Header = () => {
                           color="inherit"
                           sx={{
                             color: '#DA291C',
-                            p: { md: 1, lg: 1.5 },
+                            p: { md: 0.6, lg: 0.8 },
                             '&:hover': {
-                              backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                              backgroundColor: 'rgba(218, 41, 28, 0.08)',
                               color: '#DA291C',
-                              transform: 'scale(1.05)',
+                              transform: 'scale(1.03)',
                             },
                             transition: 'all 0.2s ease',
                           }}
@@ -534,28 +534,28 @@ const Header = () => {
                         </MenuItem>
                       </Menu>
                     </>
-                  ) : (
-                                         <Tooltip title="Login / Sign Up" arrow>
-                                               <IconButton
-                          color="inherit"
-                          onClick={handleAuthClick}
-                          sx={{
-                            color: '#DA291C',
-                            // Reduced padding for smaller hover area
-                            p: { md: 0.6, lg: 0.8 },
-                            '&:hover': {
-                              backgroundColor: 'rgba(218, 41, 28, 0.08)',
-                              color: '#DA291C',
-                              // Reduced scale for subtler hover effect
-                              transform: 'scale(1.03)',
-                            },
-                            transition: 'all 0.2s ease',
-                          }}
-                        >
-                         <PersonIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
-                       </IconButton>
-                     </Tooltip>
-                  )}
+                                     ) : (
+                                          <Tooltip title="Login / Sign Up" arrow>
+                                                <IconButton
+                           color="inherit"
+                           onClick={handleAuthClick}
+                           sx={{
+                             color: '#DA291C',
+                             // Slightly increased padding for better hover area
+                             p: { md: 0.75, lg: 1 },
+                             '&:hover': {
+                               backgroundColor: 'rgba(218, 41, 28, 0.08)',
+                               color: '#DA291C',
+                               // Slightly increased scale for better hover effect
+                               transform: 'scale(1.04)',
+                             },
+                             transition: 'all 0.2s ease',
+                           }}
+                         >
+                          <PersonIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
+                        </IconButton>
+                      </Tooltip>
+                   )}
                 </>
               )}
             </Box>
