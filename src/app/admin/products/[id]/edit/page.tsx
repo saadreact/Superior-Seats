@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   Box,
@@ -17,7 +17,8 @@ interface Product {
   id?: number;
   name: string;
   description: string;
-  category: string;
+  category_id?: number;
+  vehicle_trim_id?: number;
   price: number;
   stock: number;
   images?: string[];
@@ -56,18 +57,23 @@ const EditProductPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadProduct();
-  }, [productId]);
-
-  const loadProduct = async () => {
+  const loadProduct = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       const response = await apiService.getProduct(parseInt(productId));
       console.log('Product API response:', response);
-      const productData = response.data || response.product || response;
+      
+      // Handle the new response structure
+      let productData;
+      if (response && response.data) {
+        productData = response.data;
+      } else if (response) {
+        productData = response;
+      } else {
+        throw new Error('Invalid response structure');
+      }
       
       // Extract variation_ids from the nested variations array
       const variationIds = productData.variations?.map((variation: any) => variation.id) || [];
@@ -77,24 +83,67 @@ const EditProductPage = () => {
         variation_ids: variationIds,
       });
     } catch (err: any) {
-      if (err.message.includes('404')) {
+      if (err.message.includes('404') || err.message.includes('not found')) {
         setError('Product not found');
       } else {
-        setError('Failed to load product');
+        setError(err.message || 'Failed to load product');
       }
       console.error('Error loading product:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId]);
 
-  const handleSubmit = async (productData: Product & { newImages?: File[] }) => {
+  useEffect(() => {
+    loadProduct();
+  }, [loadProduct]);
+
+  const handleSubmit = async (productData: {
+    name: string;
+    description: string;
+    category_id?: number;
+    vehicle_trim_id?: number;
+    price: number;
+    stock: number;
+    images?: string[];
+    is_active: boolean;
+    variation_ids?: number[];
+    newImages?: File[];
+  }) => {
     try {
       setSaving(true);
       setError(null);
       setSuccess(null);
 
-      await apiService.updateProduct(parseInt(productId), productData);
+      // Convert File[] to base64 strings for the API
+      const images: Array<{
+        file: string;
+        alt_text: string;
+        caption: string;
+        set_primary: boolean;
+      }> = [];
+
+      if (productData.newImages && productData.newImages.length > 0) {
+        for (let i = 0; i < productData.newImages.length; i++) {
+          const file = productData.newImages[i];
+          const base64 = await fileToBase64(file);
+
+          images.push({
+            file: base64 as string,
+            alt_text: file.name,
+            caption: '',
+            set_primary: i === 0,
+          });
+        }
+      }
+
+      const apiData = {
+        ...productData,
+        images,
+      };
+      delete apiData.newImages;
+
+      await apiService.updateProduct(parseInt(productId), apiData);
       
       setSuccess('Product updated successfully!');
       setTimeout(() => {
@@ -168,4 +217,16 @@ const EditProductPage = () => {
   );
 };
 
-export default EditProductPage; 
+export default EditProductPage;
+
+/**
+ * Helper: convert File -> base64 string
+ */
+const fileToBase64 = (file: File): Promise<string | ArrayBuffer | null> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+}; 
