@@ -184,7 +184,7 @@ const HomePage = () => {
       {/* Stats Section */}
       <Box sx={{ 
         py: { xs: 2, md: 1 ,lg: 1, xl: 1},
-        backgroundColor: 'background.default',
+        backgroundColor: 'rgba(228, 221, 221, 0.08)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -230,7 +230,7 @@ const HomePage = () => {
                 mb: { xs: 1, md: 2 },
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 'bold',
-                color:'#DA291C',
+                color: 'black',
               }}
             >
               Our Seating Solutions
@@ -238,9 +238,9 @@ const HomePage = () => {
                          <Typography
                variant="h6"
                sx={{
-                 color: 'text.secondary',
+                 color: 'black',
                  width: '100%',
-                 fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                 fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' ,lg: '1.25rem', xl: '1.25rem'},
                  px: { xs: 2, sm: 0 },
                  whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow text to wrap on mobile
                  overflow: 'visible',
@@ -249,7 +249,7 @@ const HomePage = () => {
                  lineHeight: { xs: 1.4, sm: 1.5 }, // Better line height for readability
                }}
              >
-               Premium truck, RV, and van seating with custom options and superior craftsmanship.
+               Premium Truck, RV, and Van seating with custom options and Superior craftsmanship.
              </Typography>
           </MotionBox>
 
@@ -285,10 +285,11 @@ const HomePage = () => {
                     image={product.image}
                     alt={product.title}
                     sx={{
-                      height: { xs: 150, sm: 180, md: 200 },
+                      height: { xs: 150, sm: 180, md: 200 ,lg: '250px', xl: '250px'},
                       objectFit: 'contain',
                       backgroundColor: 'grey.100',
                       width: '100%',
+                      fontSize: { xs: '0.875rem', sm: '0.875rem', md: '0.875rem', lg: '0.875rem', xl: '1rem' },
                     }}
                   />
                   <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2.5, md: 3 } }}>
@@ -296,24 +297,36 @@ const HomePage = () => {
                       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                         {product.title}
                       </Typography>
-                      <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                      <Typography variant="h6" sx={{ color: 'black', fontWeight: 'normal' }}>
                         {product.price}
                       </Typography>
                     </Box>
-                    <Typography variant="body2" sx={{ mb: { xs: 1.5, md: 2 }, color: 'text.secondary' }}>
+                    <Typography  sx={{ mb: { xs: 1.5, md: 2 }, color: 'black', fontWeight: 'normal' }}>
                       {product.description}
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, md: 2 }, flexWrap: 'wrap' }}>
-                      {product.features.map((feature, featureIndex) => (
-                        <Chip
-                          key={`feature-${index}-${featureIndex}`}
-                          label={feature}
-                          size="small"
-                          sx={{ backgroundColor: 'primary.light', color: 'white' }}
-                        />
-                      ))}
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                         <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, md: 2 }, flexWrap: 'wrap' }}>
+                       {product.features.map((feature, featureIndex) => (
+                         <Chip
+                           key={`feature-${index}-${featureIndex}`}
+                           label={feature}
+                           size="small"
+                           sx={{ 
+                             backgroundColor: 'rgba(220, 38, 38, 0.8)', 
+                             color: 'white',
+                             fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '0.9rem', xl: '0.95rem' },
+                             fontWeight: 500,
+                             padding: { xs: '4px 8px', sm: '6px 10px', md: '8px 12px' },
+                             '& .MuiChip-label': {
+                               padding: { xs: '0 4px', sm: '0 6px', md: '0 8px' },
+                               whiteSpace: 'nowrap',
+                               overflow: 'hidden',
+                               textOverflow: 'ellipsis',
+                             }
+                           }}
+                         />
+                       ))}
+                     </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' ,height: '40px'}}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Star sx={{ fontSize: 16, color: 'warning.main' }} />
                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
@@ -325,6 +338,11 @@ const HomePage = () => {
                         size="small"
                         endIcon={<ArrowForward />}
                         onClick={() => handleOpenModal(product)}
+                        sx={{
+                          height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '50px' },
+                        
+                          fontSize: { xs: '0.875rem', sm: '0.875rem', md: '0.875rem', lg: '0.875rem', xl: '1rem' },
+                        }}
                       >
                         View Details
                       </Button>
@@ -337,48 +355,7 @@ const HomePage = () => {
         </Container>
       </Box>
 
-      {/* Trusted by Leading Truck Manufacturers Section */}
-      {/* <Box sx={{ py: { xs: 2, md: 3 }, width: '100%' }}>
-        <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
-          <MotionBox
-            variants={sectionVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            sx={{ textAlign: 'center', mb: { xs: 2, md: 1.5, lg: 1.5, xl: 3 } }}
-          >
-            <Typography
-              variant="h2"
-              sx={{
-                mb: { xs: 1, md: 2 },
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
-                fontWeight: 'bold',
-                color:'#DA291C',
-              }}
-            >
-              Trusted by Leading Truck Manufacturers
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                color: 'text.secondary',
-                maxWidth: { xs: '100%', sm: '100%', md: '100%' },
-                mx: 'auto',
-                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
-                px: { xs: 2, sm: 0 },
-                whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow text to wrap on mobile
-                overflow: 'visible',
-                textOverflow: 'clip',
-                textAlign: 'center', // Center the text
-                lineHeight: { xs: 1.4, sm: 1.5 }, // Better line height for readability
-              }}
-            >
-              Superior Seating provides custom seating solutions for all major truck brands worldwide
-            </Typography>
-          </MotionBox>
-        </Container>
-      </Box> */}
-
+     
       {/* Truck Carousel Section */}
       <TruckCarousel />
       
@@ -438,7 +415,7 @@ const HomePage = () => {
                 sx={{ 
                   flex: { xs: 'none', md: '0 0 50%' },
                   position: 'relative',
-                  backgroundColor: '#f8f8f8',
+                  backgroundColor: 'rgba(228, 221, 221, 0.08)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -495,7 +472,7 @@ const HomePage = () => {
                   fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem' },
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
-                  color: 'text.primary',
+                  color: 'black',
                   lineHeight: 1.3,
                 }}>
                   {selectedProduct.title}
@@ -523,9 +500,9 @@ const HomePage = () => {
                 </Typography>
                 
                 <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold' }}>
-                    Features:
-                  </Typography>
+                                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', color: 'black' }}>
+                  Features:
+                </Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     {selectedProduct.features.map((feature: string, index: number) => (
                       <Chip
@@ -552,7 +529,7 @@ const HomePage = () => {
                     sx={{
                       flex: 1,
                       borderColor: 'primary.main',
-                      color: 'primary.main',
+                      color: 'black',
                       fontWeight: 'bold',
                       '&:hover': {
                         backgroundColor: 'primary.main',
@@ -606,18 +583,19 @@ const StatItem = ({ stat }: { stat: { number: number; label: string; suffix: str
       <Typography
         variant="h3"
         sx={{
-          fontWeight: 'bold',
-          color: 'primary.main',
+          fontWeight: '600',
+          color: 'black',
           fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
         }}
       >
         {formattedCount}{stat.suffix}
       </Typography>
       <Typography
-        variant="body1"
+      
         sx={{
-          color: 'text.secondary',
-          fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+          color: 'black',
+          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem', lg: '1.375rem', xl: '1.8rem' },
+          fontWeight: 'bold',
         }}
       >
         {stat.label}
