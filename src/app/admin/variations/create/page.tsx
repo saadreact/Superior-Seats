@@ -276,7 +276,17 @@ const CreateVariationPage = () => {
     setLoading(true);
     
     try {
-      const response = await apiService.createVariation(formData);
+      // Convert File to base64 if image is provided
+      let apiData = { ...formData };
+      if (formData.image) {
+        const base64 = await fileToBase64(formData.image);
+        apiData = {
+          ...formData,
+          image: base64 as string,
+        } as any;
+      }
+
+      const response = await apiService.createVariation(apiData as any);
       setSuccess('Variation created successfully!');
       setTimeout(() => {
         router.push('/admin/variations');
@@ -575,4 +585,16 @@ const CreateVariationPage = () => {
   );
 };
 
-export default CreateVariationPage; 
+export default CreateVariationPage;
+
+/**
+ * Helper: convert File -> base64 string
+ */
+const fileToBase64 = (file: File): Promise<string | ArrayBuffer | null> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+}; 

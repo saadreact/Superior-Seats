@@ -374,7 +374,7 @@ const EditVariationPage = () => {
       const variationId = Number(params.id);
       
       // Prepare the update data with all required fields
-      const updateData = {
+      let updateData = {
         name: formData.name,
         price: formData.price,
         stitch_pattern: formData.stitch_pattern,
@@ -387,8 +387,16 @@ const EditVariationPage = () => {
         seat_item_type: formData.seat_item_type,
         color: formData.color,
         is_active: formData.is_active,
-        image: formData.newImage, // Only pass new image if uploaded
       };
+      
+      // Convert File to base64 if new image is uploaded
+      if (formData.newImage) {
+        const base64 = await fileToBase64(formData.newImage);
+        updateData = {
+          ...updateData,
+          image: base64 as string,
+        } as any;
+      }
       
       const response = await apiService.updateVariation(variationId, updateData);
       setSuccess('Variation updated successfully!');
@@ -727,4 +735,16 @@ const EditVariationPage = () => {
   );
 };
 
-export default EditVariationPage; 
+export default EditVariationPage;
+
+/**
+ * Helper: convert File -> base64 string
+ */
+const fileToBase64 = (file: File): Promise<string | ArrayBuffer | null> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+}; 
