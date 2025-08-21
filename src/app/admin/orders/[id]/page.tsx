@@ -59,7 +59,17 @@ interface OrderItem {
   total?: number;
   product?: {
     name?: string;
-    category?: string;
+    category?: {
+      id: number;
+      name: string;
+      description: string;
+      slug: string;
+      image_url: string | null;
+      is_active: boolean;
+      sort_order: number;
+      created_at: string;
+      updated_at: string;
+    } | null;
   };
   variation?: {
     name?: string;
@@ -549,7 +559,7 @@ const OrderViewPage = () => {
                             {item.product?.name || 'Unknown Product'}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {item.product?.category || 'Unknown Category'}
+                            {item.product?.category?.name || 'Unknown Category'}
                           </Typography>
                         </Box>
                       </TableCell>

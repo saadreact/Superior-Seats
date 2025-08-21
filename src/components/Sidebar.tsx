@@ -30,6 +30,9 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Settings as SettingsIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
+  Palette as PaletteIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -49,6 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
   const pathname = usePathname();
+  const [variationsExpanded, setVariationsExpanded] = useState(false);
 
   const menuItems = [
     {
@@ -76,10 +80,23 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <OrderIcon />,
       href: '/admin/orders',
     },
+  ];
+
+  const variationSubItems = [
     {
       text: 'Variations',
       icon: <SettingsIcon />,
       href: '/admin/variations',
+    },
+    {
+      text: 'Categories',
+      icon: <CategoryIcon />,
+      href: '/admin/categories',
+    },
+    {
+      text: 'Colors',
+      icon: <PaletteIcon />,
+      href: '/admin/colors',
     },
   ];
 
@@ -112,6 +129,16 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     if (onToggleCollapse) {
       onToggleCollapse();
     }
+  };
+
+  const handleVariationsToggle = () => {
+    setVariationsExpanded(!variationsExpanded);
+  };
+
+  const isVariationsActive = () => {
+    return pathname.startsWith('/admin/variations') || 
+           pathname.startsWith('/admin/categories') || 
+           pathname.startsWith('/admin/colors');
   };
 
   const drawerContent = (
@@ -192,6 +219,138 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
             </ListItemButton>
           </ListItem>
         ))}
+
+        {/* Variations Section with Sub-items */}
+        {!collapsed && (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={handleVariationsToggle}
+                selected={isVariationsActive()}
+                sx={{
+                  mx: 1,
+                  borderRadius: 1,
+                  mb: 0.5,
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: 'white',
+                    },
+                  },
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 40,
+                    color: isVariationsActive() ? 'white' : 'inherit',
+                  }}
+                >
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Variations"
+                  primaryTypographyProps={{
+                    fontWeight: isVariationsActive() ? 600 : 400,
+                  }}
+                />
+                {variationsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </ListItemButton>
+            </ListItem>
+            
+            <Collapse in={variationsExpanded} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {variationSubItems.map((item) => (
+                  <ListItem key={item.text} disablePadding>
+                    <ListItemButton
+                      onClick={() => handleNavigation(item.href)}
+                      selected={isActive(item.href)}
+                      sx={{
+                        mx: 1,
+                        ml: 4,
+                        borderRadius: 1,
+                        mb: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark',
+                          },
+                          '& .MuiListItemIcon-root': {
+                            color: 'white',
+                          },
+                        },
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 40,
+                          color: isActive(item.href) ? 'white' : 'inherit',
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{
+                          fontWeight: isActive(item.href) ? 600 : 400,
+                          fontSize: '0.9rem',
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+          </>
+        )}
+
+        {/* Collapsed Variations - Show as single item */}
+        {collapsed && (
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigation('/admin/variations')}
+              selected={isVariationsActive()}
+              sx={{
+                mx: 1,
+                borderRadius: 1,
+                mb: 0.5,
+                minHeight: 48,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                },
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 40,
+                  color: isVariationsActive() ? 'white' : 'inherit',
+                }}
+              >
+                <SettingsIcon />
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
+        )}
       </List>
 
       {/* Customer View Section */}

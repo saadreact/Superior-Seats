@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   Box,
@@ -42,7 +42,17 @@ interface Product {
   id: number;
   name: string;
   description: string;
-  category: string;
+  category: {
+    id: number;
+    name: string;
+    description: string;
+    slug: string;
+    image_url: string | null;
+    is_active: boolean;
+    sort_order: number;
+    created_at: string;
+    updated_at: string;
+  } | null;
   price: string;
   stock: number;
   images?: string[];
@@ -61,29 +71,40 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadProduct();
-  }, [productId]);
-
-  const loadProduct = async () => {
+  const loadProduct = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       const response = await apiService.getProduct(parseInt(productId));
       console.log('Product view API response:', response);
-      setProduct(response.data || response.product || response);
+      
+      // Handle the new response structure
+      let productData;
+      if (response && response.data) {
+        productData = response.data;
+      } else if (response) {
+        productData = response;
+      } else {
+        throw new Error('Invalid response structure');
+      }
+      
+      setProduct(productData);
     } catch (err: any) {
-      if (err.message.includes('404')) {
+      if (err.message.includes('404') || err.message.includes('not found')) {
         setError('Product not found');
       } else {
-        setError('Failed to load product');
+        setError(err.message || 'Failed to load product');
       }
       console.error('Error loading product:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId]);
+
+  useEffect(() => {
+    loadProduct();
+  }, [loadProduct]);
 
   const handleEdit = () => {
     router.push(`/admin/products/${productId}/edit`);
@@ -146,7 +167,7 @@ const ProductDetailPage = () => {
               </Typography>
               
               <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <Chip label={product.category} color="primary" />
+                <Chip label={product.category?.name || 'No Category'} color="primary" />
                 <Chip 
                   label={product.is_active ? 'Active' : 'Inactive'} 
                   color={product.is_active ? 'success' : 'default'} 

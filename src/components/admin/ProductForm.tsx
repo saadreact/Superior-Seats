@@ -44,7 +44,8 @@ interface Product {
   id?: number;
   name: string;
   description: string;
-  category: string;
+  category_id?: number;
+  vehicle_trim_id?: number;
   price: number;
   stock: number;
   images?: string[];
@@ -54,7 +55,18 @@ interface Product {
 
 interface ProductFormProps {
   product?: Product;
-  onSubmit: (product: Product & { newImages?: File[] }) => void;
+  onSubmit: (data: {
+    name: string;
+    description: string;
+    category_id?: number;
+    vehicle_trim_id?: number;
+    price: number;
+    stock: number;
+    images?: string[];
+    is_active: boolean;
+    variation_ids?: number[];
+    newImages?: File[];
+  }) => void;
   onCancel: () => void;
   loading?: boolean;
 }
@@ -68,7 +80,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [formData, setFormData] = useState<Product>({
     name: product?.name || '',
     description: product?.description || '',
-    category: product?.category || 'Truck Seats',
+    category_id: product?.category_id || 1,
+    vehicle_trim_id: product?.vehicle_trim_id || 1,
     price: product?.price || 0,
     stock: product?.stock || 0,
     images: product?.images || [],
@@ -79,11 +92,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [newImages, setNewImages] = useState<File[]>([]);
   const [imageErrors, setImageErrors] = useState<string[]>([]);
   const [variations, setVariations] = useState<Variation[]>([]);
+  const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
+  const [vehicleTrims, setVehicleTrims] = useState<Array<{ id: number; name: string }>>([]);
   const [loadingVariations, setLoadingVariations] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [loadingVehicleTrims, setLoadingVehicleTrims] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadVariations();
+    loadCategories();
+    loadVehicleTrims();
   }, []);
 
   // Update formData when product prop changes (for edit mode)
@@ -92,7 +111,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
       setFormData({
         name: product.name || '',
         description: product.description || '',
-        category: product.category || 'Truck Seats',
+        category_id: product.category_id || 1,
+        vehicle_trim_id: product.vehicle_trim_id || 1,
         price: product.price || 0,
         stock: product.stock || 0,
         images: product.images || [],
@@ -116,6 +136,40 @@ const ProductForm: React.FC<ProductFormProps> = ({
       console.error('Error loading variations:', err);
     } finally {
       setLoadingVariations(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      setError(null);
+      const response = await apiService.getCategories();
+      // Ensure we always have an array, even if the API returns something else
+      const categoriesArray = Array.isArray(response) ? response : [];
+      setCategories(categoriesArray);
+    } catch (err: any) {
+      console.error('Error loading categories:', err);
+      // Set empty array as fallback
+      setCategories([]);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  const loadVehicleTrims = async () => {
+    try {
+      setLoadingVehicleTrims(true);
+      setError(null);
+      const response = await apiService.getVehicleTrims();
+      // Ensure we always have an array, even if the API returns something else
+      const trimsArray = Array.isArray(response) ? response : [];
+      setVehicleTrims(trimsArray);
+    } catch (err: any) {
+      console.error('Error loading vehicle trims:', err);
+      // Set empty array as fallback
+      setVehicleTrims([]);
+    } finally {
+      setLoadingVehicleTrims(false);
     }
   };
 
@@ -203,18 +257,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     });
   };
 
-  const categories = [
-    'Truck Seats',
-    'Car Seats', 
-    'Racing Seats',
-    'Office Chairs',
-    'Gaming Chairs',
-    'Sofas',
-    'Accessories',
-    'Safety',
-    'Maintenance'
-  ];
-
   return (
     <Box sx={{ p: 2 }}>
       {error && (
@@ -238,15 +280,41 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Category</InputLabel>
             <Select
-              value={formData.category}
-              onChange={handleSelectChange('category')}
+              value={formData.category_id}
+              onChange={handleSelectChange('category_id')}
               label="Category"
+              disabled={loadingCategories}
             >
-              {categories.map((category) => (
-                <MenuItem key={category} value={category}>
-                  {category}
-                </MenuItem>
-              ))}
+              {loadingCategories ? (
+                <MenuItem disabled>Loading categories...</MenuItem>
+              ) : (
+                (Array.isArray(categories) ? categories : []).map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+        </Box>
+        <Box>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Vehicle Trim</InputLabel>
+            <Select
+              value={formData.vehicle_trim_id}
+              onChange={handleSelectChange('vehicle_trim_id')}
+              label="Vehicle Trim"
+              disabled={loadingVehicleTrims}
+            >
+              {loadingVehicleTrims ? (
+                <MenuItem disabled>Loading vehicle trims...</MenuItem>
+              ) : (
+                (Array.isArray(vehicleTrims) ? vehicleTrims : []).map((trim) => (
+                  <MenuItem key={trim.id} value={trim.id}>
+                    {trim.name}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
         </Box>
@@ -287,6 +355,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Typography variant="h6" sx={{ mb: 2 }}>
             Product Images
           </Typography>
+          
+          {/* Image Upload Info */}
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2">
+              • The first image uploaded will be set as the primary image
+              • You can upload multiple images (JPEG, PNG, GIF up to 2MB each)
+              • Uploading new images will replace all existing images for this product
+            </Typography>
+          </Alert>
           
           {/* Current Images Display */}
           {formData.images && formData.images.length > 0 && (
