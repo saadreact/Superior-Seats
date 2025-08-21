@@ -134,7 +134,7 @@ const Gallery = () => {
               variant="h3"
               sx={{
                 textAlign: 'center',
-                fontWeight: 'bold',
+                fontWeight: 'medium',
                 mb: { xs: 0.5, sm: 1.5, md: 2.5 ,lg:2.5},
                
                 
@@ -369,7 +369,7 @@ const Gallery = () => {
               variant="h3"
               sx={{
                 textAlign: 'center',
-                fontWeight: 'bold',
+                fontWeight: 'normal',
                 mb: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
                 py: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
                 color: 'text.primary',

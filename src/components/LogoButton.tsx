@@ -53,9 +53,9 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
         sx={{
           backgroundColor: 'white',
           color: '#DA291C',
-          borderRadius: '50%',
-          width: { xs: 85, sm: 65, md: 70, lg: 85, xl: 120 },
-          height: { xs: 85, sm: 65, md: 70, lg: 85, xl: 120 },
+          borderRadius: '50%',   // S logo  size button
+          width: { xs: '90px', sm: '80px', md: '100px', lg: '120px', xl: '160px' },
+          height: { xs: '90px', sm: '80px', md: '100px', lg: '120px', xl: '160px' },
           minWidth: 'unset',
           position: 'relative',
           overflow: 'hidden',
@@ -73,16 +73,16 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
                      top: '50%',
                      left: '50%',
                      transform: 'translate(-50%, -50%)',
-                     width: { xs: 50, sm: 40, md: 45, lg: 50, xl: 70 },
-                     height: { xs: 50, sm: 40, md: 45, lg: 50, xl: 70 },
+                     width: { xs: '70px', sm: '60px', md: '70px', lg: '80px', xl: '100px' },
+                     height: { xs: '70px', sm: '60px', md: '70px', lg: '80px', xl: '100px' },
                      filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
                    }}
                  >
                                        <Image
                       src="/superiorlogo/SButton.png"
                       alt="Superior Seating Logo"
-                      width={70}
-                      height={70}
+                      width={90}
+                      height={90}
                       style={{
                         width: '100%',
                         height: '100%',

@@ -25,186 +25,97 @@ const Footer: React.FC<FooterProps> = () => {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                sx={{
-                  py: { xs: 2, sm: 2.5, md: 3, lg: 3.5 },
-                  background: 'linear-gradient(135deg, #DA291C 0%, #B71C1C 100%)', // Pantone 485C gradient
-                  color: 'white',
-                  //py:1,
-                  
-                }}
+                                                                   sx={{
+                    py: { xs: 2, sm: 2.5, md: 3, lg: 3.5 },
+                   background: 'linear-gradient(135deg, rgba(221, 45, 32, 0.9) 0%, rgba(155, 15, 05, 0.9) 100%)',
+                   color: 'white',
+                   backdropFilter: 'blur(10px)',
+                   borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                   position: 'sticky',
+                   bottom: 0,
+                   zIndex: 1000,
+                 }}
               >
-                <Container maxWidth="lg">
+                                 <Container maxWidth={false} disableGutters sx={{ width: '85%', mx: 'auto' }}>
                   {/* Main Footer Content */}
-                  <Box sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    justifyContent: 'space-between',
-                    alignItems: { xs: 'center', md: 'flex-start' },
-                    gap: { xs: 3, md: 0 },
-                  }}>
-{/* Company Info */}
-<Box
-  sx={{
-    textAlign: { xs: 'center', md: 'left' },
-    flex: { md: '1' }
-  }}
->
-  <Typography
-    variant="h1"
-    sx={{
-      fontWeight: 'bold',
-      mb: 0.5,
-      fontSize: {
-        xs: '1rem',
-        sm: '1.125rem',
-        md: '1.25rem',
-        lg: '1.5rem'
-      },
-      background: 'linear-gradient(45deg, #ffffff 30%,rgb(255, 255, 255) 90%)',
-      backgroundClip: 'text',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent'
-    }}
-  >
-    Superior Seating LLC
-  </Typography>
-
-  {/* Address + Office Hours in parallel */}
-  <Box
-    sx={{
-      display: 'flex',
-      flexDirection: { xs: 'column', sm: 'row' },
-      gap: { xs: 2, sm: 4 },
-      py: { xs: 1.5, sm: 1 },
-      alignItems: { xs: 'center', sm: 'flex-start' },
-      justifyContent: 'flex-start'
-    }}
-  >
-    {/* Address */}
-    <Box>
-      <Typography
-        variant="body2"
-        sx={{
-          opacity: 0.95,
-          fontSize: { xs: '0.75rem', sm: '0.875rem' },
-          lineHeight: 1.3,
-          mb: 0.5,
-          fontWeight: 550,
-          color: 'white'
-        }}
-      >
-        21468 C Street<br />
-        Elkhart, IN 46516
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          opacity: 0.95,
-          fontSize: { xs: '0.75rem', sm: '0.875rem' },
-          lineHeight: 1.3,
-          mb: 0.5,
-          fontWeight: 550,
-          color: 'white'
-        }}
-      >
-        P. 574-389-9011
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          opacity: 0.99,
-          fontSize: { xs: '0.75rem', sm: '0.875rem' },
-          lineHeight: 1.3,
-          mb: 0.5,
-          fontWeight: 600,
-          color: 'white'
-        }}
-      >
-        info@superiorseatingllc.com
-      </Typography>
-    </Box>
-
-    {/* Office Hours */}
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column',
-      alignItems: { xs: 'center', sm: 'flex-start' }
-    }}>
-      <Typography
-        variant="body2"
-        sx={{
-          opacity: 1,
-          fontSize: { xs: '0.75rem', sm: '0.875rem' ,md: '0.875rem', lg: '1rem'},
-          lineHeight: 1.3,
-          fontWeight: 'bold',
-          mb: 0.5,
-          color: 'white'
-        }}
-      >
-        Office Hours
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          opacity: 0.95,
-          fontSize: { xs: '0.75rem', sm: '0.875rem'},
-          lineHeight: 1.3,
-          fontWeight: 550,
-          color: 'white',
-          mb: 0.25,
-             minWidth: '150px',
-        }}
-      >
-        Tuesday - Friday
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          opacity: 0.95,
-          fontSize: { xs: '0.75rem', sm: '0.875rem' ,},
-          lineHeight: 1.3,
-          fontWeight: 550,
-          color: 'white',
-          minWidth: '200px'
-        }}
-      >
-         7:00AM - 5:00PM
-      </Typography>
-    </Box>
-  </Box>
-</Box>
-
-
-
-                    {/* Quick Links */}
-                    <Box sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: { xs: 'center', md: 'flex-start' },
-                      flex: { md: '1' },
-                      ml: { xs: 0, md: 8 },
+                                                                          <Box sx={{
+                     display: 'flex',
+                     flexDirection: { xs: 'column', md: 'row' },
+                     justifyContent: 'space-between',
+                     alignItems: { xs: 'center', md: 'flex-start' },
+                     gap: { xs: 4, md: 0 },
+                     px: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
+                     width: '100%',
                     }}>
+{/* Company Info */}
+ <Box
+   sx={{
+     textAlign: { xs: 'center', md: 'left' },
+     display: 'flex',
+     flexDirection: 'column',
+     gap: 2,
+   }}
+ >
+     <Typography
+     variant="h3"
+     sx={{
+       fontWeight: 'bold',
+       fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.5rem' ,xl: '2rem'},
+       color: 'white',
+       textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+       mb: 1,
+     }}
+   >
+     Superior Seating LLC
+   </Typography>
+
+   {/* Quote */}
+   <Typography
+     variant="body2"
+     sx={{
+       opacity: 0.9,
+       fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
+       lineHeight: 1.4,
+       fontStyle: 'italic',
+       color: 'white',
+       textAlign: { xs: 'center', md: 'left' },
+       maxWidth: '300px'
+     }}
+   >
+           &ldquo;Premium truck, RV, and van seating with <br /> custom options and superior craftsmanship&rdquo;
+   </Typography>
+ </Box>
+
+
+
+                                         {/* Quick Links */}
+                     <Box sx={{
+                       display: 'flex',
+                       flexDirection: 'column',
+                       alignItems: { xs: 'center', md: 'flex-start' },
+                       gap: 2,
+                     }}>
                                              <Typography variant="h3" sx={{
                          fontWeight: 'bold',
-                         mb: 1,
-                        
-                         fontSize: { xs: '1rem', sm: '1.125rem' , md: '1.25rem', lg: '1.5rem'},
+                         fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.3rem' ,xl: '2rem'},
+                         color: 'white',
+                         textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
                          textAlign: { xs: 'center', md: 'left' }
                        }}>
                          Quick Links
                        </Typography>
-                      <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: { xs: 1, md: 0.5 },
-                        alignItems: { xs: 'center', md: 'flex-start' }
-                      }}>
+                                             <Box sx={{
+                         display: 'flex',
+                         flexDirection: 'column',
+                         gap: 1.5,
+                         alignItems: { xs: 'center', md: 'flex-start' }
+                       }}>
                         <Link href="/privacy-policy" style={{ textDecoration: 'none' }}>
                           <Typography
                             sx={{
                               color: 'white',
                               textDecoration: 'none',
-                              fontSize: { xs: '0.875rem', sm: '1rem' },
+                              fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                               opacity: 0.95,
                               fontWeight: 550,
                               transition: 'all 0.3s ease',
@@ -227,7 +138,7 @@ const Footer: React.FC<FooterProps> = () => {
                             sx={{
                               color: 'white',
                               textDecoration: 'none',
-                              fontSize: { xs: '0.875rem', sm: '1rem' },
+                              fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                               opacity: 0.95,
                               fontWeight: 550,
                               transition: 'all 0.3s ease',
@@ -250,7 +161,7 @@ const Footer: React.FC<FooterProps> = () => {
                             sx={{
                               color: 'white',
                               textDecoration: 'none',
-                              fontSize: { xs: '0.875rem', sm: '1rem' },
+                              fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                               opacity: 0.95,
                               fontWeight: 550,
                               transition: 'all 0.3s ease',
@@ -269,54 +180,179 @@ const Footer: React.FC<FooterProps> = () => {
                           </Typography>
                         </Link>
                        
-                      </Box>
-                    </Box>
+                                             </Box>
+                     </Box>
 
-                    {/* Social Media */}
-                    <Box sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: { xs: 'center', md: 'flex-start' },
-                      flex: { md: '1' },
-                    
-                    }}>
-                                             <Typography variant="h3" sx={{
-                         fontWeight: 'bold',
-                         mb: 1,
-                         fontSize: { xs: '1rem', sm: '1.125rem' , md: '1.25rem', lg: '1.5rem'},
-                         textAlign: { xs: 'center', md: 'left' }
-                       }}>
-                         Follow Us
-                       </Typography>
+                                                                                   {/* Contact */}
                       <Box sx={{
                         display: 'flex',
-                        gap: { xs: 1.5, sm: 2 },
-                        justifyContent: 'center',
-                        py: { xs: 1.5, sm: 1.2 },
+                        flexDirection: 'column',
+                        alignItems: { xs: 'center', md: 'flex-start' },
+                        gap: 2,
                       }}>
+                        <Typography variant="h3" sx={{
+                          fontWeight: 'bold',
+                          fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.3rem' ,xl: '2rem'},
+                          color: 'white',
+                          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                          textAlign: { xs: 'center', md: 'left' }
+                        }}>
+                          Contact
+                        </Typography>
+                                                 <Box sx={{
+                           display: 'flex',
+                           flexDirection: 'column',
+                           gap: 1.5,
+                           alignItems: { xs: 'center', sm: 'flex-start' }
+                         }}>
+                           <Typography
+                            
+                             sx={{
+                               opacity: 0.95,
+                               fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
+                               lineHeight: 1.3,
+                               mb: 0.5,
+                               fontWeight: 550,
+                               color: 'white'
+                             }}
+                           >
+                             21468 C Street<br />
+                             Elkhart, IN 46516
+                           </Typography>
+                           <Typography
+                            
+                             sx={{
+                               opacity: 0.95,
+                               fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
+                               lineHeight: 1.3,
+                               mb: 0.5,
+                               fontWeight: 550,
+                               color: 'white'
+                             }}
+                           >
+                             P. 574-389-9011
+                           </Typography>
+                           <Typography
+                           
+                             sx={{
+                               opacity: 0.99,
+                               fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
+                               lineHeight: 1.3,
+                               mb: 0.5,
+                               fontWeight: 600,
+                               color: 'white'
+                             }}
+                           >
+                             info@superiorseatingllc.com
+                           </Typography>
+                         </Box>
+                                             </Box>
+
+                                                                                                           {/* Office Hours */}
+                       <Box sx={{
+                         display: 'flex',
+                         flexDirection: 'column',
+                         alignItems: { xs: 'center', md: 'flex-start' },
+                         gap: 2,
+                                                   marginLeft: { md: '-2rem', lg: '-2.5rem', xl: '-3rem' },
+                       }}>
+                        <Typography variant="h3" sx={{
+                          fontWeight: 'bold',
+                          fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.3rem' ,xl: '2rem'},
+                          color: 'white',
+                          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                          textAlign: { xs: 'center', md: 'left' }
+                        }}>
+                                                     Office Hours
+                        </Typography>
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1.5,
+                          alignItems: { xs: 'center', sm: 'flex-start' }
+                        }}>
+                          <Typography
+                            sx={{
+                              opacity: 0.95,
+                              fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
+                              lineHeight: 1.3,
+                              fontWeight: 550,
+                              color: 'white',
+                              mb: 0.25,
+                            }}
+                          >
+                            Tuesday - Friday
+                          </Typography>
+                          <Typography
+                            sx={{
+                              opacity: 0.95,
+                              fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
+                              lineHeight: 1.3,
+                              fontWeight: 550,
+                              color: 'white',
+                            }}
+                          >
+                            7:00AM - 5:00PM
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                                                                                                                                                                      {/* Social Media */}
+           <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: { xs: 'center', md: 'flex-start' },
+                          gap: 2,
+                      //  border: '1px solid white'
+                          
+                        }}>
+                          {/* Follow Us Text */}
+                          <Typography variant="h3" sx={{
+                            fontWeight: 'bold',
+                            fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.3rem' ,xl: '2rem'},
+                            color: 'white',
+                            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                            textAlign: { xs: 'center', md: 'left' }
+                          }}>
+                            Follow Us
+                          </Typography>
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1.5,
+                          alignItems: { xs: 'center', md: 'flex-start' }
+                        }}>
+                          <Box sx={{
+                            display: 'flex',
+                            gap: { xs: 2, sm: 2.5 },
+                            justifyContent: { xs: 'center', md: 'flex-start' },
+                            flexWrap: 'wrap',
+                          }}>
                                                    <IconButton
                              component="a"
                              href="https://www.facebook.com/people/Superior-Seating-LLC/61576399660914/"
                              target="_blank"
                              rel="noopener noreferrer"
-                             sx={{
-                               color: 'white',
-                               backgroundColor: 'rgba(255,255,255,0.15)',
-                               backdropFilter: 'blur(10px)',
-                               border: '1px solid rgba(255,255,255,0.2)',
-                               '&:hover': {
-                                 backgroundColor: 'rgba(255,255,255,0.25)',
-                                 transform: 'scale(1.1) translateY(-2px)',
-                                 boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
-                               },
-                               transition: 'all 0.3s ease',
-                               width: { xs: 44, sm: 48, md: 52 },
-                               height: { xs: 44, sm: 48, md: 52 },
-                               display: 'flex',
-                               alignItems: 'center',
-                               justifyContent: 'center',
-                               p: 0
-                             }}
+                                                           sx={{
+                                color: 'white',
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255,255,255,0.5)',
+                                borderRadius: '12px',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(255,255,255,0.2)',
+                                  transform: 'scale(1.05) translateY(-1px)',
+                                  boxShadow: '0 4px 15px rgba(255,255,255,0.2)',
+                                  border: '1px solid rgba(255,255,255,0.3)',
+                                },
+                                transition: 'all 0.3s ease',
+                                width: { xs: '48px', sm: '48px', md: '42px' ,lg: '45px', xl: '50px'},
+                                height: { xs: '48px', sm: '48px', md: '42px' ,lg: '45px', xl: '50px'},
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                p: 0
+                              }}
                            >
                           <Box component="span" sx={{
                             fontSize: { xs: '1.5rem', sm: '1.75rem' },
@@ -333,24 +369,26 @@ const Footer: React.FC<FooterProps> = () => {
                           }}>f</Box>
                         </IconButton>
 
-                                                                                                                                                                                                               <IconButton
+                                                                                                                                                                                                                                                                                                                                                                                                                               <IconButton
                                component="a"
                                href="https://instagram.com"
                                target="_blank"
                                rel="noopener noreferrer"
                                sx={{
                                  color: 'white',
-                                 backgroundColor: 'rgba(255,255,255,0.15)',
+                                 backgroundColor: 'rgba(255,255,255,0.1)',
                                  backdropFilter: 'blur(10px)',
-                                 border: '1px solid rgba(255,255,255,0.2)',
+                                 border: '1px solid rgba(255, 255, 255, 0.5)',
+                                 borderRadius: '12px',
                                  '&:hover': {
-                                   backgroundColor: 'rgba(255,255,255,0.25)',
-                                   transform: 'scale(1.1) translateY(-2px)',
-                                   boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                                   backgroundColor: 'rgba(255,255,255,0.2)',
+                                   transform: 'scale(1.05) translateY(-1px)',
+                                   boxShadow: '0 4px 15px rgba(255,255,255,0.2)',
+                                   border: '1px solid rgba(255,255,255,0.3)',
                                  },
                                  transition: 'all 0.3s ease',
-                                 width: { xs: 48, sm: 52 },
-                                 height: { xs: 48, sm: 52 },
+                                 width: { xs: '48px', sm: '48px', md: '42px' ,lg: '45px', xl: '50px'},
+                                 height: { xs: '48px', sm: '48px', md: '42px' ,lg: '45px', xl: '50px'},
                                  display: 'flex',
                                  alignItems: 'center',
                                  justifyContent: 'center',
@@ -365,24 +403,26 @@ const Footer: React.FC<FooterProps> = () => {
                                }} />
                           </IconButton>
 
-                                                                                                                                                                                                               <IconButton
+                                                                                                                                                                                                                                                                                                                                                                                                                               <IconButton
                                component="a"
                                href="https://youtube.com"
                                target="_blank"
                                rel="noopener noreferrer"
                                sx={{
                                  color: 'white',
-                                 backgroundColor: 'rgba(255,255,255,0.15)',
+                                 backgroundColor: 'rgba(255,255,255,0.1)',
                                  backdropFilter: 'blur(10px)',
-                                 border: '1px solid rgba(255,255,255,0.2)',
+                                 border: '1px solid rgba(255,255,255,0.5)',
+                                 borderRadius: '12px',
                                  '&:hover': {
-                                   backgroundColor: 'rgba(255,255,255,0.25)',
-                                   transform: 'scale(1.1) translateY(-2px)',
-                                   boxShadow: '0 8px 25px rgba(255,255,255,0.3)',
+                                   backgroundColor: 'rgba(255,255,255,0.2)',
+                                   transform: 'scale(1.05) translateY(-1px)',
+                                   boxShadow: '0 4px 15px rgba(255,255,255,0.2)',
+                                   border: '1px solid rgba(255,255,255,0.3)',
                                  },
                                  transition: 'all 0.3s ease',
-                                 width: { xs: 48, sm: 52 },
-                                 height: { xs: 48, sm: 52 },
+                                 width: { xs: '48px', sm: '48px', md: '42px' ,lg: '45px', xl: '50px'},
+                                 height: { xs: '48px', sm: '48px', md: '42px' ,lg: '45px', xl: '50px'},
                                  display: 'flex',
                                  alignItems: 'center',
                                  justifyContent: 'center',
@@ -405,17 +445,18 @@ const Footer: React.FC<FooterProps> = () => {
                             }}>▶</Box>
                           </IconButton>
 
-                        
+                        </Box>
                       </Box>
                     </Box>
                   </Box>
 
                                      {/* Copyright */}
                    <Box sx={{
-                     mt: { xs: 1.5, md: 1.5 },
-                     pt: { xs: 1.5, md: 1.5 },
-                     borderTop: '1px solid rgba(255,255,255,0.2)',
-                     textAlign: 'center'
+                                           mt: { xs: 2.5, md: 3 },
+                                           pt: { xs: 1.5, md: 2 },
+                     borderTop: '1px solid rgba(255,255,255,0.15)',
+                     textAlign: 'center',
+                                           px: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
                    }}>
                      <Typography variant="body2" sx={{
                        opacity: 0.95,

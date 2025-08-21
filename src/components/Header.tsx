@@ -157,7 +157,7 @@ const Header = () => {
                  primaryTypographyProps={{
                    fontSize: { xs: '0.9rem', sm: '1rem' },
                    fontWeight: 650,
-                   color: '#DA291C'
+                   color: 'rgba(0, 0, 0, )',
                  }}
                />
              </ListItem>
@@ -341,18 +341,18 @@ const Header = () => {
                            color="inherit"
                            onClick={item.text === 'Home' ? handleHomeClick : undefined}
                            sx={{
-                             color: '#DA291C',
-                             fontWeight: 600,
-                             fontSize: { md: '0.8rem', lg: '0.875rem' },
+                             color: 'black',
+                             fontWeight: 'bold',
+                             fontSize: { md: '0.9rem', lg: '1rem', xl: '1.1rem' },
                              // Further reduced padding for even smaller hover area
                              px: { md: 0.5, lg: 1, xl: 1.25, sm: 0.5, xs: 0.5},
                              py: { md: 0.5, lg: 0.55, xl: 1, sm: 0.5, xs: 0.5},
                              whiteSpace: 'nowrap',
                              minWidth: 'auto',
-                             backgroundColor: isActive ? 'rgba(218, 41, 28, 0.08)' : 'transparent',
-                             '&:hover': {
-                               backgroundColor: 'rgba(218, 41, 28, 0.08)',
-                               color: '#DA291C',
+                                                           backgroundColor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
+                              '&:hover': {
+                                backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                                color: 'black',
                                // Minimal transform for very subtle hover effect
                                transform: 'translateY(-0.25px)',
                              },
@@ -385,10 +385,10 @@ const Header = () => {
                       edge="start"
                       onClick={handleDrawerToggle}
                       sx={{ 
-                        color: '#DA291C',
+                        color: 'black',
                         p: { xs: 1, sm: 1.25 },
                         '&:hover': {
-                          backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
                         }
                       }}
                     >
@@ -400,24 +400,25 @@ const Header = () => {
                       color="inherit"
                       onClick={handleCartToggle}
                       sx={{ 
-                        color: '#DA291C',
+                        color: 'black',
                         p: { xs: 1, sm: 1.25 },
                         '&:hover': {
-                          backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
                         }
                       }}
                     >
-                      <Badge 
-                        badgeContent={totalItems} 
-                        color="primary"
-                        sx={{
-                          '& .MuiBadge-badge': {
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                            minWidth: { xs: '16px', sm: '18px',md: '18px', lg: '18px', xl: '18px' },
-                            height: { xs: '16px', sm: '18px',md: '18px', lg: '18px', xl: '18px' },
-                          }
-                        }}
-                      >
+                                             <Badge 
+                         badgeContent={totalItems} 
+                         sx={{
+                           '& .MuiBadge-badge': {
+                             fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                             minWidth: { xs: '16px', sm: '18px',md: '18px', lg: '18px', xl: '18px' },
+                             height: { xs: '16px', sm: '18px',md: '18px', lg: '18px', xl: '18px' },
+                             backgroundColor: 'black',
+                             color: 'white',
+                           }
+                         }}
+                       >
                         <ShoppingCartIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem', md: '1.5rem', lg: '1.5rem', xl: '1.5rem' } }} />
                       </Badge>
                     </IconButton>
@@ -430,28 +431,29 @@ const Header = () => {
                        color="inherit"
                        onClick={handleCartToggle}
                        sx={{ 
-                         color: '#DA291C',
+                         color: 'black',
                          // Reduced padding for smaller hover area
                          p: { md: 0.75, lg: 1.25 },
-                         '&:hover': {
-                           backgroundColor: 'rgba(218, 41, 28, 0.08)',
-                           // Reduced scale for subtler hover effect
-                           transform: 'scale(1.03)',
-                         },
+                                                   '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                            // Reduced scale for subtler hover effect
+                            transform: 'scale(1.03)',
+                          },
                          transition: 'all 0.2s ease',
                        }}
                      >
-                      <Badge 
-                        badgeContent={totalItems} 
-                        color="primary"
-                        sx={{
-                          '& .MuiBadge-badge': {
-                            fontSize: { md: '0.7rem', lg: '0.75rem' },
-                            minWidth: { md: '16px', lg: '18px' },
-                            height: { md: '16px', lg: '18px' },
-                          }
-                        }}
-                      >
+                                             <Badge 
+                         badgeContent={totalItems} 
+                         sx={{
+                           '& .MuiBadge-badge': {
+                             fontSize: { md: '0.7rem', lg: '0.75rem' },
+                             minWidth: { md: '16px', lg: '18px' },
+                             height: { md: '16px', lg: '18px' },
+                             backgroundColor: 'black',
+                             color: 'white',
+                           }
+                         }}
+                       >
                         <ShoppingCartIcon sx={{ fontSize: { md: '1.4rem', lg: '1.6rem', xl: '1.6rem' ,sm: '1.5rem',xs: '1.5rem'} }} />
                       </Badge>
                     </IconButton>
@@ -462,13 +464,13 @@ const Header = () => {
                         <IconButton
                           color="inherit"
                           sx={{
-                            color: '#DA291C',
+                            color: 'black',
                             p: { md: 0.6, lg: 0.8 },
-                            '&:hover': {
-                              backgroundColor: 'rgba(218, 41, 28, 0.08)',
-                              color: '#DA291C',
-                              transform: 'scale(1.03)',
-                            },
+                                                       '&:hover': {
+                             backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                             color: 'black',
+                             transform: 'scale(1.03)',
+                           },
                             transition: 'all 0.2s ease',
                           }}
                         >
@@ -484,15 +486,15 @@ const Header = () => {
                             color="inherit"
                             onClick={handleUserMenuClick}
                             sx={{
-                              color: '#DA291C',
+                              color: 'black',
                               // Reduced padding for smaller hover area
                               p: { md: 0.6, lg: 0.8 },
-                              '&:hover': {
-                                backgroundColor: 'rgba(218, 41, 28, 0.08)',
-                                color: '#DA291C',
-                                // Reduced scale for subtler hover effect
-                                transform: 'scale(1.03)',
-                              },
+                                                           '&:hover': {
+                               backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                               color: 'black',
+                               // Reduced scale for subtler hover effect
+                               transform: 'scale(1.03)',
+                             },
                               transition: 'all 0.2s ease',
                             }}
                           >
@@ -540,12 +542,12 @@ const Header = () => {
                            color="inherit"
                            onClick={handleAuthClick}
                            sx={{
-                             color: '#DA291C',
+                             color: 'black',
                              // Slightly increased padding for better hover area
                              p: { md: 0.75, lg: 1 },
                              '&:hover': {
-                               backgroundColor: 'rgba(218, 41, 28, 0.08)',
-                               color: '#DA291C',
+                               backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                               color: 'black',
                                // Slightly increased scale for better hover effect
                                transform: 'scale(1.04)',
                              },
