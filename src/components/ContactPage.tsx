@@ -63,7 +63,7 @@ const ContactPage = () => {
     },
     '& .MuiInputLabel-root': {
       color: 'text.secondary',
-      transform: 'translate(14px, 8px) scale(1)',
+      transform: 'translate(14px, 5.5px) scale(1)',
       '&.Mui-focused': {
         color: 'primary.main',
         transform: 'translate(14px, -9px) scale(0.75)',
