@@ -879,6 +879,9 @@ class ApiService {
       caption: string;
       set_primary: boolean;
     }[];
+    existing_images?: string[];
+    removed_images?: string[];
+    primary_image_index?: number;
   }) {
     try {
       // Check if images contain base64 data (JSON format) or File objects (FormData format)
@@ -901,6 +904,23 @@ class ApiService {
           data.variation_ids.forEach(id => {
             formData.append('variation_ids[]', id.toString());
           });
+        }
+        
+        // Add new fields for image management
+        if (data.existing_images) {
+          data.existing_images.forEach((imagePath: string) => {
+            formData.append('existing_images[]', imagePath);
+          });
+        }
+        
+        if (data.removed_images) {
+          data.removed_images.forEach((imagePath: string) => {
+            formData.append('removed_images[]', imagePath);
+          });
+        }
+        
+        if (data.primary_image_index !== undefined) {
+          formData.append('primary_image_index', data.primary_image_index.toString());
         }
         
         // Convert base64 to File objects and add to FormData

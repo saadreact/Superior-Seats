@@ -7,7 +7,9 @@ import {
   Typography,
   Alert,
   Paper,
+  Button,
 } from '@mui/material';
+import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import ProductForm from '@/components/admin/ProductForm';
 import { apiService } from '@/utils/api';
@@ -103,9 +105,20 @@ const CreateProductPage = () => {
   return (
     <AdminLayout title="Create Product">
       <Box>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Create New Product
-        </Typography>
+        <Box sx={{ mb: 3 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => router.push('/admin/products')}
+            sx={{ mb: 2 }}
+          >
+            Back to Products
+          </Button>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ 
+            fontSize: { xs: '1.75rem', md: '2.125rem' }
+          }}>
+            Create New Product
+          </Typography>
+        </Box>
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
