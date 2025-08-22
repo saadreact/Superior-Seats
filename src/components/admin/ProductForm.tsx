@@ -66,6 +66,8 @@ interface ProductFormProps {
     is_active: boolean;
     variation_ids?: number[];
     newImages?: File[];
+    primaryImageIndex?: number;
+    removedImages?: string[];
   }) => void;
   onCancel: () => void;
   loading?: boolean;
@@ -91,6 +93,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const [newImages, setNewImages] = useState<File[]>([]);
   const [imageErrors, setImageErrors] = useState<string[]>([]);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState<number>(0); // Track primary image
+  const [removedImages, setRemovedImages] = useState<string[]>([]); // Track removed images
   const [variations, setVariations] = useState<Variation[]>([]);
   const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
   const [vehicleTrims, setVehicleTrims] = useState<Array<{ id: number; name: string }>>([]);
@@ -227,12 +231,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
         return;
       }
       
-      // Override existing images with new ones
-      setNewImages(fileArray);
-      setFormData(prev => ({
-        ...prev,
-        images: [], // Clear existing images when new ones are uploaded
-      }));
+      // Add new images to existing ones (don't clear existing images)
+      setNewImages(prev => [...prev, ...fileArray]);
       setImageErrors([]);
     }
   };
@@ -243,17 +243,39 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const removeCurrentImage = (index: number) => {
+    const imageToRemove = formData.images?.[index];
     const updatedImages = formData.images?.filter((_, i) => i !== index) || [];
+    
     setFormData({
       ...formData,
       images: updatedImages,
     });
+    
+    // Track the removed image
+    if (imageToRemove) {
+      setRemovedImages(prev => [...prev, imageToRemove]);
+    }
+    
+    // Adjust primary image index if needed
+    if (index <= primaryImageIndex && primaryImageIndex > 0) {
+      setPrimaryImageIndex(primaryImageIndex - 1);
+    } else if (index < primaryImageIndex) {
+      // No change needed
+    } else if (updatedImages.length === 0) {
+      setPrimaryImageIndex(0);
+    }
+  };
+
+  const setPrimaryImage = (index: number) => {
+    setPrimaryImageIndex(index);
   };
 
   const handleSubmit = () => {
     onSubmit({
       ...formData,
       newImages: newImages.length > 0 ? newImages : undefined,
+      primaryImageIndex: primaryImageIndex,
+      removedImages: removedImages.length > 0 ? removedImages : undefined,
     });
   };
 
@@ -369,32 +391,67 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {formData.images && formData.images.length > 0 && (
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Current Images:
+                Current Images (Click to set as primary):
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 {formData.images.map((image, index) => (
-                  <Box key={index} sx={{ position: 'relative' }}>
+                  <Box 
+                    key={index} 
+                    sx={{ 
+                      position: 'relative',
+                      cursor: 'pointer',
+                      border: index === primaryImageIndex ? '3px solid #1976d2' : '1px solid #ddd',
+                      borderRadius: 1,
+                      overflow: 'visible', // Changed from 'hidden' to 'visible' to show cross button
+                    }}
+                    onClick={() => setPrimaryImage(index)}
+                  >
                     <Image
                       src={`https://superiorseats.ali-khalid.com${image}`}
                       alt={`Product image ${index + 1}`}
                       width={100}
                       height={100}
-                      style={{ objectFit: 'cover', borderRadius: 4 }}
+                      style={{ objectFit: 'cover' }}
                     />
                     <IconButton
                       size="small"
-                      onClick={() => removeCurrentImage(index)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeCurrentImage(index);
+                      }}
                       sx={{
                         position: 'absolute',
-                        top: -8,
-                        right: -8,
+                        top: -16,
+                        right: -16,
                         bgcolor: 'error.main',
                         color: 'white',
+                        width: 28,
+                        height: 28,
                         '&:hover': { bgcolor: 'error.dark' },
+                        zIndex: 10,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                       }}
                     >
                       <CloseIcon fontSize="small" />
                     </IconButton>
+                    {index === primaryImageIndex && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 4,
+                          left: 4,
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        Primary
+                      </Box>
+                    )}
                   </Box>
                 ))}
               </Box>
@@ -425,59 +482,84 @@ const ProductForm: React.FC<ProductFormProps> = ({
             {newImages.length > 0 && (
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  New Images {formData.images && formData.images.length > 0 ? '(will override existing images):' : ':'}
+                  New Images to Add:
                 </Typography>
                 {formData.images && formData.images.length > 0 && (
-                  <Alert severity="warning" sx={{ mb: 2 }}>
-                    Uploading new images will replace all existing images for this product.
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    New images will be added to the existing ones. You can remove any images using the delete buttons.
                   </Alert>
                 )}
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {newImages.map((file, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        position: 'relative',
-                        width: 100,
-                        height: 100,
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                      }}
-                    >
-                      <Image
-                        src={URL.createObjectURL(file)}
-                        alt={`New ${index + 1}`}
-                        width={100}
-                        height={100}
-                        style={{
-                          objectFit: 'cover',
-                        }}
-                      />
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => removeImage(index)}
+                  {newImages.map((file, index) => {
+                    const newImageIndex = (formData.images?.length || 0) + index;
+                    return (
+                      <Box
+                        key={index}
                         sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4,
-                          minWidth: 'auto',
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          p: 0,
-                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          },
+                          position: 'relative',
+                          width: 100,
+                          height: 100,
+                          borderRadius: 1,
+                          overflow: 'visible', // Changed from 'hidden' to 'visible' to show cross button
+                          border: newImageIndex === primaryImageIndex ? '3px solid #1976d2' : '1px solid #ddd',
+                          cursor: 'pointer',
                         }}
+                        onClick={() => setPrimaryImage(newImageIndex)}
                       >
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  ))}
+                        <Image
+                          src={URL.createObjectURL(file)}
+                          alt={`New ${index + 1}`}
+                          width={100}
+                          height={100}
+                          style={{
+                            objectFit: 'cover',
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeImage(index);
+                          }}
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            minWidth: 'auto',
+                            width: 24,
+                            height: 24,
+                            borderRadius: '50%',
+                            p: 0,
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            },
+                          }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                        {newImageIndex === primaryImageIndex && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              bottom: 4,
+                              left: 4,
+                              bgcolor: 'primary.main',
+                              color: 'white',
+                              px: 1,
+                              py: 0.5,
+                              borderRadius: 1,
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            Primary
+                          </Box>
+                        )}
+                      </Box>
+                    );
+                  })}
                 </Box>
               </Box>
             )}
