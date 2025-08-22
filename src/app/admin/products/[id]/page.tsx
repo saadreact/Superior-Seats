@@ -10,14 +10,11 @@ import {
   CircularProgress,
   Button,
   Chip,
-  Grid,
   Card,
   CardContent,
-  Divider,
   Container,
   Avatar,
   Stack,
-  Badge,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -25,7 +22,6 @@ import {
   Visibility as VisibilityIcon,
   Inventory as InventoryIcon,
   Category as CategoryIcon,
-  CalendarToday as CalendarIcon,
   AttachMoney as PriceIcon,
   LocalOffer as TagIcon,
 } from '@mui/icons-material';
@@ -267,9 +263,10 @@ const ProductDetailPage = () => {
             </Stack>
           </Box>
 
-          <Grid container spacing={4}>
+          {/* Main Content */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4 }}>
             {/* Left Column - Images */}
-            <Grid item xs={12} lg={8}>
+            <Box>
               {product.product_images && product.product_images.length > 0 ? (
                 <Box>
                   {/* Primary Image */}
@@ -340,44 +337,47 @@ const ProductDetailPage = () => {
                       Product Gallery ({product.product_images.length} images)
                     </Typography>
                     
-                    <Grid container spacing={2}>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }, 
+                      gap: 2 
+                    }}>
                       {product.product_images.map((image, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={image.id}>
-                          <Box sx={{ position: 'relative' }}>
-                            <Paper sx={{ 
-                              borderRadius: '12px', 
-                              overflow: 'hidden',
-                              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-                              border: image.is_primary ? '3px solid #3b82f6' : '1px solid #e2e8f0',
-                              transition: 'all 0.3s ease',
-                              cursor: 'pointer',
-                              '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-                              }
+                        <Box key={image.id} sx={{ position: 'relative' }}>
+                          <Paper sx={{ 
+                            borderRadius: '12px', 
+                            overflow: 'hidden',
+                            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                            border: image.is_primary ? '3px solid #3b82f6' : '1px solid #e2e8f0',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              transform: 'translateY(-4px)',
+                              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                            }
+                          }}>
+                            <Box sx={{
+                              width: '100%',
+                              height: '180px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: '#f8fafc',
+                              position: 'relative'
                             }}>
-                              <Box sx={{
-                                width: '100%',
-                                height: '180px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                bgcolor: '#f8fafc',
-                                position: 'relative'
-                              }}>
-                                <Image
-                                  src={image.image_url}
-                                  alt={image.alt_text || `${product.name} - Image ${index + 1}`}
-                                  width={200}
-                                  height={150}
-                                  style={{ 
-                                    objectFit: 'contain', 
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    width: 'auto',
-                                    height: 'auto'
-                                  }}
-                                />
+                              <Image
+                                src={image.image_url}
+                                alt={image.alt_text || `${product.name} - Image ${index + 1}`}
+                                width={200}
+                                height={150}
+                                style={{ 
+                                  objectFit: 'contain', 
+                                  maxWidth: '100%',
+                                  maxHeight: '100%',
+                                  width: 'auto',
+                                  height: 'auto'
+                                }}
+                              />
                               {image.is_primary && (
                                 <Box
                                   sx={{
@@ -398,23 +398,22 @@ const ProductDetailPage = () => {
                                 </Box>
                               )}
                             </Box>
-                            </Paper>
-                            <Typography 
-                              variant="body2" 
-                              sx={{ 
-                                mt: 1, 
-                                textAlign: 'center',
-                                color: '#64748b',
-                                fontWeight: 500,
-                                fontSize: '0.875rem'
-                              }}
-                            >
-                              {image.alt_text || `Image ${index + 1}`}
-                            </Typography>
-                          </Box>
-                        </Grid>
+                          </Paper>
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              mt: 1, 
+                              textAlign: 'center',
+                              color: '#64748b',
+                              fontWeight: 500,
+                              fontSize: '0.875rem'
+                            }}
+                          >
+                            {image.alt_text || `Image ${index + 1}`}
+                          </Typography>
+                        </Box>
                       ))}
-                    </Grid>
+                    </Box>
                   </Paper>
                 </Box>
               ) : (
@@ -442,14 +441,14 @@ const ProductDetailPage = () => {
                     No Images Available
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-                    This product doesn't have any images uploaded yet.
+                    This product doesn&apos;t have any images uploaded yet.
                   </Typography>
                 </Paper>
               )}
-            </Grid>
+            </Box>
 
             {/* Right Column - Product Info */}
-            <Grid item xs={12} lg={4}>
+            <Box>
               <Stack spacing={3}>
                 {/* Key Metrics */}
                 <Paper sx={{ 
@@ -592,8 +591,8 @@ const ProductDetailPage = () => {
                   </Stack>
                 </Paper>
               </Stack>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
           {/* Variations Section */}
           <Box sx={{ mt: 6 }}>
@@ -632,13 +631,13 @@ const ProductDetailPage = () => {
                     No Variations Available
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-                    This product doesn't have any variations associated with it.
+                    This product doesn&apos;t have any variations associated with it.
                   </Typography>
                 </Box>
               ) : (
-                <Grid container spacing={3}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
                   {product.variations.map((variation) => (
-                    <Grid item xs={12} sm={6} md={4} key={variation.id}>
+                    <Box key={variation.id}>
                       <Card sx={{ 
                         borderRadius: '12px', 
                         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
@@ -702,9 +701,9 @@ const ProductDetailPage = () => {
                           </Stack>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                   ))}
-                </Grid>
+                </Box>
               )}
             </Paper>
           </Box>

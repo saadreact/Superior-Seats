@@ -229,7 +229,7 @@ const ProductsPage = () => {
     }
     
     if (product.images && product.images.length > 0) {
-      const additionalImages = product.images.map(img => `https://superiorseats.ali-khalid.com${img.image_path || img}`);
+      const additionalImages = product.images.map(img => `https://superiorseats.ali-khalid.com${img}`);
       images.push(...additionalImages);
     }
     
