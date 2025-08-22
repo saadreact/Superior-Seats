@@ -30,8 +30,12 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Settings as SettingsIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
+  Palette as PaletteIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 const drawerWidth = 280;
 const mobileDrawerWidth = 280;
@@ -49,6 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
   const pathname = usePathname();
+  const [variationsExpanded, setVariationsExpanded] = useState(false);
 
   const menuItems = [
     {
@@ -76,10 +81,23 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <OrderIcon />,
       href: '/admin/orders',
     },
+  ];
+
+  const variationSubItems = [
     {
       text: 'Variations',
       icon: <SettingsIcon />,
       href: '/admin/variations',
+    },
+    {
+      text: 'Categories',
+      icon: <CategoryIcon />,
+      href: '/admin/categories',
+    },
+    {
+      text: 'Colors',
+      icon: <PaletteIcon />,
+      href: '/admin/colors',
     },
   ];
 
@@ -114,12 +132,22 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     }
   };
 
+  const handleVariationsToggle = () => {
+    setVariationsExpanded(!variationsExpanded);
+  };
+
+  const isVariationsActive = () => {
+    return pathname.startsWith('/admin/variations') || 
+           pathname.startsWith('/admin/categories') || 
+           pathname.startsWith('/admin/colors');
+  };
+
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <Box
         sx={{
-          p: 2,
+          p: 1.5,
           borderBottom: 1,
           borderColor: 'divider',
           display: 'flex',
@@ -128,9 +156,20 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
         }}
       >
         {!collapsed && (
-          <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-            Admin Panel
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Image
+              src="/superiorlogo/logored.png"
+              alt="Superior Seats Logo"
+              width={180}
+              height={60}
+              style={{
+                width: 'auto',
+                height: '48px',
+                objectFit: 'contain',
+              }}
+              priority
+            />
+          </Box>
         )}
         <Box sx={{ display: 'flex', gap: 1 }}>
           {!isMobile && (
@@ -147,17 +186,18 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       </Box>
 
       {/* Navigation */}
-      <List sx={{ flexGrow: 1, pt: 1 }}>
+      <List sx={{ flexGrow: 1, pt: 0.5 }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
             <ListItemButton
               onClick={() => handleNavigation(item.href)}
               selected={isActive(item.href)}
               sx={{
-                mx: 1,
+                mx: 0.5,
                 borderRadius: 1,
-                mb: 0.5,
-                minHeight: collapsed ? 48 : 'auto',
+                mb: 0.25,
+                minHeight: collapsed ? 40 : 36,
+                py: 0.75,
                 '&.Mui-selected': {
                   backgroundColor: 'primary.main',
                   color: 'white',
@@ -175,7 +215,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
             >
               <ListItemIcon
                 sx={{
-                  minWidth: collapsed ? 40 : 40,
+                  minWidth: collapsed ? 36 : 36,
                   color: isActive(item.href) ? 'white' : 'inherit',
                 }}
               >
@@ -186,18 +226,157 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
                   primary={item.text}
                   primaryTypographyProps={{
                     fontWeight: isActive(item.href) ? 600 : 400,
+                    fontSize: '0.875rem',
                   }}
                 />
               )}
             </ListItemButton>
           </ListItem>
         ))}
+
+        {/* Variations Section with Sub-items */}
+        {!collapsed && (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={handleVariationsToggle}
+                selected={isVariationsActive()}
+                sx={{
+                  mx: 0.5,
+                  borderRadius: 1,
+                  mb: 0.25,
+                  minHeight: 36,
+                  py: 0.75,
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: 'white',
+                    },
+                  },
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: isVariationsActive() ? 'white' : 'inherit',
+                  }}
+                >
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Variations"
+                  primaryTypographyProps={{
+                    fontWeight: isVariationsActive() ? 600 : 400,
+                    fontSize: '0.875rem',
+                  }}
+                />
+                {variationsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </ListItemButton>
+            </ListItem>
+            
+            <Collapse in={variationsExpanded} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {variationSubItems.map((item) => (
+                  <ListItem key={item.text} disablePadding>
+                    <ListItemButton
+                      onClick={() => handleNavigation(item.href)}
+                      selected={isActive(item.href)}
+                      sx={{
+                        mx: 0.5,
+                        ml: 3,
+                        borderRadius: 1,
+                        mb: 0.25,
+                        minHeight: 32,
+                        py: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark',
+                          },
+                          '& .MuiListItemIcon-root': {
+                            color: 'white',
+                          },
+                        },
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 32,
+                          color: isActive(item.href) ? 'white' : 'inherit',
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{
+                          fontWeight: isActive(item.href) ? 600 : 400,
+                          fontSize: '0.8rem',
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+          </>
+        )}
+
+        {/* Collapsed Variations - Show as single item */}
+        {collapsed && (
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigation('/admin/variations')}
+              selected={isVariationsActive()}
+              sx={{
+                mx: 0.5,
+                borderRadius: 1,
+                mb: 0.25,
+                minHeight: 40,
+                py: 0.75,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                },
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 36,
+                  color: isVariationsActive() ? 'white' : 'inherit',
+                }}
+              >
+                <SettingsIcon />
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
+        )}
       </List>
 
       {/* Customer View Section */}
       {!collapsed && (
-        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
+        <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary', fontWeight: 600, fontSize: '0.75rem' }}>
             Customer View
           </Typography>
           <ListItem disablePadding>
@@ -205,18 +384,20 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
               onClick={() => handleNavigation('/')}
               sx={{
                 borderRadius: 1,
+                minHeight: 36,
+                py: 0.75,
                 '&:hover': {
                   backgroundColor: 'action.hover',
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 40 }}>
+              <ListItemIcon sx={{ minWidth: 36 }}>
                 <StorefrontIcon />
               </ListItemIcon>
               <ListItemText
                 primary="Back to Website"
                 primaryTypographyProps={{
-                  fontSize: '0.875rem',
+                  fontSize: '0.8rem',
                 }}
               />
             </ListItemButton>
@@ -225,8 +406,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       )}
 
       {/* Footer */}
-      <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-        <Typography variant="caption" color="text.secondary" align="center">
+      <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>
+        <Typography variant="caption" color="text.secondary" align="center" sx={{ fontSize: '0.7rem' }}>
           {collapsed ? 'SS' : 'Superior Seats Admin'}
         </Typography>
       </Box>

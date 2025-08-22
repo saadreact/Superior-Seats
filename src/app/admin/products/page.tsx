@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -42,7 +42,17 @@ interface Product {
   id: number;
   name: string;
   description: string;
-  category: string | null;
+  category: {
+    id: number;
+    name: string;
+    description: string;
+    slug: string;
+    image_url: string | null;
+    is_active: boolean;
+    sort_order: number;
+    created_at: string;
+    updated_at: string;
+  } | null;
   price: string;
   stock: number;
   images?: string[];
@@ -113,16 +123,12 @@ const ProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
+  console.log(products)
   // Product Details Modal States
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [modalImageIndex, setModalImageIndex] = useState(0);
 
-  useEffect(() => {
-    loadProducts();
-  }, [currentPage, searchTerm]);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -132,23 +138,36 @@ const ProductsPage = () => {
       if (currentPage > 1) params.page = currentPage;
       
       const response = await apiService.getProducts(params);
-      setProducts(response || []);
       
-      // Extract pagination info if available
-      if (response && typeof response === 'object' && 'meta' in response) {
-        setTotalPages(response.meta.last_page || 1);
+      // Handle the new response structure
+      if (response && response.data) {debugger
+        setProducts(response.data);
+        // Extract pagination info if available
+        if (response.meta) {
+          setTotalPages(response.meta.last_page || 1);
+        }
+      } else if (Array.isArray(response)) {
+        setProducts(response);
+        setTotalPages(1);
+      } else {
+        setProducts([]);
+        setTotalPages(1);
       }
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         setError('Please log in to access this page');
       } else {
-        setError('Failed to load products. Please try again later.');
+        setError(err.message || 'Failed to load products. Please try again later.');
       }
       console.error('Error loading products:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const handleAdd = () => {
     router.push('/admin/products/create');
@@ -204,7 +223,7 @@ const ProductsPage = () => {
   const getProductImages = (product: Product) => {
     // Handle both images array and primary_image object from API response
     const images = [];
-    
+    debugger
     if (product.primary_image?.image_path) {
       images.push(`https://superiorseats.ali-khalid.com${product.primary_image.image_path}`);
     }
@@ -488,7 +507,7 @@ const ProductsPage = () => {
                     
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                       <Chip
-                        label={product.category || 'No Category'}
+                        label={product.category?.name || 'No Category'}
                         size="small"
                         color="primary"
                         variant="outlined"
@@ -641,7 +660,7 @@ const ProductsPage = () => {
                           Category
                         </Typography>
                         <Chip 
-                          label={selectedProduct.category || 'No Category'} 
+                          label={selectedProduct.category?.name || 'No Category'} 
                           color="primary" 
                           size="small" 
                           sx={{ fontWeight: 500 }}

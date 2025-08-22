@@ -219,9 +219,9 @@ const VariationsPage = () => {
           <CardContent>
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               {variation.image ? (
-                <Image
-                                              src={`https://superiorseats.ali-khalid.com${variation.image}`}
-                  alt={variation.name}
+                                    <Image
+                      src={`https://superiorseats.ali-khalid.com${variation.image}`}
+                      alt={variation.name}
                   width={80}
                   height={80}
                   style={{ borderRadius: 8 }}

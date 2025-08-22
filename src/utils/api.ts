@@ -90,19 +90,23 @@ class ApiService {
   async login(email: string, password: string) {
     const response = await api.post('/login', { email, password });
     
-    // Extract token and user from the nested data structure
-    const { token, user } = response.data.data;
+    // Handle different response structures
+    let token, user;
+    if (response.data.data) {
+      // Nested structure: response.data.data
+      token = response.data.data.token;
+      user = response.data.data.user;
+    } else if (response.data.token) {
+      // Direct structure: response.data
+      token = response.data.token;
+      user = response.data.user;
+    } else {
+      throw new Error('Invalid response structure from login API');
+    }
     
     // Store token in localStorage for immediate use
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && token) {
       localStorage.setItem('auth_token', token);
-      console.log('Token stored in localStorage:', token);
-      console.log('Token retrieved from getToken():', getToken());
-      
-      // Check if Redux persist has saved the token after a short delay
-      setTimeout(() => {
-        console.log('After 100ms - Token from getToken():', getToken());
-      }, 100);
     }
     
     return {
@@ -606,12 +610,28 @@ class ApiService {
   async getVehicleTrims(modelId?: number, params: {
     search?: string;
     is_active?: boolean;
+    page?: number;
+    per_page?: number;
   } = {}) {
-    const queryParams: any = { ...params };
-    if (modelId) queryParams.model_id = modelId;
-    const queryString = new URLSearchParams(Object.entries(queryParams).filter(([_, v]) => v != null) as string[][]).toString();
-    const response = await api.get(`/vehicle-trims${queryString ? `?${queryString}` : ''}`);
-    return response.data;
+    try {
+      const queryParams: any = { ...params };
+      if (modelId) queryParams.model_id = modelId;
+      const queryString = new URLSearchParams(Object.entries(queryParams).filter(([_, v]) => v != null) as string[][]).toString();
+      const response = await api.get(`/vehicle-trims${queryString ? `?${queryString}` : ''}`);
+      
+      // Handle the actual API response structure
+      if (response.data && response.data.data && response.data.data.data) {
+        return response.data.data.data;
+      } else if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error: any) {
+      console.error('Error fetching vehicle trims:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch vehicle trims');
+    }
   }
 
   // Get all vehicle configurations
@@ -689,82 +709,71 @@ class ApiService {
     page?: number;
     per_page?: number;
   } = {}) {
-    const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
-    const response = await api.get(`/products${queryString ? `?${queryString}` : ''}`);
-    return response.data.data || response.data;
+    try {
+      const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
+      const response = await api.get(`/products${queryString ? `?${queryString}` : ''}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
+      }
+      return { data: [], meta: {} };
+    } catch (error: any) {
+      console.error('Error fetching products:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch products');
+    }
   }
 
   // Get single product
   async getProduct(id: number) {
-    const response = await api.get(`/products/${id}`);
-    console.log('getProduct API response:', response);
-    console.log('response.data:', response.data);
-    console.log('response.data.data:', response.data.data);
-    const result = response.data.data || response.data;
-    console.log('getProduct returning:', result);
-    return result;
+    try {
+      const response = await api.get(`/products/${id}`);
+      console.log('getProduct API response:', response);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      throw new Error('Invalid response structure');
+    } catch (error: any) {
+      console.error('Error fetching product:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Product not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch product');
+    }
   }
 
   // Create product
   async createProduct(data: {
     name: string;
     description?: string;
-    category?: string;
+    category_id?: number;
+    vehicle_trim_id?: number;
     price?: number;
     stock?: number;
     is_active?: boolean;
     variation_ids?: number[];
-    newImages?: File[];
+    images?: {
+      file: string;
+      alt_text: string;
+      caption: string;
+      set_primary: boolean;
+    }[];
   }) {
-    const formData = new FormData();
-    
-    // Add all text fields
-    formData.append('name', data.name);
-    if (data.description) formData.append('description', data.description);
-    if (data.category) formData.append('category', data.category);
-    if (data.price !== undefined) formData.append('price', data.price.toString());
-    if (data.stock !== undefined) formData.append('stock', data.stock.toString());
-    if (data.is_active !== undefined) formData.append('is_active', data.is_active ? '1' : '0');
-    if (data.variation_ids) {
-      data.variation_ids.forEach(id => {
-        formData.append('variation_ids[]', id.toString());
-      });
-    }
-    
-    // Add multiple images if provided
-    if (data.newImages && data.newImages.length > 0) {
-      data.newImages.forEach((image, index) => {
-        formData.append('images[]', image);
-      });
-    }
-    
-    const response = await api.post('/products', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data.data || response.data;
-  }
-
-  // Update product
-  async updateProduct(id: number, data: {
-    name?: string;
-    description?: string;
-    category?: string;
-    price?: number;
-    stock?: number;
-    is_active?: boolean;
-    variation_ids?: number[];
-    newImages?: File[];
-  }) {
-    // If there are new images, use POST with multipart/form-data
-    if (data.newImages && data.newImages.length > 0) {
+    try {
+      // Convert base64 to File objects for FormData
       const formData = new FormData();
       
-      // Add all text fields that are provided
-      if (data.name) formData.append('name', data.name);
+      // Add text fields
+      formData.append('name', data.name);
       if (data.description) formData.append('description', data.description);
-      if (data.category) formData.append('category', data.category);
+      if (data.category_id !== undefined) formData.append('category_id', data.category_id.toString());
+      if (data.vehicle_trim_id !== undefined) formData.append('vehicle_trim_id', data.vehicle_trim_id.toString());
       if (data.price !== undefined) formData.append('price', data.price.toString());
       if (data.stock !== undefined) formData.append('stock', data.stock.toString());
       if (data.is_active !== undefined) formData.append('is_active', data.is_active ? '1' : '0');
@@ -774,42 +783,268 @@ class ApiService {
         });
       }
       
-      // Add multiple images
-      data.newImages.forEach((image, index) => {
-        formData.append('images[]', image);
-      });
+      // Convert base64 to File objects and add to FormData
+      if (data.images && data.images.length > 0) {
+        // Ensure only one image is marked as primary
+        let primaryFound = false;
+        const images = data.images; // Create a local reference
+        
+        console.log('Processing images for product creation:', images.length);
+        
+        for (let i = 0; i < images.length; i++) {
+          const imageData = images[i];
+          const base64Data = imageData.file;
+          
+          // Convert base64 to blob
+          const byteString = atob(base64Data.split(',')[1]);
+          const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          for (let j = 0; j < byteString.length; j++) {
+            ia[j] = byteString.charCodeAt(j);
+          }
+          const blob = new Blob([ab], { type: mimeString });
+          
+          // Create File object
+          const file = new File([blob], `image_${i}.${mimeString.split('/')[1]}`, { type: mimeString });
+          formData.append('images[]', file);
+          
+          // Ensure only the first primary image is marked as primary
+          let isPrimary = false;
+          if (imageData.set_primary && !primaryFound) {
+            isPrimary = true;
+            primaryFound = true;
+            console.log(`Image ${i} marked as primary`);
+          } else {
+            console.log(`Image ${i} marked as non-primary (set_primary: ${imageData.set_primary}, primaryFound: ${primaryFound})`);
+          }
+          
+          // Add image metadata to image_data array
+          formData.append(`image_data[${i}][alt_text]`, imageData.alt_text || '');
+          formData.append(`image_data[${i}][caption]`, imageData.caption || '');
+          formData.append(`image_data[${i}][set_primary]`, isPrimary ? '1' : '0');
+        }
+        
+        console.log('Final primary image count:', primaryFound ? 1 : 0);
+      }
       
-      const response = await api.post(`/products/${id}`, formData, {
+      const response = await api.post('/products', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return response.data.data || response.data;
-    } else {
-      // If no new images, use PUT with JSON
-      const jsonData: any = {};
       
-      if (data.name) jsonData.name = data.name;
-      if (data.description) jsonData.description = data.description;
-      if (data.category) jsonData.category = data.category;
-      if (data.price !== undefined) jsonData.price = data.price;
-      if (data.stock !== undefined) jsonData.stock = data.stock;
-      if (data.is_active !== undefined) jsonData.is_active = data.is_active;
-      if (data.variation_ids) jsonData.variation_ids = data.variation_ids;
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating product:', error);
+  
+      if (
+        error.response?.data?.message?.includes('Duplicate entry') ||
+        error.response?.data?.message?.includes('unique_primary_per_product')
+      ) {
+        throw new Error(
+          'Image upload failed: Each product can only have one primary image. Please ensure only one image is marked as primary.'
+        );
+      }
+  
+      if (error.response?.data?.message?.includes('Integrity constraint violation')) {
+        throw new Error(
+          'Database constraint violation. Please check your input data and try again.'
+        );
+      }
+  
+      throw new Error(error.response?.data?.message || 'Failed to create product');
+    }
+  }
+  
+
+  // Update product
+  async updateProduct(id: number, data: {
+    name?: string;
+    description?: string;
+    category_id?: number;
+    vehicle_trim_id?: number;
+    price?: number;
+    stock?: number;
+    is_active?: boolean;
+    variation_ids?: number[];
+    images?: {
+      file: string;       // base64 string
+      alt_text: string;
+      caption: string;
+      set_primary: boolean;
+    }[];
+    existing_images?: string[];
+    removed_images?: string[];
+    primary_image_index?: number;
+  }) {
+    try {
+      // Check if images contain base64 data (JSON format) or File objects (FormData format)
+      const hasBase64Images = data.images && data.images.length > 0 && 
+        typeof data.images[0].file === 'string' && data.images[0].file.startsWith('data:');
       
-      const response = await api.put(`/products/${id}`, jsonData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data.data || response.data;
+      if (hasBase64Images) {
+        // Convert base64 to File objects for FormData
+        const formData = new FormData();
+        
+        // Add text fields
+        if (data.name) formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        if (data.category_id !== undefined) formData.append('category_id', data.category_id.toString());
+        if (data.vehicle_trim_id !== undefined) formData.append('vehicle_trim_id', data.vehicle_trim_id.toString());
+        if (data.price !== undefined) formData.append('price', data.price.toString());
+        if (data.stock !== undefined) formData.append('stock', data.stock.toString());
+        if (data.is_active !== undefined) formData.append('is_active', data.is_active ? '1' : '0');
+        if (data.variation_ids) {
+          data.variation_ids.forEach(id => {
+            formData.append('variation_ids[]', id.toString());
+          });
+        }
+        
+        // Add new fields for image management
+        if (data.existing_images) {
+          data.existing_images.forEach((imagePath: string) => {
+            formData.append('existing_images[]', imagePath);
+          });
+        }
+        
+        if (data.removed_images) {
+          data.removed_images.forEach((imagePath: string) => {
+            formData.append('removed_images[]', imagePath);
+          });
+        }
+        
+        if (data.primary_image_index !== undefined) {
+          formData.append('primary_image_index', data.primary_image_index.toString());
+        }
+        
+        // Convert base64 to File objects and add to FormData
+        // Ensure only one image is marked as primary
+        let primaryFound = false;
+        const images = data.images!; // We know it exists because of the check above
+        
+        console.log('Processing images for product update:', images.length);
+        
+        for (let i = 0; i < images.length; i++) {
+          const imageData = images[i];
+          const base64Data = imageData.file;
+          
+          // Convert base64 to blob
+          const byteString = atob(base64Data.split(',')[1]);
+          const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          for (let j = 0; j < byteString.length; j++) {
+            ia[j] = byteString.charCodeAt(j);
+          }
+          const blob = new Blob([ab], { type: mimeString });
+          
+          // Create File object
+          const file = new File([blob], `image_${i}.${mimeString.split('/')[1]}`, { type: mimeString });
+          formData.append('images[]', file);
+          
+          // Ensure only the first primary image is marked as primary
+          let isPrimary = false;
+          if (imageData.set_primary && !primaryFound) {
+            isPrimary = true;
+            primaryFound = true;
+            console.log(`Image ${i} marked as primary for update`);
+          } else {
+            console.log(`Image ${i} marked as non-primary for update (set_primary: ${imageData.set_primary}, primaryFound: ${primaryFound})`);
+          }
+          
+          // Add image metadata to image_data array
+          formData.append(`image_data[${i}][alt_text]`, imageData.alt_text || '');
+          formData.append(`image_data[${i}][caption]`, imageData.caption || '');
+          formData.append(`image_data[${i}][set_primary]`, isPrimary ? '1' : '0');
+        }
+        
+        console.log('Final primary image count for update:', primaryFound ? 1 : 0);
+        
+        const response = await api.post(`/products/${id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        if (response.data && response.data.data) {
+          return response.data.data;
+        } else if (response.data) {
+          return response.data;
+        }
+        return response.data;
+      } else {
+        // Use JSON format (for when backend supports it)
+        const jsonData: any = {};
+        
+        if (data.name) jsonData.name = data.name;
+        if (data.description) jsonData.description = data.description;
+        if (data.category_id !== undefined) jsonData.category_id = data.category_id;
+        if (data.vehicle_trim_id !== undefined) jsonData.vehicle_trim_id = data.vehicle_trim_id;
+        if (data.price !== undefined) jsonData.price = data.price;
+        if (data.stock !== undefined) jsonData.stock = data.stock;
+        if (data.is_active !== undefined) jsonData.is_active = data.is_active;
+        if (data.variation_ids) jsonData.variation_ids = data.variation_ids;
+        if (data.images && data.images.length > 0) jsonData.images = data.images;
+        
+        const response = await api.put(`/products/${id}`, jsonData, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        // Handle different response structures
+        if (response.data && response.data.data) {
+          return response.data.data;
+        } else if (response.data) {
+          return response.data;
+        }
+        return response.data;
+      }
+    } catch (error: any) {
+      console.error('Error updating product:', error);
+      
+      // Handle specific database constraint violations
+      if (error.response?.data?.message?.includes('Duplicate entry') || 
+          error.response?.data?.message?.includes('unique_primary_per_product')) {
+        throw new Error('Image upload failed: Each product can only have one primary image. Please ensure only one image is marked as primary.');
+      }
+      
+      if (error.response?.data?.message?.includes('Integrity constraint violation')) {
+        throw new Error('Database constraint violation. Please check your input data and try again.');
+      }
+      
+      if (error.response?.status === 404) {
+        throw new Error('Product not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update product');
     }
   }
 
   // Delete product
   async deleteProduct(id: number) {
-    const response = await api.delete(`/products/${id}`);
-    return response.data.data || response.data;
+    try {
+      const response = await api.delete(`/products/${id}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error deleting product:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Product not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete product');
+    }
   }
 
   // Get products by vehicle configuration
@@ -833,27 +1068,78 @@ class ApiService {
     page?: number;
     per_page?: number;
   } = {}) {
-    const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
-    const response = await api.get(`/variations${queryString ? `?${queryString}` : ''}`);
-    return response.data.data || response.data;
+    try {
+      const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
+      const response = await api.get(`/variations${queryString ? `?${queryString}` : ''}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error: any) {
+      console.error('Error fetching variations:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch variations');
+    }
   }
 
   // Get single variation
   async getVariation(id: number) {
-    const response = await api.get(`/variations/${id}`);
-    return response.data.data || response.data;
+    try {
+      const response = await api.get(`/variations/${id}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      throw new Error('Invalid response structure');
+    } catch (error: any) {
+      console.error('Error fetching variation:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Variation not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch variation');
+    }
   }
 
   // Get variation options for forms
   async getVariationOptions() {
-    const response = await api.get('/variations/options');
-    return response.data.data || response.data;
+    try {
+      const response = await api.get('/variations/options');
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return {};
+    } catch (error: any) {
+      console.error('Error fetching variation options:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch variation options');
+    }
   }
 
   // Get variations by product
   async getVariationsByProduct(productId: number) {
-    const response = await api.get(`/products/${productId}/variations`);
-    return response.data.data || response.data;
+    try {
+      const response = await api.get(`/products/${productId}/variations`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error: any) {
+      console.error('Error fetching product variations:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch product variations');
+    }
   }
 
   // Create variation
@@ -870,39 +1156,85 @@ class ApiService {
     seat_item_type: string;
     color: string;
     is_active?: boolean;
-    image?: File;
+    image?: string;  // base64 string
   }) {
-    const formData = new FormData();
+    // Check if image is base64 data
+    const hasBase64Image = data.image && typeof data.image === 'string' && data.image.startsWith('data:');
     
-    // Add all required fields
-    formData.append('name', data.name);
-    formData.append('price', data.price.toString());
-    formData.append('stitch_pattern', data.stitch_pattern);
-    formData.append('arm_type', data.arm_type);
-    formData.append('lumbar', data.lumbar);
-    formData.append('recline_type', data.recline_type);
-    formData.append('seat_type', data.seat_type);
-    formData.append('material_type', data.material_type);
-    formData.append('heat_option', data.heat_option);
-    formData.append('seat_item_type', data.seat_item_type);
-    formData.append('color', data.color);
-    
-    // Add optional fields
-    if (data.is_active !== undefined) {
-      formData.append('is_active', data.is_active ? '1' : '0');
+    if (hasBase64Image) {
+      // Convert base64 to File object for FormData
+      const formData = new FormData();
+      
+      // Add text fields
+      formData.append('name', data.name);
+      formData.append('price', data.price.toString());
+      formData.append('stitch_pattern', data.stitch_pattern);
+      formData.append('arm_type', data.arm_type);
+      formData.append('lumbar', data.lumbar);
+      formData.append('recline_type', data.recline_type);
+      formData.append('seat_type', data.seat_type);
+      formData.append('material_type', data.material_type);
+      formData.append('heat_option', data.heat_option);
+      formData.append('seat_item_type', data.seat_item_type);
+      formData.append('color', data.color);
+      
+      if (data.is_active !== undefined) {
+        formData.append('is_active', data.is_active ? '1' : '0');
+      }
+      
+      // Convert base64 to File object
+      const base64Data = data.image;
+      if (!base64Data) {
+        throw new Error('Image data is required');
+      }
+      const byteString = atob(base64Data.split(',')[1]);
+      const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let j = 0; j < byteString.length; j++) {
+        ia[j] = byteString.charCodeAt(j);
+      }
+      const blob = new Blob([ab], { type: mimeString });
+      const file = new File([blob], `variation_image.${mimeString.split('/')[1]}`, { type: mimeString });
+      formData.append('image', file);
+      
+      const response = await api.post('/variations', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.data || response.data;
+    } else {
+      // Use JSON format (for when backend supports it)
+      const jsonData: any = {
+        name: data.name,
+        price: data.price,
+        stitch_pattern: data.stitch_pattern,
+        arm_type: data.arm_type,
+        lumbar: data.lumbar,
+        recline_type: data.recline_type,
+        seat_type: data.seat_type,
+        material_type: data.material_type,
+        heat_option: data.heat_option,
+        seat_item_type: data.seat_item_type,
+        color: data.color,
+      };
+      
+      if (data.is_active !== undefined) {
+        jsonData.is_active = data.is_active;
+      }
+      
+      if (data.image) {
+        jsonData.image = data.image;
+      }
+      
+      const response = await api.post('/variations', jsonData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.data.data || response.data;
     }
-    
-    // Add image if provided
-    if (data.image) {
-      formData.append('image', data.image);
-    }
-    
-    const response = await api.post('/variations', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data.data || response.data;
   }
 
   // Update variation
@@ -919,63 +1251,36 @@ class ApiService {
     seat_item_type: string;
     color: string;
     is_active?: boolean;
-    image?: File;
+    image?: string;  // base64 string
   }) {
-    // If there's an image, use POST with multipart/form-data
-    if (data.image) {
-      const formData = new FormData();
-      
-      // Add all required fields
-      formData.append('name', data.name);
-      formData.append('price', data.price.toString());
-      formData.append('stitch_pattern', data.stitch_pattern);
-      formData.append('arm_type', data.arm_type);
-      formData.append('lumbar', data.lumbar);
-      formData.append('recline_type', data.recline_type);
-      formData.append('seat_type', data.seat_type);
-      formData.append('material_type', data.material_type);
-      formData.append('heat_option', data.heat_option);
-      formData.append('seat_item_type', data.seat_item_type);
-      formData.append('color', data.color);
-      
-      // Add optional fields
-      if (data.is_active !== undefined) {
-        formData.append('is_active', data.is_active ? '1' : '0');
-      }
-      
-      // Add image
-      formData.append('image', data.image);
-      
-      const response = await api.post(`/variations/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data.data || response.data;
-    } else {
-      // If no image, use PUT with JSON
-      const jsonData = {
-        name: data.name,
-        price: data.price,
-        stitch_pattern: data.stitch_pattern,
-        arm_type: data.arm_type,
-        lumbar: data.lumbar,
-        recline_type: data.recline_type,
-        seat_type: data.seat_type,
-        material_type: data.material_type,
-        heat_option: data.heat_option,
-        seat_item_type: data.seat_item_type,
-        color: data.color,
-        is_active: data.is_active,
-      };
-      
-      const response = await api.put(`/variations/${id}`, jsonData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data.data || response.data;
+    const jsonData: any = {
+      name: data.name,
+      price: data.price,
+      stitch_pattern: data.stitch_pattern,
+      arm_type: data.arm_type,
+      lumbar: data.lumbar,
+      recline_type: data.recline_type,
+      seat_type: data.seat_type,
+      material_type: data.material_type,
+      heat_option: data.heat_option,
+      seat_item_type: data.seat_item_type,
+      color: data.color,
+    };
+    
+    if (data.is_active !== undefined) {
+      jsonData.is_active = data.is_active;
     }
+    
+    if (data.image) {
+      jsonData.image = data.image;
+    }
+    
+    const response = await api.put(`/variations/${id}`, jsonData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data.data || response.data;
   }
 
   // Delete variation
@@ -1096,6 +1401,250 @@ class ApiService {
   async deleteCustomer(id: number) {
     const response = await api.delete(`/customers/${id}`);
     return response.data.data || response.data;
+  }
+
+  // ========== CATEGORY MANAGEMENT APIs ==========
+
+  // Get all categories
+  async getCategories(params: {
+    search?: string;
+    is_active?: boolean;
+    page?: number;
+    per_page?: number;
+  } = {}) {
+    try {
+      const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
+      const response = await api.get(`/categories${queryString ? `?${queryString}` : ''}`);
+      
+      // Handle the actual API response structure
+      if (response.data && response.data.data && response.data.data.data) {
+        return response.data.data.data;
+      } else if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error: any) {
+      console.error('Error fetching categories:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch categories');
+    }
+  }
+
+  // Get single category
+  async getCategory(slug: string) {
+    try {
+      const response = await api.get(`/categories/${slug}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      throw new Error('Invalid response structure');
+    } catch (error: any) {
+      console.error('Error fetching category:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Category not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch category');
+    }
+  }
+
+  // Create category
+  async createCategory(data: {
+    name: string;
+    description?: string;
+    slug?: string;
+    image_url?: string;
+    is_active?: boolean;
+    sort_order?: number;
+  }) {
+    try {
+      const response = await api.post('/categories', data);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating category:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create category');
+    }
+  }
+
+  // Update category
+  async updateCategory(slug: string, data: {
+    name?: string;
+    description?: string;
+    slug?: string;
+    image_url?: string;
+    is_active?: boolean;
+    sort_order?: number;
+  }) {
+    try {
+      const response = await api.put(`/categories/${slug}`, data);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating category:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Category not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update category');
+    }
+  }
+
+  // Delete category
+  async deleteCategory(slug: string) {
+    try {
+      const response = await api.delete(`/categories/${slug}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Category not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete category');
+    }
+  }
+
+  // ========== COLOR MANAGEMENT APIs ==========
+
+  // Get all colors
+  async getColors(params: {
+    search?: string;
+    is_active?: boolean;
+    page?: number;
+    per_page?: number;
+  } = {}) {
+    try {
+      const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
+      const response = await api.get(`/colors${queryString ? `?${queryString}` : ''}`);
+      
+      // Handle the actual API response structure
+      if (response.data && response.data.data && response.data.data.data) {
+        return response.data.data.data;
+      } else if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error: any) {
+      console.error('Error fetching colors:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch colors');
+    }
+  }
+
+  // Get single color
+  async getColor(id: number) {
+    try {
+      const response = await api.get(`/colors/${id}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      throw new Error('Invalid response structure');
+    } catch (error: any) {
+      console.error('Error fetching color:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Color not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch color');
+    }
+  }
+
+  // Create color
+  async createColor(data: {
+    name: string;
+    hex_code?: string;
+    description?: string;
+    is_active?: boolean;
+    sort_order?: number;
+  }) {
+    try {
+      const response = await api.post('/colors', data);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating color:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create color');
+    }
+  }
+
+  // Update color
+  async updateColor(id: number, data: {
+    name?: string;
+    hex_code?: string;
+    description?: string;
+    is_active?: boolean;
+    sort_order?: number;
+  }) {
+    try {
+      const response = await api.put(`/colors/${id}`, data);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating color:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Color not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update color');
+    }
+  }
+
+  // Delete color
+  async deleteColor(id: number) {
+    try {
+      const response = await api.delete(`/colors/${id}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error deleting color:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Color not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete color');
+    }
   }
 
   // ========== UTILITY METHODS ==========
