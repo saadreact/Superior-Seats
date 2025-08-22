@@ -395,6 +395,25 @@ const Header = () => {
                       <MenuIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
                     </IconButton>
                   </Tooltip>
+                                  <Tooltip title="US Flag" arrow>
+                   <Box sx={{ 
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     p: { xs: 1, sm: 1.25 }
+                   }}>
+                     <Image
+                       src="/Gallery/Flags/flagwaving.png"
+                       alt="US Flag"
+                       width={25}
+                       height={25}
+                       style={{ 
+                         objectFit: 'contain',
+                         borderRadius: '2px'
+                       }}
+                     />
+                   </Box>
+                 </Tooltip>
                   <Tooltip title="Shopping Cart" arrow>
                     <IconButton
                       color="inherit"
@@ -426,6 +445,25 @@ const Header = () => {
                 </>
               ) : (
                 <>
+                                    <Tooltip title="US Flag" arrow>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      p: { md: 0.5, lg: 0.85, xl: 1.1 }
+                    }}>
+                      <Image
+                        src="/Gallery/Flags/flagwaving.png"
+                        alt="US Flag"
+                        width={28}
+                        height={28}
+                        style={{ 
+                          objectFit: 'contain',
+                          borderRadius: '2px'
+                        }}
+                      />
+                    </Box>
+                  </Tooltip>
                   <Tooltip title="Shopping Cart" arrow>
                                          <IconButton
                        color="inherit"
@@ -538,22 +576,22 @@ const Header = () => {
                     </>
                                      ) : (
                                           <Tooltip title="Login / Sign Up" arrow>
-                                                <IconButton
-                           color="inherit"
-                           onClick={handleAuthClick}
-                           sx={{
-                             color: 'black',
-                             // Slightly increased padding for better hover area
-                             p: { md: 0.75, lg: 1 },
-                             '&:hover': {
-                               backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                               color: 'black',
-                               // Slightly increased scale for better hover effect
-                               transform: 'scale(1.04)',
-                             },
-                             transition: 'all 0.2s ease',
-                           }}
-                         >
+                                                                          <IconButton
+                            color="inherit"
+                            onClick={handleAuthClick}
+                            sx={{
+                              color: 'black',
+                              // Slightly increased padding for better hover area
+                              p: { md: 0.85, lg: 1.3, xl: 3 },
+                              '&:hover': {
+                                backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                                color: 'black',
+                                // Slightly increased scale for better hover effect
+                                transform: 'scale(1.04)',
+                              },
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
                           <PersonIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
                         </IconButton>
                       </Tooltip>

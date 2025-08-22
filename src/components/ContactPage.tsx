@@ -150,11 +150,12 @@ const ContactPage = () => {
          description="Contact us today for design help and a quote.  We’re here to help bring your vision to life."
          height={{
           xs: '75px',
-            sm: '70px', 
-            md: '75px',
-            lg: '90px',
-            xl: '100px',
-            xxl: '110px'
+         
+          sm: '70px', 
+          md: '80px',
+          lg: '95px',
+          xl: '105px',
+          xxl: '115px'
           
           }}
            />

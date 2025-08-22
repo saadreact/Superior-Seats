@@ -98,16 +98,14 @@ const PrivacyPolicy = () => {
         }}
       />
 
+      {/* Breadcrumbs */}
+      <Breadcrumbs />
+
       <Box sx={{ 
         flex: 1, 
         py: { xs: 1, sm: 1.5, md: 2, lg: 0 } 
       }}>
         <Container maxWidth="lg">
-          <Breadcrumbs 
-            items={[
-              { label: 'Privacy Policy', href: '/privacy-policy' }
-            ]}
-          />
           <MotionBox
             initial="hidden"
             animate="visible"

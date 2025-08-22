@@ -228,10 +228,10 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
          height={{
           xs: '75px',
           sm: '70px', 
-          md: '75px',
-          lg: '90px',
-          xl: '100px',
-          xxl: '110px'
+          md: '80px',
+          lg: '95px',
+          xl: '105px',
+          xxl: '115px'
           }}
           />
       )}

@@ -154,15 +154,21 @@ const ShopGallery = () => {
   // Get multiple images for the selected product from the images array
   const getProductImages = (product: any) => {
     try {
-      // Parse the JSON string if it's a string, otherwise use as is
       let imagesArray: string[] = [];
       
-      if (typeof product.images === 'string') {
-        // Parse the JSON string
-        imagesArray = JSON.parse(product.images);
-      } else if (Array.isArray(product.images)) {
-        // Already an array
-        imagesArray = product.images;
+      // Handle new API structure with images array containing objects
+      if (Array.isArray(product.images)) {
+        // Extract image_path from each image object
+        imagesArray = product.images
+          .filter((img: any) => img && img.image_path && typeof img.image_path === 'string')
+          .map((img: any) => img.image_path);
+      } else if (typeof product.images === 'string') {
+        // Fallback for old API structure - parse the JSON string
+        try {
+          imagesArray = JSON.parse(product.images);
+        } catch (parseError) {
+          console.error('Error parsing images JSON:', parseError);
+        }
       }
       
       // Return the images array with full URLs
@@ -179,7 +185,7 @@ const ShopGallery = () => {
           });
       }
     } catch (error) {
-      console.error('Error parsing images:', error);
+      console.error('Error processing images:', error);
     }
     
     return ['/placeholder-image.jpg'];
@@ -281,10 +287,10 @@ const ShopGallery = () => {
           height={{
             xs: '75px',
             sm: '70px', 
-            md: '75px',
-            lg: '90px',
-            xl: '100px',
-            xxl: '110px'
+            md: '80px',
+            lg: '95px',
+            xl: '105px',
+            xxl: '115px'
           }}
         />
 
@@ -876,34 +882,50 @@ const ShopGallery = () => {
                       />
                     </Box>
                   
-                  {/* Image Navigation Dots */}
-                  <Box sx={{
-                    position: 'absolute',
-                    bottom: { xs: 20, sm: 30, md: 40 },
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    display: 'flex',
-                    gap: { xs: 0.5, sm: 1 },
-                    zIndex: 2,
-                  }}>
-                    {getProductImages(selectedImage).map((image: string, index: number) => (
-                      <Box
-                        key={index}
-                        onClick={() => setModalImageIndex(index)}
-                        sx={{
-                          width: { xs: 10, sm: 12, md: 14 },
-                          height: { xs: 10, sm: 12, md: 14 },
-                          borderRadius: '50%',
-                          backgroundColor: index === modalImageIndex ? 'primary.main' : 'rgba(255, 255, 255, 0.7)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            backgroundColor: index === modalImageIndex ? 'primary.dark' : 'rgba(255, 255, 255, 0.9)',
-                          },
-                        }}
-                      />
-                    ))}
-                  </Box>
+                                     {/* Image Navigation Dots */}
+                   <Box sx={{
+                     position: 'absolute',
+                     bottom: { xs: 20, sm: 30, md: 40 },
+                     left: '50%',
+                     transform: 'translateX(-50%)',
+                     display: 'flex',
+                     gap: { xs: 0.75, sm: 1, md: 1.25 },
+                     zIndex: 2,
+                     padding: { xs: 1, sm: 1.5, md: 2 },
+                     backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                     borderRadius: '25px',
+                     backdropFilter: 'blur(8px)',
+                     border: '1px solid rgba(255, 255, 255, 0.2)',
+                   }}>
+                     {getProductImages(selectedImage).map((image: string, index: number) => (
+                       <Box
+                         key={index}
+                         onClick={() => setModalImageIndex(index)}
+                         sx={{
+                           width: { xs: 12, sm: 14, md: 16 },
+                           height: { xs: 12, sm: 14, md: 16 },
+                           borderRadius: '50%',
+                           backgroundColor: index === modalImageIndex ? '#000000' : 'rgba(255, 255, 255, 0.8)',
+                           cursor: 'pointer',
+                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                           border: index === modalImageIndex ? '2px solid #ffffff' : '2px solid rgba(255, 255, 255, 0.3)',
+                           boxShadow: index === modalImageIndex 
+                             ? '0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.2)' 
+                             : '0 2px 8px rgba(0, 0, 0, 0.2)',
+                           '&:hover': {
+                             backgroundColor: index === modalImageIndex ? '#000000' : 'rgba(255, 255, 255, 0.95)',
+                             transform: 'scale(1.2)',
+                             boxShadow: index === modalImageIndex 
+                               ? '0 6px 16px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.3)' 
+                               : '0 4px 12px rgba(0, 0, 0, 0.3)',
+                           },
+                           '&:active': {
+                             transform: 'scale(0.95)',
+                           },
+                         }}
+                       />
+                     ))}
+                   </Box>
                   
                   {/* Navigation Arrows */}
                   <IconButton
