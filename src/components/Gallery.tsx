@@ -126,7 +126,7 @@ const Gallery = () => {
                                  {/* Horizontal Image Slider */}
       <Box sx={{ 
         backgroundColor: '#f8f9fa',
-        py: { xs: 0.25, md: 0.5, lg: 20, xl: 8 },
+        py: { xs: 0.25, md: 0.5, lg: 1, xl: 1 },
         overflow: 'hidden',
       }}>
           <Container maxWidth="xl">
