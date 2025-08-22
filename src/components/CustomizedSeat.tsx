@@ -1,12 +1,13 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Grid } from '@mui/material'; 
 import { testimonials } from '@/data/testimonials';
 import Header from '@/components/Header';
 // CONSOLIDATED IMPORTS: All customization data now comes from a single file
-import { textures, colors, objects, stichtingtextures, vehicleYears, vehicleMakes, vehicleModels, vehicleTrims, reclineOptions, childRestraintOptions, motorBackRelaxerOptions, lumberOptions, heatingCoolingOptions, seatTypeOptions, itemTypeOptions, seatStyleOptions, materialTypeOptions, includedArmOptions, extraArmOptions } from '@/data/CustomizedSeat';
+import { textures, objects, stichtingtextures, vehicleYears, vehicleMakes, vehicleModels, vehicleTrims, reclineOptions, childRestraintOptions, motorBackRelaxerOptions, lumberOptions, heatingCoolingOptions, seatTypeOptions, itemTypeOptions, seatStyleOptions, materialTypeOptions, includedArmOptions, extraArmOptions } from '@/data/CustomizedSeat';
+// API imports
+import { CustomizedSeatApi, Color, VehicleModel, VehicleTrim } from '@/services/CustomizedSeatApi';
 // NEW IMPORTS: Added to enable communication between ShopGallery and CustomizedSeat components
 import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to access selected item data
 import { useRouter } from 'next/navigation'; // Next.js router for programmatic navigation
@@ -16,6 +17,8 @@ import { addItem } from '@/store/cartSlice';
 import HeroSectionCommon from './common/HeroSectionaCommon';
 import Breadcrumbs from './Breadcrumbs';
 import Footer from './Footer';
+// CSS Module import
+import styles from './CustomizedSeat.module.css';
 import {
   Box,
   Container,
@@ -82,6 +85,78 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [currentObjectIndex, setCurrentObjectIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
+  // API state for colors
+  const [apiColors, setApiColors] = useState<Color[]>([]);
+  const [colorsLoading, setColorsLoading] = useState(false);
+  const [colorsError, setColorsError] = useState<string | null>(null);
+
+  // API state for vehicle models
+  const [apiVehicleModels, setApiVehicleModels] = useState<VehicleModel[]>([]);
+  const [vehicleModelsLoading, setVehicleModelsLoading] = useState(false);
+  const [vehicleModelsError, setVehicleModelsError] = useState<string | null>(null);
+
+  // API state for vehicle trims
+  const [apiVehicleTrims, setApiVehicleTrims] = useState<VehicleTrim[]>([]);
+  const [vehicleTrimsLoading, setVehicleTrimsLoading] = useState(false);
+  const [vehicleTrimsError, setVehicleTrimsError] = useState<string | null>(null);
+
+  // Fetch colors from API on component mount
+  useEffect(() => {
+    const fetchColors = async () => {
+      setColorsLoading(true);
+      setColorsError(null);
+      try {
+        const colors = await CustomizedSeatApi.getAllColors();
+        setApiColors(colors);
+      } catch (error) {
+        console.error('Failed to fetch colors:', error);
+        setColorsError('Failed to load colors. Please try again.');
+      } finally {
+        setColorsLoading(false);
+      }
+    };
+
+    fetchColors();
+  }, []);
+
+  // Fetch vehicle models from API on component mount
+  useEffect(() => {
+    const fetchVehicleModels = async () => {
+      setVehicleModelsLoading(true);
+      setVehicleModelsError(null);
+      try {
+        const models = await CustomizedSeatApi.getAllVehicleModels();
+        setApiVehicleModels(models);
+      } catch (error) {
+        console.error('Failed to fetch vehicle models:', error);
+        setVehicleModelsError('Failed to load vehicle models. Please try again.');
+      } finally {
+        setVehicleModelsLoading(false);
+      }
+    };
+
+    fetchVehicleModels();
+  }, []);
+
+  // Fetch vehicle trims from API on component mount
+  useEffect(() => {
+    const fetchVehicleTrims = async () => {
+      setVehicleTrimsLoading(true);
+      setVehicleTrimsError(null);
+      try {
+        const trims = await CustomizedSeatApi.getAllVehicleTrims();
+        setApiVehicleTrims(trims);
+      } catch (error) {
+        console.error('Failed to fetch vehicle trims:', error);
+        setVehicleTrimsError('Failed to load vehicle trims. Please try again.');
+      } finally {
+        setVehicleTrimsLoading(false);
+      }
+    };
+
+    fetchVehicleTrims();
+  }, []);
+  
   // State for vehicle information
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedMake, setSelectedMake] = useState('');
@@ -114,8 +189,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     // Get material/texture price
     const texturePrice = textures.find(t => t.id === selectedTexture)?.price || 0;
     
-    // Get color price
-    const colorPrice = colors.find(c => c.id === selectedColor)?.price || 0;
+    // Get color price (currently no price in API response, defaulting to 0)
+    const colorPrice = 0; // apiColors.find(c => c.id === selectedColor)?.price || 0;
     
     // Get stitching pattern price
     const stitchingPrice = stichtingtextures.find(s => s.id === selectedStitching)?.price || 0;
@@ -142,7 +217,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const totalPrice = calculateTotalPrice();
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
+    <Box className={styles.mainContainer}>
       {showHeader && <Header />}
       
             {showHero && (
@@ -170,59 +245,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       />
 
       {/* Main Configuration Section */}
-      <Container maxWidth="xl" sx={{ 
-        py: { xs: 1.5, sm: 2, md: 3, lg: 4, xl: 5 },
-        px: { xs: 2, sm: 3, md: 4, lg: 4, xl: 4 },
-        mx: 'auto',
-        maxWidth: { xs: '100%', sm: '100%', md: '100%', lg: '100%', xl: '100%' }
-      }}>
-        <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr', md: '1fr 1fr', lg: '1fr 1fr' }, 
-          gap: { xs: 2, sm: 3, md: 3, lg: 3, xl: 3 },
-          alignItems: 'start',
-          width: '100%'
-        }}>
+      <Container maxWidth="xl" className={styles.configContainer}>
+        <Box className={styles.gridContainer}>
           {/* Left Column - 3D Viewer */}
-          <Grid sx={{ gridColumn: { xs: 'span 1', sm: 'span 1', md: 'span 1', lg: 'span 1' } }}>
-                         <Card sx={{ 
-               height: { xs: '350px', sm: '400px', md: '500px', lg: '600px' }, 
-               position: 'relative', 
-               overflow: 'hidden', 
-               boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-               borderRadius: { xs: 2, md: 3 },
-               display: 'flex',
-               flexDirection: 'column'
-             }}>
-              <Box
-                sx={{
-                  height: '100%',
-                  background: `linear-gradient(45deg, #f5f5f5 25%, transparent 25%), 
-                              linear-gradient(-45deg, #f5f5f5 25%, transparent 25%), 
-                              linear-gradient(45deg, transparent 75%, #f5f5f5 75%), 
-                              linear-gradient(-45deg, transparent 75%, #f5f5f5 75%)`,
-                  backgroundSize: '20px 20px',
-                  backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                }}
-              >
-
-                
+          <Box className={styles.leftColumn}>
+                         <Card className={styles.viewerCard}>
+              <Box className={styles.viewerBackground}>
                 {/* MODIFIED IMAGE DISPLAY AREA: Now conditionally renders selected item image or placeholder */}
-                <Box sx={{ 
-                  height: '100%', 
-                  width: '100%',
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(0,0,0,0.05)',
-                  borderRadius: 2,
-                  overflow: 'hidden'
-                }}>
+                <Box className={styles.imageDisplayArea}>
                   {selectedItem ? ( // CONDITIONAL RENDERING: Show selected item image if available
                     <>
                       {/* MAIN PRODUCT IMAGE */}
@@ -308,11 +338,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                   width: { xs: 8, sm: 10 },
                                   height: { xs: 8, sm: 10 },
                                   borderRadius: '50%',
-                                  bgcolor: index === currentImageIndex ? 'primary.main' : 'rgba(255,255,255,0.6)',
+                                                                     bgcolor: index === currentImageIndex ? '#d32f2f' : 'rgba(255,255,255,0.6)',
                                   cursor: 'pointer',
                                   transition: 'all 0.3s ease',
                                   '&:hover': {
-                                    bgcolor: index === currentImageIndex ? 'primary.main' : 'rgba(255,255,255,0.8)',
+                                                                         bgcolor: index === currentImageIndex ? '#d32f2f' : 'rgba(255,255,255,0.8)',
                                     transform: 'scale(1.2)',
                                   }
                                 }}
@@ -324,29 +354,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                     </>
                   ) : (
                     // ENHANCED PLACEHOLDER: Show better message when no item is selected
-                    <Box sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '100%',
-                      textAlign: 'center',
-                      px: 3
-                    }}>
-                      <Typography variant="h5" sx={{ 
-                        color: 'text.primary',
-                        fontWeight: 'bold',
-                        mb: 2,
-                        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
-                      }}>
+                    <Box className={styles.placeholderContainer}>
+                      <Typography variant="h5" className={styles.placeholderTitle}>
                         No Product Selected
                       </Typography>
-                      <Typography variant="body1" sx={{ 
-                        color: 'text.secondary',
-                        mb: 3,
-                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                        maxWidth: '400px'
-                      }}>
+                      <Typography variant="body1" className={styles.placeholderDescription}>
                         Please select a model or product from our shop to start customizing your perfect seat.
                       </Typography>
                                              <Button
@@ -354,26 +366,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          size="large"
                          onClick={() => router.push('/specials')}
                          startIcon={<ArrowForward />}
-                         sx={{
-                           bgcolor: 'primary.main',
-                           color: 'white',
-                           minWidth: '80px',
-                           maxWidth: '110px',
-                           height: '40px',
-                           fontSize: '0.7rem',
-                           whiteSpace: 'nowrap',
-                           overflow: 'hidden',
-                           textOverflow: 'ellipsis',
-                           textTransform: 'none',
-                           '& .MuiButton-startIcon': {
-                             marginRight: '4px',
-                           },
-                           '&:hover': {
-                             bgcolor: 'primary.dark',
-                             transform: 'scale(1.05)',
-                           },
-                           transition: 'all 0.3s ease'
-                         }}
+                         className={styles.browseShopButton}
                        >
                          Browse Shop
                        </Button>
@@ -383,130 +376,31 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   {/* REMOVED: Overlapping title and info displays - will be shown below the image instead */}
                 </Box>
                 
-                {/* MODIFIED VIEWER CONTROLS: Added back to shop button, removed navigation arrows */}
-                <Box sx={{ 
-                  position: 'absolute', 
-                  top: { xs: 10, sm: 15, md: 20 }, 
-                  right: { xs: 10, sm: 15, md: 20 },
-                  display: 'flex',
-                  gap: { xs: 0.5, sm: 1 }
-                }}>
-                  {/* NEW BACK TO SHOP BUTTON: Only shows when an item is selected */}
-                  {selectedItem && ( // CONDITIONAL RENDERING: Only show if an item is selected
-                    <Tooltip title="Back to Shop">
-                      <IconButton 
-                        size={isSmallMobile ? "small" : "medium"}
-                        onClick={() => {
-                          clearSelectedItem(); // FUNCTION: Clear the selected item from context
-                          router.push('/shop'); // FUNCTION: Navigate back to shop page
-                        }}
-                        sx={{ 
-                          bgcolor: 'rgba(255,255,255,0.95)', 
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          '&:hover': {
-                            bgcolor: 'rgba(255,255,255,1)',
-                            transform: 'scale(1.05)',
-                          }
-                        }}
-                      >
-                        ← {/* ICON: Back arrow */}
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {/* EXISTING ZOOM CONTROLS: Kept for future functionality */}
-                  <Tooltip title="Zoom In">
-                    <IconButton 
-                      size={isSmallMobile ? "small" : "medium"}
-                      sx={{ 
-                        bgcolor: 'rgba(255,255,255,0.95)', 
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        '&:hover': {
-                          bgcolor: 'rgba(255,255,255,1)',
-                          transform: 'scale(1.05)',
-                        }
-                      }}
-                    >
-                      <ZoomIn sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Add to Favorites">
-                    <IconButton 
-                      size={isSmallMobile ? "small" : "medium"}
-                      sx={{ 
-                        bgcolor: 'rgba(255,255,255,0.95)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        '&:hover': {
-                          bgcolor: 'rgba(255,255,255,1)',
-                          transform: 'scale(1.05)',
-                        }
-                      }}
-                    >
-                      <Favorite sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />
-                    </IconButton>
-                  </Tooltip>
-                                 </Box>
+                
                </Box>
 
              </Card>
              
                            {/* NEW CONTAINER: Product Information - Title and Description */}
               {selectedItem && (
-                <Card sx={{ 
-                  mt: { xs: 2, sm: 3 },
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  height: { xs: '180px', sm: '200px', md: '120px', lg: '200px' }
-                }}>
-                                     <CardContent sx={{ 
-                     p: { xs: 1.5, sm: 2 },
-                     '&:last-child': { pb: { xs: 1.5, sm: 2 } },
-                     height: '100%',
-                     display: 'flex',
-                     flexDirection: 'column',
-                     justifyContent: 'flex-start',
-                     pt: { xs: 1.5, sm: 2 }
-                   }}>
-                                         {/* Product Title */}
-                     <Typography variant="h5" sx={{ 
-                       fontWeight: 400, 
-                       color: 'text.primary',
-                       fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
-                       mb: { xs: 1, sm: 1.5 },
-                       textAlign: 'left'
-                     }}>
+                <Card className={styles.productInfoCard}>
+           <CardContent className={styles.productInfoContent}>
+                 {/* Product Title */}
+                     <Typography variant="h5" className={styles.productTitle}>
                        {selectedItem.title}
                      </Typography>
                     
-                                         {/* Product Description */}
-                     <Box sx={{ 
-                       width: '100%',
-                       textAlign: 'left'
-                     }}>
+                 {/* Product Description */}
+                     <Box className={styles.productDescriptionContainer}>
                        {selectedItem.description.split(/[.,]/).filter(sentence => sentence.trim().length > 0).map((sentence, index) => (
-                         <Box key={index} sx={{ 
-                           display: 'flex', 
-                           alignItems: 'flex-start',
-                           mb: 1,
-                           gap: 1
-                         }}>
+                         <Box key={index} className={styles.descriptionItem}>
                            <Typography 
                              component="span" 
-                             sx={{ 
-                               color: 'primary.main',
-                               fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
-                               fontWeight: 'bold',
-                               mt: 0.2
-                             }}
+                             className={styles.descriptionBullet}
                            >
                              •
                            </Typography>
-                           <Typography variant="body1" sx={{ 
-                             color: 'text.secondary',
-                             fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                             lineHeight: 1.4,
-                             flex: 1
-                           }}>
+                           <Typography variant="body1" className={styles.descriptionText}>
                              {sentence.trim()}
                            </Typography>
                          </Box>
@@ -514,101 +408,36 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                      </Box>
                   </CardContent>
                </Card>
+               
              )}
-          </Grid>
+            </Box>
 
           {/* Right Column - Customization Options */}
-          <Grid sx={{ gridColumn: { xs: 'span 1', sm: 'span 1', md: 'span 1', lg: 'span 1' } }}>
-            <Card sx={{ 
-              height: { xs: '350px', sm: '400px', md: '500px', lg: '600px' },
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
-              borderRadius: 2,
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              <CardContent sx={{ 
-               // p: { xs: 2, sm: 3 },
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden'
-              }}>
+          <Box className={styles.rightColumn}>
+            <Card className={styles.customizationCard}>
+              <CardContent className={styles.customizationContent}>
                 {/* Scrollable Content Container */}
-                <Box sx={{
-                  flex: 1,
-                  overflowY: 'auto',
-                  '&::-webkit-scrollbar': {
-                    width: '8px',
-                  },
-                  '&::-webkit-scrollbar-track': {
-                    background: '#f1f1f1',
-                    borderRadius: '4px',
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                    background: '#c1c1c1',
-                    borderRadius: '4px',
-                    '&:hover': {
-                      background: '#a8a8a8',
-                    },
-                  },
-                }}>
+                <Box className={styles.scrollableContainer}>
                   {/* Always show customization options, regardless of product selection */}
                   <>
-                    {/* Select Section - Customer Type and Quantity */}
-                    <Box sx={{ mb: 4 }}>
-                      <Typography variant="h6" sx={{ 
-                        mb: { xs: 2, sm: 3 }, 
-                        fontWeight: 'bold', 
-                        color: 'text.primary',
-                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                      }}>
-                        Select
-                      </Typography>
+                                         {/* ===== SELECT SECTION ===== */}
+                     <Box className={styles.sectionContainer}>
+                       <Typography variant="h6" className={styles.sectionTitle}>
+                         Select
+                       </Typography>
                       
-                                             <Box sx={{
-                         display: 'flex',
-                         flexDirection: 'row',
-                         justifyContent: 'flex-start',
-                         width: '100%',
-                         flexWrap: 'wrap',
-                         gap: 3
-                       }}>
+                                             <Box className={styles.formRow}>
                         {/* Customer Type */}
-                        <Box sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                          minWidth: '200px',
-                          flex: '0 0 200px'
-                        }}>
-                          <Typography variant="body2" sx={{ 
-                            fontWeight: 500,
-                            color: 'text.primary',
-                            fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                          }}>
+                        <Box className={styles.formField}>
+                          <Typography variant="body2" className={styles.fieldLabel}>
                             Customer Type:
                           </Typography>
-                          <FormControl sx={{ minWidth: '200px' }}>
+                          <FormControl className={styles.formControl}>
                             <Select
                               value={selectedCustomerType}
                               onChange={(e) => setSelectedCustomerType(e.target.value)}
                               displayEmpty
-                              sx={{
-                                height: '40px',
-                                fontSize: '14px',
-                                '& .MuiSelect-select': {
-                                  padding: '8px 12px',
-                                },
-                                '& .MuiOutlinedInput-root': {
-                                  borderColor: selectedCustomerType ? '#d32f2f' : undefined,
-                                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: selectedCustomerType ? '#d32f2f' : undefined,
-                                  },
-                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: selectedCustomerType ? '#d32f2f' : undefined,
-                                  }
-                                }
-                              }}
+                              className={styles.selectField}
                             >
                               <MenuItem value="" disabled>
                                 Select Customer Type
@@ -620,18 +449,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         </Box>
 
                         {/* Quantity */}
-                        <Box sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                          minWidth: '200px',
-                          flex: '0 0 200px'
-                        }}>
-                          <Typography variant="body2" sx={{ 
-                            fontWeight: 500,
-                            color: 'text.primary',
-                            fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                          }}>
+                        <Box className={styles.formField}>
+                          <Typography variant="body2" className={styles.fieldLabel}>
                             Quantity:
                           </Typography>
                           <TextField
@@ -641,294 +460,200 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                             inputProps={{ 
                               min: 1,
                               style: { 
-                                height: '24px',
+                                height: '18px',
                                 fontSize: '14px',
                                 padding: '8px 12px'
                               }
                             }}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                height: '40px',
-                                borderColor: quantity > 0 ? '#d32f2f' : undefined,
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                  borderColor: quantity > 0 ? '#d32f2f' : undefined,
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                  borderColor: quantity > 0 ? '#d32f2f' : undefined,
-                                }
-                              }
-                            }}
+                            className={styles.textField}
                           />
                         </Box>
                       </Box>
                     </Box>
 
-                    {/* Divider */}
-                    <Divider sx={{ my: 3 }} />
+           {/* Divider */}
+                     <Divider className={styles.divider} />
 
-                    {/* Material Selection Section */}
-                  <Box sx={{ mb: 4 }}>
-                    <Typography variant="h6" sx={{ 
-                      mb: { xs: 2, sm: 3 }, 
-                      fontWeight: 'bold', 
-                      color: 'text.primary',
-                      fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                    }}>
-                      Choose Your Material
-                    </Typography>
-                    
-                    {/* Selected Material Name */}
-                    {selectedTexture && (
-                      <Typography variant="h5" sx={{ 
-                        mb: { xs: 2, sm: 3 }, 
-                        fontWeight: 'bold', 
-                        color: selectedTexture === 'none' ? 'text.secondary' : 'primary.main', 
-                        textAlign: 'center',
-                        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
-                      }}>
-                        {textures.find(t => t.id === selectedTexture)?.name}
-                      </Typography>
-                    )}
-                    
-                                          <Box sx={{ 
-                        display: 'flex', 
-                        gap: { xs: 1, sm: 1.5, md: 2 }, 
-                        justifyContent: 'flex-start', 
-                        flexWrap: 'wrap',
-                        mb: { xs: 2, sm: 3 }
-                      }}>
-                      {textures.map((texture) => (
-                        <Box
-                          key={texture.id}
-                          onClick={() => setSelectedTexture(texture.id)}
-                          sx={{
-                            width: { xs: 50, sm: 55, md: 60 },
-                            height: { xs: 50, sm: 55, md: 60 },
-                            borderRadius: 2,
-                            border: '3px solid',
-                            borderColor: selectedTexture === texture.id ? 'primary.main' : 'grey.300',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            position: 'relative',
-                            overflow: 'hidden',
-                            '&:hover': {
-                              transform: 'scale(1.1)',
-                              borderColor: 'primary.main',
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                            }
-                          }}
-                        >
-                          {texture.id === 'none' ? (
-                            // NONE OPTION: Special display for "None" option
-                            <Box
-                              sx={{
-                                width: '100%',
-                                height: '100%',
-                                backgroundColor: '#f5f5f5',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                border: '2px dashed #ccc'
-                              }}
-                            >
-                              <Typography 
-                                variant="caption" 
-                                sx={{ 
-                                  fontSize: { xs: '0.6rem', sm: '0.7rem' },
-                                  color: 'text.secondary',
-                                  textAlign: 'center',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                None
-                              </Typography>
-                            </Box>
-                          ) : (
-                            // REGULAR TEXTURE: Normal image display for texture options
-                            <Image
-                              src={texture.image}
-                              alt={texture.name}
-                              fill
-                              style={{ objectFit: 'cover' }}
-                            />
-                          )}
-                          {selectedTexture === texture.id && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                backgroundColor: texture.id === 'none' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.3)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <CheckCircle sx={{ 
-                                color: texture.id === 'none' ? 'primary.main' : 'white', 
-                                fontSize: { xs: 18, sm: 20, md: 24 } 
-                              }} />
-                            </Box>
-                          )}
-                        </Box>
-                      ))}
-                    </Box>
-                    
-                    
-                  </Box>
-
-                  {/* Divider */}
-                  <Divider sx={{ my: 3 }} />
-
-                  {/* Color Selection Section */}
-                  <Box>
-                    <Typography variant="h6" sx={{ 
-                      mb: { xs: 2, sm: 3 }, 
-                      fontWeight: 'bold', 
-                      color: 'text.primary',
-                      fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                    }}>
-                      Choose Your Color
-                    </Typography>
-                                         <Box sx={{ 
-                       display: 'flex', 
-                       gap: { xs: 1, sm: 1.5 }, 
-                       flexWrap: 'wrap', 
-                       justifyContent: 'flex-start',
-                       mb: { xs: 2, sm: 3 }
-                     }}>
-                      {colors.map((color) => (
-                        <Tooltip key={color.id} title={color.name}>
-                          <Box
-                            onClick={() => setSelectedColor(color.id)}
-                            sx={{
-                              width: { xs: 45, sm: 48, md: 50 },
-                              height: { xs: 45, sm: 48, md: 50 },
-                              borderRadius: '50%',
-                              backgroundColor: color.id === 'none' ? '#f5f5f5' : color.hex,
-                              border: '4px solid',
-                              borderColor: selectedColor === color.id ? 'primary.main' : 'transparent',
-                              cursor: 'pointer',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'scale(1.15)',
-                                borderColor: 'primary.secondary',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                              },
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              position: 'relative', // ADDED: Required for absolute positioning of child elements
-                            }}
-                          >
-                            {color.id === 'none' && (
-                              // NONE OPTION: Special display for "None" color option
-                              <Typography 
-                                variant="caption" 
-                                sx={{ 
-                                  fontSize: { xs: '0.5rem', sm: '0.6rem' },
-                                  color: selectedColor === color.id ? 'primary.main' : 'text.secondary',
-                                  fontWeight: 'bold',
-                                  // Let parent flexbox center it, no absolute positioning
-                                }}
-                              >
-                                None
-                              </Typography>
-                            )}
-                            {selectedColor === color.id && (
-                              <CheckCircle sx={{
-                                color: color.id === 'none' ? 'primary.main' : 'white',
-                                fontSize: color.id === 'none' ? { xs: 12, sm: 14, md: 16 } : { xs: 16, sm: 17, md: 18 }, // Smaller tick for 'None'
-                                position: 'absolute', // Absolute positioning for tick
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                zIndex: 2 // Ensure tick is on top
-                              }} />
-                            )}
-                          </Box>
-                        </Tooltip>
-                      ))}
-                    </Box>
-                  </Box>
-
-                  {/* Divider */}
-                  <Divider sx={{ my: 3 }} />
-
-                                     {/* Stitching Pattern Section */}
-                   <Box sx={{ mb: 4 }}>
-                     <Typography variant="h6" sx={{ 
-                       mb: { xs: 2, sm: 3 }, 
-                       fontWeight: 'bold', 
-                       color: 'text.primary',
-                       fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                     }}>
-                       Choose Your Stitching Pattern
-                     </Typography>
-                     
-                     {/* Selected Stitching Pattern Name */}
-                     {selectedStitching && (
-                       <Typography variant="h5" sx={{ 
-                         mb: { xs: 2, sm: 3 }, 
-                         fontWeight: 'bold', 
-                         color: selectedStitching === 'none' ? 'text.secondary' : 'primary.main', 
-                         textAlign: 'center',
-                         fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
-                       }}>
-                         {stichtingtextures.find(s => s.id === selectedStitching)?.name}
+         {/* ===== MATERIAL SELECTION SECTION ===== */}
+                   <Box className={styles.sectionContainer}>
+                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                       <Typography variant="h6" className={styles.sectionTitle}>
+                         Choose Your Material
                        </Typography>
+                                               {selectedTexture !== 'none' && (
+                          <Typography variant="body2" sx={{ 
+                            color: '#000000', 
+                            fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                            marginRight: '20px'
+                          }}>
+                            +${textures.find(t => t.id === selectedTexture)?.price || 0}
+                          </Typography>
+                        )}
+                     </Box>
+                    
+                                         {/* Selected Material Name - Removed to show only on hover */}
+                    
+                                                                                                                               <Box className={styles.materialOptionsContainer}>
+                        {textures.map((texture) => (
+                                                    <Tooltip key={texture.id} title={texture.name} placement="top">
+                            <Box
+                              onClick={() => setSelectedTexture(texture.id)}
+                              className={`${styles.materialOption} ${selectedTexture === texture.id ? styles.selected : ''}`}
+                            >
+                              {texture.id === 'none' ? (
+                                // NONE OPTION: Special display for "None" option
+                                <Box className={styles.noneOption}>
+                                  <Typography 
+                                    variant="caption" 
+                                    className={styles.noneText}
+                                  >
+                                    None
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                // REGULAR TEXTURE: Normal image display for texture options
+                                <Image
+                                  src={texture.image}
+                                  alt={texture.name}
+                                  fill
+                                  style={{ objectFit: 'cover' }}
+                                />
+                              )}
+                              {selectedTexture === texture.id && (
+                                <Box className={`${styles.selectedOverlay} ${texture.id === 'none' ? styles.none : ''}`}>
+                                  <CheckCircle sx={{ 
+                                    color: texture.id === 'none' ? '#d32f2f' : 'white', 
+                                    fontSize: { xs: 18, sm: 20, md: 24 } 
+                                  }} />
+                                </Box>
+                              )}
+                            </Box>
+                          </Tooltip>
+                         ))}
+                       </Box>
+                    
+                    
+                  </Box>
+
+                                     {/* Divider */}
+                   <Divider className={styles.divider} />
+
+                                     {/* ===== COLOR SELECTION SECTION ===== */}
+                   <Box>
+                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                       <Typography variant="h6" className={styles.sectionTitle}>
+                         Choose Your Color
+                       </Typography>
+                       
+                     </Box>
+                     
+                     {/* Loading State */}
+                     {colorsLoading && (
+                       <Box sx={{ textAlign: 'center', py: 2 }}>
+                         <Typography variant="body2" color="text.secondary">
+                           Loading colors...
+                         </Typography>
+                       </Box>
                      )}
                      
-                     <Box sx={{ 
-                       display: 'flex', 
-                       gap: { xs: 1, sm: 1.5, md: 2 }, 
-                       justifyContent: 'flex-start', 
-                       flexWrap: 'wrap',
-                       mb: { xs: 2, sm: 3 }
-                     }}>
+                     {/* Error State */}
+                     {colorsError && (
+                       <Box sx={{ textAlign: 'center', py: 2 }}>
+                         <Typography variant="body2" color="error">
+                           {colorsError}
+                         </Typography>
+                       </Box>
+                     )}
+                     
+                                           {/* Colors Display */}
+                      {!colorsLoading && !colorsError && (
+                        <Box className={styles.colorOptionsContainer}>
+                          {/* None Option - Always First */}
+                          <Tooltip title="No Color">
+                            <Box
+                              onClick={() => setSelectedColor('none')}
+                              className={`${styles.colorOption} ${selectedColor === 'none' ? styles.selected : ''}`}
+                              style={{ backgroundColor: '#f5f5f5' }}
+                            >
+                              <Typography 
+                                variant="caption" 
+                                className={styles.noneColorText}
+                                style={{ color: selectedColor === 'none' ? '#d32f2f' : '#666' }}
+                              >
+                                None
+                              </Typography>
+                              {selectedColor === 'none' && (
+                                <CheckCircle sx={{
+                                  color: '#d32f2f',
+                                  fontSize: { xs: 12, sm: 14, md: 16 },
+                                  position: 'absolute',
+                                  top: '50%',
+                                  left: '50%',
+                                  transform: 'translate(-50%, -50%)',
+                                  zIndex: 2
+                                }} />
+                              )}
+                            </Box>
+                          </Tooltip>
+                          
+                          {/* API Colors */}
+                          {apiColors.map((color) => (
+                            <Tooltip key={color.id} title={color.name}>
+                                                             <Box
+                                 onClick={() => setSelectedColor(color.id.toString())}
+                                 className={`${styles.colorOption} ${selectedColor === color.id.toString() ? styles.selected : ''}`}
+                                 style={{ backgroundColor: color.hex_code || '#ccc' }}
+                               >
+                                                                 {selectedColor === color.id.toString() && (
+                                  <CheckCircle sx={{
+                                    color: 'white',
+                                    fontSize: { xs: 16, sm: 17, md: 18 },
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    zIndex: 2
+                                  }} />
+                                )}
+                              </Box>
+                            </Tooltip>
+                          ))}
+                        </Box>
+                      )}
+                  </Box>
+
+                  {/* Divider */}
+                  <Divider sx={{ my: { xs: 1, sm: 1, md: 1.5 , lg: 1.5 , xl:1.5} }} />
+
+       {/* ===== STITCHING PATTERN SECTION ===== */}
+                    <Box className={styles.sectionContainer}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6" className={styles.sectionTitle}>
+                          Choose Your Stitching Pattern
+                        </Typography>
+                                                 {selectedStitching !== 'none' && (
+                           <Typography variant="body2" sx={{ 
+                             color: '#000000', 
+                             fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                             marginRight: '20px'
+                           }}>
+                             +${stichtingtextures.find(s => s.id === selectedStitching)?.price || 0}
+                           </Typography>
+                         )}
+                      </Box>
+                     
+                     <Box className={styles.stitchingOptionsContainer}>
                        {stichtingtextures.map((stitching) => (
-                         <Box
-                           key={stitching.id}
-                           onClick={() => setSelectedStitching(stitching.id)}
-                           sx={{
-                             width: { xs: 50, sm: 55, md: 60 },
-                             height: { xs: 50, sm: 55, md: 60 },
-                             borderRadius: 2,
-                             border: '3px solid',
-                             borderColor: selectedStitching === stitching.id ? 'primary.main' : 'grey.300',
-                             cursor: 'pointer',
-                             transition: 'all 0.3s ease',
-                             position: 'relative',
-                             overflow: 'hidden',
-                             '&:hover': {
-                               transform: 'scale(1.1)',
-                               borderColor: 'primary.main',
-                               boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                             }
-                           }}
-                         >
+                         <Tooltip key={stitching.id} title={stitching.name} placement="top">
+                           <Box
+                             onClick={() => setSelectedStitching(stitching.id)}
+                             className={`${styles.stitchingOption} ${selectedStitching === stitching.id ? styles.selected : ''}`}
+                           >
                            {stitching.id === 'none' ? (
-                             <Box
-                               sx={{
-                                 width: '100%',
-                                 height: '100%',
-                                 backgroundColor: '#f5f5f5',
-                                 display: 'flex',
-                                 alignItems: 'center',
-                                 justifyContent: 'center',
-                                 border: '2px dashed #ccc'
-                               }}
-                             >
+                             <Box className={styles.noneOption}>
                                <Typography 
                                  variant="caption" 
-                                 sx={{ 
-                                   fontSize: { xs: '0.6rem', sm: '0.7rem' },
-                                   color: 'text.secondary',
-                                   textAlign: 'center',
-                                   fontWeight: 'bold'
-                                 }}
+                                 className={styles.noneText}
                                >
                                  None
                                </Typography>
@@ -942,89 +667,40 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                              />
                            )}
                            {selectedStitching === stitching.id && (
-                             <Box
-                               sx={{
-                                 position: 'absolute',
-                                 top: 0,
-                                 left: 0,
-                                 right: 0,
-                                 bottom: 0,
-                                 backgroundColor: stitching.id === 'none' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.3)',
-                                 display: 'flex',
-                                 alignItems: 'center',
-                                 justifyContent: 'center',
-                               }}
-                             >
+                             <Box className={`${styles.selectedOverlay} ${stitching.id === 'none' ? styles.none : ''}`}>
                                <CheckCircle sx={{ 
-                                 color: stitching.id === 'none' ? 'primary.main' : 'white', 
+                                 color: stitching.id === 'none' ? '#d32f2f' : 'white', 
                                  fontSize: { xs: 18, sm: 20, md: 24 } 
                                }} />
                              </Box>
                            )}
                          </Box>
+                         </Tooltip>
                        ))}
                      </Box>
                    </Box>
 
                                      {/* Divider */}
-                   <Divider sx={{ my: 3 }} />
+                   <Divider className={styles.divider} />
 
-                                       {/* Vehicle Information Section */}
-                    <Box sx={{ mb: 3 }}>
-                      <Typography variant="h6" sx={{ 
-                        mb: { xs: 2, sm: 3 }, 
-                      
-                        fontWeight: 'bold', 
-                        color: 'text.primary',
-                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                      }}>
-                        Vehicle Information
-                      </Typography>
+                                                                               {/* ===== VEHICLE INFORMATION SECTION ===== */}
+                     <Box className={styles.vehicleInfoSection}>
+                       <Typography variant="h6" className={styles.sectionTitle}>
+                         Vehicle Information
+                       </Typography>
                      
-                                           <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'flex-start',
-                        width: '100%',
-                        flexWrap: 'wrap',
-                        gap: 3
-                      }}>
+                                           <Box className={styles.formRow}>
                                                  {/* Vehicle Year */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
+                         <Box className={styles.formField}>
+                           <Typography variant="body2" className={styles.fieldLabel}>
                              Vehicle Year:
                            </Typography>
-                                                       <FormControl sx={{ minWidth: '200px' }}>
+                                                       <FormControl className={styles.formControl}>
                               <Select
                                 value={selectedYear}
                                 onChange={(e) => setSelectedYear(e.target.value)}
                                 displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedYear ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedYear ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedYear ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
+                                className={styles.selectField}
                               >
                                <MenuItem value="" disabled>
                                  Select Year
@@ -1039,41 +715,16 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          </Box>
 
                                                  {/* Vehicle Make */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
+                         <Box className={styles.formField}>
+                           <Typography variant="body2" className={styles.fieldLabel}>
                              Vehicle Make:
                            </Typography>
-                                                       <FormControl sx={{ minWidth: '200px' }}>
+                                                       <FormControl className={styles.formControl}>
                               <Select
                                 value={selectedMake}
                                 onChange={(e) => setSelectedMake(e.target.value)}
                                 displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedMake ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedMake ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedMake ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
+                                className={styles.selectField}
                               >
                                <MenuItem value="" disabled>
                                  Select Make
@@ -1087,164 +738,101 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                            </FormControl>
                          </Box>
 
-                                                 {/* Vehicle Model */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
-                             Vehicle Model:
-                           </Typography>
-                                                       <FormControl sx={{ minWidth: '200px' }}>
-                              <Select
-                                value={selectedModel}
-                                onChange={(e) => setSelectedModel(e.target.value)}
-                                displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedModel ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedModel ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedModel ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
-                              >
-                               <MenuItem value="" disabled>
-                                 Select Model
-                               </MenuItem>
-                               {vehicleModels.map((model) => (
-                                 <MenuItem key={model.id} value={model.id}>
-                                   {model.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
+                 {/* Vehicle Model */}
+                          <Box className={styles.formField}>
+                            <Typography variant="body2" className={styles.fieldLabel}>
+                              Vehicle Model:
+                            </Typography>
+                                                        <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedModel}
+                                 onChange={(e) => setSelectedModel(e.target.value)}
+                                 displayEmpty
+                                 className={styles.selectField}
+                                 disabled={vehicleModelsLoading}
+                               >
+                                <MenuItem value="" disabled>
+                                  {vehicleModelsLoading ? 'Loading models...' : 'Select Model'}
+                                </MenuItem>
+                                {vehicleModelsError ? (
+                                  <MenuItem value="" disabled>
+                                    Error loading models
+                                  </MenuItem>
+                                ) : (
+                                  apiVehicleModels.map((model) => (
+                                    <MenuItem key={model.id} value={model.id.toString()}>
+                                      {model.name}
+                                    </MenuItem>
+                                  ))
+                                )}
+                              </Select>
+                            </FormControl>
+                          </Box>
 
-                                                 {/* Vehicle Trim */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
-                             Vehicle Trim:
-                           </Typography>
-                                                       <FormControl sx={{ minWidth: '200px' }}>
-                              <Select
-                                value={selectedTrim}
-                                onChange={(e) => setSelectedTrim(e.target.value)}
-                                displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedTrim ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedTrim ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedTrim ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
-                              >
-                               <MenuItem value="" disabled>
-                                 Select Trim
-                               </MenuItem>
-                               {vehicleTrims.map((trim) => (
-                                 <MenuItem key={trim.id} value={trim.id}>
-                                   {trim.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
+                                                                                                   {/* Vehicle Trim */}
+                          <Box className={styles.formField}>
+                            <Typography variant="body2" className={styles.fieldLabel}>
+                              Vehicle Trim:
+                            </Typography>
+                                                        <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedTrim}
+                                 onChange={(e) => setSelectedTrim(e.target.value)}
+                                 displayEmpty
+                                 className={styles.selectField}
+                                 disabled={vehicleTrimsLoading}
+                               >
+                                <MenuItem value="" disabled>
+                                  {vehicleTrimsLoading ? 'Loading trims...' : 'Select Trim'}
+                                </MenuItem>
+                                {vehicleTrimsError ? (
+                                  <MenuItem value="" disabled>
+                                    Error loading trims
+                                  </MenuItem>
+                                ) : (
+                                  apiVehicleTrims.map((trim) => (
+                                    <MenuItem key={trim.id} value={trim.id.toString()}>
+                                      {trim.name}
+                                    </MenuItem>
+                                  ))
+                                )}
+                              </Select>
+                            </FormControl>
+                          </Box>
                       </Box>
                    </Box>
 
                                        {/* Divider */}
-                    <Divider sx={{ my: 3 }} />
+                    <Divider className={styles.divider} />
 
-                                         {/* Variation Section */}
-                     <Box sx={{ mb: 3 }}>
-                       <Typography variant="h6" sx={{ 
-                         mb: { xs: 2, sm: 3 }, 
-                         fontWeight: 'bold', 
-                         color: 'text.primary',
-                         fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                       }}>
-                         Variation
-                       </Typography>
+           {/* ===== VARIATION SECTION ===== */}
+                      <Box className={styles.variationSection}>
+                        <Typography variant="h6" className={styles.sectionTitle}>
+                          Variation
+                        </Typography>
                       
-                      <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'flex-start',
-                        width: '100%',
-                        flexWrap: 'wrap',
-                        gap: 3
-                      }}>
-                        {/* Recline */}
-                        <Box sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                          minWidth: '200px',
-                          flex: '0 0 200px'
-                        }}>
-                          <Typography variant="body2" sx={{ 
-                            fontWeight: 500,
-                            color: 'text.primary',
-                            fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                          }}>
-                            Recline:
-                          </Typography>
-                                                     <FormControl sx={{ minWidth: '200px' }}>
+                       <Box className={styles.formRow}>
+                         {/* Recline */}
+                         <Box className={styles.formField}>
+                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                             <Typography variant="body2" className={styles.fieldLabel}>
+                               Recline:
+                             </Typography>
+                                                           {selectedRecline && (
+                                <Typography variant="body2" sx={{ 
+                                  color: '#000000', 
+                                  fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                                }}>
+                                  +${reclineOptions.find(r => r.id === selectedRecline)?.price || 0}
+                                </Typography>
+                              )}
+                           </Box>
+                           <FormControl className={styles.formControl}>
                              <Select
                                value={selectedRecline}
                                onChange={(e) => setSelectedRecline(e.target.value)}
                                displayEmpty
-                               sx={{
-                                 height: '40px',
-                                 fontSize: '14px',
-                                 '& .MuiSelect-select': {
-                                   padding: '8px 12px',
-                                 },
-                                 '& .MuiOutlinedInput-root': {
-                                   borderColor: selectedRecline ? '#d32f2f' : undefined,
-                                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedRecline ? '#d32f2f' : undefined,
-                                   },
-                                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedRecline ? '#d32f2f' : undefined,
-                                   }
-                                 }
-                               }}
+                               className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
                                 Select Recline
@@ -1259,41 +847,26 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         </Box>
 
                         {/* Child Restraint */}
-                        <Box sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                          minWidth: '200px',
-                          flex: '0 0 200px'
-                        }}>
-                          <Typography variant="body2" sx={{ 
-                            fontWeight: 500,
-                            color: 'text.primary',
-                            fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                          }}>
-                            Child Restraint:
-                          </Typography>
-                                                     <FormControl sx={{ minWidth: '200px' }}>
+                        <Box className={styles.formField}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="body2" className={styles.fieldLabel}>
+                              Child Restraint:
+                            </Typography>
+                                                         {selectedChildRestraint && (
+                               <Typography variant="body2" sx={{ 
+                                 color: '#000000', 
+                                 fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                               }}>
+                                 +${childRestraintOptions.find(c => c.id === selectedChildRestraint)?.price || 0}
+                               </Typography>
+                             )}
+                          </Box>
+                          <FormControl className={styles.formControl}>
                              <Select
                                value={selectedChildRestraint}
                                onChange={(e) => setSelectedChildRestraint(e.target.value)}
                                displayEmpty
-                               sx={{
-                                 height: '40px',
-                                 fontSize: '14px',
-                                 '& .MuiSelect-select': {
-                                   padding: '8px 12px',
-                                 },
-                                 '& .MuiOutlinedInput-root': {
-                                   borderColor: selectedChildRestraint ? '#d32f2f' : undefined,
-                                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedChildRestraint ? '#d32f2f' : undefined,
-                                   },
-                                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedChildRestraint ? '#d32f2f' : undefined,
-                                   }
-                                 }
-                               }}
+                               className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
                                 Select Child Restraint
@@ -1308,41 +881,26 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         </Box>
 
                         {/* 6 Motor Back Relaxer */}
-                        <Box sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                          minWidth: '200px',
-                          flex: '0 0 200px'
-                        }}>
-                          <Typography variant="body2" sx={{ 
-                            fontWeight: 500,
-                            color: 'text.primary',
-                            fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                          }}>
-                            6 Motor Back Relaxer:
-                          </Typography>
-                                                     <FormControl sx={{ minWidth: '200px' }}>
+                        <Box className={styles.formField}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="body2" className={styles.fieldLabel}>
+                              6 Motor Back Relaxer:
+                            </Typography>
+                                                         {selectedMotorBackRelaxer && (
+                               <Typography variant="body2" sx={{ 
+                                 color: '#000000', 
+                                 fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                               }}>
+                                 +${motorBackRelaxerOptions.find(m => m.id === selectedMotorBackRelaxer)?.price || 0}
+                               </Typography>
+                             )}
+                          </Box>
+                          <FormControl className={styles.formControl}>
                              <Select
                                value={selectedMotorBackRelaxer}
                                onChange={(e) => setSelectedMotorBackRelaxer(e.target.value)}
                                displayEmpty
-                               sx={{
-                                 height: '40px',
-                                 fontSize: '14px',
-                                 '& .MuiSelect-select': {
-                                   padding: '8px 12px',
-                                 },
-                                 '& .MuiOutlinedInput-root': {
-                                   borderColor: selectedMotorBackRelaxer ? '#d32f2f' : undefined,
-                                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedMotorBackRelaxer ? '#d32f2f' : undefined,
-                                   },
-                                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedMotorBackRelaxer ? '#d32f2f' : undefined,
-                                   }
-                                 }
-                               }}
+                               className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
                                 Select Motor Back Relaxer
@@ -1357,41 +915,26 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         </Box>
 
                         {/* Lumber */}
-                        <Box sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                          minWidth: '200px',
-                          flex: '0 0 200px'
-                        }}>
-                          <Typography variant="body2" sx={{ 
-                            fontWeight: 500,
-                            color: 'text.primary',
-                            fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                          }}>
-                            Lumber:
-                          </Typography>
-                                                     <FormControl sx={{ minWidth: '200px' }}>
+                        <Box className={styles.formField}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="body2" className={styles.fieldLabel}>
+                              Lumber:
+                            </Typography>
+                                                         {selectedLumber && (
+                               <Typography variant="body2" sx={{ 
+                                 color: '#000000', 
+                                 fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                               }}>
+                                 +${lumberOptions.find(l => l.id === selectedLumber)?.price || 0}
+                               </Typography>
+                             )}
+                          </Box>
+                          <FormControl className={styles.formControl}>
                              <Select
                                value={selectedLumber}
                                onChange={(e) => setSelectedLumber(e.target.value)}
                                displayEmpty
-                               sx={{
-                                 height: '40px',
-                                 fontSize: '14px',
-                                 '& .MuiSelect-select': {
-                                   padding: '8px 12px',
-                                 },
-                                 '& .MuiOutlinedInput-root': {
-                                   borderColor: selectedLumber ? '#d32f2f' : undefined,
-                                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedLumber ? '#d32f2f' : undefined,
-                                   },
-                                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedLumber ? '#d32f2f' : undefined,
-                                   }
-                                 }
-                               }}
+                               className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
                                 Select Lumber
@@ -1406,41 +949,26 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         </Box>
 
                         {/* Heating and Cooling */}
-                        <Box sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                          minWidth: '200px',
-                          flex: '0 0 200px'
-                        }}>
-                          <Typography variant="body2" sx={{ 
-                            fontWeight: 500,
-                            color: 'text.primary',
-                            fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                          }}>
-                            Heating and Cooling:
-                          </Typography>
-                                                     <FormControl sx={{ minWidth: '200px' }}>
+                        <Box className={styles.formField}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="body2" className={styles.fieldLabel}>
+                              Heating and Cooling:
+                            </Typography>
+                                                         {selectedHeatingCooling && (
+                               <Typography variant="body2" sx={{ 
+                                 color: '#000000', 
+                                 fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                               }}>
+                                 +${heatingCoolingOptions.find(h => h.id === selectedHeatingCooling)?.price || 0}
+                               </Typography>
+                             )}
+                          </Box>
+                          <FormControl className={styles.formControl}>
                              <Select
                                value={selectedHeatingCooling}
                                onChange={(e) => setSelectedHeatingCooling(e.target.value)}
                                displayEmpty
-                               sx={{
-                                 height: '40px',
-                                 fontSize: '14px',
-                                 '& .MuiSelect-select': {
-                                   padding: '8px 12px',
-                                 },
-                                 '& .MuiOutlinedInput-root': {
-                                   borderColor: selectedHeatingCooling ? '#d32f2f' : undefined,
-                                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedHeatingCooling ? '#d32f2f' : undefined,
-                                   },
-                                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                     borderColor: selectedHeatingCooling ? '#d32f2f' : undefined,
-                                   }
-                                 }
-                               }}
+                               className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
                                 Select Heating/Cooling
@@ -1457,326 +985,230 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                     </Box>
 
                     {/* Divider */}
-                    <Divider sx={{ my: 3 }} />
+                    <Divider className={styles.divider} />
 
-                                         {/* Seat Section */}
-                     <Box sx={{ mb: 3 }}>
-                       <Typography variant="h6" sx={{ 
-                         mb: { xs: 2, sm: 3 }, 
-                         fontWeight: 'bold', 
-                         color: 'text.primary',
-                         fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                       }}>
-                         Seat
-                       </Typography>
+                                                                                   {/* ===== SEAT SECTION ===== */}
+                      <Box className={styles.seatSection}>
+                        <Typography variant="h6" className={styles.sectionTitle}>
+                          Seat
+                        </Typography>
                       
-                                             <Box sx={{
-                         display: 'flex',
-                         flexDirection: 'row',
-                         justifyContent: 'flex-start',
-                         width: '100%',
-                         flexWrap: 'wrap',
-                         gap: 3
-                       }}>
-                                                 {/* Seat Type */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
-                             Seat Type:
-                           </Typography>
-                                                      <FormControl sx={{ minWidth: '200px' }}>
-                              <Select
-                                value={selectedSeatType}
-                                onChange={(e) => setSelectedSeatType(e.target.value)}
-                                displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedSeatType ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedSeatType ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedSeatType ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
-                              >
-                               <MenuItem value="" disabled>
-                                 Select Seat Type
-                               </MenuItem>
-                               {seatTypeOptions.map((seatType) => (
-                                 <MenuItem key={seatType.id} value={seatType.id}>
-                                   {seatType.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
+                                                                    <Box className={styles.formRow}>
+                                                  {/* Seat Type */}
+                          <Box className={styles.formField}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" className={styles.fieldLabel}>
+                                Seat Type:
+                              </Typography>
+                                                             {selectedSeatType && (
+                                 <Typography variant="body2" sx={{ 
+                                   color: '#000000', 
+                                   fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                                 }}>
+                                   +${seatTypeOptions.find(s => s.id === selectedSeatType)?.price || 0}
+                                 </Typography>
+                               )}
+                            </Box>
+                            <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedSeatType}
+                                 onChange={(e) => setSelectedSeatType(e.target.value)}
+                                 displayEmpty
+                                 className={styles.selectField}
+                               >
+                                <MenuItem value="" disabled>
+                                  Select Seat Type
+                                </MenuItem>
+                                {seatTypeOptions.map((seatType) => (
+                                  <MenuItem key={seatType.id} value={seatType.id}>
+                                    {seatType.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Box>
 
-                         {/* Item Type */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
-                             Item Type:
-                           </Typography>
-                                                      <FormControl sx={{ minWidth: '200px' }}>
-                              <Select
-                                value={selectedItemType}
-                                onChange={(e) => setSelectedItemType(e.target.value)}
-                                displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedItemType ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedItemType ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedItemType ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
-                              >
-                               <MenuItem value="" disabled>
-                                 Select Item Type
-                               </MenuItem>
-                               {itemTypeOptions.map((itemType) => (
-                                 <MenuItem key={itemType.id} value={itemType.id}>
-                                   {itemType.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
+                          {/* Item Type */}
+                          <Box className={styles.formField}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" className={styles.fieldLabel}>
+                                Item Type:
+                              </Typography>
+                                                                                          {selectedItemType && selectedItemType !== '' && (() => {
+                               const price = itemTypeOptions.find(i => i.id === selectedItemType)?.price || 0;
+                               if (price !== 0) {
+                                 return (
+                                   <Typography variant="body2" sx={{ 
+                                     color: '#000000', 
+                                     fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                                   }}>
+                                     {price > 0 ? `+$${price}` : `-$${Math.abs(price)}`}
+                                   </Typography>
+                                 );
+                               }
+                               return null;
+                             })()}
+                            </Box>
+                            <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedItemType}
+                                 onChange={(e) => setSelectedItemType(e.target.value)}
+                                 displayEmpty
+                                 className={styles.selectField}
+                               >
+                                <MenuItem value="" disabled>
+                                  Select Item Type
+                                </MenuItem>
+                                {itemTypeOptions.map((itemType) => (
+                                  <MenuItem key={itemType.id} value={itemType.id}>
+                                    {itemType.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Box>
 
-                         {/* Seat Style */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
-                             Seat Style:
-                           </Typography>
-                                                      <FormControl sx={{ minWidth: '200px' }}>
-                              <Select
-                                value={selectedSeatStyle}
-                                onChange={(e) => setSelectedSeatStyle(e.target.value)}
-                                displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedSeatStyle ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedSeatStyle ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedSeatStyle ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
-                              >
-                               <MenuItem value="" disabled>
-                                 Select Seat Style
-                               </MenuItem>
-                               {seatStyleOptions.map((seatStyle) => (
-                                 <MenuItem key={seatStyle.id} value={seatStyle.id}>
-                                   {seatStyle.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
+                          {/* Seat Style */}
+                          <Box className={styles.formField}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" className={styles.fieldLabel}>
+                                Seat Style:
+                              </Typography>
+                           {selectedSeatStyle && (
+                                 <Typography variant="body2" sx={{ 
+                                   color: '#000000', 
+                                   fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                                 }}>
+                                   +${seatStyleOptions.find(s => s.id === selectedSeatStyle)?.price || 0}
+                                 </Typography>
+                               )}
+                            </Box>
+                            <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedSeatStyle}
+                                 onChange={(e) => setSelectedSeatStyle(e.target.value)}
+                                 displayEmpty
+                                 className={styles.selectField}
+                               >
+                                <MenuItem value="" disabled>
+                                  Select Seat Style
+                                </MenuItem>
+                                {seatStyleOptions.map((seatStyle) => (
+                                  <MenuItem key={seatStyle.id} value={seatStyle.id}>
+                                    {seatStyle.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Box>
 
-                         {/* Material Type */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
-                             Material Type:
-                           </Typography>
-                                                      <FormControl sx={{ minWidth: '200px' }}>
-                              <Select
-                                value={selectedMaterialType}
-                                onChange={(e) => setSelectedMaterialType(e.target.value)}
-                                displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedMaterialType ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedMaterialType ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedMaterialType ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
-                              >
-                               <MenuItem value="" disabled>
-                                 Select Material Type
-                               </MenuItem>
-                               {materialTypeOptions.map((materialType) => (
-                                 <MenuItem key={materialType.id} value={materialType.id}>
-                                   {materialType.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
+                          {/* Material Type */}
+                          <Box className={styles.formField}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" className={styles.fieldLabel}>
+                                Material Type:
+                              </Typography>
+                                                             {selectedMaterialType && (
+                                 <Typography variant="body2" sx={{ 
+                                   color: '#000000', 
+                                   fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                                 }}>
+                                   +${materialTypeOptions.find(m => m.id === selectedMaterialType)?.price || 0}
+                                 </Typography>
+                               )}
+                            </Box>
+                            <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedMaterialType}
+                                 onChange={(e) => setSelectedMaterialType(e.target.value)}
+                                 displayEmpty
+                                 className={styles.selectField}
+                               >
+                                <MenuItem value="" disabled>
+                                  Select Material Type
+                                </MenuItem>
+                                {materialTypeOptions.map((materialType) => (
+                                  <MenuItem key={materialType.id} value={materialType.id}>
+                                    {materialType.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Box>
 
-                         {/* Included Arm */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
-                             Included Arm:
-                           </Typography>
-                                                      <FormControl sx={{ minWidth: '200px' }}>
-                              <Select
-                                value={selectedIncludedArm}
-                                onChange={(e) => setSelectedIncludedArm(e.target.value)}
-                                displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedIncludedArm ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedIncludedArm ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedIncludedArm ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
-                              >
-                               <MenuItem value="" disabled>
-                                 Select Included Arm
-                               </MenuItem>
-                               {includedArmOptions.map((includedArm) => (
-                                 <MenuItem key={includedArm.id} value={includedArm.id}>
-                                   {includedArm.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
+                          {/* Included Arm */}
+                          <Box className={styles.formField}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" className={styles.fieldLabel}>
+                                Included Arm:
+                              </Typography>
+                                                             {selectedIncludedArm && (
+                                 <Typography variant="body2" sx={{ 
+                                   color: '#000000', 
+                                   fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                                 }}>
+                                   +${includedArmOptions.find(i => i.id === selectedIncludedArm)?.price || 0}
+                                 </Typography>
+                               )}
+                            </Box>
+                            <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedIncludedArm}
+                                 onChange={(e) => setSelectedIncludedArm(e.target.value)}
+                                 displayEmpty
+                                 className={styles.selectField}
+                               >
+                                <MenuItem value="" disabled>
+                                  Select Included Arm
+                                </MenuItem>
+                                {includedArmOptions.map((includedArm) => (
+                                  <MenuItem key={includedArm.id} value={includedArm.id}>
+                                    {includedArm.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Box>
 
-                         {/* Extra Arm */}
-                         <Box sx={{
-                           display: 'flex',
-                           flexDirection: 'column',
-                           gap: 0.5,
-                           minWidth: '200px',
-                           flex: '0 0 200px'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             fontWeight: 500,
-                             color: 'text.primary',
-                             fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                           }}>
-                             Extra Arm:
-                           </Typography>
-                                                      <FormControl sx={{ minWidth: '200px' }}>
-                              <Select
-                                value={selectedExtraArm}
-                                onChange={(e) => setSelectedExtraArm(e.target.value)}
-                                displayEmpty
-                                sx={{
-                                  height: '40px',
-                                  fontSize: '14px',
-                                  '& .MuiSelect-select': {
-                                    padding: '8px 12px',
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    borderColor: selectedExtraArm ? '#d32f2f' : undefined,
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedExtraArm ? '#d32f2f' : undefined,
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: selectedExtraArm ? '#d32f2f' : undefined,
-                                    }
-                                  }
-                                }}
-                              >
-                               <MenuItem value="" disabled>
-                                 Select Extra Arm
-                               </MenuItem>
-                               {extraArmOptions.map((extraArm) => (
-                                 <MenuItem key={extraArm.id} value={extraArm.id}>
-                                   {extraArm.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
-                      </Box>
+                          {/* Extra Arm */}
+                          <Box className={styles.formField}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" className={styles.fieldLabel}>
+                                Extra Arm:
+                              </Typography>
+                                                             {selectedExtraArm && (
+                                 <Typography variant="body2" sx={{ 
+                                   color: '#000000', 
+                                   fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+                                 }}>
+                                   +${extraArmOptions.find(e => e.id === selectedExtraArm)?.price || 0}
+                                 </Typography>
+                               )}
+                            </Box>
+                            <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedExtraArm}
+                                 onChange={(e) => setSelectedExtraArm(e.target.value)}
+                                 displayEmpty
+                                 className={styles.selectField}
+                               >
+                                <MenuItem value="" disabled>
+                                  Select Extra Arm
+                                </MenuItem>
+                                {extraArmOptions.map((extraArm) => (
+                                  <MenuItem key={extraArm.id} value={extraArm.id}>
+                                    {extraArm.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Box>
+                       </Box>
                     </Box>
 
-                    {/* Divider */}
-                    <Divider sx={{ my: 3 }} />
-                    </>
+                                         {/* Divider */}
+                     <Divider className={styles.finalDivider} />
+                     </>
                 </Box>
               </CardContent>
             </Card>
@@ -1784,50 +1216,18 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                    {/* ===== PRICE BREAKDOWN CONTAINER - RIGHT BOTTOM SECTION ===== */}
       
               {selectedItem && selectedTexture && (
-                <Card sx={{ 
-                  mt: { xs: 2, sm: 3, md: 2, lg: 2, xl: 3 },
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  height: { xs: '180px', sm: '200px', md: '120px', lg: '200px' }
-                }}>
-                                  <CardContent sx={{ 
-                   // p: { xs: 1.5, sm: 2, md: 1, lg: 1, xl: 1 },
-                    '&:last-child': { pb: { xs: 1.5, sm: 2 } },
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-start',
-                    pt: { xs: 1.5, sm: 2, md: 3, lg: 3, xl: 3 }
-                  }}>
+                <Card className={styles.priceCard}>
+                                  <CardContent className={styles.priceContent}>
                                                                        
                    
                                        {/* SIMPLIFIED PRICE LAYOUT: Only Total Price and Add to Cart */}
-                    <Box sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: { xs: 1, sm: 2 },
-                      mb: 0,
-                      width: '100%'
-                    }}>
-                                         <Typography variant="h4" sx={{ 
-                       mb: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0 }, 
-                       fontWeight: 500, 
-                       color: 'black',
-                       fontSize: { xs: '1.5rem', sm: '2rem', md: '2rem', lg: '2rem', xl: '2.5rem' },
-                       textAlign: 'center'
-                     }}>
+                    <Box className={styles.priceLayout}>
+                                         <Typography variant="h4" className={styles.totalPrice}>
                        US ${totalPrice.toFixed(2)}
                      </Typography>
                     
-                                                                                   {/* SECOND ROW: Add to Cart button only */}
-                                                                   <Box sx={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          width: '100%',
-                          mt: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0 },
-                          mb: 5
-                        }}>
+                 {/* SECOND ROW: Add to Cart button only */}
+             <Box className={styles.addToCartContainer}>
                       {/* ADD TO CART BUTTON */}
                                              <Button
                          variant="contained"
@@ -1835,7 +1235,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          startIcon={<ShoppingCart sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }} />}
                          onClick={() => {
                             const materialName = selectedTexture === 'none' ? 'No Material' : textures.find(t => t.id === selectedTexture)?.name;
-                            const colorName = selectedColor === 'none' ? 'No Color' : colors.find(c => c.id === selectedColor)?.name;
+                                                         const colorName = selectedColor === 'none' ? 'No Color' : apiColors.find(c => c.id.toString() === selectedColor)?.name;
                             const stitchingName = selectedStitching === 'none' ? 'No Stitching' : stichtingtextures.find(s => s.id === selectedStitching)?.name;
 
                             dispatch(addItem({
@@ -1847,32 +1247,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               category: selectedItem.category
                             }));
                          }}
-                                                   sx={{
-                            bgcolor: '#d32f2f',
-                            color: 'white',
-                            height: '40px',
-                            minHeight: '40px',
-                            maxHeight: '40px',
-                            width: '100%',
-                            minWidth: '100%',
-                            maxWidth: '100%',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            py: 0.5,
-                            px: 2,
-                            fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                            fontWeight: 'bold',
-                            whiteSpace: 'nowrap',
-                            textOverflow: 'ellipsis',
-                            boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
-                            '&:hover': {
-                              bgcolor: '#b71c1c',
-                            },
-                            '& .MuiButton-startIcon': {
-                              marginRight: { xs: 0.25, sm: 0.5 },
-                            }
-                          }}
+                                                   className={styles.addToCartButton}
                        >
                          Add to Cart
                        </Button>
@@ -1880,9 +1255,9 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                 </Box>
               </CardContent>
             </Card>
-            )}
-          </Grid>
-        </Grid>
+                         )}
+           </Box>
+         </Box>
       </Container>
 
       <Footer />

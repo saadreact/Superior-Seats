@@ -104,7 +104,7 @@ const Gallery = () => {
       <Header />
       
             {/* Hero Section */}
-        <HeroSectionCommon
+        {/* <HeroSectionCommon
           title="Our Work Gallery"
           description="Explore our custom seating solutions across different vehicle types and see our craftsmanship in action."
           height={{
@@ -115,7 +115,7 @@ const Gallery = () => {
             xl: '100px',
             xxl: '110px'
           }}
-        />
+        /> */}
 
       {/* Breadcrumbs */}
       <Breadcrumbs
@@ -126,7 +126,7 @@ const Gallery = () => {
                                  {/* Horizontal Image Slider */}
       <Box sx={{ 
         backgroundColor: '#f8f9fa',
-        py: { xs: 0.25, md: 0.5 },
+        py: { xs: 0.25, md: 0.5, lg: 20, xl: 8 },
         overflow: 'hidden',
       }}>
           <Container maxWidth="xl">

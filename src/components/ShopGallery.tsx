@@ -167,7 +167,16 @@ const ShopGallery = () => {
       
       // Return the images array with full URLs
       if (imagesArray && imagesArray.length > 0) {
-        return imagesArray.map((image: string) => `https://superiorseats.ali-khalid.com${image}`);
+        return imagesArray
+          .filter((image: string) => image && typeof image === 'string' && image.trim() !== '')
+          .map((image: string) => {
+            // If the image already has a full URL, use it as is
+            if (image.startsWith('http://') || image.startsWith('https://')) {
+              return image;
+            }
+            // Otherwise, prepend the base URL
+            return `https://superiorseats.ali-khalid.com${image}`;
+          });
       }
     } catch (error) {
       console.error('Error parsing images:', error);
@@ -283,9 +292,14 @@ const ShopGallery = () => {
       <Breadcrumbs />
 
 
-      {/* Gallery Grid */}
-      <Box sx={{ py: { xs: 1, sm: 1.5, md: 2, lg: 2 }, px: { xs: 1, sm: 2, md: 3 } }}>
-        <Container maxWidth="lg">
+             {/* Gallery Grid */}
+       <Box sx={{ py: { xs: 1, sm: 1.5, md: 2, lg: 2 }, px: { xs: 1, sm: 2, md: 3 } }}>
+         <Container sx={{ 
+           padding: { xs: 2, sm: 3, md: 4 },
+           width: { xs: '100%', sm: '100%', md: '90%', lg: '90%', xl: '90%' },
+           maxWidth: { xs: '100%', sm: '100%', md: '90%', lg: '90%', xl: '90%' },
+           mx: 'auto'
+         }}>
           {/* Gallery Header */}
           <Box sx={{ 
             display: 'flex', 
@@ -840,8 +854,14 @@ const ShopGallery = () => {
                       }}
                     >
                       <Image
-                        src={getProductImages(selectedImage)[modalImageIndex]}
-                        alt={`${selectedImage.title} - Image ${modalImageIndex + 1}`}
+                        src={(() => {
+                          const images = getProductImages(selectedImage);
+                          if (images && images.length > 0 && modalImageIndex < images.length) {
+                            return images[modalImageIndex];
+                          }
+                          return '/placeholder-image.jpg';
+                        })()}
+                        alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
                         width={800}
                         height={600}
                         style={{
