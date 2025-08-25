@@ -183,7 +183,7 @@ const HomePage = () => {
       
       {/* Stats Section */}
       <Box sx={{ 
-        py: { xs: 2, md: 1 ,lg: 1, xl: 1},
+        py: { xs: 2, md: 1 ,lg: 2, xl: 2},
         backgroundColor: 'rgba(228, 221, 221, 0.08)',
         display: 'flex',
         flexDirection: 'column',

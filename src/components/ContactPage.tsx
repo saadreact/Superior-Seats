@@ -150,11 +150,12 @@ const ContactPage = () => {
          description="Contact us today for design help and a quote.  We’re here to help bring your vision to life."
          height={{
           xs: '75px',
-            sm: '70px', 
-            md: '75px',
-            lg: '90px',
-            xl: '100px',
-            xxl: '110px'
+         
+          sm: '70px', 
+          md: '80px',
+          lg: '95px',
+          xl: '105px',
+          xxl: '115px'
           
           }}
            />
@@ -168,13 +169,13 @@ const ContactPage = () => {
       
 
       {/* Contact Form */}
-      <Box sx={{ py: { xs: 2, md: 2, lg: 2, xl: 4 }, backgroundColor: '#fafafa' }}>
+      <Box sx={{ py: { xs: 2, md: 1, lg: 1, xl: 4 }, backgroundColor: '#fafafa' }}>
         <Container maxWidth="md">
           <Typography
-            variant="h3"
+            variant="h4"
             sx={{
               textAlign: 'center',
-              fontWeight: 'bold',
+              fontWeight: '400',
               mb: 2,
               color: 'text.primary',
             }}
@@ -404,155 +405,17 @@ const ContactPage = () => {
           </Card>
         </Container>
       </Box>
-     {/* Contact Information */}
-   {/* <Box sx={{ py: { xs: 2, md: 2 }, backgroundColor: 'white' }}>
-        <Container maxWidth="lg">
-          <Typography
-            variant="h3"
-            sx={{
-              textAlign: 'center',
-              fontWeight: 'bold',
-              mb: 3.5,
-              color: 'text.primary',
-            }}
-          >
-            Contact Information
-          </Typography>
-                     <Box sx={{ 
-             display: 'grid',
-             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
-             gap: { xs: 2, sm: 3, md: 4 },
-             justifyContent: 'center',
-             maxWidth: 1200,
-             mx: 'auto',
-           }}>
-            {contactInfo.map((info, index) => (
-              <Card
-                key={index}
-                                 sx={{
-                   height: '100%',
-                   textAlign: 'center',
-                   p: { xs: 1.5, sm: 2 },
-                   transition: 'all 0.3s ease',
-                   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                   borderRadius: { xs: 2, sm: 3 },
-                   cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                    '& .icon-container': {
-                      transform: 'scale(1.1) rotate(5deg)',
-                      backgroundColor: 'rgba(211, 47, 47, 0.1)',
-                    },
-                    '& .icon': {
-                      transform: 'scale(1.2)',
-                      color: 'primary.main',
-                    },
-                    '& .card-content': {
-                      transform: 'translateY(-5px)',
-                    },
-                  },
-                }}
-              >
-                <Box 
-                  className="icon-container"
-                                     sx={{ 
-                     mb: { xs: 2, sm: 3 },
-                     display: 'inline-flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     width: { xs: 60, sm: 80 },
-                     height: { xs: 60, sm: 80 },
-                     borderRadius: '50%',
-                     backgroundColor: 'rgba(211, 47, 47, 0.05)',
-                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                     position: 'relative',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      borderRadius: '50%',
-                      background: 'linear-gradient(45deg, rgba(211, 47, 47, 0.1), rgba(211, 47, 47, 0.05))',
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease',
-                    },
-                    '&:hover::before': {
-                      opacity: 1,
-                    },
-                  }}
-                >
-                  <Box
-                    className="icon"
-                    sx={{
-                      fontSize: 40,
-                      color: 'primary.main',
-                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                      position: 'relative',
-                      zIndex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '100%',
-                      height: '100%'
-                    }}
-                  >
-                    {(() => {
-                      const IconComponent = getIcon(info.icon);
-                                           return <IconComponent sx={{ 
-                       fontSize: { xs: 30, sm: 40 },
-                       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                       display: 'flex',
-                       alignItems: 'center',
-                       justifyContent: 'center'
-                     }} />;
-                    })()}
-                  </Box>
-                </Box>
-                <Box className="card-content" sx={{ transition: 'transform 0.3s ease' }}>
-                                     <Typography
-                     variant="h6"
-                     sx={{
-                       fontWeight: 'bold',
-                       mb: { xs: 2, sm: 3 },
-                       color: 'text.primary',
-                       fontSize: { xs: '1rem', sm: '1.2rem' },
-                     }}
-                   >
-                     {info.title}
-                   </Typography>
-                  {info.details.map((detail, idx) => (
-                                         <Typography
-                       key={idx}
-                       variant="body2"
-                       sx={{
-                         color: 'text.secondary',
-                         lineHeight: 1.6,
-                         mb: 1,
-                         fontSize: { xs: '0.85rem', sm: '0.95rem' },
-                         transition: 'color 0.3s ease',
-                       }}
-                     >
-                       {detail}
-                     </Typography>
-                  ))}
-                </Box>
-              </Card>
-            ))}
-          </Box>
-        </Container>
-      </Box> */}
+
+      
       {/* Map Section */}
-      <Box sx={{ py: { xs: 2, md: 3 }, backgroundColor: 'white' }}>
+      <Box sx={{ py: { xs: 2, md: 1, lg: 1, xl: 2 }, backgroundColor: 'white' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
             sx={{
               textAlign: 'center',
-              fontWeight: 'bold',
-              mb: 3.5,
+              fontWeight: '400',
+              mb: 3,
               color: 'text.primary',
             }}
           >
