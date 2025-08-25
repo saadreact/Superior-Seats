@@ -263,10 +263,10 @@ export const seatTypeOptions: SeatOption[] = [
 
 // Item type options
 export const itemTypeOptions: SeatOption[] = [
-  { id: 'driver', name: 'Driver Seat', price: 0 },
-  { id: 'passenger', name: 'Passenger Seat', price: 0 },
-  { id: 'rear', name: 'Rear Seat', price: -25 },
-  { id: 'middle', name: 'Middle Seat', price: -15 },
+  { id: 'driver', name: 'Driver Seat', price: 20 },
+  { id: 'passenger', name: 'Passenger Seat', price: 30 },
+  { id: 'rear', name: 'Rear Seat', price: 25 },
+  { id: 'middle', name: 'Middle Seat', price: 15 },
   { id: 'jump', name: 'Jump Seat', price: 40 },
   { id: 'auxiliary', name: 'Auxiliary Seat', price: 60 },
 ];

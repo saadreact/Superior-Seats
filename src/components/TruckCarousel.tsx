@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
@@ -43,141 +43,142 @@ const TruckCarousel = () => {
   return (
     <Box
       sx={{
-        py: { xs: 1, md: 2, lg: 1.5, xl: 2 },
+        mt: { xs: 1, md: 2, lg: 1, xl: 1.5 },
         backgroundColor: '#f8f9fa',
         overflow: 'hidden',
-        marginBottom: { xs: 1, md: 1, lg: 1.5, xl: 1 },
+        marginBottom: { xs: 1, md: 1, lg: 2, xl: 2 },
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
       }}
     >
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            position: 'relative',
-            width: '100%',
-            overflow: 'hidden',
-            '&::before, &::after': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              width: '100px',
-              zIndex: 2,
-              pointerEvents: 'none',
-            },
-            '&::before': {
-              left: 0,
-              background: 'linear-gradient(to right, #f8f9fa 0%, transparent 100%)',
-            },
-            '&::after': {
-              right: 0,
-              background: 'linear-gradient(to left, #f8f9fa 0%, transparent 100%)',
-            },
+      <Box
+        sx={{
+          position: 'relative',
+          width: { xs: '100%', md: '90%', lg: '90%', xl: '90%' },
+          overflow: 'hidden',
+          '&::before, &::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            width: '100px',
+            zIndex: 2,
+            pointerEvents: 'none',
+          },
+          '&::before': {
+            left: 0,
+            background: 'linear-gradient(to right, #f8f9fa 0%, transparent 100%)',
+          },
+          '&::after': {
+            right: 0,
+            background: 'linear-gradient(to left, #f8f9fa 0%, transparent 100%)',
+          },
+        }}
+      >
+        <motion.div
+          animate={{
+            x: [0, -50 * truckBrands.length],
+          }}
+          transition={{
+            duration: 60,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+          style={{
+            display: 'flex',
+            gap: '60px',
+            alignItems: 'center',
+            minWidth: 'max-content',
           }}
         >
-          <motion.div
-            animate={{
-              x: [0, -50 * truckBrands.length],
-            }}
-            transition={{
-              duration: 60,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-            style={{
-              display: 'flex',
-              gap: '60px',
-              alignItems: 'center',
-              minWidth: 'max-content',
-            }}
-          >
-            {/* First set of logos */}
-            {truckBrands.map((brand, index) => (
-              <Box
-                key={`first-${brand.name}-${index}`}
+          {/* First set of logos */}
+          {truckBrands.map((brand, index) => (
+            <Box
+              key={`first-${brand.name}-${index}`}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                minWidth: '120px',
+                filter: 'grayscale(100%)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  filter: 'grayscale(0%)',
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              <Image
+                src={brand.logo}
+                alt={brand.name}
+                width={100}
+                height={100}
+                style={{
+                  objectFit: 'contain',
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+              <Typography
+                variant="caption"
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  minWidth: '120px',
-                  filter: 'grayscale(100%)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    filter: 'grayscale(0%)',
-                    transform: 'scale(1.05)',
-                  },
+                  mt: 1,
+                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                  textAlign: 'center',
+                  fontWeight: 500,
                 }}
               >
-                <Image
-                  src={brand.logo}
-                  alt={brand.name}
-                  width={100}
-                  height={100}
-                  style={{
-                    objectFit: 'contain',
-                    maxWidth: '100%',
-                    height: 'auto',
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    mt: 1,
-                    color: 'text.secondary',
-                    fontSize: '0.75rem',
-                    textAlign: 'center',
-                    fontWeight: 500,
-                  }}
-                >
-                  {brand.name}
-                </Typography>
-              </Box>
-            ))}
-            
-            {/* Duplicate set for seamless loop */}
-            {truckBrands.map((brand, index) => (
-              <Box
-                key={`second-${brand.name}-${index}`}
+                {brand.name}
+              </Typography>
+            </Box>
+          ))}
+          
+          {/* Duplicate set for seamless loop */}
+          {truckBrands.map((brand, index) => (
+            <Box
+              key={`second-${brand.name}-${index}`}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                minWidth: '120px',
+                filter: 'grayscale(100%)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  filter: 'grayscale(0%)',
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              <Image
+                src={brand.logo}
+                alt={brand.name}
+                width={100}
+                height={100}
+                style={{
+                  objectFit: 'contain',
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+              <Typography
+                variant="caption"
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  minWidth: '120px',
-                  filter: 'grayscale(100%)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    filter: 'grayscale(0%)',
-                    transform: 'scale(1.05)',
-                  },
+                  mt: 1,
+                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                  textAlign: 'center',
+                  fontWeight: 500,
                 }}
               >
-                <Image
-                  src={brand.logo}
-                  alt={brand.name}
-                  width={100}
-                  height={100}
-                  style={{
-                    objectFit: 'contain',
-                    maxWidth: '100%',
-                    height: 'auto',
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    mt: 1,
-                    color: 'text.secondary',
-                    fontSize: '0.75rem',
-                    textAlign: 'center',
-                    fontWeight: 500,
-                  }}
-                >
-                  {brand.name}
-                </Typography>
-              </Box>
-            ))}
-          </motion.div>
-        </Box>
-      </Container>
+                {brand.name}
+              </Typography>
+            </Box>
+          ))}
+        </motion.div>
+      </Box>
     </Box>
   );
 };

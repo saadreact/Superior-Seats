@@ -81,53 +81,64 @@ const AboutPage = () => {
           },
         }}
       >
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
-          <MotionTypography
-            variant="h1"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            sx={{
-              fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3.5rem' },
-              fontWeight: 'bold',
-              mb: { xs: 1, sm: 2 },
-            }}
-          >
-            Superior Seating LLc
-          </MotionTypography>
-         
-          <MotionTypography
-            variant="h5"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            sx={{
-              mb: { xs: 2, sm: 3 , md: 3, lg: 1, xl: 1},
-              opacity: 0.9,
-              maxWidth: 800,
-              mx: 'auto',
-              lineHeight: 1.6,
-              fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
-            }}
-          >
-            Crafting the perfect seat for every driver, ensuring comfort meets quality
-          </MotionTypography>
-          <MotionTypography
-            variant="h3"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            sx={{
-              fontSize: { xs: '1.5rem', sm: '2.0rem', md: '2.5rem' },
-              fontWeight: 'bold',
-              mb: { xs: 1, sm: 2 , md: 3, lg: 0, xl: 0},
-            }}
-          >
-            Sit Better
-          </MotionTypography>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <Box sx={{ textAlign: 'center', width: '100%' }}>
+            <MotionTypography
+              variant="h1"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              sx={{
+                fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3.5rem' },
+                fontWeight: 'bold',
+                mb: { xs: 1, sm: 2, md: 1 ,lg: 1 ,xl: 1.5},
+                textAlign: 'center',
+                color: 'white',
+              }}
+            >
+              Superior Seating LLC
+            </MotionTypography>
+           
+            <MotionTypography
+              variant="h3"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              sx={{
+                mb: { xs: 2, sm: 3, md: 1, lg: 1 ,xl: 1.5},
+                opacity: 0.9,
+                maxWidth: 800,
+                mx: 'auto',
+                lineHeight: 1.6,
+                fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
+                textAlign: 'center',
+                color: 'white',
+                fontWeight: '400',
+              }}
+            >
+              Crafting the perfect seat for every driver, Ensuring comfort meets quality
+            </MotionTypography>
+            
+            <MotionTypography
+              variant="h3"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              sx={{
+                fontSize: { xs: '1.5rem', sm: '2.0rem', md: '2.5rem' },
+                fontWeight: '500',
+                textAlign: 'center',
+                color: 'white',
+                px: { xs: 2, sm: 3, md: 1, lg: 1, xl: 1.5 },
+                width: '100%',
+              }}
+            >
+              Sit Better
+            </MotionTypography>
+          </Box>
         </Container>
       </Box>
 
@@ -140,7 +151,7 @@ const AboutPage = () => {
 
       {/* Company Stats */}
       <Box sx={{ 
-        py: { xs: 3, sm: 4, md: 6 }, 
+        py: { xs: 3, sm: 4, md: 3, lg: 3, xl: 3 }, 
         backgroundColor: 'white',
         display: 'flex',
         justifyContent: 'center',
