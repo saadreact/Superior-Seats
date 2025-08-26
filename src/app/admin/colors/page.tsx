@@ -18,16 +18,14 @@ import {
   InputAdornment,
   Stack,
   useTheme,
-  useMediaQuery,
-} from '@mui/material';
+  useMediaQuery} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
   Search as SearchIcon,
-  Close as CloseIcon,
-} from '@mui/icons-material';
+  Close as CloseIcon} from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
@@ -38,7 +36,7 @@ interface Color {
   hex_code: string;
   description: string;
   is_active: boolean;
-  sort_order: number;
+  
   created_at: string;
   updated_at: string;
 }
@@ -166,8 +164,7 @@ const ColorsPage = () => {
                 <InputAdornment position="start">
                   <SearchIcon />
                 </InputAdornment>
-              ),
-            }}
+              )}}
             sx={{ maxWidth: 400 }}
           />
         </Box>
@@ -222,10 +219,8 @@ const ColorsPage = () => {
                   flexDirection: 'column',
                   '&:hover': {
                     boxShadow: 6,
-                    transform: 'translateY(-4px)',
-                  },
-                  transition: 'all 0.3s ease-in-out',
-                }}
+                    transform: 'translateY(-4px)'},
+                  transition: 'all 0.3s ease-in-out'}}
               >
                 <CardContent sx={{ flexGrow: 1, p: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -237,8 +232,7 @@ const ColorsPage = () => {
                         backgroundColor: color.hex_code || '#ccc',
                         border: 1,
                         borderColor: 'divider',
-                        mr: 2,
-                      }}
+                        mr: 2}}
                     />
                     <Typography 
                       variant="h6" 
@@ -246,8 +240,7 @@ const ColorsPage = () => {
                       sx={{
                         fontWeight: 600,
                         fontSize: { xs: '0.9rem', sm: '1rem' },
-                        flex: 1,
-                      }}
+                        flex: 1}}
                     >
                       {color.name}
                     </Typography>
@@ -263,8 +256,7 @@ const ColorsPage = () => {
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      minHeight: '3rem',
-                    }}
+                      minHeight: '3rem'}}
                   >
                     {color.description || 'No description available'}
                   </Typography>
@@ -276,7 +268,7 @@ const ColorsPage = () => {
                       color={color.is_active ? 'success' : 'default'}
                     />
                     <Typography variant="body2" color="text.secondary">
-                      Order: {color.sort_order}
+                      
                     </Typography>
                   </Box>
 

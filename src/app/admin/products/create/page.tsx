@@ -157,3 +157,4 @@ const fileToBase64 = (file: File): Promise<string | ArrayBuffer | null> => {
     reader.onerror = (error) => reject(error);
   });
 };
+

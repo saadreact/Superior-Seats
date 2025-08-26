@@ -11,8 +11,7 @@ import {
   Button,
   FormControlLabel,
   Switch,
-  Stack,
-} from '@mui/material';
+  Stack} from '@mui/material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
@@ -22,7 +21,7 @@ interface CategoryFormData {
   slug: string;
   image_url: string;
   is_active: boolean;
-  sort_order: number;
+  
 }
 
 const CreateCategoryPage = () => {
@@ -35,9 +34,7 @@ const CreateCategoryPage = () => {
     description: '',
     slug: '',
     image_url: '',
-    is_active: true,
-    sort_order: 0,
-  });
+    is_active: true});
 
   const handleChange = (field: keyof CategoryFormData) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -45,8 +42,7 @@ const CreateCategoryPage = () => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
     setFormData(prev => ({
       ...prev,
-      [field]: field === 'sort_order' ? parseInt(value as string) || 0 : value,
-    }));
+      [field]: value}));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -102,49 +98,7 @@ const CreateCategoryPage = () => {
         <Paper sx={{ p: 3 }}>
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={3}>
-              <TextField
-                fullWidth
-                label="Category Name"
-                value={formData.name}
-                onChange={handleChange('name')}
-                required
-                error={!formData.name.trim() && formData.name !== ''}
-                helperText={!formData.name.trim() && formData.name !== '' ? 'Category name is required' : ''}
-              />
-
-              <TextField
-                fullWidth
-                label="Description"
-                value={formData.description}
-                onChange={handleChange('description')}
-                multiline
-                rows={3}
-              />
-
-              <TextField
-                fullWidth
-                label="Slug"
-                value={formData.slug}
-                onChange={handleChange('slug')}
-                helperText="URL-friendly version of the category name (optional)"
-              />
-
-              <TextField
-                fullWidth
-                label="Image URL"
-                value={formData.image_url}
-                onChange={handleChange('image_url')}
-                helperText="URL to category image (optional)"
-              />
-
-              <TextField
-                fullWidth
-                label="Sort Order"
-                type="number"
-                value={formData.sort_order}
-                onChange={handleChange('sort_order')}
-                helperText="Display order (lower numbers appear first)"
-              />
+              
 
               <FormControlLabel
                 control={
