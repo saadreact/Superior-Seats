@@ -1459,7 +1459,7 @@ class ApiService {
     slug?: string;
     image_url?: string;
     is_active?: boolean;
-    sort_order?: number;
+    
   }) {
     try {
       const response = await api.post('/categories', data);
@@ -1484,7 +1484,7 @@ class ApiService {
     slug?: string;
     image_url?: string;
     is_active?: boolean;
-    sort_order?: number;
+    
   }) {
     try {
       const response = await api.put(`/categories/${slug}`, data);
@@ -1581,7 +1581,7 @@ class ApiService {
     hex_code?: string;
     description?: string;
     is_active?: boolean;
-    sort_order?: number;
+    
   }) {
     try {
       const response = await api.post('/colors', data);
@@ -1605,7 +1605,7 @@ class ApiService {
     hex_code?: string;
     description?: string;
     is_active?: boolean;
-    sort_order?: number;
+    
   }) {
     try {
       const response = await api.put(`/colors/${id}`, data);
@@ -1644,6 +1644,532 @@ class ApiService {
         throw new Error('Color not found');
       }
       throw new Error(error.response?.data?.message || 'Failed to delete color');
+    }
+  }
+
+  // ========== ARM TYPES ==========
+  
+  // Get arm types
+  async getArmTypes(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/arm-types', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching arm types:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch arm types');
+    }
+  }
+
+  // Get single arm type
+  async getArmType(id: number) {
+    try {
+      const response = await api.get(`/arm-types/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching arm type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Arm type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch arm type');
+    }
+  }
+
+  // Create arm type
+  async createArmType(data: {
+    name: string;
+    description?: string;
+    is_active?: boolean;
+    
+  }) {
+    try {
+      const response = await api.post('/arm-types', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating arm type:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create arm type');
+    }
+  }
+
+  // Update arm type
+  async updateArmType(id: number, data: {
+    name?: string;
+    description?: string;
+    is_active?: boolean;
+    
+  }) {
+    try {
+      const response = await api.put(`/arm-types/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating arm type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Arm type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update arm type');
+    }
+  }
+
+  // Delete arm type
+  async deleteArmType(id: number) {
+    try {
+      const response = await api.delete(`/arm-types/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting arm type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Arm type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete arm type');
+    }
+  }
+
+  // ========== COLOR VENDORS ==========
+  
+  // Get color vendors
+  async getColorVendors(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/color-vendors', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching color vendors:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch color vendors');
+    }
+  }
+
+  // Get single color vendor
+  async getColorVendor(id: number) {
+    try {
+      const response = await api.get(`/color-vendors/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching color vendor:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Color vendor not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch color vendor');
+    }
+  }
+
+  // Create color vendor
+  async createColorVendor(data: {
+    name: string;
+    description?: string;
+    is_active?: boolean;
+    
+  }) {
+    try {
+      const response = await api.post('/color-vendors', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating color vendor:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create color vendor');
+    }
+  }
+
+  // Update color vendor
+  async updateColorVendor(id: number, data: {
+    name?: string;
+    description?: string;
+    is_active?: boolean;
+    
+  }) {
+    try {
+      const response = await api.put(`/color-vendors/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating color vendor:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Color vendor not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update color vendor');
+    }
+  }
+
+  // Delete color vendor
+  async deleteColorVendor(id: number) {
+    try {
+      const response = await api.delete(`/color-vendors/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting color vendor:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Color vendor not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete color vendor');
+    }
+  }
+
+  // ========== FEATURE OPTIONS ==========
+  
+  // Get feature options
+  async getFeatureOptions(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/feature-options', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching feature options:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch feature options');
+    }
+  }
+
+  // Get single feature option
+  async getFeatureOption(id: number) {
+    try {
+      const response = await api.get(`/feature-options/${id}`);
+      return response.data?.data?.feature_option || response.data?.feature_option || response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching feature option:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Feature option not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch feature option');
+    }
+  }
+
+  // Create feature option
+  async createFeatureOption(data: {
+    name: string;
+    description?: string;
+    is_active?: boolean;
+  }) {
+    try {
+      const response = await api.post('/feature-options', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating feature option:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create feature option');
+    }
+  }
+
+  // Update feature option
+  async updateFeatureOption(id: number, data: {
+    name?: string;
+    description?: string;
+    is_active?: boolean;
+  }) {
+    try {
+      const response = await api.put(`/feature-options/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating feature option:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Feature option not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update feature option');
+    }
+  }
+
+  // Delete feature option
+  async deleteFeatureOption(id: number) {
+    try {
+      const response = await api.delete(`/feature-options/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting feature option:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Feature option not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete feature option');
+    }
+  }
+
+  // ========== HEAT OPTIONS ==========
+  
+  // Get heat options
+  async getHeatOptions(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/heat-options', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching heat options:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch heat options');
+    }
+  }
+
+  // Get single heat option
+  async getHeatOption(id: number) {
+    try {
+      const response = await api.get(`/heat-options/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching heat option:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Heat option not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch heat option');
+    }
+  }
+
+  // Create heat option
+  async createHeatOption(data: {
+    name: string;
+    description?: string;
+    is_active?: boolean;
+    
+  }) {
+    try {
+      const response = await api.post('/heat-options', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating heat option:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create heat option');
+    }
+  }
+
+  // Update heat option
+  async updateHeatOption(id: number, data: {
+    name?: string;
+    description?: string;
+    is_active?: boolean;
+    
+  }) {
+    try {
+      const response = await api.put(`/heat-options/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating heat option:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Heat option not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update heat option');
+    }
+  }
+
+  // Delete heat option
+  async deleteHeatOption(id: number) {
+    try {
+      const response = await api.delete(`/heat-options/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting heat option:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Heat option not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete heat option');
+    }
+  }
+
+  // ========== ITEM TYPES ==========
+  
+  // Get item types
+  async getItemTypes(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/item-types', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching item types:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch item types');
+    }
+  }
+
+  // Get single item type
+  async getItemType(id: number) {
+    try {
+      const response = await api.get(`/item-types/${id}`);
+      return response.data?.data?.item_type || response.data?.item_type || response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching item type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Item type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch item type');
+    }
+  }
+
+  // Create item type
+  async createItemType(data: {
+    name: string;
+    description?: string;
+    is_active?: boolean;
+  }) {
+    try {
+      const response = await api.post('/item-types', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating item type:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create item type');
+    }
+  }
+
+  // Update item type
+  async updateItemType(id: number, data: {
+    name?: string;
+    description?: string;
+    is_active?: boolean;
+  }) {
+    try {
+      const response = await api.put(`/item-types/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating item type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Item type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update item type');
+    }
+  }
+
+  // Delete item type
+  async deleteItemType(id: number) {
+    try {
+      const response = await api.delete(`/item-types/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting item type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Item type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete item type');
+    }
+  }
+
+  // ========== LUMBAR TYPES ==========
+  
+  // Get lumbar types
+  async getLumbarTypes(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/lumbar-types', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching lumbar types:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch lumbar types');
+    }
+  }
+
+  // Get single lumbar type
+  async getLumbarType(id: number) {
+    try {
+      const response = await api.get(`/lumbar-types/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching lumbar type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Lumbar type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch lumbar type');
+    }
+  }
+
+  // Create lumbar type
+  async createLumbarType(data: {
+    name: string;
+    description?: string;
+    is_active?: boolean;
+    
+  }) {
+    try {
+      const response = await api.post('/lumbar-types', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating lumbar type:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create lumbar type');
+    }
+  }
+
+  // Update lumbar type
+  async updateLumbarType(id: number, data: {
+    name?: string;
+    description?: string;
+    is_active?: boolean;
+    
+  }) {
+    try {
+      const response = await api.put(`/lumbar-types/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating lumbar type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Lumbar type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update lumbar type');
+    }
+  }
+
+  // Delete lumbar type
+  async deleteLumbarType(id: number) {
+    try {
+      const response = await api.delete(`/lumbar-types/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting lumbar type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Lumbar type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete lumbar type');
+    }
+  }
+
+  // ========== MATERIAL TYPES ==========
+  
+  // Get material types
+  async getMaterialTypes(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/material-types', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching material types:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch material types');
+    }
+  }
+
+  // Get single material type
+  async getMaterialType(id: number) {
+    try {
+      const response = await api.get(`/material-types/${id}`);
+      return response.data?.data?.material_type || response.data?.material_type || response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching material type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Material type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch material type');
+    }
+  }
+
+  // Create material type
+  async createMaterialType(data: {
+    name: string;
+    description?: string;
+    is_active?: boolean;
+  }) {
+    try {
+      const response = await api.post('/material-types', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating material type:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create material type');
+    }
+  }
+
+  // Update material type
+  async updateMaterialType(id: number, data: {
+    name?: string;
+    description?: string;
+    is_active?: boolean;
+  }) {
+    try {
+      const response = await api.put(`/material-types/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating material type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Material type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update material type');
+    }
+  }
+
+  // Delete material type
+  async deleteMaterialType(id: number) {
+    try {
+      const response = await api.delete(`/material-types/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting material type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Material type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete material type');
     }
   }
 
