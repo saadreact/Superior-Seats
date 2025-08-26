@@ -158,6 +158,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
   const [vehicleModels, setVehicleModels] = useState<VehicleModel[]>([]);
   const [vehicleTrims, setVehicleTrims] = useState<VehicleTrim[]>([]);
   const [vehicleConfigurations, setVehicleConfigurations] = useState<VehicleConfiguration[]>([]);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [variations, setVariations] = useState<Variation[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -220,24 +221,28 @@ const OrderForm: React.FC<OrderFormProps> = ({
         });
         
         // Handle customers response
-        const customersData = customersResponse.data?.data || customersResponse.data || [];
+        const customersData = customersResponse?.data?.data || customersResponse?.data || [];
         console.log('Customers data:', customersData);
+        console.log('Customers data type:', typeof customersData, Array.isArray(customersData));
         setCustomers(customersData);
         
         // Handle makes response
-        const makesData = makesResponse.data?.data || makesResponse.data || [];
+        const makesData = makesResponse?.data?.data || makesResponse?.data || [];
         console.log('Makes data:', makesData);
+        console.log('Makes data type:', typeof makesData, Array.isArray(makesData));
         setVehicleMakes(makesData);
         
         // Handle products response
-        const productsData = productsResponse || [];
+        const productsData = productsResponse?.data || productsResponse || [];
         console.log('Products data:', productsData);
+        console.log('Products data type:', typeof productsData, Array.isArray(productsData));
         setProducts(productsData);
         setFilteredProducts(productsData);
         
         // Handle variations response
-        const variationsData = variationsResponse || [];
+        const variationsData = variationsResponse?.data || variationsResponse || [];
         console.log('Variations data:', variationsData);
+        console.log('Variations data type:', typeof variationsData, Array.isArray(variationsData));
         setVariations(variationsData);
       } catch (error) {
         console.error('Error fetching initial data:', error);
@@ -256,7 +261,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       const fetchModels = async () => {
         try {
           const response = await apiService.getVehicleModels(selectedMake);
-          setVehicleModels(response.data?.data || response.data || []);
+          setVehicleModels(response?.data?.data || response?.data || []);
           setSelectedModel(null);
           setSelectedTrim(null);
           setVehicleTrims([]);
@@ -281,7 +286,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       const fetchTrims = async () => {
         try {
           const response = await apiService.getVehicleTrims(selectedModel);
-          setVehicleTrims(response.data?.data || response.data || []);
+          setVehicleTrims(response?.data || response || []);
           setSelectedTrim(null);
           setVehicleConfigurations([]);
         } catch (error) {
@@ -302,7 +307,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       const fetchConfigurations = async () => {
         try {
           const response = await apiService.getVehicleConfigurations({ trim_id: selectedTrim });
-          setVehicleConfigurations(response.data?.data || response.data || response || []);
+          setVehicleConfigurations(response?.data || response || []);
         } catch (error) {
           console.error('Error fetching configurations:', error);
         }
@@ -319,7 +324,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       const fetchProductsByVehicle = async () => {
         try {
           const response = await apiService.getProductsByVehicle(parseInt(formData.vehicle_configuration_id));
-          setFilteredProducts(response || []);
+          setFilteredProducts(response?.data || response || []);
         } catch (error) {
           console.error('Error fetching products by vehicle:', error);
           // Fallback to all products if specific filtering fails
@@ -372,10 +377,10 @@ const OrderForm: React.FC<OrderFormProps> = ({
       let customerIdToUse = order.user_id || order.user?.id;
       const emailToMatch = order.customer_email || order.user?.email;
       if (!customerIdToUse && emailToMatch) {
-        const matchingCustomer = customers.find(c => c.email === emailToMatch);
+        const matchingCustomer = Array.isArray(customers) ? customers.find(c => c.email === emailToMatch) : null;
         customerIdToUse = matchingCustomer?.id;
         console.log('Searching for customer with email:', emailToMatch);
-        console.log('Available customers:', customers.map(c => ({ id: c.id, email: c.email, name: c.name })));
+        console.log('Available customers:', Array.isArray(customers) ? customers.map(c => ({ id: c.id, email: c.email, name: c.name })) : []);
         console.log('Found customer by email match:', matchingCustomer);
       }
 
@@ -474,7 +479,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
     setLoading(true);
     try {
       // Find selected customer to get their details
-      const selectedCustomer = customers.find(c => c.id === parseInt(formData.user_id));
+      const selectedCustomer = Array.isArray(customers) ? customers.find(c => c.id === parseInt(formData.user_id)) : null;
       
       // Validate required data
       if (!selectedCustomer) {
@@ -501,8 +506,8 @@ const OrderForm: React.FC<OrderFormProps> = ({
       const submitData = {
         cartItems: formData.items.map(item => {
           // Find the product and variation names for the item
-          const product = products.find(p => p.id === Number(item.product_id));
-          const variation = variations.find(v => v.id === Number(item.variation_id));
+          const product = Array.isArray(products) ? products.find(p => p.id === Number(item.product_id)) : null;
+          const variation = Array.isArray(variations) ? variations.find(v => v.id === Number(item.variation_id)) : null;
           
           console.log(`Item ${item.product_id}: product found =`, product?.name, ', variation found =', variation?.name);
           
@@ -609,37 +614,39 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
   // Auto-fill unit price when variation is selected
   const handleVariationChange = (index: number, variationId: string) => {
-    const variation = variations.find(v => v.id === parseInt(variationId));
+    const variation = Array.isArray(variations) ? variations.find(v => v.id === parseInt(variationId)) : null;
     updateItem(index, 'variation_id', variationId);
     if (variation) {
       updateItem(index, 'unit_price', variation.price);
     }
   };
 
-  const customerOptions = customers.map(c => ({
+  const customerOptions = Array.isArray(customers) ? customers.map(c => ({
     value: c.id.toString(),
     label: `${c.name} (${c.email})${c.company_name ? ` - ${c.company_name}` : ''}`,
-  }));
+  })) : [];
 
-  const vehicleConfigurationOptions = vehicleConfigurations.map(vc => ({
+  const vehicleConfigurationOptions = Array.isArray(vehicleConfigurations) ? vehicleConfigurations.map(vc => ({
     value: vc.id.toString(),
     label: `${vc.name} - ${vc.vehicle_trim?.model?.make?.name || ''} ${vc.vehicle_trim?.model?.name || ''} ${vc.vehicle_trim?.name || ''}`,
-  }));
+  })) : [];
 
-  const productOptions = filteredProducts.map(p => ({
+  const productOptions = Array.isArray(filteredProducts) ? filteredProducts.map(p => ({
     value: p.id.toString(),
     label: `${p.name} - $${p.price}`,
-  }));
+  })) : [];
   
   console.log('filteredProducts for options:', filteredProducts);
+  console.log('filteredProducts type:', typeof filteredProducts, Array.isArray(filteredProducts));
   console.log('productOptions generated:', productOptions);
 
-  const variationOptions = variations.map(v => ({
+  const variationOptions = Array.isArray(variations) ? variations.map(v => ({
     value: v.id.toString(),
     label: `${v.name} - $${v.price}`,
-  }));
+  })) : [];
   
   console.log('variations for options:', variations);
+  console.log('variations type:', typeof variations, Array.isArray(variations));
   console.log('variationOptions generated:', variationOptions);
 
   const statusOptions = [
@@ -754,7 +761,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                 <MenuItem value="">
                   <em>Select Make</em>
                 </MenuItem>
-                {vehicleMakes.map((make) => (
+                {Array.isArray(vehicleMakes) && vehicleMakes.map((make) => (
                   <MenuItem key={make.id} value={make.id}>
                     {make.name}
                   </MenuItem>
@@ -771,7 +778,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                 <MenuItem value="">
                   <em>Select Model</em>
                 </MenuItem>
-                {vehicleModels.map((model) => (
+                {Array.isArray(vehicleModels) && vehicleModels.map((model) => (
                   <MenuItem key={model.id} value={model.id}>
                     {model.name}
                   </MenuItem>
@@ -788,7 +795,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                 <MenuItem value="">
                   <em>Select Trim</em>
                 </MenuItem>
-                {vehicleTrims.map((trim) => (
+                {Array.isArray(vehicleTrims) && vehicleTrims.map((trim) => (
                   <MenuItem key={trim.id} value={trim.id}>
                     {trim.name}
                   </MenuItem>
