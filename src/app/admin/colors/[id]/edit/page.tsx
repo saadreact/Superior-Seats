@@ -13,8 +13,7 @@ import {
   Switch,
   Stack,
   CircularProgress,
-  InputAdornment,
-} from '@mui/material';
+  InputAdornment} from '@mui/material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
@@ -23,7 +22,7 @@ interface ColorFormData {
   hex_code: string;
   description: string;
   is_active: boolean;
-  sort_order: number;
+  
 }
 
 const EditColorPage = () => {
@@ -39,9 +38,7 @@ const EditColorPage = () => {
     name: '',
     hex_code: '',
     description: '',
-    is_active: true,
-    sort_order: 0,
-  });
+    is_active: true});
 
   useEffect(() => {
     const loadColor = async () => {
@@ -55,9 +52,7 @@ const EditColorPage = () => {
           name: color.name || '',
           hex_code: color.hex_code || '',
           description: color.description || '',
-          is_active: color.is_active ?? true,
-          sort_order: color.sort_order || 0,
-        });
+          is_active: color.is_active ?? true});
       } catch (err: any) {
         setError(err.message || 'Failed to load color');
         console.error('Error loading color:', err);
@@ -77,8 +72,7 @@ const EditColorPage = () => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
     setFormData(prev => ({
       ...prev,
-      [field]: field === 'sort_order' ? parseInt(value as string) || 0 : value,
-    }));
+      [field]: value}));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -144,58 +138,7 @@ const EditColorPage = () => {
         <Paper sx={{ p: 3 }}>
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={3}>
-              <TextField
-                fullWidth
-                label="Color Name"
-                value={formData.name}
-                onChange={handleChange('name')}
-                required
-                error={!formData.name.trim() && formData.name !== ''}
-                helperText={!formData.name.trim() && formData.name !== '' ? 'Color name is required' : ''}
-              />
-
-              <TextField
-                fullWidth
-                label="Hex Code"
-                value={formData.hex_code}
-                onChange={handleChange('hex_code')}
-                placeholder="#000000"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box
-                        sx={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: 1,
-                          backgroundColor: formData.hex_code || '#ccc',
-                          border: 1,
-                          borderColor: 'divider',
-                        }}
-                      />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText="Color hex code (e.g., #FF0000 for red)"
-              />
-
-              <TextField
-                fullWidth
-                label="Description"
-                value={formData.description}
-                onChange={handleChange('description')}
-                multiline
-                rows={3}
-              />
-
-              <TextField
-                fullWidth
-                label="Sort Order"
-                type="number"
-                value={formData.sort_order}
-                onChange={handleChange('sort_order')}
-                helperText="Display order (lower numbers appear first)"
-              />
+              
 
               <FormControlLabel
                 control={

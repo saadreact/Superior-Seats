@@ -5,27 +5,24 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   Box,
   Typography,
-  Alert,
-  Paper,
   Button,
+  Paper,
+  Alert,
   Chip,
   Stack,
   CircularProgress,
+  Divider,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  ArrowBack as ArrowBackIcon,
-} from '@mui/icons-material';
+import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
 interface Color {
   id: number;
   name: string;
-  hex_code: string;
   description: string;
+  hex_code: string;
   is_active: boolean;
-  sort_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -33,39 +30,47 @@ interface Color {
 const ColorDetailPage = () => {
   const router = useRouter();
   const params = useParams();
-  const colorId = params.id as string;
+  const id = params.id as string;
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [color, setColor] = useState<Color | null>(null);
 
   useEffect(() => {
-    const loadColor = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const colorData = await apiService.getColor(parseInt(colorId));
-        setColor(colorData);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load color');
-        console.error('Error loading color:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    loadColor();
+  }, [id]);
 
-    if (colorId) {
-      loadColor();
+  const loadColor = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const data = await apiService.getColor(parseInt(id));
+      setColor(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load color');
+      console.error('Error loading color:', err);
+    } finally {
+      setLoading(false);
     }
-  }, [colorId]);
+  };
 
   const handleEdit = () => {
-    router.push(`/admin/colors/${colorId}/edit`);
+    router.push(`/admin/colors/${id}/edit`);
   };
 
   const handleBack = () => {
     router.push('/admin/colors');
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   if (loading) {
@@ -82,12 +87,19 @@ const ColorDetailPage = () => {
     return (
       <AdminLayout title="Color Details">
         <Box>
+          <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              startIcon={<ArrowBackIcon />}
+              onClick={handleBack}
+              sx={{ color: 'text.secondary' }}
+            >
+              Back to Colors
+            </Button>
+          </Box>
+
           <Alert severity="error" sx={{ mb: 3 }}>
             {error || 'Color not found'}
           </Alert>
-          <Button onClick={handleBack} startIcon={<ArrowBackIcon />}>
-            Back to Colors
-          </Button>
         </Box>
       </AdminLayout>
     );
@@ -96,17 +108,18 @@ const ColorDetailPage = () => {
   return (
     <AdminLayout title="Color Details">
       <Box>
-        <Box sx={{ 
-          mb: 3, 
-          display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between', 
-          alignItems: { xs: 'stretch', sm: 'center' },
-          gap: { xs: 2, sm: 0 }
-        }}>
-          <Button onClick={handleBack} startIcon={<ArrowBackIcon />}>
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={handleBack}
+            sx={{ color: 'text.secondary' }}
+          >
             Back to Colors
           </Button>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
+            Color Details
+          </Typography>
           <Button
             variant="contained"
             startIcon={<EditIcon />}
@@ -116,29 +129,22 @@ const ColorDetailPage = () => {
           </Button>
         </Box>
 
-        <Paper sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: 2,
-                backgroundColor: color.hex_code || '#ccc',
-                border: 1,
-                borderColor: 'divider',
-                mr: 3,
-              }}
-            />
-            <Typography variant="h4" component="h1">
-              {color.name}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+        {/* Content */}
+        <Paper sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
             <Box sx={{ flex: 1 }}>
               <Stack spacing={3}>
                 <Box>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Name
+                  </Typography>
+                  <Typography variant="body1">
+                    {color.name}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     Description
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
@@ -147,105 +153,75 @@ const ColorDetailPage = () => {
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom>
-                    Details
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Hex Code
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap' }}>
-                    <Box sx={{ flex: 1, minWidth: 200 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Status
-                      </Typography>
-                      <Chip
-                        label={color.is_active ? 'Active' : 'Inactive'}
-                        color={color.is_active ? 'success' : 'default'}
-                        size="small"
-                        sx={{ mt: 0.5 }}
-                      />
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 200 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Sort Order
-                      </Typography>
-                      <Typography variant="body1">
-                        {color.sort_order}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 200 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Hex Code
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                        {color.hex_code || 'No hex code set'}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 200 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        ID
-                      </Typography>
-                      <Typography variant="body1">
-                        {color.id}
-                      </Typography>
-                    </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        backgroundColor: color.hex_code,
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                      }}
+                    />
+                    <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                      {color.hex_code}
+                    </Typography>
                   </Box>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom>
-                    Timestamps
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Status
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap' }}>
-                    <Box sx={{ flex: 1, minWidth: 200 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Created
-                      </Typography>
-                      <Typography variant="body1">
-                        {new Date(color.created_at).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 200 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Last Updated
-                      </Typography>
-                      <Typography variant="body1">
-                        {new Date(color.updated_at).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                  </Box>
+                  <Chip
+                    label={color.is_active ? 'Active' : 'Inactive'}
+                    color={color.is_active ? 'success' : 'default'}
+                    size="small"
+                  />
                 </Box>
               </Stack>
             </Box>
 
             <Box sx={{ width: { xs: '100%', md: 300 } }}>
-              <Typography variant="h6" gutterBottom>
-                Color Preview
-              </Typography>
-              <Box
-                sx={{
-                  width: '100%',
-                  height: 200,
-                  borderRadius: 2,
-                  backgroundColor: color.hex_code || '#ccc',
-                  border: 1,
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 2,
-                }}
-              >
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    color: color.hex_code ? 'white' : 'black',
-                    textShadow: color.hex_code ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none',
-                  }}
-                >
-                  {color.name}
+              <Paper variant="outlined" sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Information
                 </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary" align="center">
-                {color.hex_code || 'No hex code'}
-              </Typography>
+                <Divider sx={{ mb: 2 }} />
+                
+                <Stack spacing={2}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      ID
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {color.id}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Created
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {formatDate(color.created_at)}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Last Updated
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {formatDate(color.updated_at)}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
             </Box>
           </Box>
         </Paper>
@@ -254,4 +230,4 @@ const ColorDetailPage = () => {
   );
 };
 
-export default ColorDetailPage; 
+export default ColorDetailPage;

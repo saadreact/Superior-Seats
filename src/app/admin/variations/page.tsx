@@ -25,6 +25,7 @@ import {
   DialogActions,
   useTheme,
   useMediaQuery,
+  Grid,
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import Image from 'next/image';
@@ -319,6 +320,8 @@ const VariationsPage = () => {
             Add Variation
           </Button>
         </Box>
+
+
 
         {/* Content */}
         {loading ? (

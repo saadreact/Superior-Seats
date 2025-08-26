@@ -38,6 +38,14 @@ const AdminDashboard = () => {
       count: 8,
     },
     {
+      title: 'Variations',
+      description: 'Manage product variations and configurations',
+      icon: <InventoryIcon sx={{ fontSize: 40 }} />,
+      href: '/admin/variations',
+      color: '#1976d2',
+      count: 10,
+    },
+    {
       title: 'Customer Types',
       description: 'Manage customer categories and discount levels',
       icon: <PeopleIcon sx={{ fontSize: 40 }} />,
