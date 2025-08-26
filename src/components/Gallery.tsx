@@ -24,6 +24,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
+import LazyImage from '@/components/common/LazyImage';
 import { workPictures, workPicturesTruck, WorkImage } from '@/data/Gallery';
 
 const Gallery = () => {
@@ -123,7 +124,7 @@ const Gallery = () => {
           { label: 'Gallery' }
         ]}
       />
-                                 {/* Horizontal Image Slider */}
+     {/* Horizontal Image Slider */}
       <Box sx={{ 
         backgroundColor: '#f8f9fa',
         py: { xs: 0.25, md: 0.5, lg: 1, xl: 1 },
@@ -212,7 +213,7 @@ const Gallery = () => {
                 onClick={() => handleImageClick(item, index)}
               >
                 {item.image && item.image.trim() !== '' ? (
-                  <Image
+                  <LazyImage
                     src={item.image}
                     alt={item.title}
                     fill
@@ -220,6 +221,9 @@ const Gallery = () => {
                       objectFit: 'cover',
                       backgroundColor: '#f5f5f5',
                     }}
+                    showSkeleton={true}
+                    skeletonHeight="100%"
+                    skeletonWidth="100%"
                   />
                 ) : (
                   <Box
@@ -297,7 +301,7 @@ const Gallery = () => {
                 onClick={() => handleImageClick(item, index)}
               >
                 {item.image && item.image.trim() !== '' ? (
-                  <Image
+                  <LazyImage
                     src={item.image}
                     alt={item.title}
                     fill
@@ -305,6 +309,9 @@ const Gallery = () => {
                       objectFit: 'cover',
                       backgroundColor: '#f5f5f5',
                     }}
+                    showSkeleton={true}
+                    skeletonHeight="100%"
+                    skeletonWidth="100%"
                   />
                 ) : (
                   <Box
@@ -431,17 +438,44 @@ const Gallery = () => {
                     borderRadius: 2,
                   }}
                 >
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    style={{
-                      objectFit: 'contain',
-                      backgroundColor: '#f5f5f5',
-                      transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                    className="gallery-image"
-                  />
+                  {item.image && item.image.trim() !== '' ? (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        backgroundColor: '#f5f5f5',
+                        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      }}
+                      className="gallery-image"
+                      onError={(e) => {
+                        console.error('Image failed to load:', item.image);
+                        e.currentTarget.style.display = 'none';
+                      }}
+                      onLoad={() => {
+                        console.log('Image loaded successfully:', item.image);
+                      }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#f5f5f5',
+                        color: 'text.secondary',
+                      }}
+                    >
+                      <Typography variant="body2">No image</Typography>
+                    </Box>
+                  )}
                   
                   {/* Zoom Icon */}
                   <Box
@@ -562,6 +596,7 @@ const Gallery = () => {
                     maxHeight: '80vh',
                     objectFit: 'contain',
                   }}
+                  priority
                 />
               ) : (
                 <Box

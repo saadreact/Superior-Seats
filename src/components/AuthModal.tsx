@@ -42,7 +42,9 @@ const signInSchema = z.object({
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Please enter a valid email address'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
   customer_type: z.enum(['retail', 'wholesale', 'dealer']),
@@ -97,7 +99,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
   const [signUpForm, setSignUpForm] = useState({
     name: '',
+    username: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     customer_type: 'retail' as const,
@@ -191,7 +195,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
     await dispatch(registerUser({
       name: signUpForm.name,
+      username: signUpForm.username,
       email: signUpForm.email,
+      phone: signUpForm.phone,
       password: signUpForm.password,
       password_confirmation: signUpForm.confirmPassword,
       customer_type: signUpForm.customer_type,
@@ -204,7 +210,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     setSuccess('');
     setErrors({});
     setSignInForm({ email: '', password: '' });
-    setSignUpForm({ name: '', email: '', password: '', confirmPassword: '', customer_type: 'retail' });
+    setSignUpForm({ name: '', username: '', email: '', phone: '', password: '', confirmPassword: '', customer_type: 'retail' });
     setTabValue(0);
   };
 
@@ -494,6 +500,48 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   onChange={handleSignUpChange('name')}
                   error={!!errors.name}
                   helperText={errors.name}
+                  variant="outlined"
+                  size="small"
+                  
+                  sx={{ 
+                    mb: 2,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
+                    },
+                  }}
+                />
+
+                               <TextField
+                  fullWidth
+                  label="Username"
+                  type="text"
+                  value={signUpForm.username}
+                  onChange={handleSignUpChange('username')}
+                  error={!!errors.username}
+                  helperText={errors.username}
+                  variant="outlined"
+                  size="small"
+                  
+                  sx={{ 
+                    mb: 2,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
+                    },
+                  }}
+                />
+
+                               <TextField
+                  fullWidth
+                  label="Phone Number"
+                  type="tel"
+                  value={signUpForm.phone}
+                  onChange={handleSignUpChange('phone')}
+                  error={!!errors.phone}
+                  helperText={errors.phone}
                   variant="outlined"
                   size="small"
                   

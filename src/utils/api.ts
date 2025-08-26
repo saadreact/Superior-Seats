@@ -35,6 +35,7 @@ const getToken = (): string | null => {
   return null;
 };
 
+
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: 'https://superiorseats.ali-khalid.com/api',
@@ -75,6 +76,13 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('persist:auth');
+        console.log('401 error - tokens cleared from localStorage');
+      }
+      
+      // Don't redirect on logout endpoint to avoid infinite loops
+      if (!error.config?.url?.includes('/logout')) {
+        // Optionally redirect to login page for other 401 errors
+        // window.location.href = '/login';
       }
     }
     return Promise.reject(error);
@@ -117,7 +125,9 @@ class ApiService {
 
   async register(userData: {
     name: string;
+    username: string;
     email: string;
+    phone: string;
     password: string;
     password_confirmation: string;
     customer_type: string;
@@ -136,19 +146,51 @@ class ApiService {
   async logout() {
     try {
       await api.post('/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
+      console.log('Logout successful');
+    } catch (error: any) {
+      // Handle 401 errors gracefully - this is expected when token is expired
+      if (error.response?.status === 401) {
+        console.log('Token expired or invalid during logout - this is normal');
+      } else {
+        console.error('Logout error:', error);
+      }
     } finally {
       // Clear tokens regardless of API call success
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('persist:auth');
+        console.log('Local storage cleared');
       }
     }
   }
 
   isAuthenticated(): boolean {
     return getToken() !== null;
+  }
+
+  // Check if token is valid (not expired)
+  isTokenValid(): boolean {
+    const token = getToken();
+    if (!token) return false;
+    
+    try {
+      // Decode JWT token to check expiration
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp > currentTime;
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      return false;
+    }
+  }
+
+  // Force logout and clear all auth data
+  forceLogout(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('persist:auth');
+      console.log('Force logout - all auth data cleared');
+    }
   }
 
   // Helper method to map new API payment statuses to frontend expected statuses
@@ -1342,6 +1384,29 @@ class ApiService {
   }
 
   // ========== CUSTOMER MANAGEMENT APIs ==========
+
+  // Get current user information
+  async getCurrentUser() {
+    try {
+      const response = await api.get('/user');
+      // Return the nested data field since the API response has a data wrapper
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching current user:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch user information');
+    }
+  }
+
+  // Get price tiers options
+  async getPriceTiersOptions() {
+    try {
+      const response = await api.get('/price-tiers/options');
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching price tiers options:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch price tiers options');
+    }
+  }
 
   // Get all customers
   async getCustomers(params: {

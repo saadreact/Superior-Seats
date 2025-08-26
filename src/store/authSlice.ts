@@ -67,7 +67,9 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData: {
     name: string;
+    username: string;
     email: string;
+    phone: string;
     password: string;
     password_confirmation: string;
     customer_type: string;
@@ -89,7 +91,12 @@ export const logoutUser = createAsyncThunk(
       return true;
     } catch (error: any) {
       // Even if logout API fails, we should still clear local state
-      console.error('Logout API error:', error);
+      // 401 errors are expected when token is expired
+      if (error.response?.status === 401) {
+        console.log('Logout with expired token - proceeding with local cleanup');
+      } else {
+        console.error('Logout API error:', error);
+      }
       return true;
     }
   }
