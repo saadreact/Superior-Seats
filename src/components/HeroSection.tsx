@@ -415,8 +415,8 @@ const HeroSection = () => {
                                variant="outlined"
                                onClick={() => router.push('/custom-seats')}
                              sx={{
-                               border: '2px solid white',
-                               color: '#dc2626',
+                               border: `2px solid ${theme.palette.primary.main}`,
+                               color: theme.palette.primary.main,
                                backgroundColor: 'white',
                                fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
                                fontWeight: 600,
@@ -427,15 +427,7 @@ const HeroSection = () => {
                                textTransform: 'none',
                                letterSpacing: '0.5px',
                                transition: 'all 0.3s ease',
-                               '&:hover': {
-                                 backgroundColor: '#dc2626',
-                                 border: '2px solid #dc2626',
-                                 color: 'white',
-                                 transform: 'translateY(-2px)',
-                               },
-                               '&:active': {
-                                 transform: 'translateY(0px)',
-                               },
+                               // Removed hover effects as requested
                              }}
                            >
                              Start Customizing Your Seat
@@ -464,8 +456,7 @@ const HeroSection = () => {
           {backgroundImages.map((_, index) => (
             <motion.div
               key={index}
-              whileHover={{ scale: 1.3 }}
-              whileTap={{ scale: 0.9 }}
+              // Removed hover effects as requested
               style={{
                 cursor: 'pointer',
               }}
@@ -478,10 +469,7 @@ const HeroSection = () => {
                   backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.4)',
                   transition: 'all 0.3s ease',
                   cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.6)',
-                    transform: 'scale(1.2)',
-                  },
+                  // Removed hover effect as requested
                 }}
                 onClick={() => handleImageChange(index)}
               />

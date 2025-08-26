@@ -1,8 +1,13 @@
 'use client';
 
 import React from 'react';
-import ContactPage from '@/components/ContactPage';
+import LazyComponent from '@/components/common/LazyComponent';
 
 export default function Contact() {
-  return <ContactPage />;
+  return (
+    <LazyComponent
+      component={() => import('@/components/ContactPage')}
+      loadingText="Loading Contact Page..."
+    />
+  );
 } 

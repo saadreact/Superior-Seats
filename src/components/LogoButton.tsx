@@ -41,15 +41,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
         variant="contained"
         size="large"
         onClick={onClick}
-        whileHover={{ 
-          scale: 1.1,
-          rotate: 5,
-          transition: { duration: 0.3 }
-        }}
-        whileTap={{ 
-          scale: 0.95,
-          transition: { duration: 0.1 }
-        }}
+        // Removed hover effects as requested
         sx={{
           backgroundColor: 'white',
           color: '#DA291C',
@@ -60,9 +52,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
           position: 'relative',
           overflow: 'hidden',
           zIndex: 20,
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          },
+          // Removed hover effect as requested
           transition: 'all 0.3s ease-in-out',
           boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
         }}

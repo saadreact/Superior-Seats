@@ -6,6 +6,7 @@ import {
   Container,
   Typography,
   IconButton,
+  useTheme,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Instagram } from '@mui/icons-material';
@@ -18,6 +19,8 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = () => {
+  const theme = useTheme();
+  
   return (
     <>
       {/* Cool Footer Section */}
@@ -27,8 +30,8 @@ const Footer: React.FC<FooterProps> = () => {
                 viewport={{ once: true }}
                                                                    sx={{
                     py: { xs: 2, sm: 2.5, md: 3, lg: 3.5 },
-                   background: 'linear-gradient(135deg, rgba(221, 45, 32, 0.9) 0%, rgba(155, 15, 05, 0.9) 100%)',
-                   color: 'white',
+                                       background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                    color: theme.palette.primary.contrastText || 'white',
                    backdropFilter: 'blur(10px)',
                    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
                    position: 'sticky',
@@ -110,7 +113,7 @@ const Footer: React.FC<FooterProps> = () => {
                          gap: 1.5,
                          alignItems: { xs: 'center', md: 'flex-start' }
                        }}>
-                        <Link href="/privacy-policy" style={{ textDecoration: 'none' }}>
+                        <Link href="/privacy-policy" style={{ textDecoration: 'none', outline: 'none' }}>
                           <Typography
                             sx={{
                               color: 'white',
@@ -120,6 +123,10 @@ const Footer: React.FC<FooterProps> = () => {
                               fontWeight: 550,
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
+                              outline: 'none',
+                              '&:focus': {
+                                outline: 'none',
+                              },
                               '&:hover': {
                                 opacity: 1,
                                 textDecoration: 'none',
@@ -133,7 +140,7 @@ const Footer: React.FC<FooterProps> = () => {
                             Privacy Policy
                           </Typography>
                         </Link>
-                        <Link href="/terms-of-service" style={{ textDecoration: 'none' }}>
+                        <Link href="/terms-of-service" style={{ textDecoration: 'none', outline: 'none' }}>
                           <Typography
                             sx={{
                               color: 'white',
@@ -143,6 +150,10 @@ const Footer: React.FC<FooterProps> = () => {
                               fontWeight: 550,
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
+                              outline: 'none',
+                              '&:focus': {
+                                outline: 'none',
+                              },
                               '&:hover': {
                                 opacity: 1,
                                 textDecoration: 'none',
@@ -156,7 +167,7 @@ const Footer: React.FC<FooterProps> = () => {
                             Terms of Service
                           </Typography>
                         </Link>
-                        <Link href="/warranty" style={{ textDecoration: 'none' }}>
+                        <Link href="/warranty" style={{ textDecoration: 'none', outline: 'none' }}>
                           <Typography
                             sx={{
                               color: 'white',
@@ -166,6 +177,10 @@ const Footer: React.FC<FooterProps> = () => {
                               fontWeight: 550,
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
+                              outline: 'none',
+                              '&:focus': {
+                                outline: 'none',
+                              },
                               '&:hover': {
                                 opacity: 1,
                                 textDecoration: 'none',

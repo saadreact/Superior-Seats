@@ -1,8 +1,13 @@
 'use client';
 
 import React from 'react';
-import CustomizedSeat from '@/components/CustomizedSeat';
+import LazyComponent from '@/components/common/LazyComponent';
 
 export default function CustomizeYourSeatPage() {
-  return <CustomizedSeat />;
+  return (
+    <LazyComponent
+      component={() => import('@/components/CustomizedSeat')}
+      loadingText="Loading Customize Your Seat..."
+    />
+  );
 } 

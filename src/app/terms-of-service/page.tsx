@@ -102,10 +102,12 @@ const TermsOfService = () => {
         title="Terms of Service"
         description="Please read these terms carefully before using our services or purchasing our products."
         height={{
-          xs: '18vh',
-          sm: '20vh',
-          md: '18vh',
-          lg: '20vh'
+          xs: '75px',
+          sm: '70px', 
+          md: '80px',
+          lg: '95px',
+          xl: '105px',
+          xxl: '115px'
         }}
       />
 
@@ -114,7 +116,7 @@ const TermsOfService = () => {
 
       <Box sx={{ 
         flex: 1, 
-        py: { xs: 1, sm: 1.5, md: 2, lg: 0 } 
+        py: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2} 
       }}>
         <Container maxWidth="lg">
           <MotionBox

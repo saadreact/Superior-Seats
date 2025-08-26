@@ -3,9 +3,9 @@ import { createTheme } from '@mui/material/styles';
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#DA291C', // Pantone 485C - RGB(218, 41, 28)
-      light: '#E85A4F',
-      dark: '#B71C1C',
+      main: '#d32f2f', // Superior Seats Red (updated from DA291C)
+      light: '#ff6659',
+      dark: '#9a0007',
     },
     secondary: {
       main: '#000000', // Black
@@ -21,7 +21,10 @@ export const theme = createTheme({
     },
   },
   typography: {
-  fontFamily: '"Raleway", "Roboto", sans-serif',
+    fontFamily: '"Raleway", "Roboto", sans-serif',
+    
+
+    
     h1: {
       fontSize: '2.5rem',
       fontWeight: 700,
@@ -67,6 +70,30 @@ export const theme = createTheme({
         fontSize: '1.25rem',
       },
     },
+    body1: {
+      fontSize: '1rem',
+      fontWeight: 400,
+      lineHeight: 1.6,
+    },
+    body2: {
+      fontSize: '0.875rem',
+      fontWeight: 400,
+      lineHeight: 1.43,
+    },
+    button: {
+      fontSize: '0.875rem',
+      fontWeight: 500,
+      textTransform: 'none',
+    },
+    caption: {
+      fontSize: '0.75rem',
+      fontWeight: 400,
+    },
+    overline: {
+      fontSize: '0.75rem',
+      fontWeight: 400,
+      textTransform: 'uppercase',
+    },
   },
   components: {
     MuiButton: {
@@ -75,11 +102,24 @@ export const theme = createTheme({
           textTransform: 'none',
           borderRadius: 8,
           fontWeight: 500,
+          fontSize: '1rem',
+          '@media (min-width:600px)': {
+            fontSize: '0.9rem',
+          },
+          '@media (min-width:900px)': {
+            fontSize: '1.1rem',
+          },
+          '@media (min-width:1200px)': {
+            fontSize: '1rem',
+          },
+          '@media (min-width:1536px)': {
+            fontSize: '1rem',
+          },
         },
         contained: {
-          boxShadow: '0 2px 8px rgba(218, 41, 28, 0.3)',
+          boxShadow: '0 2px 8px rgba(211, 47, 47, 0.3)',
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(218, 41, 28, 0.4)',
+            boxShadow: '0 4px 12px rgba(211, 47, 47, 0.4)',
           },
         },
       },
@@ -96,7 +136,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: 'white',
-          color: '#DA291C',
+          color: '#d32f2f',
         },
       },
     },

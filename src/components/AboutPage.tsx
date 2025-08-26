@@ -143,11 +143,13 @@ const AboutPage = () => {
       </Box>
 
       {/* Breadcrumbs */}
-      <Breadcrumbs
-        items={[
-          { label: 'About Us' }
-        ]}
-      />
+      <Box sx={{ backgroundColor: 'white' }}>
+        <Breadcrumbs
+          items={[
+            { label: 'About Us' }
+          ]}
+        />
+      </Box>
 
       {/* Company Stats */}
       <Box sx={{ 

@@ -584,6 +584,7 @@
   width: 100%;
   flex-wrap: wrap;
   gap: 1.5rem;
+  row-gap: 0.8rem;
 }
 
 /* Form Field  vehicle information*/

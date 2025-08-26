@@ -1,10 +1,15 @@
 'use client';
 
 import React from 'react';
-import CustomizeYourSeat from '@/components/CustomizedSeat';
+import LazyComponent from '@/components/common/LazyComponent';
 
 const ShopPage = () => {
-  return <CustomizeYourSeat />;
+  return (
+    <LazyComponent
+      component={() => import('@/components/CustomizedSeat')}
+      loadingText="Loading Shop..."
+    />
+  );
 };
 
 export default ShopPage; 

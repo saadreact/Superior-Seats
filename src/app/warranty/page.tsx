@@ -28,27 +28,33 @@ const Warranty = () => {
 
   const warrantyTypes = [
     {
-      type: 'Standard Warranty',
-      duration: '1 Year',
-      description: 'Covers manufacturing defects and material failures. Includes manufacturing defects, material failures, structural issues, and stitching problems.',
+      type: 'Standard Seating',
+      duration: '3 Years',
+      description: 'Class 8, pickups, vans, and RVs. Covers manufacturing defects and material failures. Includes manufacturing defects, material failures, structural issues, and stitching problems.',
       icon: <CheckCircle />
     },
     {
-      type: 'Extended Warranty',
-      duration: '3 Years',
-      description: 'Comprehensive coverage for extended peace of mind. Includes all standard warranty coverage, extended wear and tear, additional parts coverage, and priority service support.',
+      type: 'Integrated Seat Belt System',
+      duration: '2 Years',
+      description: 'Seats with integrated seat belt systems. Comprehensive coverage for safety components and structural integrity.',
       icon: <Security />
     },
     {
-      type: 'Premium Warranty',
-      duration: '5 Years',
-      description: 'Maximum protection with premium service. Includes complete coverage, accidental damage protection, free maintenance service, and lifetime customer support.',
+      type: 'Cushions, Sofas & Limousine',
+      duration: '1 Year',
+      description: 'Cushions, sofas, jackknifes and limousine seating. Covers manufacturing defects and material failures.',
       icon: <Shield />
+    },
+    {
+      type: 'Transit & Shuttle Seating',
+      duration: '1 Year',
+      description: 'Transit and Shuttle seating systems. Standard coverage for commercial vehicle seating applications.',
+      icon: <Build />
     }
   ];
 
   const warrantyExclusions = [
-    'The following items are not covered under our warranty: Damage caused by improper installation or use, normal wear and tear beyond reasonable expectations, damage from accidents, misuse, or neglect, modifications made without authorization, damage from exposure to extreme conditions, and cosmetic damage that doesn\'t affect functionality.'
+    'The process for enacting the Warranty is to contact Superior Seating about the part in question as soon as possible. We will require clear pictures of the damage or defect. After warranty is considered, we will ship out the part as soon as it is available or make other arrangements for the replacement or repair of the damage or defect, at our discretion.  Superior Seating will pay the costs of shipping associated with the repair or replacement.'
   ];
 
   const warrantyProcess = [
@@ -105,10 +111,12 @@ const Warranty = () => {
         title="Warranty"
         description="We stand behind the quality of our custom seating solutions with comprehensive warranty coverage."
         height={{
-          xs: '18vh',
-          sm: '20vh',
-          md: '18vh',
-          lg: '20vh'
+          xs: '75px',
+          sm: '70px', 
+          md: '80px',
+          lg: '95px',
+          xl: '105px',
+          xxl: '115px'
         }}
       />
 
@@ -117,7 +125,7 @@ const Warranty = () => {
 
       <Box sx={{ 
         flex: 1, 
-        py: { xs: 1, sm: 1.5, md: 2, lg: 0 } 
+        py: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 } 
       }}>
         <Container maxWidth="lg">
           <MotionBox
@@ -125,6 +133,75 @@ const Warranty = () => {
             animate="visible"
             variants={containerVariants}
           >
+
+            {/* Mission Statement */}
+            <MotionPaper
+              variants={itemVariants}
+              sx={{
+                p: { xs: 2, sm: 3, md: 4 },
+                backgroundColor: 'background.paper',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                borderRadius: 2,
+                border: '1px solid rgba(0,0,0,0.05)',
+                mb: { xs: 3, sm: 4, md: 5 },
+              }}
+            >
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  textAlign: 'center', 
+                  fontWeight: 'bold', 
+                  mb: { xs: 2, sm: 2.5, md: 3 },
+                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                  color: 'black',
+                }}
+              >
+                Our Mission Statement
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  lineHeight: 1.8,
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                  fontWeight: 400,
+                  textAlign: 'justify',
+                  maxWidth: '100%',
+                  px: { xs: 1, sm: 2 },
+                  whiteSpace: 'normal',
+                  overflow: 'visible',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto',
+                  textJustify: 'inter-word',
+                  letterSpacing: '0.01em',
+                  mb: 3,
+                }}
+              >
+                Superior Seating Inc. is dedicated to exceeding the expectations of our customers and to achieving the most respected reputation in the Custom Seating industry by maintaining the highest level of Integrity, Quality and Service.
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  lineHeight: 1.8,
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                  fontWeight: 400,
+                  textAlign: 'justify',
+                  maxWidth: '100%',
+                  px: { xs: 1, sm: 2 },
+                  whiteSpace: 'normal',
+                  overflow: 'visible',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto',
+                  textJustify: 'inter-word',
+                  letterSpacing: '0.01em',
+                }}
+              >
+                As a leader in our industry and in our community, we are committed to growing and adapting to our customer&apos;s needs and the changing custom seating and retail environments.
+              </Typography>
+            </MotionPaper>
 
             {/* Content */}
             <MotionPaper
@@ -158,7 +235,7 @@ const Warranty = () => {
                           variant="h4"
                           sx={{
                             fontWeight: 'bold',
-                            color: '#DA291C',
+                            color: 'black',
                             fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
                             textAlign: 'center',
                             letterSpacing: '-0.01em',
@@ -228,9 +305,163 @@ const Warranty = () => {
                   )}
                 </MotionBox>
               ))}
-            </MotionPaper>
+                         </MotionPaper>
 
-            {/* Warranty Process */}
+             {/* Warranty Covers */}
+             <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
+               <Typography 
+                 variant="h4" 
+                 sx={{ 
+                   textAlign: 'center', 
+                   fontWeight: 'bold', 
+                   mb: { xs: 2, sm: 2.5, md: 3 },
+                   fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                   color: 'black',
+                 }}
+               >
+                 Warranty Covers
+               </Typography>
+               <MotionPaper
+                 variants={itemVariants}
+                 sx={{
+                   p: { xs: 2, sm: 3, md: 4 },
+                   backgroundColor: 'background.paper',
+                   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                   borderRadius: 2,
+                   border: '1px solid rgba(0,0,0,0.05)',
+                 }}
+               >
+                 <Typography
+                   variant="body1"
+                   sx={{
+                     lineHeight: 1.8,
+                     color: 'text.secondary',
+                     fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                     fontWeight: 400,
+                     textAlign: 'justify',
+                     maxWidth: '100%',
+                     px: { xs: 1, sm: 2 },
+                     whiteSpace: 'normal',
+                     overflow: 'visible',
+                     wordWrap: 'break-word',
+                     overflowWrap: 'break-word',
+                     hyphens: 'auto',
+                     textJustify: 'inter-word',
+                     letterSpacing: '0.01em',
+                     mb: 3,
+                   }}
+                 >
+                   The Warranty covers seat frames, seat foam, and manufacturing defects. The Warranty does not replace or repair damages resulting from customer abuse or normal wear and tear.
+                 </Typography>
+                 
+                                   <Typography
+                    variant="body1"
+                    sx={{
+                      lineHeight: 1.8,
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                      fontWeight: 400,
+                      textAlign: 'justify',
+                      maxWidth: '100%',
+                      px: { xs: 1, sm: 2 },
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      textJustify: 'inter-word',
+                      letterSpacing: '0.01em',
+                      mb: 3,
+                    }}
+                  >
+                    Customer abuse is defined as excessive pushing, pulling, or climbing on seat arms, damage to the fabric caused by customer actions, and damage caused by any attempts to tamper with the construction of the seat.
+                  </Typography>
+                  
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      lineHeight: 1.8,
+                      color: 'black',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      maxWidth: '100%',
+                      px: { xs: 1, sm: 2 },
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      letterSpacing: '0.02em',
+                      borderTop: '1px solid rgba(0,0,0,0.1)',
+                      pt: 2,
+                      mb: 2,
+                    }}
+                  >
+                    Please Note:
+                  </Typography>
+                  
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      lineHeight: 1.8,
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                      fontWeight: 400,
+                      textAlign: 'justify',
+                      maxWidth: '100%',
+                      px: { xs: 1, sm: 2 },
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      textJustify: 'inter-word',
+                      letterSpacing: '0.01em',
+                      mb: 2,
+                    }}
+                  >
+                    Any dismantling or removal of materials or parts from your seat will void your warranty.
+                  </Typography>
+                  
+                                     <Typography
+                     variant="body1"
+                     sx={{
+                       lineHeight: 1.8,
+                       color: 'text.secondary',
+                       fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                       fontWeight: 400,
+                       textAlign: 'justify',
+                       maxWidth: '100%',
+                       px: { xs: 1, sm: 2 },
+                       whiteSpace: 'normal',
+                       overflow: 'visible',
+                       wordWrap: 'break-word',
+                       overflowWrap: 'break-word',
+                       hyphens: 'auto',
+                       textJustify: 'inter-word',
+                       letterSpacing: '0.01em',
+                     }}
+                   >
+                     If any parts are defective, missing, or damaged, please contact us within{' '}
+                     <Box
+                       component="span"
+                       sx={{
+                         color: '#DA291C',
+                         fontWeight: 'bold',
+                         backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                         px: 0.5,
+                         borderRadius: 0.5,
+                         border: '1px solid rgba(218, 41, 28, 0.2)',
+                       }}
+                     >
+                       5 days
+                     </Box>
+                     {' '}of receipt for replacement or repair instructions.
+                   </Typography>
+               </MotionPaper>
+             </MotionBox>
+
+             {/* Warranty Process */}
             <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
               <Typography 
                 variant="h4" 
@@ -239,7 +470,7 @@ const Warranty = () => {
                   fontWeight: 'bold', 
                   mb: { xs: 2, sm: 2.5, md: 3 },
                   fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                  color: '#DA291C',
+                  color: 'black',
                 }}
               >
                 Warranty Process
@@ -270,17 +501,17 @@ const Warranty = () => {
                     }}>
                       {step.icon}
                     </Box>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 'bold',
-                        fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
-                        mb: { xs: 0.5, sm: 1 },
-                        color: '#DA291C',
-                      }}
-                    >
-                      {step.title}
-                    </Typography>
+                                         <Typography 
+                       variant="h6" 
+                       sx={{ 
+                         fontWeight: 'bold',
+                         fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                         mb: { xs: 0.5, sm: 1 },
+                         color: 'black',
+                       }}
+                     >
+                       {step.title}
+                     </Typography>
                     <Typography 
                       variant="body2" 
                       sx={{ 
@@ -298,18 +529,18 @@ const Warranty = () => {
 
                          {/* Warranty Exclusions */}
              <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
-               <Typography 
-                 variant="h4" 
-                 sx={{ 
-                   textAlign: 'center', 
-                   fontWeight: 'bold', 
-                   mb: { xs: 2, sm: 2.5, md: 3 },
-                   fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                   color: '#DA291C',
-                 }}
-               >
-                 Warranty Exclusions
-               </Typography>
+                               <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    textAlign: 'center', 
+                    fontWeight: 'bold', 
+                    mb: { xs: 2, sm: 2.5, md: 3 },
+                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                    color: 'black',
+                  }}
+                >
+                  Please Note
+                </Typography>
                <MotionPaper
                  variants={itemVariants}
                  sx={{
@@ -337,19 +568,161 @@ const Warranty = () => {
                       hyphens: 'auto',
                       textJustify: 'inter-word',
                       letterSpacing: '0.01em',
+                      mb: 2,
                     }}
                   >
                     {warrantyExclusions[0]}
                   </Typography>
+                  
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      lineHeight: 1.6,
+                      color: 'black',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      maxWidth: '100%',
+                      px: { xs: 1, sm: 2 },
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      letterSpacing: '0.02em',
+                      borderTop: '1px solid rgba(0,0,0,0.1)',
+                      pt: 2,
+                    }}
+                  >
+                    Attach invoice to this warranty and hold for future reference
+                  </Typography>
                </MotionPaper>
-             </MotionBox>
-          </MotionBox>
-        </Container>
-      </Box>
-      
-      <Footer />
-    </Box>
-  );
-};
+                           </MotionBox>
 
-export default Warranty; 
+              {/* Installation Section */}
+              <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    textAlign: 'center', 
+                    fontWeight: 'bold', 
+                    mb: { xs: 2, sm: 2.5, md: 3 },
+                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                    color: 'black',
+                  }}
+                >
+                  Installation
+                </Typography>
+                <MotionPaper
+                  variants={itemVariants}
+                  sx={{
+                    p: { xs: 2, sm: 3, md: 4 },
+                    backgroundColor: 'background.paper',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    borderRadius: 2,
+                    border: '1px solid rgba(0,0,0,0.05)',
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      lineHeight: 1.8,
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                      fontWeight: 400,
+                      textAlign: 'justify',
+                      maxWidth: '100%',
+                      px: { xs: 1, sm: 2 },
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      textJustify: 'inter-word',
+                      letterSpacing: '0.01em',
+                      mb: 3,
+                    }}
+                  >
+                    Installation is the sole responsibility of the customer. For technical questions concerning the installation, wiring, air compressor hook-ups or other issues, please contact a qualified mechanic or converter. A list of converters we work with is available upon request or at our website: www.superior-seats.com under the Distributors tab.
+                  </Typography>
+                  
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      lineHeight: 1.8,
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                      fontWeight: 400,
+                      textAlign: 'justify',
+                      maxWidth: '100%',
+                      px: { xs: 1, sm: 2 },
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      textJustify: 'inter-word',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    We do our best to match each customer with appropriate materials for the installation of the base purchased. However, because of the wide range of makes and models and the changes that are often made by the manufacturer from year to year, we cannot guarantee that mount up will be trouble-free. If you have any doubts or questions, please consult a qualified converter or mechanic.
+                  </Typography>
+                </MotionPaper>
+              </MotionBox>
+
+              {/* Returns Section */}
+              <MotionBox variants={itemVariants} sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    textAlign: 'center', 
+                    fontWeight: 'bold', 
+                    mb: { xs: 2, sm: 2.5, md: 3 },
+                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                    color: 'black',
+                  }}
+                >
+                  Returns
+                </Typography>
+                <MotionPaper
+                  variants={itemVariants}
+                  sx={{
+                    p: { xs: 2, sm: 3, md: 4 },
+                    backgroundColor: 'background.paper',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    borderRadius: 2,
+                    border: '1px solid rgba(0,0,0,0.05)',
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      lineHeight: 1.8,
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
+                      fontWeight: 400,
+                      textAlign: 'justify',
+                      maxWidth: '100%',
+                      px: { xs: 1, sm: 2 },
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      textJustify: 'inter-word',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    We at Superior Seating work hard to get your custom seats made to your exact specifications. For this reason, we do not accept returns for any reason other than those stated in the Warranty policy.
+                  </Typography>
+                </MotionPaper>
+              </MotionBox>
+           </MotionBox>
+         </Container>
+       </Box>
+       
+       <Footer />
+     </Box>
+   );
+ };
+
+ export default Warranty; 
