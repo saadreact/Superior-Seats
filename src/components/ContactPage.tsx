@@ -364,26 +364,19 @@ const ContactPage = () => {
                      variant="contained"
                      size="medium"
                      startIcon={<Send />}
-                     sx={{
-                     // background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-                     background: 'primary.main',
-                       px: { xs: 4, sm: 6 },
-                       py: { xs: 1, sm: 1.5,lg: 1,md: 1.2 },
-                       fontSize: { xs: '0.9rem', sm: '1rem' },
-                       fontWeight: 'bold',
-                       borderRadius: 2,
-                       boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
-                       textTransform: 'none',
-                       letterSpacing: 0.5,
-                       '&:hover': {
-                       //  background: 'linear-gradient(135deg, #b71c1c 0%, #7b0000 100%)',
-                         transform: 'translateY(-2px)',
-                         boxShadow: '0 8px 30px rgba(231, 43, 43, 0.4)',
-                       },
-                       transition: 'all 0.3s ease',
-                       minWidth: { xs: 160, sm: 180 },
-                       width: { xs: '100%', sm: 'auto' },
-                     }}
+                                           sx={{
+                        px: { xs: 4, sm: 6 },
+                        py: { xs: 1, sm: 1.5,lg: 1,md: 1.2 },
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        letterSpacing: 0.5,
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                        },
+                        transition: 'all 0.3s ease',
+                        minWidth: { xs: 160, sm: 180 },
+                        width: { xs: '100%', sm: 'auto' },
+                      }}
                    >
                      Send Message
                    </Button>

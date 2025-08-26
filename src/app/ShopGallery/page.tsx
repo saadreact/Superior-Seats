@@ -1,8 +1,13 @@
 'use client';
 
 import React from 'react';
-import ShopGallery from '@/components/ShopGallery';
+import LazyComponent from '@/components/common/LazyComponent';
 
 export default function ShopGalleryPage() {
-  return <ShopGallery />;
+  return (
+    <LazyComponent
+      component={() => import('@/components/ShopGallery')}
+      loadingText="Loading Shop Gallery..."
+    />
+  );
 } 

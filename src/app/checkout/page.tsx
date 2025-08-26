@@ -1,10 +1,15 @@
 'use client';
 
 import React from 'react';
-import Checkout from '@/components/Checkout';
+import LazyComponent from '@/components/common/LazyComponent';
 
 const CheckoutPage = () => {
-  return <Checkout />;
+  return (
+    <LazyComponent
+      component={() => import('@/components/Checkout')}
+      loadingText="Loading Checkout..."
+    />
+  );
 };
 
 export default CheckoutPage; 

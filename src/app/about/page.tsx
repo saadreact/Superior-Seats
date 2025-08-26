@@ -1,8 +1,13 @@
 'use client';
 
 import React from 'react';
-import AboutPage from '@/components/AboutPage';
+import LazyComponent from '@/components/common/LazyComponent';
 
 export default function About() {
-  return <AboutPage />;
+  return (
+    <LazyComponent
+      component={() => import('@/components/AboutPage')}
+      loadingText="Loading About Page..."
+    />
+  );
 } 

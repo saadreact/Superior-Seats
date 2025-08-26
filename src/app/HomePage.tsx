@@ -274,10 +274,7 @@ const HomePage = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 8px 25px rgba(218, 22, 22, 0.15)',
-                    },
+                    // Removed hover effects as requested
                   }}
                 >
                   <CardMedia
@@ -389,11 +386,7 @@ const HomePage = () => {
               boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)',
               width: { xs: 28, sm: 32, md: 40 },
               height: { xs: 28, sm: 32, md: 40 },
-              '&:hover': {
-                backgroundColor: 'primary.dark',
-                boxShadow: '0 6px 20px rgba(211, 47, 47, 0.4)',
-                transform: 'translateY(-1px)',
-              },
+              // Removed hover effects as requested
               transition: 'all 0.2s ease',
             }}
           >
@@ -531,10 +524,7 @@ const HomePage = () => {
                       borderColor: 'primary.main',
                       color: 'black',
                       fontWeight: 'bold',
-                      '&:hover': {
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                      },
+                      // Removed hover effects as requested
                     }}
                   >
                     Customize
@@ -546,9 +536,7 @@ const HomePage = () => {
                       flex: 1,
                       backgroundColor: 'primary.main',
                       fontWeight: 'bold',
-                      '&:hover': {
-                        backgroundColor: 'primary.dark',
-                      },
+                      // Removed hover effects as requested
                     }}
                   >
                     Add to Cart

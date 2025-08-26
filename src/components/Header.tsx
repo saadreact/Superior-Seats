@@ -402,16 +402,16 @@ const Header = () => {
                      justifyContent: 'center',
                      p: { xs: 1, sm: 1.25 }
                    }}>
-                     <Image
-                       src="/Gallery/Flags/flagwaving.png"
-                       alt="US Flag"
-                       width={25}
-                       height={25}
-                       style={{ 
-                         objectFit: 'contain',
-                         borderRadius: '2px'
-                       }}
-                     />
+                                           <Image
+                        src="/Gallery/Flags/flag.png"
+                        alt="US Flag"
+                        width={25}
+                        height={25}
+                        style={{ 
+                          objectFit: 'contain',
+                          borderRadius: '2px'
+                        }}
+                      />
                    </Box>
                  </Tooltip>
                   <Tooltip title="Shopping Cart" arrow>
@@ -453,7 +453,7 @@ const Header = () => {
                       p: { md: 0.5, lg: 0.85, xl: 1.1 }
                     }}>
                       <Image
-                        src="/Gallery/Flags/flagwaving.png"
+                        src="/Gallery/Flags/flag.png"
                         alt="US Flag"
                         width={28}
                         height={28}
