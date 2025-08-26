@@ -12,8 +12,7 @@ import {
   FormControlLabel,
   Switch,
   Stack,
-  InputAdornment,
-} from '@mui/material';
+  InputAdornment} from '@mui/material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
@@ -22,7 +21,7 @@ interface ColorFormData {
   hex_code: string;
   description: string;
   is_active: boolean;
-  sort_order: number;
+  
 }
 
 const CreateColorPage = () => {
@@ -34,9 +33,7 @@ const CreateColorPage = () => {
     name: '',
     hex_code: '',
     description: '',
-    is_active: true,
-    sort_order: 0,
-  });
+    is_active: true});
 
   const handleChange = (field: keyof ColorFormData) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -44,8 +41,7 @@ const CreateColorPage = () => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
     setFormData(prev => ({
       ...prev,
-      [field]: field === 'sort_order' ? parseInt(value as string) || 0 : value,
-    }));
+      [field]: value}));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -101,58 +97,7 @@ const CreateColorPage = () => {
         <Paper sx={{ p: 3 }}>
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={3}>
-              <TextField
-                fullWidth
-                label="Color Name"
-                value={formData.name}
-                onChange={handleChange('name')}
-                required
-                error={!formData.name.trim() && formData.name !== ''}
-                helperText={!formData.name.trim() && formData.name !== '' ? 'Color name is required' : ''}
-              />
-
-              <TextField
-                fullWidth
-                label="Hex Code"
-                value={formData.hex_code}
-                onChange={handleChange('hex_code')}
-                placeholder="#000000"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box
-                        sx={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: 1,
-                          backgroundColor: formData.hex_code || '#ccc',
-                          border: 1,
-                          borderColor: 'divider',
-                        }}
-                      />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText="Color hex code (e.g., #FF0000 for red)"
-              />
-
-              <TextField
-                fullWidth
-                label="Description"
-                value={formData.description}
-                onChange={handleChange('description')}
-                multiline
-                rows={3}
-              />
-
-              <TextField
-                fullWidth
-                label="Sort Order"
-                type="number"
-                value={formData.sort_order}
-                onChange={handleChange('sort_order')}
-                helperText="Display order (lower numbers appear first)"
-              />
+              
 
               <FormControlLabel
                 control={

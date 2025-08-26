@@ -18,16 +18,14 @@ import {
   InputAdornment,
   Stack,
   useTheme,
-  useMediaQuery,
-} from '@mui/material';
+  useMediaQuery} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
   Search as SearchIcon,
-  Close as CloseIcon,
-} from '@mui/icons-material';
+  Close as CloseIcon} from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
@@ -39,7 +37,7 @@ interface Category {
   slug: string;
   image_url: string | null;
   is_active: boolean;
-  sort_order: number;
+  
   created_at: string;
   updated_at: string;
 }
@@ -167,8 +165,7 @@ const CategoriesPage = () => {
                 <InputAdornment position="start">
                   <SearchIcon />
                 </InputAdornment>
-              ),
-            }}
+              )}}
             sx={{ maxWidth: 400 }}
           />
         </Box>
@@ -223,10 +220,8 @@ const CategoriesPage = () => {
                   flexDirection: 'column',
                   '&:hover': {
                     boxShadow: 6,
-                    transform: 'translateY(-4px)',
-                  },
-                  transition: 'all 0.3s ease-in-out',
-                }}
+                    transform: 'translateY(-4px)'},
+                  transition: 'all 0.3s ease-in-out'}}
               >
                 <CardContent sx={{ flexGrow: 1, p: 2 }}>
                   <Typography 
@@ -241,8 +236,7 @@ const CategoriesPage = () => {
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      minHeight: '2.5rem',
-                    }}
+                      minHeight: '2.5rem'}}
                   >
                     {category.name}
                   </Typography>
@@ -257,8 +251,7 @@ const CategoriesPage = () => {
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      minHeight: '3rem',
-                    }}
+                      minHeight: '3rem'}}
                   >
                     {category.description || 'No description available'}
                   </Typography>
@@ -270,7 +263,7 @@ const CategoriesPage = () => {
                       color={category.is_active ? 'success' : 'default'}
                     />
                     <Typography variant="body2" color="text.secondary">
-                      Order: {category.sort_order}
+                      
                     </Typography>
                   </Box>
 

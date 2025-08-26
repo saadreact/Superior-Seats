@@ -99,6 +99,41 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <PaletteIcon />,
       href: '/admin/colors',
     },
+    {
+      text: 'Arm Types',
+      icon: <CategoryIcon />,
+      href: '/admin/arm-types',
+    },
+    {
+      text: 'Color Vendors',
+      icon: <CategoryIcon />,
+      href: '/admin/color-vendors',
+    },
+    {
+      text: 'Feature Options',
+      icon: <CategoryIcon />,
+      href: '/admin/feature-options',
+    },
+    {
+      text: 'Heat Options',
+      icon: <CategoryIcon />,
+      href: '/admin/heat-options',
+    },
+    {
+      text: 'Item Types',
+      icon: <CategoryIcon />,
+      href: '/admin/item-types',
+    },
+    {
+      text: 'Lumbar Types',
+      icon: <CategoryIcon />,
+      href: '/admin/lumbar-types',
+    },
+    {
+      text: 'Material Types',
+      icon: <CategoryIcon />,
+      href: '/admin/material-types',
+    },
   ];
 
   const handleNavigation = (href: string) => {
@@ -139,7 +174,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   const isVariationsActive = () => {
     return pathname.startsWith('/admin/variations') || 
            pathname.startsWith('/admin/categories') || 
-           pathname.startsWith('/admin/colors');
+           pathname.startsWith('/admin/colors') ||
+           pathname.startsWith('/admin/arm-types') ||
+           pathname.startsWith('/admin/color-vendors') ||
+           pathname.startsWith('/admin/feature-options') ||
+           pathname.startsWith('/admin/heat-options') ||
+           pathname.startsWith('/admin/item-types') ||
+           pathname.startsWith('/admin/lumbar-types') ||
+           pathname.startsWith('/admin/material-types');
   };
 
   const drawerContent = (
