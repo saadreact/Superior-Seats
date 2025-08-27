@@ -361,15 +361,22 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                       <Typography variant="body1" className={styles.placeholderDescription}>
                         Please select a model or product from our shop to start customizing your perfect seat.
                       </Typography>
-                                             <Button
-                         variant="contained"
-                         size="large"
-                         onClick={() => router.push('/specials')}
-                         startIcon={<ArrowForward />}
-                         className={styles.browseShopButton}
-                       >
-                         Browse Shop
-                       </Button>
+                                           <Button
+                          variant="contained"
+                          size="large"
+                          onClick={() => router.push('/specials')}
+                          startIcon={<ArrowForward />}
+                          className={styles.browseShopButton}
+                          sx={{ 
+                            fontWeight: 400,
+                            backgroundColor: theme.palette.primary.main,
+                            '&:hover': {
+                              backgroundColor: theme.palette.primary.dark,
+                            }
+                          }}
+                        >
+                          Browse Shop
+                        </Button>
                     </Box>
                   )}
                   
@@ -703,7 +710,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                 className={styles.selectField}
                               >
                                <MenuItem value="" disabled>
-                                 Select Year
+                                Year
                                </MenuItem>
                                {vehicleYears.map((year) => (
                                  <MenuItem key={year.id} value={year.id}>
@@ -727,7 +734,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                 className={styles.selectField}
                               >
                                <MenuItem value="" disabled>
-                                 Select Make
+                                 Make
                                </MenuItem>
                                {vehicleMakes.map((make) => (
                                  <MenuItem key={make.id} value={make.id}>
@@ -752,7 +759,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  disabled={vehicleModelsLoading}
                                >
                                 <MenuItem value="" disabled>
-                                  {vehicleModelsLoading ? 'Loading models...' : 'Select Model'}
+                                  {vehicleModelsLoading ? 'Loading models...' : 'Model'}
                                 </MenuItem>
                                 {vehicleModelsError ? (
                                   <MenuItem value="" disabled>
@@ -835,7 +842,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
-                                Select Recline
+                                Recline
                               </MenuItem>
                               {reclineOptions.map((recline) => (
                                 <MenuItem key={recline.id} value={recline.id}>
@@ -869,7 +876,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
-                                Select Child Restraint
+                                Child Restraint
                               </MenuItem>
                               {childRestraintOptions.map((restraint) => (
                                 <MenuItem key={restraint.id} value={restraint.id}>
@@ -903,7 +910,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
-                                Select Motor Back Relaxer
+                                Motor Back Relaxer
                               </MenuItem>
                               {motorBackRelaxerOptions.map((relaxer) => (
                                 <MenuItem key={relaxer.id} value={relaxer.id}>
@@ -937,7 +944,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
-                                Select Lumber
+                                Lumber
                               </MenuItem>
                               {lumberOptions.map((lumber) => (
                                 <MenuItem key={lumber.id} value={lumber.id}>
@@ -971,7 +978,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                className={styles.selectField}
                              >
                               <MenuItem value="" disabled>
-                                Select Heating/Cooling
+                                Heating/Cooling
                               </MenuItem>
                               {heatingCoolingOptions.map((heatingCooling) => (
                                 <MenuItem key={heatingCooling.id} value={heatingCooling.id}>
@@ -1017,7 +1024,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  className={styles.selectField}
                                >
                                 <MenuItem value="" disabled>
-                                  Select Seat Type
+                                  Seat Type
                                 </MenuItem>
                                 {seatTypeOptions.map((seatType) => (
                                   <MenuItem key={seatType.id} value={seatType.id}>
@@ -1057,7 +1064,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  className={styles.selectField}
                                >
                                 <MenuItem value="" disabled>
-                                  Select Item Type
+                                   Item Type
                                 </MenuItem>
                                 {itemTypeOptions.map((itemType) => (
                                   <MenuItem key={itemType.id} value={itemType.id}>
@@ -1091,7 +1098,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  className={styles.selectField}
                                >
                                 <MenuItem value="" disabled>
-                                  Select Seat Style
+                                  Seat Style
                                 </MenuItem>
                                 {seatStyleOptions.map((seatStyle) => (
                                   <MenuItem key={seatStyle.id} value={seatStyle.id}>
@@ -1125,7 +1132,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  className={styles.selectField}
                                >
                                 <MenuItem value="" disabled>
-                                  Select Material Type
+                                   Material Type
                                 </MenuItem>
                                 {materialTypeOptions.map((materialType) => (
                                   <MenuItem key={materialType.id} value={materialType.id}>
@@ -1159,7 +1166,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  className={styles.selectField}
                                >
                                 <MenuItem value="" disabled>
-                                  Select Included Arm
+                                  Included Arm
                                 </MenuItem>
                                 {includedArmOptions.map((includedArm) => (
                                   <MenuItem key={includedArm.id} value={includedArm.id}>
@@ -1193,7 +1200,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                  className={styles.selectField}
                                >
                                 <MenuItem value="" disabled>
-                                  Select Extra Arm
+                                  Extra Arm
                                 </MenuItem>
                                 {extraArmOptions.map((extraArm) => (
                                   <MenuItem key={extraArm.id} value={extraArm.id}>

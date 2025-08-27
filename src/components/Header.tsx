@@ -82,6 +82,7 @@ const Header = () => {
   const menuItems = [
     { text: 'Home', href: '/' },
     { text: 'Customize Your Seat', href: '/custom-seats' },
+    { text: 'Shop Now', href: '/shop-now' },
     { text: 'Shop Specials', href: '/ShopGallery' },
     { text: 'Gallery', href: '/gallery' },
     { text: 'About', href: '/about' },
@@ -337,28 +338,28 @@ const Header = () => {
                     const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
                     return (
                       <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
-                                                 <Button
-                           color="inherit"
-                           onClick={item.text === 'Home' ? handleHomeClick : undefined}
-                           sx={{
-                             color: 'black',
-                             fontWeight: 'bold',
-                             fontSize: { md: '0.9rem', lg: '1rem', xl: '1.1rem' },
-                             // Further reduced padding for even smaller hover area
-                             px: { md: 0.5, lg: 1, xl: 1.25, sm: 0.5, xs: 0.5},
-                             py: { md: 0.5, lg: 0.55, xl: 1, sm: 0.5, xs: 0.5},
-                             whiteSpace: 'nowrap',
-                             minWidth: 'auto',
-                                                           backgroundColor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-                              '&:hover': {
-                                backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                                color: 'black',
-                               // Minimal transform for very subtle hover effect
-                               transform: 'translateY(-0.25px)',
-                             },
-                             transition: 'all 0.2s ease',
-                           }}
-                         >
+                                                                         <Button
+                          color="inherit"
+                          onClick={item.text === 'Home' ? handleHomeClick : undefined}
+                          sx={{
+                            color: 'black',
+                            fontWeight: 500,
+                            fontSize: { md: '0.9rem', lg: '1rem', xl: '1.1rem' },
+                            // Further reduced padding for even smaller hover area
+                            px: { md: 0.5, lg: 1, xl: 1.25, sm: 0.5, xs: 0.5},
+                            py: { md: 0.5, lg: 0.55, xl: 1, sm: 0.5, xs: 0.5},
+                            whiteSpace: 'nowrap',
+                            minWidth: 'auto',
+                                                          backgroundColor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
+                             '&:hover': {
+                               backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                               color: 'black',
+                              // Minimal transform for very subtle hover effect
+                              transform: 'translateY(-0.25px)',
+                            },
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
                           {item.text}
                         </Button>
                       </Link>
