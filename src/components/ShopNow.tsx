@@ -60,15 +60,15 @@ import Header from '@/components/Header';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { mainCategories, subCategories } from '@/data/ShopGallery';
+
 // NEW IMPORTS: Added to enable communication with CustomizedSeat component
 import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
 import { useRouter } from 'next/navigation'; // Next.js router for programmatic navigation
 import { useDispatch, useSelector } from 'react-redux';
 import { addItem } from '@/store/cartSlice';
 import { RootState } from '@/store/store';
-// API IMPORT
-import shopGalleryApi, { Product, User, PriceTier } from '@/services/ShopGalleryApi';
+// API IMPORTS
+import shopNowApis, { Product, User, PriceTier, Category } from '@/services/ShopNowApis';
 
 const ShopGallery = () => {
   const theme = useTheme();
@@ -108,7 +108,43 @@ const ShopGallery = () => {
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
   const [priceTiersLoading, setPriceTiersLoading] = useState(false);
 
-  // Function to fetch price tiers
+  // Categories State
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+
+     // Function to fetch categories
+   const fetchCategories = useCallback(async () => {
+     if (!isOnShopGalleryPage) {
+       console.log('🔄 ShopGallery - Not on ShopGallery page, skipping categories fetch');
+       return;
+     }
+
+     try {
+       setCategoriesLoading(true);
+       setCategoriesError(null);
+       console.log('📂 ShopGallery - Fetching categories...');
+       
+       const response = await shopNowApis.getCategories();
+       
+       if (response.status === 'success' && response.data) {
+         setCategories(response.data);
+         console.log('✅ ShopGallery - Categories loaded:', response.data);
+       } else {
+         // Don't set error, just log it and continue without categories
+         console.warn('⚠️ ShopGallery - Categories API returned non-success status:', response);
+         setCategories([]); // Set empty array to prevent errors
+       }
+     } catch (error) {
+       // Don't set error, just log it and continue without categories
+       console.warn('⚠️ ShopGallery - Error fetching categories, continuing without categories:', error);
+       setCategories([]); // Set empty array to prevent errors
+     } finally {
+       setCategoriesLoading(false);
+     }
+   }, [isOnShopGalleryPage]);
+
+    // Function to fetch price tiers
   const fetchPriceTiers = useCallback(async () => {
     if (!isOnShopGalleryPage) {
       console.log('🔄 ShopGallery - Not on ShopGallery page, skipping price tiers fetch');
@@ -119,16 +155,19 @@ const ShopGallery = () => {
       setPriceTiersLoading(true);
       console.log('💰 ShopGallery - Fetching price tiers...');
       
-      const response = await shopGalleryApi.getPriceTiers();
+      const response = await shopNowApis.getPriceTiers();
       
       if (response.status === 'success' && response.data) {
         setPriceTiers(response.data);
         console.log('✅ ShopGallery - Price tiers loaded:', response.data);
       } else {
-        console.error('❌ ShopGallery - Failed to load price tiers:', response);
+        console.warn('⚠️ ShopGallery - Price tiers API returned non-success status:', response);
+        setPriceTiers([]); // Set empty array as fallback
       }
     } catch (error) {
-      console.error('❌ ShopGallery - Error fetching price tiers:', error);
+      console.warn('⚠️ ShopGallery - Error fetching price tiers, using fallback:', error);
+      setPriceTiers([]); // Set empty array as fallback
+      // Don't throw error to prevent breaking the app
     } finally {
       setPriceTiersLoading(false);
     }
@@ -144,53 +183,62 @@ const ShopGallery = () => {
     
     console.log('🔄 ShopGallery - Refreshing all APIs...');
     
+    setLoading(true);
+    setError(null);
+    
+    // Fetch products
+    console.log('🚀 ShopGallery - Fetching products from API...');
     try {
-      setLoading(true);
-      setError(null);
-      
-      // Fetch products
-      console.log('🚀 ShopGallery - Fetching products from API...');
-      const productsResponse = await shopGalleryApi.getProducts();
+      const productsResponse = await shopNowApis.getProducts();
       console.log('✅ ShopGallery - Products API Response:', productsResponse);
       
       if (productsResponse.status === 'success' && productsResponse.data) {
         setApiProducts(productsResponse.data);
         console.log('📦 Products loaded:', productsResponse.data.length);
       } else {
-        setError('Failed to load products');
-        console.error('❌ Products API returned error status');
+        console.warn('⚠️ ShopGallery - Products API returned non-success status:', productsResponse);
+        setApiProducts([]); // Set empty array as fallback
       }
-      
-      // Fetch price tiers (always fetch for potential wholesale customers)
-      await fetchPriceTiers();
-      
-      // Fetch user data if authenticated
-      if (isAuthenticated) {
-        console.log('✅ User is authenticated, fetching user data...');
-        setUserLoading(true);
-        try {
-          const userResponse = await shopGalleryApi.getCurrentUser();
-          console.log('👤 User data fetched:', userResponse);
-          setUserData(userResponse);
-        } catch (userError) {
-          console.error('❌ ShopGallery - Error fetching user data:', userError);
-          setUserData(null);
-        } finally {
-          setUserLoading(false);
-        }
-      } else {
-        console.log('❌ User is not authenticated, clearing user data');
+    } catch (error) {
+      console.warn('⚠️ ShopGallery - Error fetching products, using fallback:', error);
+      setApiProducts([]); // Set empty array as fallback
+      setError('Failed to load products');
+    }
+    
+    // Fetch categories only (price tiers endpoint might not exist)
+    try {
+      await fetchCategories();
+    } catch (error) {
+      console.warn('⚠️ ShopGallery - Categories API call failed:', error);
+    }
+    
+    // Skip price tiers for now since the endpoint might not exist
+    // TODO: Re-enable when price tiers endpoint is available
+    console.log('💰 ShopGallery - Skipping price tiers fetch (endpoint not available)');
+    setPriceTiers([]); // Set empty array as fallback
+    
+    // Fetch user data if authenticated
+    if (isAuthenticated) {
+      console.log('✅ User is authenticated, fetching user data...');
+      setUserLoading(true);
+      try {
+        const userResponse = await shopNowApis.getCurrentUser();
+        console.log('👤 User data fetched:', userResponse);
+        setUserData(userResponse);
+      } catch (userError) {
+        console.warn('⚠️ ShopGallery - Error fetching user data:', userError);
         setUserData(null);
+      } finally {
         setUserLoading(false);
       }
-      
-    } catch (error) {
-      console.error('❌ ShopGallery - Error refreshing APIs:', error);
-      setError('Failed to load data');
-    } finally {
-      setLoading(false);
+    } else {
+      console.log('❌ User is not authenticated, clearing user data');
+      setUserData(null);
+      setUserLoading(false);
     }
-  }, [isAuthenticated, isOnShopGalleryPage, fetchPriceTiers]);
+    
+    setLoading(false);
+  }, [isAuthenticated, isOnShopGalleryPage, fetchCategories]);
 
   // Effect to refresh APIs when authentication state changes (only if on ShopGallery page)
   useEffect(() => {
@@ -214,17 +262,17 @@ const ShopGallery = () => {
 
   // Check if user is retail customer
   const isRetailCustomer = () => {
-    return shopGalleryApi.isRetailCustomer(userData);
+    return shopNowApis.isRetailCustomer(userData);
   };
 
   // Get wholesale discount percentage
   const getWholesaleDiscount = () => {
-    return shopGalleryApi.getWholesaleDiscount(priceTiers);
+    return shopNowApis.getWholesaleDiscount(priceTiers);
   };
 
   // Get display price based on customer type
   const getDisplayPrice = (price: string | number) => {
-    return shopGalleryApi.getDisplayPrice(price, isAuthenticated, userData, priceTiers);
+    return shopNowApis.getDisplayPrice(price, isAuthenticated, userData, priceTiers);
   };
 
   // Debug logging for user state
@@ -233,7 +281,7 @@ const ShopGallery = () => {
       console.log('🔄 ShopGallery - User state updated:', {
         userData,
         isRetail: isRetailCustomer(),
-        isAuthenticated: shopGalleryApi.isAuthenticated(),
+                 isAuthenticated: shopNowApis.isAuthenticated(),
         reduxIsAuthenticated: isAuthenticated,
         currentPage: isOnShopGalleryPage,
         priceTiers: priceTiers
@@ -241,16 +289,47 @@ const ShopGallery = () => {
     }
   }, [userData, isAuthenticated, isOnShopGalleryPage, priceTiers]);
 
-  // Filter products based on selected categories (using API data)
-  const filteredImages = apiProducts.filter(item => {
-    if (selectedMainCategory === 'all') {
-      return true; // Show all products
-    }
-    
-    // For now, we'll show all products since category filtering needs to be implemented
-    // based on your API structure
-    return true;
-  });
+       // Filter products based on selected categories (using API data)
+   const filteredImages = apiProducts.filter(item => {
+     // If "All Products" is selected, show everything
+     if (selectedMainCategory === 'all') {
+       return true;
+     }
+     
+     // If no categories loaded, show all products
+     if (!categories || categories.length === 0) {
+       return true;
+     }
+     
+     // Check if product's category matches the selected main category
+     const productCategory = item.category;
+     if (!productCategory) {
+       return false;
+     }
+     
+     // Get category name safely
+     const categoryName = typeof productCategory === 'string' 
+       ? productCategory 
+       : (productCategory as any)?.name || '';
+     
+     // Find the selected category from API data
+     const selectedCategory = categories.find(cat => cat && cat.slug === selectedMainCategory);
+     if (!selectedCategory) {
+       return false;
+     }
+     
+     // Check if product's category matches the selected category
+     const matchesMainCategory = categoryName.toLowerCase().includes(selectedCategory.name.toLowerCase()) ||
+                                categoryName.toLowerCase().includes(selectedCategory.slug.toLowerCase());
+     
+     // If main category doesn't match, exclude the product
+     if (!matchesMainCategory) {
+       return false;
+     }
+     
+     // For now, show all products in the selected category (sub-category filtering can be added later)
+     return true;
+   });
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredImages.length / itemsPerPage);
@@ -258,26 +337,52 @@ const ShopGallery = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredImages.slice(startIndex, endIndex);
 
-  // Get available sub-categories for the selected main category
-  const availableSubCategories = selectedMainCategory === 'all' 
-    ? [] 
-    : subCategories[selectedMainCategory as keyof typeof subCategories] || [];
+     // Debug logging for filtering
+   useEffect(() => {
+     if (isOnShopGalleryPage) {
+       console.log('🔍 ShopGallery - Filtering Debug:', {
+         selectedMainCategory,
+         selectedSubCategory,
+         totalProducts: apiProducts.length,
+         filteredProducts: filteredImages.length,
+         
+         categoriesLoaded: categories?.length || 0,
+         currentPage,
+         itemsPerPage
+       });
+       
+       // Log available categories from API
+       if (categories && categories.length > 0) {
+         console.log('📂 ShopGallery - Available categories from API:', categories.map(cat => ({
+           id: cat.id,
+           name: cat.name,
+           slug: cat.slug,
+           is_active: cat.is_active
+         })));
+       }
+     }
+   }, [selectedMainCategory, selectedSubCategory, apiProducts.length, filteredImages.length, categories, isOnShopGalleryPage, currentPage, itemsPerPage]);
+
+     // Generate main categories from API data
+   const apiMainCategories = [
+     { value: 'all', label: 'All Products' },
+     ...(categories || []) // Add null check for categories
+       .filter(cat => cat && cat.is_active && cat.products_count > 0) // Only show active categories with products
+       .sort((a, b) => a.sort_order - b.sort_order) // Sort by sort_order
+       .map(cat => ({
+         value: cat.slug,
+         label: `${cat.name} (${cat.products_count})`
+       }))
+   ];
+
+
 
   const handleMainCategoryChange = (event: any) => {
     const newMainCategory = event.target.value;
     setSelectedMainCategory(newMainCategory);
     
-    // Auto-select the appropriate "all" sub-category based on the main category
-    if (newMainCategory === 'seats') {
-      setSelectedSubCategory('all-seats');
-    } else if (newMainCategory === 'spare-parts') {
-      setSelectedSubCategory('all-spare-parts');
-    } else if (newMainCategory === 'accessories') {
-      setSelectedSubCategory('all-accessories');
-    } else {
-      setSelectedSubCategory('all'); // For 'all' main category
-    }
-    
+    // Reset sub-category to 'all' when main category changes
+    setSelectedSubCategory('all');
     setCurrentPage(1); // Reset to first page
   };
 
@@ -296,10 +401,10 @@ const ShopGallery = () => {
     setSelectedImage(null);
   };
 
-  // Get multiple images for the selected product from the images array
-  const getProductImages = (product: Product) => {
-    return shopGalleryApi.processProductImages(product);
-  };
+     // Get multiple images for the selected product from the images array
+   const getProductImages = (product: Product) => {
+     return shopNowApis.processProductImages(product);
+   };
 
   // Touch/swipe functionality for mobile
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -357,7 +462,7 @@ const ShopGallery = () => {
       price: item.price.toString(),
       image: getProductImages(item)[0] || '/placeholder-image.jpg',
       description: item.description || '',
-      category: item.category || 'seat',
+      category: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
     }));
   };
 
@@ -369,8 +474,8 @@ const ShopGallery = () => {
     setSelectedItem({ // FUNCTION: Set the selected item in global context
       id: item.id,
       title: item.name,
-      category: item.category || 'seat',
-      subCategory: item.category || 'seat',
+      category: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
+      subCategory: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
       mainCategory: 'seats',
       image: imagesArray.length > 0 ? imagesArray[0] : '/placeholder-image.jpg',
       images: imagesArray, // ADDED: Pass the full images array
@@ -416,94 +521,170 @@ const ShopGallery = () => {
            maxWidth: { xs: '100%', sm: '100%', md: '90%', lg: '90%', xl: '90%' },
            mx: 'auto'
          }}>
-          {/* Gallery Header */}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            mb: { xs: 2, sm: 3, md: 4 },
-            flexWrap: 'wrap',
-            gap: { xs: 1, sm: 0 },
-            flexDirection: { xs: 'column', sm: 'row' },
-          }}>
-            <Typography 
-              variant="h3" 
-              sx={{ 
-                fontWeight: 'bold',
-                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
-                textAlign: { xs: 'center', sm: 'left' },
-                width: { xs: '100%', sm: 'auto' },
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-              }}
-            >
-              {selectedMainCategory === 'all' 
-                ? 'All Products' 
-                : selectedSubCategory === 'all' || selectedSubCategory.startsWith('all-')
-                  ? mainCategories.find(cat => cat.value === selectedMainCategory)?.label
-                  : availableSubCategories.find(cat => cat.value === selectedSubCategory)?.label || 'Products'
-              }
-            </Typography>
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: { xs: 'center', sm: 'flex-end' },
-              gap: 1
-            }}>
-                             <Typography 
-                 variant="body2" 
-                 sx={{ 
-                   color: 'text.secondary',
-                   fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                   textAlign: { xs: 'center', sm: 'right' },
-                   width: { xs: '100%', sm: 'auto' },
-                 }}
-               >
-                 {filteredImages.length} product{filteredImages.length !== 1 ? 's' : ''} found
-               </Typography>
-            </Box>
-          </Box>
-
-          {/* Loading State */}
-          {loading && (
-            <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
-              <Typography variant="h5" sx={{ 
-                color: 'text.secondary', 
-                mb: 2,
-                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
-              }}>
-                Loading products...
-              </Typography>
-            </Box>
-          )}
-
-          {/* Error State */}
-          {error && (
-            <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
-              <Typography variant="h5" sx={{ 
-                color: 'error.main', 
-                mb: 2,
-                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
-              }}>
-                {error}
-              </Typography>
-                                                           <Button
-                  variant="contained"
-                  onClick={() => window.location.reload()}
-                  sx={{ 
-                    backgroundColor: theme.palette.primary.main,
-                    px: { xs: 2, sm: 3, md: 4 },
-                    py: { xs: 0.75, sm: 1, md: 1.5 },
-                    fontWeight: 'regular',
+                     {/* Category Filtering Dropdowns */}
+           <Box sx={{ 
+             mb: { xs: 2, sm: 3, md: 4 },
+             display: 'flex',
+             flexDirection: { xs: 'column', sm: 'row' },
+             gap: { xs: 2, sm: 3 },
+             alignItems: { xs: 'stretch', sm: 'center' },
+             width: '100%'
+           }}>
+             {/* Main Category Dropdown */}
+             <FormControl 
+               sx={{ 
+                 minWidth: { xs: '100%', sm: 200, md: 250 },
+                 flex: { xs: 'none', sm: '0 0 auto' }
+               }}
+               size="small"
+             >
+               <InputLabel id="main-category-label">Main Category</InputLabel>
+                               <Select
+                  labelId="main-category-label"
+                  value={selectedMainCategory}
+                  label="Main Category"
+                  onChange={handleMainCategoryChange}
+                  sx={{
+                    backgroundColor: 'white',
+                    borderColor: theme.palette.primary.main,
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.primary.main,
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.primary.dark,
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.primary.main,
+                    },
                   }}
                 >
-                  Try Again
-                </Button>
-            </Box>
-          )}
+                                  {apiMainCategories.map((category) => (
+                    <MenuItem key={category.value} value={category.value}>
+                      {category.label}
+                    </MenuItem>
+                  ))}
+               </Select>
+             </FormControl>
 
-          {/* Products Grid */}
-          {!loading && !error && (
+             
+
+      {/* Clear Filters Button */}
+               {selectedMainCategory !== 'all' && (
+                 <Button
+                   variant="outlined"
+                   size="small"
+                   onClick={() => {
+                     setSelectedMainCategory('all');
+                     setCurrentPage(1);
+                   }}
+                  sx={{
+                    borderColor: theme.palette.primary.main,
+                    color: theme.palette.primary.main,
+                    minWidth: { xs: '100%', sm: 120 },
+                    height: 40,
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.main,
+                      borderColor: theme.palette.primary.main,
+                      color: 'white',
+                    },
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              )}
+
+             
+           </Box>
+
+           {/* Gallery Header */}
+           <Box sx={{ 
+             display: 'flex', 
+             justifyContent: 'space-between', 
+             alignItems: 'center',
+             mb: { xs: 2, sm: 3, md: 4 },
+             flexWrap: 'wrap',
+             gap: { xs: 1, sm: 0 },
+             flexDirection: { xs: 'column', sm: 'row' },
+           }}>
+             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                               <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    fontWeight: 500,
+                    fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
+                    textAlign: { xs: 'center', sm: 'left' },
+                    width: { xs: '100%', sm: 'auto' },
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                  }}
+                >
+                                   {selectedMainCategory === 'all' 
+                     ? 'All Products' 
+                     : apiMainCategories.find(cat => cat.value === selectedMainCategory)?.label || 'Products'
+                   }
+                </Typography>
+               
+               
+             </Box>
+             <Box sx={{ 
+               display: 'flex', 
+               flexDirection: 'column', 
+               alignItems: { xs: 'center', sm: 'flex-end' },
+               gap: 1
+             }}>
+                              <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: 'text.secondary',
+                    fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                    textAlign: { xs: 'center', sm: 'right' },
+                    width: { xs: '100%', sm: 'auto' },
+                  }}
+                >
+                  {filteredImages.length} product{filteredImages.length !== 1 ? 's' : ''} found
+                </Typography>
+             </Box>
+           </Box>
+
+                     {/* Loading State */}
+           {loading && (
+             <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
+               <Typography variant="h5" sx={{ 
+                 color: 'text.secondary', 
+                 mb: 2,
+                 fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+               }}>
+                 Loading products...
+               </Typography>
+             </Box>
+           )}
+
+           {/* Error State - Only show for product loading errors, not category errors */}
+           {error && (
+             <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
+               <Typography variant="h5" sx={{ 
+                 color: 'error.main', 
+                 mb: 2,
+                 fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+               }}>
+                 {error}
+               </Typography>
+               <Button
+                 variant="contained"
+                 onClick={() => window.location.reload()}
+                 sx={{ 
+                   backgroundColor: theme.palette.primary.main,
+                   px: { xs: 2, sm: 3, md: 4 },
+                   py: { xs: 0.75, sm: 1, md: 1.5 },
+                 }}
+               >
+                 Try Again
+               </Button>
+             </Box>
+           )}
+
+                     {/* Products Grid */}
+           {!loading && !error && (
             <Box sx={{ 
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)' },
@@ -546,6 +727,9 @@ const ShopGallery = () => {
                         objectFit: 'contain',
                         width: '100%',
                         height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                        fontWeight: 'regular',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.1rem', lg: '1.1rem' , xl: '1.1rem'},
+
                         backgroundColor: '#f5f5f5',
                         padding: { xs: '12px', sm: '8px', md: '6px' },
                       }}
@@ -671,7 +855,7 @@ const ShopGallery = () => {
                       sx={{
                         fontWeight: 'regular',
                         mb: { xs: 1.5, sm: 1 },
-                        fontSize: { xs: '0.9rem', sm: '0.8rem', md: '0.875rem' },
+                        fontSize: { xs: '0.9rem', sm: '0.8rem', md: '0.875rem' , lg: '1rem' , xl: '1rem'},
                         color: 'text.primary',
                         lineHeight: { xs: 1.3, sm: 1.3 },
                         wordBreak: 'break-word',
@@ -710,11 +894,10 @@ const ShopGallery = () => {
                               height: { xs: '44px', sm: '40px' },
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
+                              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.1rem', lg: '1.1rem' , xl: '1.1rem'},
                               textOverflow: 'ellipsis',
                               textTransform: 'none',
                               boxShadow: 'none',
-                              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem' , xl: '1.25rem'},
-                              fontWeight: 'regular',
                               '& .MuiButton-startIcon': {
                                 marginRight: '4px',
                               },
@@ -744,10 +927,11 @@ const ShopGallery = () => {
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
-                              textTransform: 'none',
-                              boxShadow: 'none',
                               fontWeight: 'regular',
                               fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.1rem', lg: '1.1rem' , xl: '1.1rem'},
+                             
+                              textTransform: 'none',
+                              boxShadow: 'none',
                               '& .MuiButton-startIcon': {
                                 marginRight: '4px',
                               },
@@ -772,7 +956,7 @@ const ShopGallery = () => {
 
           )}
 
-          {!loading && !error && filteredImages.length === 0 && (
+                     {!loading && !error && filteredImages.length === 0 && (
             <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
               <Typography variant="h5" sx={{ 
                 color: 'text.secondary', 
@@ -781,23 +965,35 @@ const ShopGallery = () => {
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}>
-                No products found for this category
+                                 {selectedMainCategory === 'all' 
+                   ? 'No products found'
+                   : `No products found for ${apiMainCategories.find(cat => cat.value === selectedMainCategory)?.label?.toLowerCase() || 'this category'}`
+                 }
               </Typography>
-                                                           <Button
-                  variant="contained"
-                  onClick={() => {
-                    setSelectedMainCategory('all');
-                    setSelectedSubCategory('all');
-                  }}
-                  sx={{ 
-                    backgroundColor: theme.palette.primary.main,
-                    px: { xs: 2, sm: 3, md: 4 },
-                    py: { xs: 0.75, sm: 1, md: 1.5 },
-                    fontWeight: 'regular',
-                  }}
-                >
-                  View All Products
-                </Button>
+              <Typography variant="body1" sx={{ 
+                color: 'text.secondary', 
+                mb: 3,
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+              }}>
+                Try adjusting your filters or browse all products
+              </Typography>
+              <Button
+                variant="contained"
+                                 onClick={() => {
+                   setSelectedMainCategory('all');
+                   setCurrentPage(1);
+                 }}
+                sx={{ 
+                  backgroundColor: theme.palette.primary.main,
+                  px: { xs: 2, sm: 3, md: 4 },
+                  py: { xs: 0.75, sm: 1, md: 1.5 },
+                  '&:hover': {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                }}
+              >
+                View All Products
+              </Button>
             </Box>
           )}
 
@@ -840,7 +1036,6 @@ const ShopGallery = () => {
                    sx={{
                      borderColor: theme.palette.primary.main,
                      color: theme.palette.primary.main,
-                     fontWeight: 'regular',
                      '&:disabled': {
                        borderColor: 'grey.300',
                        color: 'grey.400',
@@ -883,7 +1078,6 @@ const ShopGallery = () => {
                    sx={{
                      borderColor: theme.palette.primary.main,
                      color: theme.palette.primary.main,
-                     fontWeight: 'regular',
                      '&:disabled': {
                        borderColor: 'grey.300',
                        color: 'grey.400',
@@ -1028,7 +1222,6 @@ const ShopGallery = () => {
                              color: 'white',
                              px: { xs: 2, sm: 2.5, md: 3 },
                              py: { xs: 0.5, sm: 0.75, md: 1 },
-                             borderRadius: '20px',
                              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.4)',
                              border: '2px solid rgba(255, 255, 255, 0.2)',
                            }}
@@ -1259,7 +1452,7 @@ const ShopGallery = () => {
                            borderColor: theme.palette.primary.main,
                            color: theme.palette.primary.main,
                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                           fontWeight: 'regular',
+                           
                            height: { xs: 36, sm: 40, md: 44 },
                            px: { xs: 2, sm: 2.5, md: 3 },
                            py: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 , xl: 1.5},
@@ -1298,7 +1491,7 @@ const ShopGallery = () => {
                    }}
                  >
                   <Typography variant="h5" sx={{ 
-                    fontWeight: 500, 
+                    fontWeight: 'medium', 
                     mb: 2,
                     fontSize: { xs: '0.9rem', sm: '1.5rem', md: '1.75rem', lg: '2rem' },
                     wordBreak: 'break-word',
@@ -1355,8 +1548,9 @@ const ShopGallery = () => {
                   
                   <Typography variant="body1" sx={{ 
                     mb: 3, 
-                    fontSize: { xs: '0.75rem', sm: '1rem', md: '1.125rem' },
+                    fontSize: { xs: '0.75rem', sm: '1rem', md: '1.125rem' , lg: '1.25rem' , xl: '1.25rem'},
                     lineHeight: 1.6,
+                    fontWeight: 'regular',
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
                     color: 'text.secondary',
@@ -1385,9 +1579,8 @@ const ShopGallery = () => {
                             color: theme.palette.primary.main,
                             backgroundColor: 'white',
                             width: '100%',
-                            height: { xs: '44px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                            height: { xs: '44px', sm: '40px' },
                             textTransform: 'none',
-                            fontWeight: 'regular',
                             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                             '&:hover': {
                               backgroundColor: theme.palette.primary.main,
@@ -1412,10 +1605,10 @@ const ShopGallery = () => {
                             backgroundColor: selectedImage.stock && selectedImage.stock > 0 ? theme.palette.primary.main : 'grey.400',
                             color: 'white',
                             width: '100%',
-                            height: { xs: '44px', sm: '40px' },
                             fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.1rem', lg: '1.2rem' , xl: '1.2rem'},
-                            textTransform: 'none',
                             fontWeight: 'regular',
+                            height: { xs: '44px', sm: '40px' },
+                            textTransform: 'none',
                             boxShadow: 'none',
                             '&:hover': {
                               backgroundColor: selectedImage.stock && selectedImage.stock > 0 ? theme.palette.primary.dark : 'grey.400',
