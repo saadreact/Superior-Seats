@@ -26,6 +26,22 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import LazyImage from '@/components/common/LazyImage';
 import { workPictures, workPicturesTruck, WorkImage } from '@/data/Gallery';
+import { motion } from 'framer-motion';
+
+const MotionBox = motion.create(Box);
+const MotionTypography = motion.create(Typography);
+
+// Animation variants
+const sectionVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    transition: { 
+      duration: 0.8
+    } 
+  },
+};
 
 const Gallery = () => {
   const theme = useTheme();
@@ -131,18 +147,24 @@ const Gallery = () => {
         overflow: 'hidden',
       }}>
           <Container maxWidth="xl">
-                        <Typography
-              variant="h3"
-              sx={{
-                textAlign: 'center',
-                fontWeight: 'medium',
-                mb: { xs: 0.5, sm: 1.5, md: 2.5 ,lg:2.5},
-               
-                
-              }}
+            <MotionBox
+              variants={sectionVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.3 }}
+              sx={{ textAlign: 'center', mb: { xs: 0.5, sm: 1.5, md: 2.5, lg: 2.5 } }}
             >
-              Our Work Shop
-            </Typography>
+              <MotionTypography
+                variant="h3"
+                sx={{
+                  textAlign: 'center',
+                  fontWeight: 500,
+                  mb: { xs: 0.5, sm: 1.5, md: 2.5, lg: 2.5 },
+                }}
+              >
+                Our Work Shop
+              </MotionTypography>
+            </MotionBox>
           
           <Box
             sx={{
@@ -372,18 +394,26 @@ const Gallery = () => {
                            {/* Our Work Pictures Section */}
       <Box sx={{ py: { xs: 1, md: 1.5 }, backgroundColor: '#fafafa' }}>
           <Container maxWidth="xl">
-            <Typography
-              variant="h3"
-              sx={{
-                textAlign: 'center',
-                fontWeight: 'normal',
-                mb: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
-                py: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
-                color: 'text.primary',
-              }}
+            <MotionBox
+              variants={sectionVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.3 }}
+              sx={{ textAlign: 'center', mb: { xs: 1, sm: 1.5, md: 3, lg: 2.5 }, py: { xs: 1, sm: 1.5, md: 3, lg: 2.5 } }}
             >
-              Our Beautiful Work
-            </Typography>
+              <MotionTypography
+                variant="h3"
+                sx={{
+                  textAlign: 'center',
+                  fontWeight: 500,
+                  mb: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
+                  py: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
+                  color: 'text.primary',
+                }}
+              >
+                Our Beautiful Work
+              </MotionTypography>
+            </MotionBox>
                      <Box sx={{ 
              display: 'grid',
              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(5, 1fr)' },

@@ -92,10 +92,10 @@ const statItemVariants = {
 };
 
 const sectionVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, scale: 0.9 },
   visible: { 
     opacity: 1, 
-    y: 0, 
+    scale: 1, 
     transition: { 
       duration: 0.8
     } 
@@ -112,10 +112,10 @@ const productsContainerVariants = {
 };
 
 const productCardVariants = {
-  hidden: { opacity: 0, y: 50 },
+  hidden: { opacity: 0, scale: 0.8 },
   visible: { 
     opacity: 1, 
-    y: 0, 
+    scale: 1, 
     transition: { 
       duration: 0.6
     } 
@@ -123,10 +123,10 @@ const productCardVariants = {
 };
 
 const ctaVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, scale: 0.9 },
   visible: { 
     opacity: 1, 
-    y: 0, 
+    scale: 1, 
     transition: { 
       duration: 0.8,
       staggerChildren: 0.2,
@@ -192,12 +192,12 @@ const HomePage = () => {
         width: '100%',
       }}>
         <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
-          <MotionBox
-            variants={statsContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-          >
+                     <MotionBox
+             variants={statsContainerVariants}
+             initial="hidden"
+             whileInView="visible"
+             viewport={{ once: false, amount: 0.3 }}
+           >
                          <Grid
                display="grid"
                gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr' }}
@@ -217,19 +217,19 @@ const HomePage = () => {
       {/* Products Section */}
       <Box sx={{ py: { xs: 2, md: 3, lg: 1, xl: 2 }, width: '100%' }}>
         <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
-          <MotionBox
-            variants={sectionVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            sx={{ textAlign: 'center', mb: { xs: 2, md: 3 } }}
-          >
+                     <MotionBox
+             variants={sectionVariants}
+             initial="hidden"
+             whileInView="visible"
+             viewport={{ once: false, amount: 0.3 }}
+             sx={{ textAlign: 'center', mb: { xs: 2, md: 3 } }}
+           >
             <Typography
               variant="h2"
               sx={{
                 mb: { xs: 1, md: 2 },
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
-                fontWeight: 'bold',
+                fontWeight: 500,
                 color: 'black',
               }}
             >
@@ -253,12 +253,12 @@ const HomePage = () => {
              </Typography>
           </MotionBox>
 
-          <MotionBox
-            variants={productsContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-          >
+                     <MotionBox
+             variants={productsContainerVariants}
+             initial="hidden"
+             whileInView="visible"
+             viewport={{ once: false, amount: 0.2 }}
+           >
             <Grid
               display="grid"
               gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
@@ -291,7 +291,7 @@ const HomePage = () => {
                   />
                   <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 'normal' }}>
                         {product.title}
                       </Typography>
                       <Typography variant="h6" sx={{ color: 'black', fontWeight: 'normal' }}>
@@ -326,7 +326,7 @@ const HomePage = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' ,height: '40px'}}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Star sx={{ fontSize: 16, color: 'warning.main' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'regular' }}>
                           {product.rating}
                         </Typography>
                       </Box>
@@ -336,7 +336,7 @@ const HomePage = () => {
                         endIcon={<ArrowForward />}
                         onClick={() => handleOpenModal(product)}
                         sx={{
-                          height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '50px' },
+                          height: { xs: '40px', sm: '40px', md: '35px', lg: '30px', xl: '35px' },
                         
                           fontSize: { xs: '0.875rem', sm: '0.875rem', md: '0.875rem', lg: '0.875rem', xl: '1rem' },
                         }}
@@ -460,7 +460,7 @@ const HomePage = () => {
                 }}
               >
                 <Typography variant="h4" sx={{ 
-                  fontWeight: 'bold', 
+                  fontWeight: 500, 
                   mb: 2,
                   fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem' },
                   wordBreak: 'break-word',
@@ -475,7 +475,7 @@ const HomePage = () => {
                   mb: 2, 
                   fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
                   color: 'primary.main',
-                  fontWeight: 'bold',
+                  fontWeight: 500,
                 }}>
                   {selectedProduct.price}
                 </Typography>
@@ -493,7 +493,7 @@ const HomePage = () => {
                 </Typography>
                 
                 <Box sx={{ mb: 3 }}>
-                                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', color: 'black' }}>
+                                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 500, color: 'black' }}>
                   Features:
                 </Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -510,7 +510,7 @@ const HomePage = () => {
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                   <Star sx={{ fontSize: 20, color: 'warning.main' }} />
-                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
                     Rating: {selectedProduct.rating}
                   </Typography>
                 </Box>
@@ -523,7 +523,7 @@ const HomePage = () => {
                       flex: 1,
                       borderColor: 'primary.main',
                       color: 'black',
-                      fontWeight: 'bold',
+                      fontWeight: 500,
                       // Removed hover effects as requested
                     }}
                   >
@@ -535,7 +535,7 @@ const HomePage = () => {
                     sx={{
                       flex: 1,
                       backgroundColor: 'primary.main',
-                      fontWeight: 'bold',
+                      fontWeight: 500,
                       // Removed hover effects as requested
                     }}
                   >
@@ -568,22 +568,22 @@ const StatItem = ({ stat }: { stat: { number: number; label: string; suffix: str
       onAnimationStart={() => setIsVisible(true)}
       sx={{ textAlign: 'center', width: '100%' }}
     >
-      <Typography
-        variant="h3"
-        sx={{
-          fontWeight: '600',
-          color: 'black',
-          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
-        }}
-      >
-        {formattedCount}{stat.suffix}
-      </Typography>
+             <Typography
+         variant="h3"
+         sx={{
+           fontWeight: 500,
+           color: 'black',
+           fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
+         }}
+       >
+         {formattedCount}{stat.suffix}
+       </Typography>
       <Typography
       
         sx={{
           color: 'black',
           fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem', lg: '1.375rem', xl: '1.8rem' },
-          fontWeight: 'bold',
+          fontWeight: 500,
         }}
       >
         {stat.label}

@@ -40,6 +40,8 @@ const pageTitles: { [key: string]: string } = {
   '/shop': 'Shop',
   '/custom-seats': 'Customize Your Seat',
   '/ShopGallery': 'Shop Specials',
+  '/shop-now': 'Shop Now',
+  '/specials': 'Shop Specials',
   '/customize-your-seat': 'Customize Your Seat',
   '/privacy-policy': 'Privacy Policy',
   '/terms-of-service': 'Terms of Service',
@@ -78,7 +80,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       localStorage.setItem('breadcrumbHistory', '');
       localStorage.removeItem('breadcrumbHistory');
       // Set state to home only
-      setBreadcrumbHistory([{ label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> }]);
+      setBreadcrumbHistory([{ label: 'Home', href: '/' }]);
       
       // Additional timeout to ensure it's cleared after navigation
       setTimeout(() => {
@@ -91,7 +93,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 
   // Clear breadcrumb history
   const clearBreadcrumbHistory = () => {
-    const homeItem = { label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> };
+    const homeItem = { label: 'Home', href: '/' };
     setBreadcrumbHistory([homeItem]);
     // Aggressively clear localStorage
     localStorage.removeItem('breadcrumbHistory');
@@ -128,7 +130,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     }
 
     const currentItem: BreadcrumbItem = { label: currentPageTitle, href: pathname };
-    const homeItem = { label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> };
+    const homeItem = { label: 'Home', href: '/' };
 
     // Load previous history - but not if we're on home page
     let prevHistory: BreadcrumbItem[] = [];
@@ -176,7 +178,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       localStorage.setItem('breadcrumbHistory', '');
       localStorage.removeItem('breadcrumbHistory');
       // Clear the state as well
-      setBreadcrumbHistory([{ label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> }]);
+      setBreadcrumbHistory([{ label: 'Home', href: '/' }]);
       
       // Additional timeout to ensure it's cleared after navigation
       setTimeout(() => {
@@ -192,7 +194,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     useHistory && breadcrumbHistory.length > 0
       ? breadcrumbHistory
       : showHome
-      ? [{ label: 'Home', href: '/', icon: <HomeIcon sx={{ fontSize: '1rem' }} /> }, ...items]
+      ? [{ label: 'Home', href: '/' }, ...items]
       : items;
 
   return (

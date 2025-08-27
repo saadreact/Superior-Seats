@@ -62,7 +62,7 @@ const Footer: React.FC<FooterProps> = () => {
      <Typography
      variant="h3"
      sx={{
-       fontWeight: 'bold',
+       fontWeight: 'medium',
        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.5rem' ,xl: '2rem'},
        color: 'white',
        textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
@@ -99,7 +99,7 @@ const Footer: React.FC<FooterProps> = () => {
                        gap: 2,
                      }}>
                                              <Typography variant="h3" sx={{
-                         fontWeight: 'bold',
+                         fontWeight: 'medium',
                          fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.3rem' ,xl: '2rem'},
                          color: 'white',
                          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
@@ -120,7 +120,7 @@ const Footer: React.FC<FooterProps> = () => {
                               textDecoration: 'none',
                               fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                               opacity: 0.95,
-                              fontWeight: 550,
+                              fontWeight: 'regular',
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
                               outline: 'none',
@@ -147,7 +147,7 @@ const Footer: React.FC<FooterProps> = () => {
                               textDecoration: 'none',
                               fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                               opacity: 0.95,
-                              fontWeight: 550,
+                              fontWeight: 'regular',
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
                               outline: 'none',
@@ -174,7 +174,7 @@ const Footer: React.FC<FooterProps> = () => {
                               textDecoration: 'none',
                               fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                               opacity: 0.95,
-                              fontWeight: 550,
+                              fontWeight: 'regular',
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
                               outline: 'none',
@@ -206,7 +206,7 @@ const Footer: React.FC<FooterProps> = () => {
                         gap: 2,
                       }}>
                         <Typography variant="h3" sx={{
-                          fontWeight: 'bold',
+                          fontWeight: 'medium',
                           fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.3rem' ,xl: '2rem'},
                           color: 'white',
                           textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
@@ -227,7 +227,7 @@ const Footer: React.FC<FooterProps> = () => {
                                fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                                lineHeight: 1.3,
                                mb: 0.5,
-                               fontWeight: 550,
+                               fontWeight: 'regular',
                                color: 'white'
                              }}
                            >
@@ -254,7 +254,7 @@ const Footer: React.FC<FooterProps> = () => {
                                fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                                lineHeight: 1.3,
                                mb: 0.5,
-                               fontWeight: 600,
+                               fontWeight: 'regular',
                                color: 'white'
                              }}
                            >
@@ -263,7 +263,7 @@ const Footer: React.FC<FooterProps> = () => {
                          </Box>
                                              </Box>
 
-                                                                                                           {/* Office Hours */}
+               {/* Office Hours */}
                        <Box sx={{
                          display: 'flex',
                          flexDirection: 'column',
@@ -272,13 +272,13 @@ const Footer: React.FC<FooterProps> = () => {
                                                    marginLeft: { md: '-2rem', lg: '-2.5rem', xl: '-3rem' },
                        }}>
                         <Typography variant="h3" sx={{
-                          fontWeight: 'bold',
+                          fontWeight: 'medium',
                           fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.3rem' ,xl: '2rem'},
                           color: 'white',
                           textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
                           textAlign: { xs: 'center', md: 'left' }
                         }}>
-                                                     Office Hours
+                         Office Hours
                         </Typography>
                         <Box sx={{
                           display: 'flex',
@@ -291,7 +291,7 @@ const Footer: React.FC<FooterProps> = () => {
                               opacity: 0.95,
                               fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                               lineHeight: 1.3,
-                              fontWeight: 550,
+                              fontWeight: 'regular',
                               color: 'white',
                               mb: 0.25,
                             }}
@@ -303,7 +303,7 @@ const Footer: React.FC<FooterProps> = () => {
                               opacity: 0.95,
                               fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
                               lineHeight: 1.3,
-                              fontWeight: 550,
+                              fontWeight: 'regular',
                               color: 'white',
                             }}
                           >
@@ -323,7 +323,7 @@ const Footer: React.FC<FooterProps> = () => {
                         }}>
                           {/* Follow Us Text */}
                           <Typography variant="h3" sx={{
-                            fontWeight: 'bold',
+                            fontWeight: 'medium',
                             fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1rem', lg: '1.3rem' ,xl: '2rem'},
                             color: 'white',
                             textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
@@ -476,7 +476,7 @@ const Footer: React.FC<FooterProps> = () => {
                      <Typography variant="body2" sx={{
                        opacity: 0.95,
                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                       fontWeight: 500,
+                       fontWeight: 'regular',
                        color: 'white'
                      }}>
                        © 2024 Superior Seating LLC. All rights reserved.

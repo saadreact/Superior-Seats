@@ -281,8 +281,8 @@ const HeroSection = () => {
                        height: '100%',
                        display: 'flex',
                        alignItems: 'center',
-                       justifyContent: { xs: 'flex-start', sm: 'flex-start', md: 'center', lg: 'flex-start', xl: 'flex-start' },
-                       pl: { xs: 2, sm: 3, md: 4, lg: 6, xl: 8 },
+                                                                       justifyContent: 'center',
+                         pl: { xs: 2, sm: 3, md: 0, lg: 0, xl: 0 },
                      }}
                    >
                                          {/* Content Container - All elements grouped together */}
@@ -298,119 +298,119 @@ const HeroSection = () => {
                           gap: { xs: 1.5, sm: 2, md: 3, lg: 4, xl: 6 },
                           width: '100%',
                           maxWidth: { xl: '1200px' },
-                          justifyContent: 'flex-start',
-                          zIndex: 10,
+                                                     justifyContent: 'center',
+                           zIndex: 10,
                         }}
                       >
         {/* Logo Container */}
                    <Box
-                          sx={{
-                            position: { md: 'absolute', lg: 'absolute', xl: 'absolute' },
-                            left: { md: '50%', lg: '50%', xl: '50%' },
-                            top: { md: '50%', lg: '50%', xl: '50%' },
-                            transform: { md: 'translate(-50%, -50%)', lg: 'translate(-50%, -50%)', xl: 'translate(-50%, -50%)' },
-                            filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
-                            marginTop: { xs: '-80px', sm: '-75px', md: '-50px', lg: '-50px', xl: '-70px', xxl: '-70px'},
-                            marginLeft: { xs: '-10px', sm: '20px', md: '-270px', lg: '-370px', xl: '-530px'},
-                            flexShrink: 0,
-                            alignSelf: 'center',
-                            zIndex: 20,
-                          }}
-                        >
-                 <motion.div
-                           initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                           viewport={{ once: true, amount: 0.7 }}
-                           transition={{
-                             duration: 1.2,
-                             ease: "easeOut",
+                                                     sx={{
+                             position: { md: 'absolute', lg: 'absolute', xl: 'absolute' },
+                             left: { md: '50%', lg: '50%', xl: '50%' },
+                             top: { md: '50%', lg: '50%', xl: '50%' },
+                             transform: { md: 'translate(-50%, -50%)', lg: 'translate(-50%, -50%)', xl: 'translate(-50%, -50%)' },
+                             filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
+                             marginTop: { xs: '-80px', sm: '-75px', md: '-50px', lg: '-50px', xl: '-70px', xxl: '-70px'},
+                             marginLeft: { xs: '-10px', sm: '20px', md: '-270px', lg: '-370px', xl: '-530px'},
+                             flexShrink: 0,
+                             alignSelf: 'center',
+                             zIndex: 20,
                            }}
-                         >
-                          <LogoButton onClick={() => router.push('/custom-seats')} />
-                        </motion.div>
+                        >
+                                                                                               <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              whileInView={{ opacity: 1, scale: 1 }}
+                              viewport={{ once: false, amount: 0.1 }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                            >
+                              <LogoButton onClick={() => router.push('/custom-seats')} />
+                            </motion.div>
                       </Box>
                       
                                              {/* Text Content Container */}
                        <MotionBox
-                         sx={{
-                           position: { md: 'absolute', lg: 'absolute', xl: 'absolute' },
-                           left: { md: '50%', lg: '50%', xl: '50%' },
-                           top: { md: '50%', lg: '50%', xl: '50%' },
-                           transform: { md: 'translate(-50%, -50%)', lg: 'translate(-50%, -50%)', xl: 'translate(-50%, -50%)' },
-                           textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
-                           minWidth: 0, // Prevents text overflow
-                           display: 'flex',
-                           flexDirection: 'column',
-                           justifyContent: 'center',
-                           alignItems: { xs: 'flex-start', sm: 'flex-start', md: 'center', lg: 'center', xl: 'center' },
-                           mx: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0},
-                           pl: { xs: 2, sm: 3, md: 0, lg: 0, xl: 0 },
-                           zIndex: 15,
-                         }}
+                                                   sx={{
+                            position: { md: 'absolute', lg: 'absolute', xl: 'absolute' },
+                            left: { md: '50%', lg: '50%', xl: '50%' },
+                            top: { md: '50%', lg: '50%', xl: '50%' },
+                            transform: { md: 'translate(-50%, -50%)', lg: 'translate(-50%, -50%)', xl: 'translate(-50%, -50%)' },
+                            textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
+                            minWidth: 0, // Prevents text overflow
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignItems: { xs: 'flex-start', sm: 'flex-start', md: 'center', lg: 'center', xl: 'center' },
+                            mx: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0},
+                            pl: { xs: 2, sm: 3, md: 0, lg: 0, xl: 0 },
+                            zIndex: 15,
+                          }}
                        >
-                                                 <MotionTypography
-                           initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                           transition={{ duration: 1, ease: "easeOut" }}
-                           sx={{
-                             fontSize: { xs: '2rem', sm: '2.5rem', md: '2.5rem', lg: '3.5rem', xl: '5rem' },
-                             fontWeight: 'bold',
-                             lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2, xl: 1.2},
-                             textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                             color: 'white',
-                             mb: { xs: 0.25, sm: 0.5, md: 0.75, lg: 0.75 },
-                             mt: { xs: 0.5, sm: 0, md: 0, lg: 0 ,xl: -2},
-                             whiteSpace: 'nowrap',
-                             overflow: 'hidden',
-                             textOverflow: 'ellipsis',
-                             px: { xs: 1, sm: 0 },
-                             textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
-                           }}
-                         >
-                           Superior Seating LLC
-                         </MotionTypography>
-                                                 <MotionTypography
-                           initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                           transition={{ duration: 1, ease: "easeOut" }}
-                           sx={{
-                             opacity: 0.95,
-                             fontSize: { xs: '0.85rem', sm: '0.875rem', md: '1rem', lg: '1.5rem', xl: '2.2rem' },
-                             textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
-                             letterSpacing: '0.5px',
-                             fontWeight: 300,
-                             lineHeight: { xs: 1.3, sm: 1.4, md: 1.4, lg: 1.4 },
-                             display: { xs: 'block', sm: 'block' },
-                             px: { xs: 2, sm: 0 },
-                             py: { xs: 0.5, sm: 1, md: 3, lg: 2 },
-                             textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
-                             alignSelf: { xs: 'flex-start', sm: 'flex-start', md: 'center', lg: 'center', xl: 'center' },
-                           }}
-                         >
-                                                       Premium Truck, RV, and Van seating with custom<br />
-                            <span style={{ textAlign: 'center', display: 'block', width: '100%' }}>options and superior craftsmanship</span>
-                         </MotionTypography>
+                                                                                                   <MotionTypography
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: false, amount: 0.1 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            sx={{
+                              fontSize: { xs: '2rem', sm: '2.5rem', md: '2.5rem', lg: '3.5rem', xl: '5rem' },
+                              fontWeight: 'bold',
+                              lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2, xl: 1.2},
+                              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                              color: 'white',
+                              mb: { xs: 0.25, sm: 0.5, md: 0.75, lg: 0.75 },
+                              mt: { xs: 0.5, sm: 0, md: 0, lg: 0 ,xl: -2},
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              px: { xs: 1, sm: 0 },
+                                                            textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
+                             }}
+                           >
+                             Superior Seating LLC
+                          </MotionTypography>
+                                                                                                   <MotionTypography
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: false, amount: 0.1 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            sx={{
+                              opacity: 0.95,
+                              fontSize: { xs: '0.85rem', sm: '0.875rem', md: '1rem', lg: '1.5rem', xl: '2.2rem' },
+                              textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
+                              letterSpacing: '0.5px',
+                              fontWeight: 300,
+                              lineHeight: { xs: 1.3, sm: 1.4, md: 1.4, lg: 1.4 },
+                              display: { xs: 'block', sm: 'block' },
+                              px: { xs: 2, sm: 0 },
+                              py: { xs: 0.5, sm: 1, md: 3, lg: 2 },
+                                                            textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
+                               alignSelf: { xs: 'flex-start', sm: 'flex-start', md: 'center', lg: 'center', xl: 'center' },
+                            }}
+                          >
+                                                        Premium Truck, RV, and Van seating with custom<br />
+                             <span style={{ textAlign: 'center', display: 'block', width: '100%' }}>options and superior craftsmanship</span>
+                          </MotionTypography>
                         
                                            {/* Customize Button */}
                    <Box
                              sx={{
-                               position: { xs: 'absolute', sm: 'absolute', md: 'static', lg: 'static', xl: 'static' },
-                               bottom: { xs: '-80px', sm: '-80px', md: 'auto', lg: 'auto', xl: 'auto' },
-                               left: { xs: '50%', sm: '50%', md: 'auto', lg: 'auto', xl: 'auto' },
-                               transform: { xs: 'translateX(-50%)', sm: 'translateX(-50%)', md: 'none', lg: 'none', xl: 'none' },
-                               display: 'flex',
-                               justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'center', xl: 'center' },
+                                                                                               position: { xs: 'absolute', sm: 'absolute', md: 'static', lg: 'static', xl: 'static' },
+                                bottom: { xs: '-80px', sm: '-80px', md: 'auto', lg: 'auto', xl: 'auto' },
+                                left: { xs: '50%', sm: '50%', md: 'auto', lg: 'auto', xl: 'auto' },
+                                transform: { xs: 'translateX(-50%)', sm: 'translateX(-50%)', md: 'none', lg: 'none', xl: 'none' },
+                                display: 'flex',
+                                justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'center', xl: 'center' },
                                width: { xs: '250px', sm: '300px', md: '100%', lg: '100%', xl: '100%' },
                                mt: { xs: 0, sm: 0, md: 1, lg: 1, xl: 1 },
                                pl: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0 },
                                zIndex: 25,
                              }}
                            >
-                           <motion.div
-                             initial={{ opacity: 0, y: 30, scale: 0.8 }}
-                             whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                             transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-                           >
+                                                       <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              whileInView={{ opacity: 1, scale: 1 }}
+                              viewport={{ once: false, amount: 0.1 }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                            >
                              <Button
                                variant="outlined"
                                onClick={() => router.push('/custom-seats')}
