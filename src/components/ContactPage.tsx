@@ -172,12 +172,14 @@ const ContactPage = () => {
       <Box sx={{ py: { xs: 2, md: 1, lg: 1, xl: 4 }, backgroundColor: '#fafafa' }}>
         <Container maxWidth="md">
           <Typography
-            variant="h4"
+            variant="h3"
             sx={{
               textAlign: 'center',
-              fontWeight: '400',
+              fontWeight: 'medium',
               mb: 2,
               color: 'text.primary',
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
+
             }}
           >
             Send Us a Message
@@ -407,9 +409,11 @@ const ContactPage = () => {
             variant="h3"
             sx={{
               textAlign: 'center',
-              fontWeight: '400',
+              fontWeight: 'medium',
               mb: 3,
               color: 'text.primary',
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
+
             }}
           >
             Find Us

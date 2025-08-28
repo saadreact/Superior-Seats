@@ -497,7 +497,7 @@ const ShopGallery = () => {
       
              {/* Hero Section */}
                <HeroSectionCommon
-          title="Shop Specials"
+          title="Shop Now"
           description="Discover our exclusive collection of premium seats with special pricing and unique features"
           height={{
             xs: '75px',

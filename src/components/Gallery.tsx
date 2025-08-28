@@ -158,8 +158,10 @@ const Gallery = () => {
                 variant="h3"
                 sx={{
                   textAlign: 'center',
-                  fontWeight: 500,
+                  fontWeight: 'medium',
                   mb: { xs: 0.5, sm: 1.5, md: 2.5, lg: 2.5 },
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
+
                 }}
               >
                 Our Work Shop
@@ -405,10 +407,11 @@ const Gallery = () => {
                 variant="h3"
                 sx={{
                   textAlign: 'center',
-                  fontWeight: 500,
+                  fontWeight: 'medium',
                   mb: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
                   py: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
                   color: 'text.primary',
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
                 }}
               >
                 Our Beautiful Work

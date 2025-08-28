@@ -150,9 +150,9 @@ const Warranty = () => {
                 variant="h4" 
                 sx={{ 
                   textAlign: 'center', 
-                  fontWeight: 'bold', 
+                  fontWeight: 'medium', 
                   mb: { xs: 2, sm: 2.5, md: 3 },
-                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem', lg: '2.2rem' ,xl: '2.5rem'},
                   color: 'black',
                 }}
               >
@@ -164,7 +164,7 @@ const Warranty = () => {
                   lineHeight: 1.8,
                   color: 'text.secondary',
                   fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
-                  fontWeight: 400,
+                  fontWeight: 'regular',
                   textAlign: 'justify',
                   maxWidth: '100%',
                   px: { xs: 1, sm: 2 },
@@ -186,7 +186,7 @@ const Warranty = () => {
                   lineHeight: 1.8,
                   color: 'text.secondary',
                   fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
-                  fontWeight: 400,
+                  fontWeight: 'regular',
                   textAlign: 'justify',
                   maxWidth: '100%',
                   px: { xs: 1, sm: 2 },
@@ -234,7 +234,7 @@ const Warranty = () => {
                         <Typography
                           variant="h4"
                           sx={{
-                            fontWeight: 'bold',
+                            fontWeight: 'medium',
                             color: 'black',
                             fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
                             textAlign: 'center',
@@ -315,7 +315,7 @@ const Warranty = () => {
                    textAlign: 'center', 
                    fontWeight: 'bold', 
                    mb: { xs: 2, sm: 2.5, md: 3 },
-                   fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                   fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem',lg: '2.2rem' ,xl: '2.5rem'},
                    color: 'black',
                  }}
                >

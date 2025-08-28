@@ -228,8 +228,8 @@ const HomePage = () => {
               variant="h2"
               sx={{
                 mb: { xs: 1, md: 2 },
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' },
-                fontWeight: 500,
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
+                fontWeight: 'medium',
                 color: 'black',
               }}
             >
