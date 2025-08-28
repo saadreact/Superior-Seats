@@ -211,7 +211,8 @@ const AboutPage = () => {
                     className="stat-value"
                     variant="h3" 
                     sx={{ 
-                      fontWeight: 'bold', 
+                      fontWeight: 'medium', 
+                      
                       color: 'primary.main', 
                       mb: { xs: 0.5, sm: 1 },
                       fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },

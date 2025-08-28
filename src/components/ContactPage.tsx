@@ -178,7 +178,7 @@ const ContactPage = () => {
               fontWeight: 'medium',
               mb: 2,
               color: 'text.primary',
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '2.5rem' ,xl: '2.5rem'},
 
             }}
           >
@@ -412,7 +412,7 @@ const ContactPage = () => {
               fontWeight: 'medium',
               mb: 3,
               color: 'text.primary',
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '2.5rem' ,xl: '2.5rem'},
 
             }}
           >
