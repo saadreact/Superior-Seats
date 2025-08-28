@@ -33,6 +33,7 @@ import {
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
   Palette as PaletteIcon,
+  Inventory2 as Inventory2Icon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -65,6 +66,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Products',
       icon: <InventoryIcon />,
       href: '/admin/products',
+    },
+    {
+      text: 'Products 2',
+      icon: <Inventory2Icon />,
+      href: '/admin/products-2',
     },
     {
       text: 'Price Tiers',
@@ -158,6 +164,13 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     if (href === '/admin') {
       return pathname === '/admin';
     }
+    // For exact matching to prevent Products 2 from highlighting Products
+    if (href === '/admin/products') {
+      return pathname === '/admin/products' || pathname.startsWith('/admin/products/');
+    }
+    if (href === '/admin/products-2') {
+      return pathname === '/admin/products-2' || pathname.startsWith('/admin/products-2/');
+    }
     return pathname.startsWith(href);
   };
 
@@ -229,51 +242,57 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
 
       {/* Navigation */}
       <List sx={{ flexGrow: 1, pt: 0.5 }}>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              onClick={() => handleNavigation(item.href)}
-              selected={isActive(item.href)}
-              sx={{
-                mx: 0.5,
-                borderRadius: 1,
-                mb: 0.25,
-                minHeight: collapsed ? 40 : 36,
-                py: 0.75,
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                  },
-                  '& .MuiListItemIcon-root': {
-                    color: 'white',
-                  },
-                },
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                },
-              }}
-            >
-              <ListItemIcon
+        {menuItems.map((item, index) => (
+          <React.Fragment key={item.text}>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => handleNavigation(item.href)}
+                selected={isActive(item.href)}
                 sx={{
-                  minWidth: collapsed ? 36 : 36,
-                  color: isActive(item.href) ? 'white' : 'inherit',
+                  mx: 0.5,
+                  borderRadius: 1,
+                  mb: 0.25,
+                  minHeight: collapsed ? 40 : 36,
+                  py: 0.75,
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: 'white',
+                    },
+                  },
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
                 }}
               >
-                {item.icon}
-              </ListItemIcon>
-              {!collapsed && (
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontWeight: isActive(item.href) ? 600 : 400,
-                    fontSize: '0.875rem',
+                <ListItemIcon
+                  sx={{
+                    minWidth: collapsed ? 36 : 36,
+                    color: isActive(item.href) ? 'white' : 'inherit',
                   }}
-                />
-              )}
-            </ListItemButton>
-          </ListItem>
+                >
+                  {item.icon}
+                </ListItemIcon>
+                {!collapsed && (
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{
+                      fontWeight: isActive(item.href) ? 600 : 400,
+                      fontSize: '0.875rem',
+                    }}
+                  />
+                )}
+              </ListItemButton>
+            </ListItem>
+            {/* Add divider after Products 2 */}
+            {item.text === 'Products 2' && !collapsed && (
+              <Divider sx={{ my: 1, mx: 2 }} />
+            )}
+          </React.Fragment>
         ))}
 
         {/* Variations Section with Sub-items */}

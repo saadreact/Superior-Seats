@@ -12,16 +12,13 @@ import {
   Box,
   IconButton,
   InputAdornment,
+  Snackbar,
   Alert,
   CircularProgress,
   useTheme,
   useMediaQuery,
   Tabs,
   Tab,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from '@mui/material';
 import {
   Visibility,
@@ -47,7 +44,6 @@ const signUpSchema = z.object({
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
-  customer_type: z.enum(['retail', 'wholesale', 'dealer']),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -84,8 +80,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [success, setSuccess] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
+  // Track if authentication was just completed
+  const [justAuthenticated, setJustAuthenticated] = useState(false);
 
   // Redux state
   const dispatch = useAppDispatch();
@@ -104,7 +113,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     phone: '',
     password: '',
     confirmPassword: '',
-    customer_type: 'retail' as const,
   });
 
   const theme = useTheme();
@@ -114,14 +122,38 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   useEffect(() => {
     if (isAuthenticated) {
       onClose();
-      setSuccess('Authentication successful!');
+      // Only show success message if we just completed a login/signup action
+      if (justAuthenticated) {
+        // Determine if it's a login or signup based on the current tab
+        const message = tabValue === 0 ? 'Login successful!' : 'Registration successful!';
+        setSnackbar({
+          open: true,
+          message,
+          severity: 'success',
+        });
+        // Reset the flag after showing the message
+        setJustAuthenticated(false);
+      }
+      // Clear signup form after successful registration
+      setSignUpForm({ name: '', username: '', email: '', phone: '', password: '', confirmPassword: '' });
     }
-  }, [isAuthenticated, onClose]);
+  }, [isAuthenticated, onClose, justAuthenticated, tabValue]);
+
+  // Handle Redux errors
+  useEffect(() => {
+    if (error) {
+      setSnackbar({
+        open: true,
+        message: error,
+        severity: 'error',
+      });
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
     dispatch(clearError());
-    setSuccess('');
     setErrors({});
   };
 
@@ -184,189 +216,195 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   const handleSignIn = async () => {
     if (!validateSignIn()) return;
 
-    await dispatch(loginUser({
+    const result = await dispatch(loginUser({
       email: signInForm.email,
       password: signInForm.password,
     }));
+
+    // Check if login failed
+    if (loginUser.rejected.match(result)) {
+      setSnackbar({
+        open: true,
+        message: result.payload as string || 'Login failed. Please try again.',
+        severity: 'error',
+      });
+    } else if (loginUser.fulfilled.match(result)) {
+      setJustAuthenticated(true);
+    }
   };
 
   const handleSignUp = async () => {
     if (!validateSignUp()) return;
 
-    await dispatch(registerUser({
+    const result = await dispatch(registerUser({
       name: signUpForm.name,
       username: signUpForm.username,
       email: signUpForm.email,
       phone: signUpForm.phone,
       password: signUpForm.password,
       password_confirmation: signUpForm.confirmPassword,
-      customer_type: signUpForm.customer_type,
+      customer_type: 'retail',
     }));
+
+    // Check if registration failed
+    if (registerUser.rejected.match(result)) {
+      setSnackbar({
+        open: true,
+        message: result.payload as string || 'Registration failed. Please try again.',
+        severity: 'error',
+      });
+    } else if (registerUser.fulfilled.match(result)) {
+      setJustAuthenticated(true);
+    }
   };
 
   const handleClose = () => {
     onClose();
     dispatch(clearError());
-    setSuccess('');
     setErrors({});
     setSignInForm({ email: '', password: '' });
-    setSignUpForm({ name: '', username: '', email: '', phone: '', password: '', confirmPassword: '', customer_type: 'retail' });
+    setSignUpForm({ name: '', username: '', email: '', phone: '', password: '', confirmPassword: '' });
     setTabValue(0);
+    setJustAuthenticated(false);
   };
 
-           // Common field styles - matching ContactPage exactly
-    const commonTextFieldStyles = {
-      '& .MuiOutlinedInput-root': {
-        borderRadius: 2,
-        height: '35px',
-        backgroundColor: 'rgba(255,255,255,0.8)',
-        '&:hover fieldset': {
-          borderColor: 'primary.main',
-        },
-        '&.Mui-focused fieldset': {
-          borderColor: 'primary.main',
-          borderWidth: 2,
-        },
-        '&.Mui-focused': {
-          backgroundColor: 'white',
-        },
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  // Common field styles - matching ContactPage exactly
+  const commonTextFieldStyles = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 2,
+      height: '35px',
+      backgroundColor: 'rgba(255,255,255,0.8)',
+      '&:hover fieldset': {
+        borderColor: 'primary.main',
       },
-      '& .MuiInputLabel-root': {
-        color: 'text.secondary',
-        transform: 'translate(14px, 8px) scale(1)',
-        '&.Mui-focused': {
-          color: 'primary.main',
-          transform: 'translate(14px, -9px) scale(0.75)',
-        },
-        '&.MuiFormLabel-filled': {
-          transform: 'translate(14px, -9px) scale(0.75)',
-        },
+      '&.Mui-focused fieldset': {
+        borderColor: 'primary.main',
+        borderWidth: 2,
       },
-    };
+      '&.Mui-focused': {
+        backgroundColor: 'white',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      color: 'text.secondary',
+      transform: 'translate(14px, 8px) scale(1)',
+      '&.Mui-focused': {
+        color: 'primary.main',
+        transform: 'translate(14px, -9px) scale(0.75)',
+      },
+      '&.MuiFormLabel-filled': {
+        transform: 'translate(14px, -9px) scale(0.75)',
+      },
+    },
+  };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="sm"
-      fullWidth
-      fullScreen={isMobile}
-      PaperProps={{
-        sx: {
-          borderRadius: isMobile ? 0 : 2,
-          minHeight: isMobile ? '100vh' : 'auto',
-          maxWidth: isMobile ? '100%' : '450px',
-          width: isMobile ? '100%' : '90%',
-          maxHeight: isMobile ? '100vh' : '90vh',
-          overflow: 'hidden',
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          pb: 1,
-          px: { xs: 2, sm: 3 },
-          pt: { xs: 2, sm: 2.5 },
-          borderBottom: '1px solid',
-          borderColor: 'divider',
+    <>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: isMobile ? 0 : 2,
+            minHeight: isMobile ? '100vh' : 'auto',
+            maxWidth: isMobile ? '100%' : '450px',
+            width: isMobile ? '100%' : '90%',
+            maxHeight: isMobile ? '100vh' : '90vh',
+            overflow: 'hidden',
+          },
         }}
       >
-                 <Typography 
-           variant={isMobile ? "h6" : "h5"} 
-           component="div" 
-           sx={{ 
-             fontWeight: 600,
-             color: '#DA291C',
-             fontSize: { xs: '1.125rem', sm: '1.375rem', md: '1rem', lg: '1.3rem', xl: '1.4rem', xxl: '1.67rem' },
-             textAlign: 'center',
-             flex: 1,
-             display: 'flex',
-             justifyContent: 'center',
-             alignItems: 'center',
-           }}
-         >
-           Welcome to Superior Seats
-         </Typography>
-        <IconButton
-          aria-label="close"
-          onClick={handleClose}
+        <DialogTitle
           sx={{
-            color: 'grey.500',
-            p: { xs: 0.75, sm: 1 },
-            '&:hover': {
-              color: 'grey.700',
-              backgroundColor: 'rgba(0, 0, 0, 0.04)',
-            },
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            pb: 1,
+            px: { xs: 2, sm: 3 },
+            pt: { xs: 2, sm: 2.5 },
+            borderBottom: '1px solid',
+            borderColor: 'divider',
           }}
         >
-          <CloseIcon sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
-        </IconButton>
-      </DialogTitle>
-
-      <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            aria-label="authentication tabs"
-            centered
+          <Typography 
+            variant={isMobile ? "h6" : "h5"} 
+            component="div" 
+            sx={{ 
+              fontWeight: 600,
+              color: '#DA291C',
+              fontSize: { xs: '1.125rem', sm: '1.375rem', md: '1rem', lg: '1.3rem', xl: '1.4rem', xxl: '1.67rem' },
+              textAlign: 'center',
+              flex: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            Welcome to Superior Seats
+          </Typography>
+          <IconButton
+            aria-label="close"
+            onClick={handleClose}
             sx={{
-              '& .MuiTab-root': {
-                fontWeight: 500,
-                fontSize: { xs: '0.875rem', sm: '1rem' },
-                textTransform: 'none',
-                py: { xs: 1.25, sm: 1.5, md: 1, lg: 1, xl: 1, xxl: 1},
-                minHeight: { xs: '44px', sm: '48px' },
-              },
-              '& .MuiTabs-indicator': {
-                height: 3,
-                borderRadius: '3px 3px 0 0',
-                backgroundColor: '#DA291C',
+              color: 'grey.500',
+              p: { xs: 0.75, sm: 1 },
+              '&:hover': {
+                color: 'grey.700',
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
               },
             }}
           >
-            <Tab label="Sign In" />
-            <Tab label="Sign Up" />
-          </Tabs>
-        </Box>
+            <CloseIcon sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
+          </IconButton>
+        </DialogTitle>
 
-        {error && (
-          <Alert 
-            severity="error" 
-            sx={{ 
-              m: { xs: 1.5, sm: 2 },
-              fontSize: { xs: '0.875rem', sm: '1rem' }
-            }}
-          >
-            {error}
-          </Alert>
-        )}
+        <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              aria-label="authentication tabs"
+              centered
+              sx={{
+                '& .MuiTab-root': {
+                  fontWeight: 500,
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  textTransform: 'none',
+                  py: { xs: 1.25, sm: 1.5, md: 1, lg: 1, xl: 1, xxl: 1},
+                  minHeight: { xs: '44px', sm: '48px' },
+                },
+                '& .MuiTabs-indicator': {
+                  height: 3,
+                  borderRadius: '3px 3px 0 0',
+                  backgroundColor: '#DA291C',
+                },
+              }}
+            >
+              <Tab label="Sign In" />
+              <Tab label="Sign Up" />
+            </Tabs>
+          </Box>
 
-        {success && (
-          <Alert 
-            severity="success" 
-            sx={{ 
-              m: { xs: 1.5, sm: 2 },
-              fontSize: { xs: '0.875rem', sm: '1rem' }
-            }}
-          >
-            {success}
-          </Alert>
-        )}
-
-        <Box sx={{ overflow: 'hidden' }}>
-          <TabPanel value={tabValue} index={0}>
-                                                   <Box sx={{ 
+          <Box sx={{ overflow: 'hidden' }}>
+            <TabPanel value={tabValue} index={0}>
+              <Box sx={{ 
                 p: { xs: 3, sm: 4, md: 1, lg: 0.5, xl: 1, xxl: 1},
                 pb: { xs: 4, sm: 5, md: 3, lg: 2, xl: 3, xxl: 3},
                 maxWidth: '400px',
                 mx: 'auto',
                 width: '100%'
               }}>
-                               <Typography 
+                <Typography 
                   variant="h6" 
                   sx={{ 
                     mb: 1.5, 
@@ -379,120 +417,115 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   Sign in to your account
                 </Typography>
 
-               <TextField
-                 fullWidth
-                 label="Email"
-                 type="email"
-                // placeholder="Enter your email"
-                 value={signInForm.email}
-                 onChange={handleSignInChange('email')}
-                 error={!!errors.email}
-                 helperText={errors.email}
-                 variant="outlined"
-                 size="small"
-                 
-                 sx={{ 
-                   mb: 2,
-                   ...commonTextFieldStyles,
-                   '& .MuiFormHelperText-root': {
-                     fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                     marginLeft: 0,
-                   },
-                 }}
-               />
-
-               <TextField
-                 fullWidth
-                 label="Password"
-                 type={showPassword ? 'text' : 'password'}
-                // placeholder="Enter your password"
-                 value={signInForm.password}
-                 onChange={handleSignInChange('password')}
-                 error={!!errors.password}
-                 helperText={errors.password}
-                 variant="outlined"
-                 size="small"
-                                    InputProps={{
-                     endAdornment: (
-                       <InputAdornment position="end">
-                         <IconButton
-                           aria-label="toggle password visibility"
-                           onClick={() => setShowPassword(!showPassword)}
-                           edge="end"
-                           size="small"
-                         >
-                           {showPassword ? <VisibilityOff /> : <Visibility />}
-                         </IconButton>
-                       </InputAdornment>
-                     ),
-                   }}
-                 sx={{ 
-                   mb: 3,
-                   ...commonTextFieldStyles,
-                   '& .MuiFormHelperText-root': {
-                     fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                     marginLeft: 0,
-                   },
-                 }}
-               />
-
-                                                           <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <Button
-                  variant="contained"
-                  onClick={handleSignIn}
-                  disabled={loading}
-                  size="medium"
-                  sx={{
-                    background: 'primary.main',
-                    height: '35px',
-                    px: 3,
-                    fontSize: { xs: '0.875rem', sm: '1rem' },
-                    fontWeight: 600,
-                    borderRadius: 2,
-                    boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
-                    textTransform: 'none',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 30px rgba(231, 43, 43, 0.4)',
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={signInForm.email}
+                  onChange={handleSignInChange('email')}
+                  error={!!errors.email}
+                  helperText={errors.email}
+                  variant="outlined"
+                  size="small"
+                  sx={{ 
+                    mb: 2,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
                     },
-                    transition: 'all 0.3s ease',
-                    minWidth: '120px',
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={signInForm.password}
+                  onChange={handleSignInChange('password')}
+                  error={!!errors.password}
+                  helperText={errors.password}
+                  variant="outlined"
+                  size="small"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    mb: 3,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
+                    },
+                  }}
+                />
+
+                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleSignIn}
+                    disabled={loading}
+                    size="medium"
+                    sx={{
+                      background: 'primary.main',
+                      height: '35px',
+                      px: 3,
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      fontWeight: 600,
+                      borderRadius: 2,
+                      boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
+                      textTransform: 'none',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 30px rgba(231, 43, 43, 0.4)',
+                      },
+                      transition: 'all 0.3s ease',
+                      minWidth: '120px',
+                    }}
+                  >
+                    {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign In'}
+                  </Button>
+                </Box>
+              </Box>
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={1}>
+              <Box sx={{ 
+                py: { xs: 3, sm: 4, md: 5, lg: 0.1, xl: 0.8, xxl: 1},
+                pb: { xs: 4, sm: 5, md: 6, lg: 3, xl: 4, xxl: 5},
+                maxWidth: '400px',
+                mx: 'auto',
+                width: '100%'
+              }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 1.5, 
+                    fontWeight: 600,
+                    fontSize: { xs: '1rem', sm: '1.125rem' },
+                    textAlign: 'center',
+                    color: 'text.primary',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
                   }}
                 >
-                  {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign In'}
-                </Button>
-              </Box>
-            </Box>
-          </TabPanel>
+                  Create your account
+                </Typography>
 
-                     <TabPanel value={tabValue} index={1}>
-                                                       <Box sx={{ 
-                 py: { xs: 3, sm: 4, md: 5, lg: 0.1, xl: 0.8, xxl: 1},
-                 pb: { xs: 4, sm: 5, md: 6, lg: 3, xl: 4, xxl: 5},
-                 
-                 maxWidth: '400px',
-                 mx: 'auto',
-                 width: '100%'
-               }}>
-                                                               <Typography 
-                   variant="h6" 
-                   sx={{ 
-                     mb: 1.5, 
-                     fontWeight: 600,
-                     fontSize: { xs: '1rem', sm: '1.125rem' },
-                     textAlign: 'center',
-                     color: 'text.primary',
-                     display: 'flex',
-                     justifyContent: 'center',
-                     alignItems: 'center',
-                     width: '100%',
-                    
-                   }}
-                 >
-                   Create your account
-                 </Typography>
-
-                               <TextField
+                <TextField
                   fullWidth
                   label="Full Name"
                   type="text"
@@ -502,7 +535,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   helperText={errors.name}
                   variant="outlined"
                   size="small"
-                  
                   sx={{ 
                     mb: 2,
                     ...commonTextFieldStyles,
@@ -513,7 +545,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                               <TextField
+                <TextField
                   fullWidth
                   label="Username"
                   type="text"
@@ -523,7 +555,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   helperText={errors.username}
                   variant="outlined"
                   size="small"
-                  
                   sx={{ 
                     mb: 2,
                     ...commonTextFieldStyles,
@@ -534,7 +565,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                               <TextField
+                <TextField
                   fullWidth
                   label="Phone Number"
                   type="tel"
@@ -544,7 +575,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   helperText={errors.phone}
                   variant="outlined"
                   size="small"
-                  
                   sx={{ 
                     mb: 2,
                     ...commonTextFieldStyles,
@@ -555,7 +585,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                               <TextField
+                <TextField
                   fullWidth
                   label="Email"
                   type="email"
@@ -565,7 +595,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   helperText={errors.email}
                   variant="outlined"
                   size="small"
-
                   sx={{ 
                     mb: 2,
                     ...commonTextFieldStyles,
@@ -576,27 +605,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-               <FormControl 
-                 fullWidth 
-                 size="small"
-                 sx={{ 
-                   mb: 2,
-                   ...commonTextFieldStyles,
-                 }}
-               >
-                 <InputLabel>Customer Type</InputLabel>
-                 <Select
-                   value={signUpForm.customer_type}
-                   label="Customer Type"
-                   onChange={handleSignUpChange('customer_type')}
-                 >
-                   <MenuItem value="retail">Retail</MenuItem>
-                   <MenuItem value="wholesale">Wholesale</MenuItem>
-                   <MenuItem value="dealer">Dealer</MenuItem>
-                 </Select>
-               </FormControl>
-
-                               <TextField
+                <TextField
                   fullWidth
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
@@ -630,7 +639,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                               <TextField
+                <TextField
                   fullWidth
                   label="Confirm Password"
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -640,20 +649,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   helperText={errors.confirmPassword}
                   variant="outlined"
                   size="small"
-                                     InputProps={{
-                     endAdornment: (
-                       <InputAdornment position="end">
-                         <IconButton
-                           aria-label="toggle confirm password visibility"
-                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                           edge="end"
-                           size="small"
-                         >
-                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                         </IconButton>
-                       </InputAdornment>
-                     ),
-                   }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle confirm password visibility"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                   sx={{ 
                     mb: 3,
                     ...commonTextFieldStyles,
@@ -664,37 +673,54 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                                                           <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <Button
-                  variant="contained"
-                  onClick={handleSignUp}
-                  disabled={loading}
-                  size="medium"
-                  sx={{
-                    background: 'primary.main',
-                    height: '35px',
-                    px: 3,
-                    fontSize: { xs: '0.875rem', sm: '1rem' },
-                    fontWeight: 600,
-                    borderRadius: 2,
-                    boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
-                    textTransform: 'none',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 30px rgba(231, 43, 43, 0.4)',
-                    },
-                    transition: 'all 0.3s ease',
-                    minWidth: '120px',
-                  }}
-                >
-                  {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign Up'}
-                </Button>
+                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleSignUp}
+                    disabled={loading}
+                    size="medium"
+                    sx={{
+                      background: 'primary.main',
+                      height: '35px',
+                      px: 3,
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      fontWeight: 600,
+                      borderRadius: 2,
+                      boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
+                      textTransform: 'none',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 30px rgba(231, 43, 43, 0.4)',
+                      },
+                      transition: 'all 0.3s ease',
+                      minWidth: '120px',
+                    }}
+                  >
+                    {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign Up'}
+                  </Button>
+                </Box>
               </Box>
-            </Box>
-          </TabPanel>
-        </Box>
-      </DialogContent>
-    </Dialog>
+            </TabPanel>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 

@@ -211,7 +211,8 @@ const AboutPage = () => {
                     className="stat-value"
                     variant="h3" 
                     sx={{ 
-                      fontWeight: 'bold', 
+                      fontWeight: 'medium', 
+                      
                       color: 'primary.main', 
                       mb: { xs: 0.5, sm: 1 },
                       fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },
@@ -296,9 +297,9 @@ const AboutPage = () => {
       transition={{ duration: 0.8, ease: "easeOut" }}
       sx={{ 
         textAlign: 'center', 
-        fontWeight: 'bold', 
+        fontWeight: 'medium', 
         mb: { xs: 1.5, sm: 2, md: 3 },
-        fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' },
+        fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
         mt: { xs: 1, sm: 3, md: 1.5, lg: 2 }
       }}
     >
@@ -314,7 +315,8 @@ const AboutPage = () => {
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
                   hyphens: 'auto',
-                  maxWidth: '100%'
+                  maxWidth: '100%',
+                  fontWeight: 'regular',
                 }}
               >
               At Superior Seating, every seat begins with your vision. We combine cutting-edge technology, timeless craftsmanship, and a deep passion for design to deliver seating solutions that are as unique as the people who use them.
@@ -367,9 +369,9 @@ const AboutPage = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
             sx={{ 
               textAlign: 'center', 
-              fontWeight: 'bold', 
+              fontWeight: 'medium', 
               mb: { xs: 2, sm: 2.5, md: 2 },
-              fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' }
+              fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'}
             }}
           >
             Our Values
@@ -466,9 +468,9 @@ const AboutPage = () => {
       transition={{ duration: 0.8, ease: "easeOut" }}
       sx={{ 
         textAlign: 'center', 
-        fontWeight: 'bold', 
+        fontWeight: 'medium', 
         mb: { xs: 1.5, sm: 2, md: 3.5 },
-        fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' }
+        fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'}
       }}
     >
       Our Process
@@ -564,9 +566,9 @@ const AboutPage = () => {
               className="title"
               variant="h6"
               sx={{
-                fontWeight: 'bold',
+                fontWeight: 'medium',
                 mb: { xs: 1.5, sm: 2 },
-                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' ,lg: '1.2rem', xl: '1.3rem'},
                 transition: 'color 0.3s ease',
               }}
             >
@@ -603,9 +605,9 @@ const AboutPage = () => {
              transition={{ duration: 0.8, ease: "easeOut" }}
              sx={{ 
                textAlign: 'center', 
-               fontWeight: 'bold', 
+               fontWeight: 'medium', 
                mb: { xs: 3, sm: 4, md: 6 },
-               fontSize: { xs: '1.6rem', sm: '2rem', md: '3rem' }
+               fontSize: { xs: '1.6rem', sm: '2rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'}
              }}
            >
              Why Choose Superior Seats?
@@ -698,7 +700,7 @@ const AboutPage = () => {
                    className="title"
                    variant="h6"
                    sx={{
-                     fontWeight: 'bold',
+                     fontWeight: 'medium',
                      mb: { xs: 1.5, sm: 2 },
                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                      transition: 'color 0.3s ease',
@@ -715,6 +717,7 @@ const AboutPage = () => {
                      fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
                      lineHeight: 1.5,
                      flexGrow: 1,
+                     fontWeight: 'regular',
                    }}
                  >
                    Designed specifically for your vehicle and body type.
@@ -794,10 +797,11 @@ const AboutPage = () => {
                    className="title"
                    variant="h6"
                    sx={{
-                     fontWeight: 'bold',
+                     fontWeight: 'medium',
                      mb: { xs: 1.5, sm: 2 },
                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                      transition: 'color 0.3s ease',
+                   
                    }}
                  >
                    Premium Materials
@@ -811,6 +815,7 @@ const AboutPage = () => {
                      fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
                      lineHeight: 1.5,
                      flexGrow: 1,
+                     fontWeight: 'regular',
                    }}
                  >
                    Highest quality leather, fabric, and materials.
@@ -890,7 +895,7 @@ const AboutPage = () => {
                    className="title"
                    variant="h6"
                    sx={{
-                     fontWeight: 'bold',
+                     fontWeight: 'medium',
                      mb: { xs: 1.5, sm: 2 },
                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                      transition: 'color 0.3s ease',
@@ -907,6 +912,7 @@ const AboutPage = () => {
                      fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
                      lineHeight: 1.5,
                      flexGrow: 1,
+                     fontWeight: 'regular',
                    }}
                  >
                    Skilled artisans handcraft each seat with precision.
@@ -986,7 +992,7 @@ const AboutPage = () => {
                    className="title"
                    variant="h6"
                    sx={{
-                     fontWeight: 'bold',
+                     fontWeight: 'medium',
                      mb: { xs: 1.5, sm: 2 },
                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                      transition: 'color 0.3s ease',
@@ -1003,6 +1009,7 @@ const AboutPage = () => {
                      fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
                      lineHeight: 1.5,
                      flexGrow: 1,
+                     fontWeight: 'regular',
                    }}
                  >
                    We stand behind our work with full warranty.
@@ -1082,7 +1089,7 @@ const AboutPage = () => {
                    className="title"
                    variant="h6"
                    sx={{
-                     fontWeight: 'bold',
+                     fontWeight: 'medium',
                      mb: { xs: 1.5, sm: 2 },
                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                      transition: 'color 0.3s ease',
@@ -1099,6 +1106,7 @@ const AboutPage = () => {
                      fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
                      lineHeight: 1.5,
                      flexGrow: 1,
+                     fontWeight: 'regular',
                    }}
                  >
                    Expert installation and setup for optimal performance.
@@ -1178,7 +1186,7 @@ const AboutPage = () => {
                    className="title"
                    variant="h6"
                    sx={{
-                     fontWeight: 'bold',
+                     fontWeight: 'medium',
                      mb: { xs: 1.5, sm: 2 },
                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                      transition: 'color 0.3s ease',
@@ -1195,6 +1203,7 @@ const AboutPage = () => {
                      fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
                      lineHeight: 1.5,
                      flexGrow: 1,
+                     fontWeight: 'regular',
                    }}
                  >
                    We&apos;re here for you even after purchase.

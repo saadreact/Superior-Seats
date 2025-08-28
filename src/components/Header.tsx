@@ -21,6 +21,8 @@ import {
   MenuItem,
   Container,
   Tooltip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -44,6 +46,18 @@ const Header = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const [currentPath, setCurrentPath] = useState('');
+  
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
   const theme = useTheme();
   const pathname = usePathname();
   const router = useRouter();
@@ -103,6 +117,11 @@ const Header = () => {
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
+    setSnackbar({
+      open: true,
+      message: 'Successfully logged out!',
+      severity: 'success',
+    });
     handleUserMenuClose();
   };
 
@@ -115,6 +134,13 @@ const Header = () => {
     // Set to empty and remove again to ensure it's completely cleared
     localStorage.setItem('breadcrumbHistory', '');
     localStorage.removeItem('breadcrumbHistory');
+  };
+
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   const drawer = (
@@ -520,7 +546,7 @@ const Header = () => {
                   )}
                   {isAuthenticated ? (
                     <>
-                 <Tooltip title={`${user?.username || user?.name || user?.email} (Click to logout)`} arrow>
+                 <Tooltip title={`${user?.username || user?.name || user?.email || 'User'} (Click to logout)`} arrow>
                                                    <IconButton
                             color="inherit"
                             onClick={handleUserMenuClick}
@@ -571,7 +597,7 @@ const Header = () => {
                           }}
                         >
                           <LogoutIcon sx={{ mr: 1.5, fontSize: '1.2rem' }} />
-                          Logout ({user?.username || user?.name || user?.email})
+                          Logout ({user?.username || user?.name || user?.email || 'User'})
                         </MenuItem>
                       </Menu>
                     </>
@@ -632,6 +658,22 @@ const Header = () => {
         open={authModalOpen} 
         onClose={() => setAuthModalOpen(false)} 
       />
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

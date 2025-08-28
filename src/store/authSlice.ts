@@ -58,7 +58,29 @@ export const loginUser = createAsyncThunk(
       const result = await apiService.login(credentials.email, credentials.password);
       return result;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      // Handle different types of errors
+      if (error.response?.status === 422) {
+        // Validation errors
+        const validationErrors = error.response?.data?.errors;
+        if (validationErrors) {
+          const errorMessages = Object.values(validationErrors).flat();
+          return rejectWithValue(errorMessages.join(', '));
+        }
+      }
+      
+      if (error.response?.status === 401) {
+        return rejectWithValue('Invalid email or password. Please try again.');
+      }
+      
+      if (error.response?.status === 429) {
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+      
+      if (error.response?.status >= 500) {
+        return rejectWithValue('Server error. Please try again later.');
+      }
+      
+      return rejectWithValue(error.response?.data?.message || 'Login failed. Please check your credentials and try again.');
     }
   }
 );
@@ -78,7 +100,25 @@ export const registerUser = createAsyncThunk(
       const result = await apiService.register(userData);
       return result;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+      // Handle different types of errors
+      if (error.response?.status === 422) {
+        // Validation errors
+        const validationErrors = error.response?.data?.errors;
+        if (validationErrors) {
+          const errorMessages = Object.values(validationErrors).flat();
+          return rejectWithValue(errorMessages.join(', '));
+        }
+      }
+      
+      if (error.response?.status === 409) {
+        return rejectWithValue('User with this email or username already exists.');
+      }
+      
+      if (error.response?.status >= 500) {
+        return rejectWithValue('Server error. Please try again later.');
+      }
+      
+      return rejectWithValue(error.response?.data?.message || 'Registration failed. Please check your information and try again.');
     }
   }
 );
