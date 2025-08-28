@@ -179,7 +179,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [selectedExtraArm, setSelectedExtraArm] = useState('');
   
   // State for select section
-  const [selectedCustomerType, setSelectedCustomerType] = useState('');
   const [quantity, setQuantity] = useState(1);
 
   const calculateTotalPrice = () => {
@@ -434,27 +433,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                        </Typography>
                       
                                              <Box className={styles.formRow}>
-                        {/* Customer Type */}
-                        <Box className={styles.formField}>
-                          <Typography variant="body2" className={styles.fieldLabel}>
-                            Customer Type:
-                          </Typography>
-                          <FormControl className={styles.formControl}>
-                            <Select
-                              value={selectedCustomerType}
-                              onChange={(e) => setSelectedCustomerType(e.target.value)}
-                              displayEmpty
-                              className={styles.selectField}
-                            >
-                              <MenuItem value="" disabled>
-                                Select Customer Type
-                              </MenuItem>
-                              <MenuItem value="retail">Retail</MenuItem>
-                              <MenuItem value="wholesale">Wholesale</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Box>
-
                         {/* Quantity */}
                         <Box className={styles.formField}>
                           <Typography variant="body2" className={styles.fieldLabel}>

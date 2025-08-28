@@ -140,7 +140,18 @@ class ApiService {
       localStorage.setItem('auth_token', data.token);
     }
     
-    return data;
+    // Ensure the user object has the name field from the registration data
+    const userWithName = {
+      ...data.user,
+      name: userData.name, // Ensure name is included from registration data
+      username: userData.username // Ensure username is included from registration data
+    };
+    
+    // Return the same structure as login for consistency
+    return {
+      user: userWithName,
+      token: data.token
+    };
   }
 
   async logout() {

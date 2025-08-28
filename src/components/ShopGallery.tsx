@@ -429,8 +429,8 @@ const ShopGallery = () => {
             <Typography 
               variant="h3" 
               sx={{ 
-                fontWeight: 'bold',
-                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
+                fontWeight: 'medium',
+                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' ,xl: '2rem'},
                 textAlign: { xs: 'center', sm: 'left' },
                 width: { xs: '100%', sm: 'auto' },
                 wordBreak: 'break-word',
