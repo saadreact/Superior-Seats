@@ -187,7 +187,7 @@ const HeroSection = () => {
   return (
                   <Box
         sx={{
-          background: `linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(185, 28, 28, 0.85) 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.main}1A 0%, ${theme.palette.primary.dark}D9 100%)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

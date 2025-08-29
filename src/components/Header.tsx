@@ -608,18 +608,18 @@ const Header = () => {
                             onClick={handleAuthClick}
                             sx={{
                               color: 'black',
-                              // Slightly increased padding for better hover area
-                              p: { md: 0.85, lg: 1.3, xl: 3 },
+                              // Reduced padding to match cart icon
+                              p: { md: 0.75, lg: 1.25 },
                               '&:hover': {
                                 backgroundColor: 'rgba(0, 0, 0, 0.08)',
                                 color: 'black',
-                                // Slightly increased scale for better hover effect
-                                transform: 'scale(1.04)',
+                                // Reduced scale to match cart icon hover
+                                transform: 'scale(1.03)',
                               },
                               transition: 'all 0.2s ease',
                             }}
                           >
-                          <PersonIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem' } }} />
+                          <PersonIcon sx={{ fontSize: { md: '1.4rem', lg: '1.6rem', xl: '1.6rem' } }} />
                         </IconButton>
                       </Tooltip>
                    )}

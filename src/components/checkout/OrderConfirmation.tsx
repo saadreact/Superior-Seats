@@ -111,7 +111,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
             color: 'success.main', 
             mb: 1 
           }} />
-          <Typography variant="h4" fontWeight="bold" color="success.main" gutterBottom sx={{ 
+          <Typography variant="h4" fontWeight="medium" color="success.main" gutterBottom sx={{ 
             fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
           }}>
             Order #12345
@@ -133,7 +133,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
 
         {/* Order Summary */}
         <Box sx={{ width: '100%', mb: 2 }}>
-          <Typography variant="h6" fontWeight="bold" sx={{ 
+          <Typography variant="h6" fontWeight="medium" sx={{ 
             mb: 1,
             fontSize: { xs: '1rem', sm: '1.25rem' }
           }}>
@@ -161,7 +161,8 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
               </Box>
               <Typography variant="body1" sx={{ 
                 fontSize: { xs: '0.875rem', sm: '1rem' },
-                lineHeight: 1.4
+                lineHeight: 1.4,
+                fontWeight: 'regular'
               }}>
                 You&apos;ll receive an order confirmation email
               </Typography>

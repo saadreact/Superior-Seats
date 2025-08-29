@@ -124,8 +124,8 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
       <Typography variant="h4" sx={{ 
         mb: { xs: 2, sm: 3 }, 
         textAlign: 'center', 
-        fontWeight: 'bold',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+        fontWeight: 'medium',
+        fontSize: { xs: '1.5rem', sm: '2rem', md: '2rem', lg: '2rem', xl: '2rem' }
       }}>
         Payment Information
       </Typography>
@@ -215,39 +215,53 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
               />
             </Box>
 
-            {/* Navigation Buttons */}
-            <Box sx={{ 
-              display: 'flex', 
-              gap: { xs: 1, sm: 2 }, 
-              mt: { xs: 1, sm: 2 },
-              flexDirection: { xs: 'column', sm: 'row' }
-            }}>
-              <Button
-                variant="outlined"
-                onClick={onBack}
-                disabled={isProcessing}
-                fullWidth
-                sx={{ 
-                  py: { xs: 1.25, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
-                  width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }
-                }}
-              >
-                Back
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={isProcessing}
-                fullWidth
-                sx={{ 
-                  py: { xs: 1.25, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  height: { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
-                  width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }
-                }}
-              >
+                         {/* Navigation Buttons */}
+             <Box sx={{ 
+               display: 'flex', 
+               gap: { xs: 2, sm: 2 }, 
+               mt: { xs: 2, sm: 2 },
+               flexDirection: { xs: 'column', sm: 'row' },
+               justifyContent: 'center',
+               alignItems: 'center'
+             }}>
+               <Button
+                 variant="outlined"
+                 onClick={onBack}
+                 disabled={isProcessing}
+                 sx={{ 
+                   py: { xs: 1, sm: 1.25 },
+                   px: { xs: 2, sm: 3 },
+                   fontSize: { xs: '0.9rem', sm: '1rem' },
+                   minWidth: { xs: '120px', sm: '140px' },
+                   height: { xs: '45px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                   width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }
+                 }}
+               >
+                 Back
+               </Button>
+               <Button
+                 type="submit"
+                 variant="contained"
+                 disabled={isProcessing}
+                 sx={{ 
+                   py: { xs: 1, sm: 1.25 },
+                   px: { xs: 2, sm: 3 },
+                   fontSize: { xs: '0.9rem', sm: '1rem' },
+                   minWidth: { xs: '120px', sm: '140px' },
+                   height: { xs: '45px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                   width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' },
+                   backgroundColor: 'primary.main',
+                   boxShadow: 'none',
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: 'none',
+                   },
+                   '&:disabled': {
+                     backgroundColor: 'grey.400',
+                     boxShadow: 'none',
+                   }
+                 }}
+               >
                 {isProcessing ? (
                   <>
                     <CircularProgress size={20} sx={{ mr: 1, color: 'white' }} />

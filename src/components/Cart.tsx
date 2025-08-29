@@ -14,6 +14,7 @@ import {
   Chip,
   useTheme,
   useMediaQuery,
+  Tooltip,
 } from '@mui/material';
 import {
   Close,
@@ -206,23 +207,46 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                       {/* Item Details */}
                       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                                                  <Box>
-                           <Typography variant="subtitle1" sx={{ 
-                             fontWeight: 600, 
-                             mb: 1.5,
-                             fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },
-                             color: '#1a1a1a',
-                             lineHeight: 1.3,
-                             wordWrap: 'break-word',
-                             overflowWrap: 'break-word',
-                             hyphens: 'auto',
-                             display: '-webkit-box',
-                             WebkitLineClamp: 2,
-                             WebkitBoxOrient: 'vertical',
-                             overflow: 'hidden',
-                             textOverflow: 'ellipsis'
-                           }}>
-                             {item.title}
-                           </Typography>
+                           <Tooltip 
+                             title={item.title}
+                             placement="top"
+                             arrow
+                             sx={{
+                               '& .MuiTooltip-tooltip': {
+                                 backgroundColor: 'rgba(0, 0, 0, 0.87)',
+                                 color: 'white',
+                                 fontSize: '0.875rem',
+                                 padding: '8px 12px',
+                                 borderRadius: '4px',
+                                 maxWidth: '300px',
+                                 wordWrap: 'break-word',
+                                 whiteSpace: 'pre-wrap',
+                                 textAlign: 'center',
+                               },
+                               '& .MuiTooltip-arrow': {
+                                 color: 'rgba(0, 0, 0, 0.87)',
+                               }
+                             }}
+                           >
+                             <Typography variant="subtitle1" sx={{ 
+                               fontWeight: 600, 
+                               mb: 1.5,
+                               fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },
+                               color: '#1a1a1a',
+                               lineHeight: 1.3,
+                               wordWrap: 'break-word',
+                               overflowWrap: 'break-word',
+                               hyphens: 'auto',
+                               display: '-webkit-box',
+                               WebkitLineClamp: 2,
+                               WebkitBoxOrient: 'vertical',
+                               overflow: 'hidden',
+                               textOverflow: 'ellipsis',
+                               cursor: 'help'
+                             }}>
+                               {item.title}
+                             </Typography>
+                           </Tooltip>
                          </Box>
                         
                         {/* Quantity Controls */}

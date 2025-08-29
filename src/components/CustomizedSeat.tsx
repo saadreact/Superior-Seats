@@ -178,8 +178,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [selectedIncludedArm, setSelectedIncludedArm] = useState('');
   const [selectedExtraArm, setSelectedExtraArm] = useState('');
   
-  // State for select section
-  const [quantity, setQuantity] = useState(1);
+
 
   const calculateTotalPrice = () => {
     // Get base seat price (from selected item or default objects)
@@ -353,29 +352,62 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                     </>
                   ) : (
                     // ENHANCED PLACEHOLDER: Show better message when no item is selected
-                    <Box className={styles.placeholderContainer}>
-                      <Typography variant="h5" className={styles.placeholderTitle}>
+                    <Box 
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        width: '100%',
+                        textAlign: 'center',
+                        padding: { xs: 2, sm: 3, md: 4 },
+                        gap: { xs: 2, sm: 3, md: 4 }
+                      }}
+                    >
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          fontWeight: 'medium',
+                          color: 'text.primary',
+                          fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+                          marginBottom: { xs: 1, sm: 1.5, md: 2, lg: 1, xl: 1 }
+                        }}
+                      >
                         No Product Selected
                       </Typography>
-                      <Typography variant="body1" className={styles.placeholderDescription}>
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          color: 'text.secondary',
+                          fontWeight: 'regular',
+                          fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                          lineHeight: 1,
+                          maxWidth: '400px',
+                          marginBottom: { xs: 3, sm: 4, md: 1 ,lg: 1 , xl: 1}
+                        }}
+                      >
                         Please select a model or product from our shop to start customizing your perfect seat.
                       </Typography>
-                                           <Button
-                          variant="contained"
-                          size="large"
-                          onClick={() => router.push('/specials')}
-                          startIcon={<ArrowForward />}
-                          className={styles.browseShopButton}
-                          sx={{ 
-                            fontWeight: 400,
-                            backgroundColor: theme.palette.primary.main,
-                            '&:hover': {
-                              backgroundColor: theme.palette.primary.dark,
-                            }
-                          }}
-                        >
-                          Browse Shop
-                        </Button>
+                                             <Button
+                         variant="contained"
+                         size="large"
+                         onClick={() => router.push('/specials')}
+                         startIcon={<ArrowForward />}
+                         sx={{ 
+                           fontWeight: 'regular',
+                           fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                           backgroundColor: '#d32f2f',
+                           color: 'white',
+                           boxShadow: 'none',
+                           '&:hover': {
+                             backgroundColor: '#b71c1c',
+                             boxShadow: 'none',
+                           }
+                         }}
+                       >
+                         Browse Shop
+                       </Button>
                     </Box>
                   )}
                   
@@ -426,39 +458,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                 <Box className={styles.scrollableContainer}>
                   {/* Always show customization options, regardless of product selection */}
                   <>
-                                         {/* ===== SELECT SECTION ===== */}
-                     <Box className={styles.sectionContainer}>
-                       <Typography variant="h6" className={styles.sectionTitle}>
-                         Select
-                       </Typography>
-                      
-                                             <Box className={styles.formRow}>
-                        {/* Quantity */}
-                        <Box className={styles.formField}>
-                          <Typography variant="body2" className={styles.fieldLabel}>
-                            Quantity:
-                          </Typography>
-                          <TextField
-                            type="number"
-                            value={quantity}
-                            onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                            inputProps={{ 
-                              min: 1,
-                              style: { 
-                                height: '18px',
-                                fontSize: '14px',
-                                padding: '8px 12px'
-                              }
-                            }}
-                            className={styles.textField}
-                          />
-                        </Box>
-                      </Box>
-                    </Box>
-
-           {/* Divider */}
-                     <Divider className={styles.divider} />
-
          {/* ===== MATERIAL SELECTION SECTION ===== */}
                    <Box className={styles.sectionContainer}>
                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
