@@ -3,7 +3,8 @@ import { createTheme } from '@mui/material/styles';
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#d32f2f', // Superior Seats Red (updated from DA291C)
+     main: '#d32f2f', // Superior Seats Red (updated from DA291C)
+    //  main: '#da291c',  //Client color 
       light: '#ff6659',
       dark: '#9a0007',
     },
@@ -117,9 +118,24 @@ export const theme = createTheme({
           },
         },
         contained: {
-          boxShadow: '0 2px 8px rgba(211, 47, 47, 0.3)',
+         // boxShadow: '0 2px 8px rgba(211, 47, 47, 0.3)',
+         boxShadow: '0 2px 8px rgba(218, 41, 28, 1)',
+
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(211, 47, 47, 0.4)',
+            //boxShadow: '0 4px 12px rgba(211, 47, 47, 0.4)',
+            boxShadow: '0 4px 12px rgba(218, 41, 28, 1)',
+          },
+          // Add custom class for gradient styling
+          '&.gradient-style': {
+            background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+            color: 'white',
+            boxShadow: 'none',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+              boxShadow: 'none',
+              transform: 'translateY(-2px)',
+            },
+            transition: 'all 0.3s ease',
           },
         },
       },

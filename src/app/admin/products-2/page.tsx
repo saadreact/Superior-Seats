@@ -668,7 +668,7 @@ const Products2Page = () => {
                 
                 {/* 🟢 First Half - Product Fields */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: '#22c55e', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Product Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
@@ -755,7 +755,7 @@ const Products2Page = () => {
 
                   {/* Product Images */}
                   <Box>
-                    <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600, mb: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
                       Product Images
                     </Typography>
                     
@@ -845,14 +845,14 @@ const Products2Page = () => {
 
                 {/* 🔵 Second Half - Variation Fields */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: '#3b82f6', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Seat Configuration & Materials
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
                   
                   {/* Seat Configuration Section */}
                   <Box sx={{ mb: 4 }}>
-                    <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600, mb: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
                       Seat Configuration
                     </Typography>
                     
@@ -869,7 +869,7 @@ const Products2Page = () => {
 
                   {/* Materials & Features Section */}
                   <Box sx={{ mb: 4 }}>
-                    <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600, mb: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
                       Materials & Features
                     </Typography>
                     
@@ -890,7 +890,7 @@ const Products2Page = () => {
 
                   {/* Product Status */}
                   <Box>
-                    <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600, mb: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
                       Product Status
                     </Typography>
                     
@@ -1622,7 +1622,7 @@ const Products2Page = () => {
                    </Paper>
                  </Box>
 
-                                 {/* Action Buttons */}
+             {/* Action Buttons */}
                  <Box sx={{ 
                    display: 'flex', 
                    gap: 3, 

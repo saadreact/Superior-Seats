@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import HeroSectionCommon from './common/HeroSectionaCommon';
 import {
   Box,
   Container,
@@ -64,7 +65,7 @@ const Checkout = () => {
     return (
       <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
         <Header />
-        <Container maxWidth="lg" sx={{ py: 8, px: { xs: 2, sm: 4, md: 6 } }}>
+        <Container maxWidth="lg" sx={{ py: 8, px: { xs: 2, sm: 4, md: 6, lg: 2, xl: 2 } }}>
           <Box sx={{ textAlign: 'center' }}>
             <ShoppingCart sx={{ fontSize: 80, color: '#ccc', mb: 3 }} />
             <Typography variant="h4" sx={{ mb: 2, color: 'text.secondary' }}>
@@ -112,63 +113,41 @@ const Checkout = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
+    <Box sx={{ minHeight: '120vh', backgroundColor: '#fafafa', width: '100%' }}>
       <Header />
       
-      {/* Hero Section */}
-      <Box sx={{ 
-        mt: { xs: '56px', sm: '64px', md: '64px' }
-      }}>
-        <Box
-          sx={{
-            background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
-            color: 'white',
-            py: { xs: 2, sm: 3, md: 4 },
-            textAlign: 'center',
+      <HeroSectionCommon
+         title="Checkout"
+         description="Complete your purchase with ease"
+         height={{
+          xs: '75px',
+          sm: '70px', 
+          md: '80px',
+          lg: '95px',
+          xl: '105px',
+          xxl: '115px'
           }}
-        >
-        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
-          <Typography
-            variant="h1"
-            sx={{
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
-              fontWeight: 'bold',
-              mb: 1,
-              lineHeight: 1.2,
-            }}
-          >
-            Checkout
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              opacity: 0.9,
-              maxWidth: 600,
-              mx: 'auto',
-              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
-              lineHeight: 1.4,
-              mb: 0,
-            }}
-          >
-            Complete your order with secure payment
-          </Typography>
-        </Container>
-        </Box>
-      </Box>
+          />
 
-      {/* Main Content Container */}
-      <Container maxWidth="lg" sx={{ 
-        py: { xs: 1, sm: 2, md: 3 }, 
-        px: { xs: 1, sm: 2, md: 6 },
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        minHeight: { xs: 'calc(100vh - 150px)', md: 'calc(100vh - 200px)' },
-        justifyContent: 'center'
-      }}>
+             {/* Main Content Container */}
+       <Box 
+         sx={{ 
+          py: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0 }, 
+          px: { xs: 1, sm: 2, md: 6 },
+          display: 'flex',
+         
+          width: { xs: '100%', sm: '100%', md: '100%', lg: '95%', xl: '85%' },
+          maxWidth: { xs: '100%', sm: '100%', md: '100%', lg: '95%', xl: '85%' },
+          maxHeight: { xs: '100%', sm: "100%", md: "100%" ,lg: "100%", xl: "100%"},
+          flexDirection: 'column',
+          alignItems: 'center',
+          minHeight: { xs: 'calc(100vh - 150px)', md: 'calc(100vh - 200px)' },
+          justifyContent: 'flex-start',
+          mx: 'auto',
+          mt: 3
+        }}>
         <Box sx={{ 
           width: '100%',
-          maxWidth: { xs: '100%', sm: '800px', md: '900px' },
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'
@@ -178,7 +157,7 @@ const Checkout = () => {
             <Stepper 
               activeStep={activeStep} 
               sx={{ 
-                mb: 2,
+             
                 display: { xs: 'none', md: 'flex' },
                 justifyContent: 'center'
               }}
@@ -205,7 +184,7 @@ const Checkout = () => {
               px: 2
             }}>
               <Typography variant="h6" sx={{ 
-                fontWeight: 'bold', 
+                fontWeight: 'medium', 
                 mb: 0.5,
                 fontSize: { xs: '0.875rem', sm: '1rem' }
               }}>
@@ -239,9 +218,9 @@ const Checkout = () => {
             }}>
               {renderStepContent(activeStep)}
             </Card>
-          </Box>
-        </Box>
-      </Container>
+                     </Box>
+         </Box>
+       </Box>
     </Box>
   );
 };

@@ -67,15 +67,16 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
 
   return (
     <Box sx={{ 
-      maxWidth: { xs: '100%', sm: 450, md: 500 }, 
+      maxWidth: { xs: '100%', sm: "100%", md: "50%" ,lg: "50%", xl: "50%"}, 
+      maxHeight: { xs: '100%', sm: "100%", md: "100%" ,lg: "100%", xl: "100%"},
       mx: 'auto', 
-      p: { xs: 1, sm: 2, md: 3 ,lg: 0, xl: 0} 
+      p: { xs: 1, sm: 2, md: 1 ,lg: 0, xl: 0} 
     }}>
       <Typography variant="h4" sx={{ 
-        mb: { xs: 2, sm: 3 }, 
+        mb: { xs: 2, sm: 3 ,md: 1,lg: 1, xl: 1}, 
         textAlign: 'center', 
-        fontWeight: 'bold',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+        fontWeight: 'medium',
+        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem', lg: '2.5rem', xl: '2.5rem' }
       }}>
         Shipping Information
       </Typography>
@@ -261,7 +262,7 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 sx={{ 
                   py: { xs: 1, sm: 1.25 },
                   px: { xs: 2, sm: 3 },
-                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                  fontSize: { xs: '1rem', sm: '1rem' ,md: '1.1rem', lg: '1.2rem', xl: '1.25rem'},
                   minWidth: { xs: '120px', sm: '140px' },
                   height:  { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
                   width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }
@@ -276,12 +277,18 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                  sx={{ 
                    py: { xs: 1, sm: 1.25 },
                    px: { xs: 2, sm: 3 },
-                   fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                   minWidth: { xs: '120px', sm: '140px' },
-                   height: '40px',
-                   width: '50%',
+                   fontSize: { xs: '0.8rem', sm: '0.8rem' ,md: '1rem', lg: '1rem', xl: '1rem'},
+                   height:  { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                  width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' },
+                   backgroundColor: 'primary.main',
+                   boxShadow: 'none',
+                  
                    whiteSpace: 'nowrap',
                    textOverflow: 'ellipsis',
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: 'none',
+                   },
                  }}
                >
                  Continue to Payment
