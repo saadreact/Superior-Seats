@@ -104,6 +104,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     <Box
       sx={{
         background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+      //  background: 'linear-gradient(135deg, #da291c 100%, #da291c 100%)',
+
         color: 'white',
         height: height,
         py: { xs: 2, sm: 3, md: 4, lg: 5 },
