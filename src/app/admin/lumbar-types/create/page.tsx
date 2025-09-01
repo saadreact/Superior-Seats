@@ -9,8 +9,6 @@ import {
   Button,
   Paper,
   Alert,
-  FormControlLabel,
-  Switch,
   Stack,
   CircularProgress} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
@@ -25,8 +23,7 @@ const CreateLumbarTypePage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    is_active: true});
+    description: ''});
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -51,7 +48,7 @@ const CreateLumbarTypePage = () => {
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/variations/lumbar-types');
+        router.push('/admin/lumbar-types');
       }, 1500);
       
     } catch (err: any) {
@@ -63,7 +60,7 @@ const CreateLumbarTypePage = () => {
   };
 
   const handleBack = () => {
-    router.push('/admin/variations/lumbar-types');
+    router.push('/admin/lumbar-types');
   };
 
   return (
@@ -107,22 +104,23 @@ const CreateLumbarTypePage = () => {
                   Basic Information
                 </Typography>
                 
-                
+                <TextField
+                  label="Name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  required
+                  fullWidth
+                  placeholder="Enter lumbar type name"
+                />
 
-                {/* Status */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Status
-                </Typography>
-
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.is_active}
-                      onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Active"
+                <TextField
+                  label="Description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  placeholder="Enter description (optional)"
                 />
 
                 {/* Action Buttons */}

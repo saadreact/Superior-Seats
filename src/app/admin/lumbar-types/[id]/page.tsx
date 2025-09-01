@@ -8,11 +8,9 @@ import {
   Button,
   Paper,
   Alert,
-  Chip,
-  Stack,
   CircularProgress,
-  Divider,
-} from '@mui/material';
+  Stack,
+  Divider} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
@@ -149,17 +147,6 @@ const LumbarTypeDetailPage = () => {
                   <Typography variant="body1" color="text.secondary">
                     {lumbartypes.description || 'No description available'}
                   </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Status
-                  </Typography>
-                  <Chip
-                    label={lumbartypes.is_active ? 'Active' : 'Inactive'}
-                    color={lumbartypes.is_active ? 'success' : 'default'}
-                    size="small"
-                  />
                 </Box>
               </Stack>
             </Box>

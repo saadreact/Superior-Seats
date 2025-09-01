@@ -2274,6 +2274,368 @@ class ApiService {
       throw error;
     }
   }
+
+  // ========== SEAT TYPES ==========
+  
+  // Get seat types
+  async getSeatTypes(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/seat-types', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching seat types:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat types');
+    }
+  }
+
+  // Get single seat type
+  async getSeatType(id: number) {
+    try {
+      const response = await api.get(`/seat-types/${id}`);
+      return response.data?.data?.seat_type || response.data?.seat_type || response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching seat type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat type');
+    }
+  }
+
+  // Create seat type
+  async createSeatType(data: {
+    name: string;
+    description?: string;
+  }) {
+    try {
+      const response = await api.post('/seat-types', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating seat type:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create seat type');
+    }
+  }
+
+  // Update seat type
+  async updateSeatType(id: number, data: {
+    name?: string;
+    description?: string;
+  }) {
+    try {
+      const response = await api.put(`/seat-types/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating seat type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update seat type');
+    }
+  }
+
+  // Delete seat type
+  async deleteSeatType(id: number) {
+    try {
+      const response = await api.delete(`/seat-types/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting seat type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete seat type');
+    }
+  }
+
+  // ========== SEAT STITCH PATTERNS ==========
+  
+  // Get seat stitch patterns
+  async getSeatStitchPatterns(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/seat-stitch-patterns', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching seat stitch patterns:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat stitch patterns');
+    }
+  }
+
+  // Get single seat stitch pattern
+  async getSeatStitchPattern(id: number) {
+    try {
+      const response = await api.get(`/seat-stitch-patterns/${id}`);
+      return response.data?.data?.seat_stitch_pattern || response.data?.seat_stitch_pattern || response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching seat stitch pattern:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat stitch pattern not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat stitch pattern');
+    }
+  }
+
+  // Create seat stitch pattern
+  async createSeatStitchPattern(data: {
+    name: string;
+    description?: string;
+  }) {
+    try {
+      const response = await api.post('/seat-stitch-patterns', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating seat stitch pattern:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create seat stitch pattern');
+    }
+  }
+
+  // Update seat stitch pattern
+  async updateSeatStitchPattern(id: number, data: {
+    name?: string;
+    description?: string;
+  }) {
+    try {
+      const response = await api.put(`/seat-stitch-patterns/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating seat stitch pattern:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat stitch pattern not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update seat stitch pattern');
+    }
+  }
+
+  // Delete seat stitch pattern
+  async deleteSeatStitchPattern(id: number) {
+    try {
+      const response = await api.delete(`/seat-stitch-patterns/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting seat stitch pattern:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat stitch pattern not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete seat stitch pattern');
+    }
+  }
+
+  // ========== SEAT PRICING ==========
+  
+  // Get seat pricing
+  async getSeatPricing(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/seat-pricing', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching seat pricing:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat pricing');
+    }
+  }
+
+  // Get single seat pricing
+  async getSeatPrice(id: number) {
+    try {
+      const response = await api.get(`/seat-pricing/${id}`);
+      return response.data?.data?.seat_pricing || response.data?.seat_pricing || response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching seat pricing:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat pricing not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat pricing');
+    }
+  }
+
+  // Create seat pricing
+  async createSeatPricing(data: {
+    name: string;
+    description?: string;
+    price: number;
+  }) {
+    try {
+      const response = await api.post('/seat-pricing', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating seat pricing:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create seat pricing');
+    }
+  }
+
+  // Update seat pricing
+  async updateSeatPricing(id: number, data: {
+    name?: string;
+    description?: string;
+    price?: number;
+  }) {
+    try {
+      const response = await api.put(`/seat-pricing/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating seat pricing:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat pricing not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update seat pricing');
+    }
+  }
+
+  // Delete seat pricing
+  async deleteSeatPricing(id: number) {
+    try {
+      const response = await api.delete(`/seat-pricing/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting seat pricing:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat pricing not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete seat pricing');
+    }
+  }
+
+  // ========== RECLINE TYPES ==========
+  
+  // Get recline types
+  async getReclineTypes(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/recline-types', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching recline types:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch recline types');
+    }
+  }
+
+  // Get single recline type
+  async getReclineType(id: number) {
+    try {
+      const response = await api.get(`/recline-types/${id}`);
+      return response.data?.data?.recline_type || response.data?.recline_type || response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching recline type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Recline type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch recline type');
+    }
+  }
+
+  // Create recline type
+  async createReclineType(data: {
+    name: string;
+    description?: string;
+  }) {
+    try {
+      const response = await api.post('/recline-types', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating recline type:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create recline type');
+    }
+  }
+
+  // Update recline type
+  async updateReclineType(id: number, data: {
+    name?: string;
+    description?: string;
+  }) {
+    try {
+      const response = await api.put(`/recline-types/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating recline type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Recline type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update recline type');
+    }
+  }
+
+  // Delete recline type
+  async deleteReclineType(id: number) {
+    try {
+      const response = await api.delete(`/recline-types/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting recline type:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Recline type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete recline type');
+    }
+  }
+
+  // ========== SEAT STYLES ==========
+  
+  // Get seat styles
+  async getSeatStyles(params?: Record<string, any>) {
+    try {
+      const response = await api.get('/seat-styles', { params });
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching seat styles:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat styles');
+    }
+  }
+
+  // Get single seat style
+  async getSeatStyle(id: number) {
+    try {
+      const response = await api.get(`/seat-styles/${id}`);
+      return response.data?.data?.seat_style || response.data?.seat_style || response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching seat style:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat style not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat style');
+    }
+  }
+
+  // Create seat style
+  async createSeatStyle(data: {
+    name: string;
+    description?: string;
+  }) {
+    try {
+      const response = await api.post('/seat-styles', data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error creating seat style:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create seat style');
+    }
+  }
+
+  // Update seat style
+  async updateSeatStyle(id: number, data: {
+    name?: string;
+    description?: string;
+  }) {
+    try {
+      const response = await api.put(`/seat-styles/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating seat style:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat style not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update seat style');
+    }
+  }
+
+  // Delete seat style
+  async deleteSeatStyle(id: number) {
+    try {
+      const response = await api.delete(`/seat-styles/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting seat style:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat style not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete seat style');
+    }
+  }
 }
 
 // Export singleton instance

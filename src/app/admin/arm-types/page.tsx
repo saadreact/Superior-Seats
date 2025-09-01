@@ -9,7 +9,6 @@ import {
   CardContent,
   CardActions,
   IconButton,
-  Chip,
   Dialog,
   Alert,
   CircularProgress,
@@ -247,17 +246,6 @@ const ArmTypesPage = () => {
                   >
                     {armType.description || 'No description available'}
                   </Typography>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Chip
-                      label={armType.is_active ? 'Active' : 'Inactive'}
-                      size="small"
-                      color={armType.is_active ? 'success' : 'default'}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      
-                    </Typography>
-                  </Box>
                 </CardContent>
 
                 <CardActions sx={{ justifyContent: 'center', pb: 2, gap: 1 }}>

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import {
   Box,
   Typography,
@@ -15,15 +15,42 @@ import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-materia
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
-const CreateHeatOptionPage = () => {
+const EditSeatPricingPage = () => {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+  
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+    price: ''});
+
+  useEffect(() => {
+    loadSeatPricing();
+  }, [id]);
+
+  const loadSeatPricing = async () => {
+    try {
+      setInitialLoading(true);
+      setError(null);
+      
+      const seatPricing = await apiService.getSeatPrice(parseInt(id));
+      setFormData({
+        name: seatPricing.name || '',
+        description: seatPricing.description || '',
+        price: seatPricing.price ? seatPricing.price.toString() : ''});
+    } catch (err: any) {
+      setError(err.message || 'Failed to load seat pricing');
+      console.error('Error loading seat pricing:', err);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -39,32 +66,52 @@ const CreateHeatOptionPage = () => {
       return;
     }
 
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      setError('Price must be greater than 0');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       
-      await apiService.createHeatOption(formData);
-      setSuccess('Heat Option created successfully!');
+      const submitData = {
+        ...formData,
+        price: parseFloat(formData.price)
+      };
+      
+      await apiService.updateSeatPricing(parseInt(id), submitData);
+      setSuccess('Seat Pricing updated successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/heat-options');
+        router.push('/admin/seat-pricing');
       }, 1500);
       
     } catch (err: any) {
-      setError(err.message || 'Failed to create heat option');
-      console.error('Error creating heat option:', err);
+      setError(err.message || 'Failed to update seat pricing');
+      console.error('Error updating seat pricing:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleBack = () => {
-    router.push('/admin/heat-options');
+    router.push('/admin/seat-pricing');
   };
 
+  if (initialLoading) {
+    return (
+      <AdminLayout title="Edit Seat Pricing">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <CircularProgress />
+        </Box>
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout title="Create Heat Option">
+    <AdminLayout title="Edit Seat Pricing">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -73,12 +120,12 @@ const CreateHeatOptionPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Heat Options
+            Back to Seat Pricing
           </Button>
         </Box>
 
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Heat Option
+          Edit Seat Pricing
         </Typography>
 
         {/* Alerts */}
@@ -110,7 +157,24 @@ const CreateHeatOptionPage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter heat option name"
+                  placeholder="Enter seat pricing name"
+                />
+
+                <TextField
+                  label="Price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  required
+                  fullWidth
+                  placeholder="0.00"
+                  inputProps={{ 
+                    min: 0,
+                    step: 0.01
+                  }}
+                  InputProps={{
+                    startAdornment: '$'
+                  }}
                 />
 
                 <TextField
@@ -132,7 +196,7 @@ const CreateHeatOptionPage = () => {
                     disabled={loading}
                     sx={{ minWidth: 150, py: 1.5 }}
                   >
-                    {loading ? 'Creating...' : 'Create Heat Option'}
+                    {loading ? 'Updating...' : 'Update Seat Pricing'}
                   </Button>
                   
                   <Button
@@ -153,4 +217,4 @@ const CreateHeatOptionPage = () => {
   );
 };
 
-export default CreateHeatOptionPage;
+export default EditSeatPricingPage; 

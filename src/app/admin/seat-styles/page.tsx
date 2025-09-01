@@ -28,31 +28,29 @@ import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
 
-interface LumbarType {
+interface SeatStyle {
   id: number;
   name: string;
   description: string;
-  is_active: boolean;
-  
   created_at: string;
   updated_at: string;
 }
 
-const LumbarTypesPage = () => {
+const SeatStylesPage = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [lumbartypess, setLumbarTypes] = useState<LumbarType[]>([]);
+  const [seatStyles, setSeatStyles] = useState<SeatStyle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [lumbartypesToDelete, setLumbarTypeToDelete] = useState<LumbarType | null>(null);
+  const [seatStyleToDelete, setSeatStyleToDelete] = useState<SeatStyle | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadLumbarTypes = useCallback(async () => {
+  const loadSeatStyles = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -60,64 +58,64 @@ const LumbarTypesPage = () => {
       const params: Record<string, any> = {};
       if (searchTerm) params.search = searchTerm;
       
-      const response = await apiService.getLumbarTypes(params);
+      const response = await apiService.getSeatStyles(params);
       
       if (response && response.data) {
-        setLumbarTypes(response.data);
+        setSeatStyles(response.data);
       } else if (Array.isArray(response)) {
-        setLumbarTypes(response);
+        setSeatStyles(response);
       } else {
-        setLumbarTypes([]);
+        setSeatStyles([]);
       }
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         setError('Please log in to access this page');
       } else {
-        setError(err.message || 'Failed to load lumbar types. Please try again later.');
+        setError(err.message || 'Failed to load seat styles. Please try again later.');
       }
-      console.error('Error loading lumbar types:', err);
+      console.error('Error loading seat styles:', err);
     } finally {
       setLoading(false);
     }
   }, [searchTerm]);
 
   useEffect(() => {
-    loadLumbarTypes();
-  }, [loadLumbarTypes]);
+    loadSeatStyles();
+  }, [loadSeatStyles]);
 
   const handleAdd = () => {
-    router.push('/admin/lumbar-types/create');
+    router.push('/admin/seat-styles/create');
   };
 
-  const handleEdit = (lumbartypes: LumbarType) => {
-    router.push(`/admin/lumbar-types/${lumbartypes.id}/edit`);
+  const handleEdit = (seatStyle: SeatStyle) => {
+    router.push(`/admin/seat-styles/${seatStyle.id}/edit`);
   };
 
-  const handleView = (lumbartypes: LumbarType) => {
-    router.push(`/admin/lumbar-types/${lumbartypes.id}`);
+  const handleView = (seatStyle: SeatStyle) => {
+    router.push(`/admin/seat-styles/${seatStyle.id}`);
   };
 
-  const handleDelete = (lumbartypes: LumbarType) => {
-    setLumbarTypeToDelete(lumbartypes);
+  const handleDelete = (seatStyle: SeatStyle) => {
+    setSeatStyleToDelete(seatStyle);
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (lumbartypesToDelete) {
+    if (seatStyleToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteLumbarType(lumbartypesToDelete.id);
-        setLumbarTypes(prev => prev.filter(item => item.id !== lumbartypesToDelete.id));
-        setAlert({ type: 'success', message: 'Lumbar Type deleted successfully' });
+        await apiService.deleteSeatStyle(seatStyleToDelete.id);
+        setSeatStyles(prev => prev.filter(item => item.id !== seatStyleToDelete.id));
+        setAlert({ type: 'success', message: 'Seat Style deleted successfully' });
       } catch (err: any) {
-        setError(err.message || 'Failed to delete lumbar type');
-        console.error('Error deleting lumbar type:', err);
+        setError(err.message || 'Failed to delete seat style');
+        console.error('Error deleting seat style:', err);
       } finally {
         setDeleting(false);
       }
     }
     setIsDeleteDialogOpen(false);
-    setLumbarTypeToDelete(null);
+    setSeatStyleToDelete(null);
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +123,7 @@ const LumbarTypesPage = () => {
   };
 
   return (
-    <AdminLayout title="Lumbar Types">
+    <AdminLayout title="Seat Styles">
       <Box>
         <Box sx={{ 
           mb: 3, 
@@ -136,7 +134,7 @@ const LumbarTypesPage = () => {
           gap: { xs: 2, sm: 0 }
         }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Lumbar Types
+            Seat Styles
           </Typography>
           <Button
             variant="contained"
@@ -144,7 +142,7 @@ const LumbarTypesPage = () => {
             onClick={handleAdd}
             sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
           >
-            Add Lumbar Type
+            Add Seat Style
           </Button>
         </Box>
 
@@ -152,7 +150,7 @@ const LumbarTypesPage = () => {
         <Box sx={{ mb: 3 }}>
           <TextField
             fullWidth
-            placeholder="Search lumbar types..."
+            placeholder="Search seat styles..."
             value={searchTerm}
             onChange={handleSearch}
             InputProps={{
@@ -181,18 +179,18 @@ const LumbarTypesPage = () => {
           </Alert>
         )}
 
-        {/* Lumbar Types Grid */}
+        {/* Seat Styles Grid */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : lumbartypess.length === 0 ? (
+        ) : seatStyles.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No lumbar types found
+              No seat styles found
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Lumbar Type" to create your first lumbar type.`}
+              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Seat Style" to create your first seat style.`}
             </Typography>
           </Paper>
         ) : (
@@ -206,9 +204,9 @@ const LumbarTypesPage = () => {
             }, 
             gap: 3 
           }}>
-            {lumbartypess.map((lumbartypes) => (
+            {seatStyles.map((seatStyle) => (
               <Card 
-                key={lumbartypes.id}
+                key={seatStyle.id}
                 sx={{ 
                   height: '100%',
                   display: 'flex',
@@ -227,7 +225,7 @@ const LumbarTypesPage = () => {
                       fontSize: { xs: '0.9rem', sm: '1rem' },
                       mb: 2}}
                   >
-                    {lumbartypes.name}
+                    {seatStyle.name}
                   </Typography>
                   
                   <Typography 
@@ -242,14 +240,14 @@ const LumbarTypesPage = () => {
                       textOverflow: 'ellipsis',
                       minHeight: '3rem'}}
                   >
-                    {lumbartypes.description || 'No description available'}
+                    {seatStyle.description || 'No description available'}
                   </Typography>
                 </CardContent>
 
                 <CardActions sx={{ justifyContent: 'center', pb: 2, gap: 1 }}>
                   <IconButton
                     size="small"
-                    onClick={() => handleView(lumbartypes)}
+                    onClick={() => handleView(seatStyle)}
                     title="View Details"
                     sx={{ color: 'primary.main' }}
                   >
@@ -257,7 +255,7 @@ const LumbarTypesPage = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleEdit(lumbartypes)}
+                    onClick={() => handleEdit(seatStyle)}
                     title="Edit"
                     sx={{ color: 'primary.main' }}
                   >
@@ -265,7 +263,7 @@ const LumbarTypesPage = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleDelete(lumbartypes)}
+                    onClick={() => handleDelete(seatStyle)}
                     title="Delete"
                     color="error"
                   >
@@ -287,7 +285,7 @@ const LumbarTypesPage = () => {
               Confirm Delete
             </Typography>
             <Typography sx={{ mb: 3 }}>
-              Are you sure you want to delete &quot;{lumbartypesToDelete?.name}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;{seatStyleToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
@@ -304,4 +302,4 @@ const LumbarTypesPage = () => {
   );
 };
 
-export default LumbarTypesPage;
+export default SeatStylesPage; 
