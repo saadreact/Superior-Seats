@@ -28,31 +28,29 @@ import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
 
-interface LumbarType {
+interface SeatStitchPattern {
   id: number;
   name: string;
   description: string;
-  is_active: boolean;
-  
   created_at: string;
   updated_at: string;
 }
 
-const LumbarTypesPage = () => {
+const SeatStitchPatternsPage = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [lumbartypess, setLumbarTypes] = useState<LumbarType[]>([]);
+  const [seatStitchPatterns, setSeatStitchPatterns] = useState<SeatStitchPattern[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [lumbartypesToDelete, setLumbarTypeToDelete] = useState<LumbarType | null>(null);
+  const [seatStitchPatternToDelete, setSeatStitchPatternToDelete] = useState<SeatStitchPattern | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadLumbarTypes = useCallback(async () => {
+  const loadSeatStitchPatterns = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -60,64 +58,64 @@ const LumbarTypesPage = () => {
       const params: Record<string, any> = {};
       if (searchTerm) params.search = searchTerm;
       
-      const response = await apiService.getLumbarTypes(params);
+      const response = await apiService.getSeatStitchPatterns(params);
       
       if (response && response.data) {
-        setLumbarTypes(response.data);
+        setSeatStitchPatterns(response.data);
       } else if (Array.isArray(response)) {
-        setLumbarTypes(response);
+        setSeatStitchPatterns(response);
       } else {
-        setLumbarTypes([]);
+        setSeatStitchPatterns([]);
       }
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         setError('Please log in to access this page');
       } else {
-        setError(err.message || 'Failed to load lumbar types. Please try again later.');
+        setError(err.message || 'Failed to load seat stitch patterns. Please try again later.');
       }
-      console.error('Error loading lumbar types:', err);
+      console.error('Error loading seat stitch patterns:', err);
     } finally {
       setLoading(false);
     }
   }, [searchTerm]);
 
   useEffect(() => {
-    loadLumbarTypes();
-  }, [loadLumbarTypes]);
+    loadSeatStitchPatterns();
+  }, [loadSeatStitchPatterns]);
 
   const handleAdd = () => {
-    router.push('/admin/lumbar-types/create');
+    router.push('/admin/seat-stitch-patterns/create');
   };
 
-  const handleEdit = (lumbartypes: LumbarType) => {
-    router.push(`/admin/lumbar-types/${lumbartypes.id}/edit`);
+  const handleEdit = (seatStitchPattern: SeatStitchPattern) => {
+    router.push(`/admin/seat-stitch-patterns/${seatStitchPattern.id}/edit`);
   };
 
-  const handleView = (lumbartypes: LumbarType) => {
-    router.push(`/admin/lumbar-types/${lumbartypes.id}`);
+  const handleView = (seatStitchPattern: SeatStitchPattern) => {
+    router.push(`/admin/seat-stitch-patterns/${seatStitchPattern.id}`);
   };
 
-  const handleDelete = (lumbartypes: LumbarType) => {
-    setLumbarTypeToDelete(lumbartypes);
+  const handleDelete = (seatStitchPattern: SeatStitchPattern) => {
+    setSeatStitchPatternToDelete(seatStitchPattern);
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (lumbartypesToDelete) {
+    if (seatStitchPatternToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteLumbarType(lumbartypesToDelete.id);
-        setLumbarTypes(prev => prev.filter(item => item.id !== lumbartypesToDelete.id));
-        setAlert({ type: 'success', message: 'Lumbar Type deleted successfully' });
+        await apiService.deleteSeatStitchPattern(seatStitchPatternToDelete.id);
+        setSeatStitchPatterns(prev => prev.filter(item => item.id !== seatStitchPatternToDelete.id));
+        setAlert({ type: 'success', message: 'Seat Stitch Pattern deleted successfully' });
       } catch (err: any) {
-        setError(err.message || 'Failed to delete lumbar type');
-        console.error('Error deleting lumbar type:', err);
+        setError(err.message || 'Failed to delete seat stitch pattern');
+        console.error('Error deleting seat stitch pattern:', err);
       } finally {
         setDeleting(false);
       }
     }
     setIsDeleteDialogOpen(false);
-    setLumbarTypeToDelete(null);
+    setSeatStitchPatternToDelete(null);
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +123,7 @@ const LumbarTypesPage = () => {
   };
 
   return (
-    <AdminLayout title="Lumbar Types">
+    <AdminLayout title="Seat Stitch Patterns">
       <Box>
         <Box sx={{ 
           mb: 3, 
@@ -136,7 +134,7 @@ const LumbarTypesPage = () => {
           gap: { xs: 2, sm: 0 }
         }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Lumbar Types
+            Seat Stitch Patterns
           </Typography>
           <Button
             variant="contained"
@@ -144,7 +142,7 @@ const LumbarTypesPage = () => {
             onClick={handleAdd}
             sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
           >
-            Add Lumbar Type
+            Add Seat Stitch Pattern
           </Button>
         </Box>
 
@@ -152,7 +150,7 @@ const LumbarTypesPage = () => {
         <Box sx={{ mb: 3 }}>
           <TextField
             fullWidth
-            placeholder="Search lumbar types..."
+            placeholder="Search seat stitch patterns..."
             value={searchTerm}
             onChange={handleSearch}
             InputProps={{
@@ -181,18 +179,18 @@ const LumbarTypesPage = () => {
           </Alert>
         )}
 
-        {/* Lumbar Types Grid */}
+        {/* Seat Stitch Patterns Grid */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : lumbartypess.length === 0 ? (
+        ) : seatStitchPatterns.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No lumbar types found
+              No seat stitch patterns found
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Lumbar Type" to create your first lumbar type.`}
+              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Seat Stitch Pattern" to create your first seat stitch pattern.`}
             </Typography>
           </Paper>
         ) : (
@@ -206,9 +204,9 @@ const LumbarTypesPage = () => {
             }, 
             gap: 3 
           }}>
-            {lumbartypess.map((lumbartypes) => (
+            {seatStitchPatterns.map((seatStitchPattern) => (
               <Card 
-                key={lumbartypes.id}
+                key={seatStitchPattern.id}
                 sx={{ 
                   height: '100%',
                   display: 'flex',
@@ -227,7 +225,7 @@ const LumbarTypesPage = () => {
                       fontSize: { xs: '0.9rem', sm: '1rem' },
                       mb: 2}}
                   >
-                    {lumbartypes.name}
+                    {seatStitchPattern.name}
                   </Typography>
                   
                   <Typography 
@@ -242,14 +240,14 @@ const LumbarTypesPage = () => {
                       textOverflow: 'ellipsis',
                       minHeight: '3rem'}}
                   >
-                    {lumbartypes.description || 'No description available'}
+                    {seatStitchPattern.description || 'No description available'}
                   </Typography>
                 </CardContent>
 
                 <CardActions sx={{ justifyContent: 'center', pb: 2, gap: 1 }}>
                   <IconButton
                     size="small"
-                    onClick={() => handleView(lumbartypes)}
+                    onClick={() => handleView(seatStitchPattern)}
                     title="View Details"
                     sx={{ color: 'primary.main' }}
                   >
@@ -257,7 +255,7 @@ const LumbarTypesPage = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleEdit(lumbartypes)}
+                    onClick={() => handleEdit(seatStitchPattern)}
                     title="Edit"
                     sx={{ color: 'primary.main' }}
                   >
@@ -265,7 +263,7 @@ const LumbarTypesPage = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleDelete(lumbartypes)}
+                    onClick={() => handleDelete(seatStitchPattern)}
                     title="Delete"
                     color="error"
                   >
@@ -287,7 +285,7 @@ const LumbarTypesPage = () => {
               Confirm Delete
             </Typography>
             <Typography sx={{ mb: 3 }}>
-              Are you sure you want to delete &quot;{lumbartypesToDelete?.name}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;{seatStitchPatternToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
@@ -304,4 +302,4 @@ const LumbarTypesPage = () => {
   );
 };
 
-export default LumbarTypesPage;
+export default SeatStitchPatternsPage; 

@@ -15,7 +15,7 @@ import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-materia
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
-const CreateHeatOptionPage = () => {
+const CreateSeatPricingPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,8 @@ const CreateHeatOptionPage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+    price: ''});
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -39,32 +40,42 @@ const CreateHeatOptionPage = () => {
       return;
     }
 
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      setError('Price must be greater than 0');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       
-      await apiService.createHeatOption(formData);
-      setSuccess('Heat Option created successfully!');
+      const submitData = {
+        ...formData,
+        price: parseFloat(formData.price)
+      };
+      
+      await apiService.createSeatPricing(submitData);
+      setSuccess('Seat Pricing created successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/heat-options');
+        router.push('/admin/seat-pricing');
       }, 1500);
       
     } catch (err: any) {
-      setError(err.message || 'Failed to create heat option');
-      console.error('Error creating heat option:', err);
+      setError(err.message || 'Failed to create seat pricing');
+      console.error('Error creating seat pricing:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleBack = () => {
-    router.push('/admin/heat-options');
+    router.push('/admin/seat-pricing');
   };
 
   return (
-    <AdminLayout title="Create Heat Option">
+    <AdminLayout title="Create Seat Pricing">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -73,12 +84,12 @@ const CreateHeatOptionPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Heat Options
+            Back to Seat Pricing
           </Button>
         </Box>
 
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Heat Option
+          Create New Seat Pricing
         </Typography>
 
         {/* Alerts */}
@@ -110,7 +121,24 @@ const CreateHeatOptionPage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter heat option name"
+                  placeholder="Enter seat pricing name"
+                />
+
+                <TextField
+                  label="Price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  required
+                  fullWidth
+                  placeholder="0.00"
+                  inputProps={{ 
+                    min: 0,
+                    step: 0.01
+                  }}
+                  InputProps={{
+                    startAdornment: '$'
+                  }}
                 />
 
                 <TextField
@@ -132,7 +160,7 @@ const CreateHeatOptionPage = () => {
                     disabled={loading}
                     sx={{ minWidth: 150, py: 1.5 }}
                   >
-                    {loading ? 'Creating...' : 'Create Heat Option'}
+                    {loading ? 'Creating...' : 'Create Seat Pricing'}
                   </Button>
                   
                   <Button
@@ -153,4 +181,4 @@ const CreateHeatOptionPage = () => {
   );
 };
 
-export default CreateHeatOptionPage;
+export default CreateSeatPricingPage; 

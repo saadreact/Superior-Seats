@@ -29,8 +29,7 @@ const EditLumbarTypePage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    is_active: true});
+    description: ''});
 
   useEffect(() => {
     loadLumbarType();
@@ -41,11 +40,10 @@ const EditLumbarTypePage = () => {
       setInitialLoading(true);
       setError(null);
       
-      const lumbartypes = await apiService.getLumbarType(parseInt(id));
+      const lumbarType = await apiService.getLumbarType(parseInt(id));
       setFormData({
-        name: lumbartypes.name || '',
-        description: lumbartypes.description || '',
-        is_active: lumbartypes.is_active ?? true});
+        name: lumbarType.name || '',
+        description: lumbarType.description || ''});
     } catch (err: any) {
       setError(err.message || 'Failed to load lumbar type');
       console.error('Error loading lumbar type:', err);
@@ -77,7 +75,7 @@ const EditLumbarTypePage = () => {
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/variations/lumbar-types');
+        router.push('/admin/lumbar-types');
       }, 1500);
       
     } catch (err: any) {
@@ -89,7 +87,7 @@ const EditLumbarTypePage = () => {
   };
 
   const handleBack = () => {
-    router.push('/admin/variations/lumbar-types');
+    router.push('/admin/lumbar-types');
   };
 
   if (initialLoading) {
@@ -143,22 +141,23 @@ const EditLumbarTypePage = () => {
                   Basic Information
                 </Typography>
                 
-                
+                <TextField
+                  label="Name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  required
+                  fullWidth
+                  placeholder="Enter lumbar type name"
+                />
 
-                {/* Status */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Status
-                </Typography>
-
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.is_active}
-                      onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Active"
+                <TextField
+                  label="Description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  placeholder="Enter description (optional)"
                 />
 
                 {/* Action Buttons */}

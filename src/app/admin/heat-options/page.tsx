@@ -9,7 +9,6 @@ import {
   CardContent,
   CardActions,
   IconButton,
-  Chip,
   Dialog,
   Alert,
   CircularProgress,
@@ -207,9 +206,9 @@ const HeatOptionsPage = () => {
             }, 
             gap: 3 
           }}>
-            {heatoptionss.map((heatoptions) => (
+            {heatoptionss.map((heatOption) => (
               <Card 
-                key={heatoptions.id}
+                key={heatOption.id}
                 sx={{ 
                   height: '100%',
                   display: 'flex',
@@ -228,7 +227,7 @@ const HeatOptionsPage = () => {
                       fontSize: { xs: '0.9rem', sm: '1rem' },
                       mb: 2}}
                   >
-                    {heatoptions.name}
+                    {heatOption.name}
                   </Typography>
                   
                   <Typography 
@@ -243,25 +242,14 @@ const HeatOptionsPage = () => {
                       textOverflow: 'ellipsis',
                       minHeight: '3rem'}}
                   >
-                    {heatoptions.description || 'No description available'}
+                    {heatOption.description || 'No description available'}
                   </Typography>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Chip
-                      label={heatoptions.is_active ? 'Active' : 'Inactive'}
-                      size="small"
-                      color={heatoptions.is_active ? 'success' : 'default'}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      
-                    </Typography>
-                  </Box>
                 </CardContent>
 
                 <CardActions sx={{ justifyContent: 'center', pb: 2, gap: 1 }}>
                   <IconButton
                     size="small"
-                    onClick={() => handleView(heatoptions)}
+                    onClick={() => handleView(heatOption)}
                     title="View Details"
                     sx={{ color: 'primary.main' }}
                   >
@@ -269,7 +257,7 @@ const HeatOptionsPage = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleEdit(heatoptions)}
+                    onClick={() => handleEdit(heatOption)}
                     title="Edit"
                     sx={{ color: 'primary.main' }}
                   >
@@ -277,7 +265,7 @@ const HeatOptionsPage = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleDelete(heatoptions)}
+                    onClick={() => handleDelete(heatOption)}
                     title="Delete"
                     color="error"
                   >
