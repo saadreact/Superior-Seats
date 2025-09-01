@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import {
   Box,
   Typography,
@@ -15,15 +15,40 @@ import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-materia
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
-const CreateHeatOptionPage = () => {
+const EditSeatTypePage = () => {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+  
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
     description: ''});
+
+  useEffect(() => {
+    loadSeatType();
+  }, [id]);
+
+  const loadSeatType = async () => {
+    try {
+      setInitialLoading(true);
+      setError(null);
+      
+      const seatType = await apiService.getSeatType(parseInt(id));
+      setFormData({
+        name: seatType.name || '',
+        description: seatType.description || ''});
+    } catch (err: any) {
+      setError(err.message || 'Failed to load seat type');
+      console.error('Error loading seat type:', err);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -43,28 +68,38 @@ const CreateHeatOptionPage = () => {
       setLoading(true);
       setError(null);
       
-      await apiService.createHeatOption(formData);
-      setSuccess('Heat Option created successfully!');
+      await apiService.updateSeatType(parseInt(id), formData);
+      setSuccess('Seat Type updated successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/heat-options');
+        router.push('/admin/seat-types');
       }, 1500);
       
     } catch (err: any) {
-      setError(err.message || 'Failed to create heat option');
-      console.error('Error creating heat option:', err);
+      setError(err.message || 'Failed to update seat type');
+      console.error('Error updating seat type:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleBack = () => {
-    router.push('/admin/heat-options');
+    router.push('/admin/seat-types');
   };
 
+  if (initialLoading) {
+    return (
+      <AdminLayout title="Edit Seat Type">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <CircularProgress />
+        </Box>
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout title="Create Heat Option">
+    <AdminLayout title="Edit Seat Type">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -73,12 +108,12 @@ const CreateHeatOptionPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Heat Options
+            Back to Seat Types
           </Button>
         </Box>
 
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Heat Option
+          Edit Seat Type
         </Typography>
 
         {/* Alerts */}
@@ -110,7 +145,7 @@ const CreateHeatOptionPage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter heat option name"
+                  placeholder="Enter seat type name"
                 />
 
                 <TextField
@@ -132,7 +167,7 @@ const CreateHeatOptionPage = () => {
                     disabled={loading}
                     sx={{ minWidth: 150, py: 1.5 }}
                   >
-                    {loading ? 'Creating...' : 'Create Heat Option'}
+                    {loading ? 'Updating...' : 'Update Seat Type'}
                   </Button>
                   
                   <Button
@@ -153,4 +188,4 @@ const CreateHeatOptionPage = () => {
   );
 };
 
-export default CreateHeatOptionPage;
+export default EditSeatTypePage; 

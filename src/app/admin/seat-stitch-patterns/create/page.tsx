@@ -15,7 +15,7 @@ import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-materia
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
-const CreateHeatOptionPage = () => {
+const CreateSeatStitchPatternPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,28 +43,28 @@ const CreateHeatOptionPage = () => {
       setLoading(true);
       setError(null);
       
-      await apiService.createHeatOption(formData);
-      setSuccess('Heat Option created successfully!');
+      await apiService.createSeatStitchPattern(formData);
+      setSuccess('Seat Stitch Pattern created successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/heat-options');
+        router.push('/admin/seat-stitch-patterns');
       }, 1500);
       
     } catch (err: any) {
-      setError(err.message || 'Failed to create heat option');
-      console.error('Error creating heat option:', err);
+      setError(err.message || 'Failed to create seat stitch pattern');
+      console.error('Error creating seat stitch pattern:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleBack = () => {
-    router.push('/admin/heat-options');
+    router.push('/admin/seat-stitch-patterns');
   };
 
   return (
-    <AdminLayout title="Create Heat Option">
+    <AdminLayout title="Create Seat Stitch Pattern">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -73,12 +73,12 @@ const CreateHeatOptionPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Heat Options
+            Back to Seat Stitch Patterns
           </Button>
         </Box>
 
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Heat Option
+          Create New Seat Stitch Pattern
         </Typography>
 
         {/* Alerts */}
@@ -110,7 +110,7 @@ const CreateHeatOptionPage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter heat option name"
+                  placeholder="Enter seat stitch pattern name"
                 />
 
                 <TextField
@@ -132,7 +132,7 @@ const CreateHeatOptionPage = () => {
                     disabled={loading}
                     sx={{ minWidth: 150, py: 1.5 }}
                   >
-                    {loading ? 'Creating...' : 'Create Heat Option'}
+                    {loading ? 'Creating...' : 'Create Seat Stitch Pattern'}
                   </Button>
                   
                   <Button
@@ -153,4 +153,4 @@ const CreateHeatOptionPage = () => {
   );
 };
 
-export default CreateHeatOptionPage;
+export default CreateSeatStitchPatternPage; 

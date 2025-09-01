@@ -28,31 +28,30 @@ import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
 
-interface LumbarType {
+interface SeatPricing {
   id: number;
   name: string;
   description: string;
-  is_active: boolean;
-  
+  price: number;
   created_at: string;
   updated_at: string;
 }
 
-const LumbarTypesPage = () => {
+const SeatPricingPage = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [lumbartypess, setLumbarTypes] = useState<LumbarType[]>([]);
+  const [seatPricing, setSeatPricing] = useState<SeatPricing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [lumbartypesToDelete, setLumbarTypeToDelete] = useState<LumbarType | null>(null);
+  const [seatPricingToDelete, setSeatPricingToDelete] = useState<SeatPricing | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadLumbarTypes = useCallback(async () => {
+  const loadSeatPricing = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -60,72 +59,79 @@ const LumbarTypesPage = () => {
       const params: Record<string, any> = {};
       if (searchTerm) params.search = searchTerm;
       
-      const response = await apiService.getLumbarTypes(params);
+      const response = await apiService.getSeatPricing(params);
       
       if (response && response.data) {
-        setLumbarTypes(response.data);
+        setSeatPricing(response.data);
       } else if (Array.isArray(response)) {
-        setLumbarTypes(response);
+        setSeatPricing(response);
       } else {
-        setLumbarTypes([]);
+        setSeatPricing([]);
       }
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         setError('Please log in to access this page');
       } else {
-        setError(err.message || 'Failed to load lumbar types. Please try again later.');
+        setError(err.message || 'Failed to load seat pricing. Please try again later.');
       }
-      console.error('Error loading lumbar types:', err);
+      console.error('Error loading seat pricing:', err);
     } finally {
       setLoading(false);
     }
   }, [searchTerm]);
 
   useEffect(() => {
-    loadLumbarTypes();
-  }, [loadLumbarTypes]);
+    loadSeatPricing();
+  }, [loadSeatPricing]);
 
   const handleAdd = () => {
-    router.push('/admin/lumbar-types/create');
+    router.push('/admin/seat-pricing/create');
   };
 
-  const handleEdit = (lumbartypes: LumbarType) => {
-    router.push(`/admin/lumbar-types/${lumbartypes.id}/edit`);
+  const handleEdit = (seatPricingItem: SeatPricing) => {
+    router.push(`/admin/seat-pricing/${seatPricingItem.id}/edit`);
   };
 
-  const handleView = (lumbartypes: LumbarType) => {
-    router.push(`/admin/lumbar-types/${lumbartypes.id}`);
+  const handleView = (seatPricingItem: SeatPricing) => {
+    router.push(`/admin/seat-pricing/${seatPricingItem.id}`);
   };
 
-  const handleDelete = (lumbartypes: LumbarType) => {
-    setLumbarTypeToDelete(lumbartypes);
+  const handleDelete = (seatPricingItem: SeatPricing) => {
+    setSeatPricingToDelete(seatPricingItem);
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (lumbartypesToDelete) {
+    if (seatPricingToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteLumbarType(lumbartypesToDelete.id);
-        setLumbarTypes(prev => prev.filter(item => item.id !== lumbartypesToDelete.id));
-        setAlert({ type: 'success', message: 'Lumbar Type deleted successfully' });
+        await apiService.deleteSeatPricing(seatPricingToDelete.id);
+        setSeatPricing(prev => prev.filter(item => item.id !== seatPricingToDelete.id));
+        setAlert({ type: 'success', message: 'Seat Pricing deleted successfully' });
       } catch (err: any) {
-        setError(err.message || 'Failed to delete lumbar type');
-        console.error('Error deleting lumbar type:', err);
+        setError(err.message || 'Failed to delete seat pricing');
+        console.error('Error deleting seat pricing:', err);
       } finally {
         setDeleting(false);
       }
     }
     setIsDeleteDialogOpen(false);
-    setLumbarTypeToDelete(null);
+    setSeatPricingToDelete(null);
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  };
+
   return (
-    <AdminLayout title="Lumbar Types">
+    <AdminLayout title="Seat Pricing">
       <Box>
         <Box sx={{ 
           mb: 3, 
@@ -136,7 +142,7 @@ const LumbarTypesPage = () => {
           gap: { xs: 2, sm: 0 }
         }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Lumbar Types
+            Seat Pricing
           </Typography>
           <Button
             variant="contained"
@@ -144,7 +150,7 @@ const LumbarTypesPage = () => {
             onClick={handleAdd}
             sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
           >
-            Add Lumbar Type
+            Add Seat Pricing
           </Button>
         </Box>
 
@@ -152,7 +158,7 @@ const LumbarTypesPage = () => {
         <Box sx={{ mb: 3 }}>
           <TextField
             fullWidth
-            placeholder="Search lumbar types..."
+            placeholder="Search seat pricing..."
             value={searchTerm}
             onChange={handleSearch}
             InputProps={{
@@ -181,18 +187,18 @@ const LumbarTypesPage = () => {
           </Alert>
         )}
 
-        {/* Lumbar Types Grid */}
+        {/* Seat Pricing Grid */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : lumbartypess.length === 0 ? (
+        ) : seatPricing.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No lumbar types found
+              No seat pricing found
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Lumbar Type" to create your first lumbar type.`}
+              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Seat Pricing" to create your first seat pricing.`}
             </Typography>
           </Paper>
         ) : (
@@ -206,9 +212,9 @@ const LumbarTypesPage = () => {
             }, 
             gap: 3 
           }}>
-            {lumbartypess.map((lumbartypes) => (
+            {seatPricing.map((seatPricingItem) => (
               <Card 
-                key={lumbartypes.id}
+                key={seatPricingItem.id}
                 sx={{ 
                   height: '100%',
                   display: 'flex',
@@ -225,9 +231,19 @@ const LumbarTypesPage = () => {
                     sx={{
                       fontWeight: 600,
                       fontSize: { xs: '0.9rem', sm: '1rem' },
+                      mb: 1}}
+                  >
+                    {seatPricingItem.name}
+                  </Typography>
+                  
+                  <Typography 
+                    variant="h5" 
+                    color="primary.main" 
+                    sx={{ 
+                      fontWeight: 700,
                       mb: 2}}
                   >
-                    {lumbartypes.name}
+                    {formatPrice(seatPricingItem.price)}
                   </Typography>
                   
                   <Typography 
@@ -242,14 +258,14 @@ const LumbarTypesPage = () => {
                       textOverflow: 'ellipsis',
                       minHeight: '3rem'}}
                   >
-                    {lumbartypes.description || 'No description available'}
+                    {seatPricingItem.description || 'No description available'}
                   </Typography>
                 </CardContent>
 
                 <CardActions sx={{ justifyContent: 'center', pb: 2, gap: 1 }}>
                   <IconButton
                     size="small"
-                    onClick={() => handleView(lumbartypes)}
+                    onClick={() => handleView(seatPricingItem)}
                     title="View Details"
                     sx={{ color: 'primary.main' }}
                   >
@@ -257,7 +273,7 @@ const LumbarTypesPage = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleEdit(lumbartypes)}
+                    onClick={() => handleEdit(seatPricingItem)}
                     title="Edit"
                     sx={{ color: 'primary.main' }}
                   >
@@ -265,7 +281,7 @@ const LumbarTypesPage = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleDelete(lumbartypes)}
+                    onClick={() => handleDelete(seatPricingItem)}
                     title="Delete"
                     color="error"
                   >
@@ -287,7 +303,7 @@ const LumbarTypesPage = () => {
               Confirm Delete
             </Typography>
             <Typography sx={{ mb: 3 }}>
-              Are you sure you want to delete &quot;{lumbartypesToDelete?.name}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;{seatPricingToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
@@ -304,4 +320,4 @@ const LumbarTypesPage = () => {
   );
 };
 
-export default LumbarTypesPage;
+export default SeatPricingPage; 
