@@ -9,8 +9,6 @@ import {
   Button,
   Paper,
   Alert,
-  FormControlLabel,
-  Switch,
   Stack,
   CircularProgress} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
@@ -29,8 +27,7 @@ const EditHeatOptionPage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    is_active: true});
+    description: ''});
 
   useEffect(() => {
     loadHeatOption();
@@ -41,11 +38,10 @@ const EditHeatOptionPage = () => {
       setInitialLoading(true);
       setError(null);
       
-      const heatoptions = await apiService.getHeatOption(parseInt(id));
+      const heatOption = await apiService.getHeatOption(parseInt(id));
       setFormData({
-        name: heatoptions.name || '',
-        description: heatoptions.description || '',
-        is_active: heatoptions.is_active ?? true});
+        name: heatOption.name || '',
+        description: heatOption.description || ''});
     } catch (err: any) {
       setError(err.message || 'Failed to load heat option');
       console.error('Error loading heat option:', err);
@@ -77,7 +73,7 @@ const EditHeatOptionPage = () => {
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/variations/heat-options');
+        router.push('/admin/heat-options');
       }, 1500);
       
     } catch (err: any) {
@@ -89,7 +85,7 @@ const EditHeatOptionPage = () => {
   };
 
   const handleBack = () => {
-    router.push('/admin/variations/heat-options');
+    router.push('/admin/heat-options');
   };
 
   if (initialLoading) {
@@ -143,22 +139,23 @@ const EditHeatOptionPage = () => {
                   Basic Information
                 </Typography>
                 
-                
+                <TextField
+                  label="Name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  required
+                  fullWidth
+                  placeholder="Enter heat option name"
+                />
 
-                {/* Status */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Status
-                </Typography>
-
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.is_active}
-                      onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Active"
+                <TextField
+                  label="Description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  placeholder="Enter description (optional)"
                 />
 
                 {/* Action Buttons */}

@@ -15,49 +15,48 @@ import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-materia
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
-interface ArmType {
+interface SeatStyle {
   id: number;
   name: string;
   description: string;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-const ArmTypeDetailPage = () => {
+const SeatStyleDetailsPage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
   
+  const [seatStyle, setSeatStyle] = useState<SeatStyle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [armType, setArmType] = useState<ArmType | null>(null);
 
   useEffect(() => {
-    loadArmType();
+    loadSeatStyle();
   }, [id]);
 
-  const loadArmType = async () => {
+  const loadSeatStyle = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const data = await apiService.getArmType(parseInt(id));
-      setArmType(data);
+      const data = await apiService.getSeatStyle(parseInt(id));
+      setSeatStyle(data);
     } catch (err: any) {
-      setError(err.message || 'Failed to load arm type');
-      console.error('Error loading arm type:', err);
+      setError(err.message || 'Failed to load seat style');
+      console.error('Error loading seat style:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleEdit = () => {
-    router.push(`/admin/arm-types/${id}/edit`);
+    router.push(`/admin/seat-styles/${id}/edit`);
   };
 
   const handleBack = () => {
-    router.push('/admin/arm-types');
+    router.push('/admin/seat-styles');
   };
 
   const formatDate = (dateString: string) => {
@@ -66,13 +65,13 @@ const ArmTypeDetailPage = () => {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
+      minute: '2-digit'
     });
   };
 
   if (loading) {
     return (
-      <AdminLayout title="Arm Type Details">
+      <AdminLayout title="Seat Style Details">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
@@ -80,22 +79,12 @@ const ArmTypeDetailPage = () => {
     );
   }
 
-  if (error || !armType) {
+  if (error || !seatStyle) {
     return (
-      <AdminLayout title="Arm Type Details">
-        <Box>
-          <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button
-              startIcon={<ArrowBackIcon />}
-              onClick={handleBack}
-              sx={{ color: 'text.secondary' }}
-            >
-              Back to Arm Types
-            </Button>
-          </Box>
-
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error || 'Arm Type not found'}
+      <AdminLayout title="Seat Style Details">
+        <Box sx={{ p: 3 }}>
+          <Alert severity="error">
+            {error || 'Seat Style not found'}
           </Alert>
         </Box>
       </AdminLayout>
@@ -103,7 +92,7 @@ const ArmTypeDetailPage = () => {
   }
 
   return (
-    <AdminLayout title="Arm Type Details">
+    <AdminLayout title="Seat Style Details">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -112,17 +101,17 @@ const ArmTypeDetailPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Arm Types
+            Back to Seat Styles
           </Button>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Arm Type Details
+            Seat Style Details
           </Typography>
           <Button
             variant="contained"
             startIcon={<EditIcon />}
             onClick={handleEdit}
           >
-            Edit Arm Type
+            Edit Seat Style
           </Button>
         </Box>
 
@@ -136,7 +125,7 @@ const ArmTypeDetailPage = () => {
                     Name
                   </Typography>
                   <Typography variant="body1">
-                    {armType.name}
+                    {seatStyle.name}
                   </Typography>
                 </Box>
 
@@ -145,7 +134,7 @@ const ArmTypeDetailPage = () => {
                     Description
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    {armType.description || 'No description available'}
+                    {seatStyle.description || 'No description available'}
                   </Typography>
                 </Box>
               </Stack>
@@ -164,7 +153,7 @@ const ArmTypeDetailPage = () => {
                       ID
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {armType.id}
+                      {seatStyle.id}
                     </Typography>
                   </Box>
 
@@ -173,7 +162,7 @@ const ArmTypeDetailPage = () => {
                       Created
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {formatDate(armType.created_at)}
+                      {formatDate(seatStyle.created_at)}
                     </Typography>
                   </Box>
 
@@ -182,7 +171,7 @@ const ArmTypeDetailPage = () => {
                       Last Updated
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {formatDate(armType.updated_at)}
+                      {formatDate(seatStyle.updated_at)}
                     </Typography>
                   </Box>
                 </Stack>
@@ -195,4 +184,4 @@ const ArmTypeDetailPage = () => {
   );
 };
 
-export default ArmTypeDetailPage; 
+export default SeatStyleDetailsPage; 

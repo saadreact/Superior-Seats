@@ -134,6 +134,31 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <CategoryIcon />,
       href: '/admin/material-types',
     },
+    {
+      text: 'Seat Types',
+      icon: <CategoryIcon />,
+      href: '/admin/seat-types',
+    },
+    {
+      text: 'Seat Stitch Patterns',
+      icon: <CategoryIcon />,
+      href: '/admin/seat-stitch-patterns',
+    },
+    {
+      text: 'Seat Pricing',
+      icon: <CategoryIcon />,
+      href: '/admin/seat-pricing',
+    },
+    {
+      text: 'Recline Types',
+      icon: <CategoryIcon />,
+      href: '/admin/recline-types',
+    },
+    {
+      text: 'Seat Styles',
+      icon: <CategoryIcon />,
+      href: '/admin/seat-styles',
+    },
   ];
 
   const handleNavigation = (href: string) => {
@@ -181,7 +206,12 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
            pathname.startsWith('/admin/heat-options') ||
            pathname.startsWith('/admin/item-types') ||
            pathname.startsWith('/admin/lumbar-types') ||
-           pathname.startsWith('/admin/material-types');
+           pathname.startsWith('/admin/material-types') ||
+           pathname.startsWith('/admin/seat-types') ||
+           pathname.startsWith('/admin/seat-stitch-patterns') ||
+           pathname.startsWith('/admin/seat-pricing') ||
+           pathname.startsWith('/admin/recline-types') ||
+           pathname.startsWith('/admin/seat-styles');
   };
 
   const drawerContent = (
