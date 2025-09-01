@@ -415,9 +415,10 @@ const HeroSection = () => {
                                variant="outlined"
                                onClick={() => router.push('/custom-seats')}
                              sx={{
-                               border: `2px solid ${theme.palette.primary.main}`,
-                               color: theme.palette.primary.main,
-                               backgroundColor: 'white',
+                             //  border: `1px solid ${theme.palette.primary.main}`,
+                             border: '2px solid white',
+                               color: 'white',
+                               backgroundColor: 'transparent',
                                fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
                                fontWeight: 600,
                                px: { xs: 2, sm: 2.5, md: 3, lg: 4, xl: 8 },

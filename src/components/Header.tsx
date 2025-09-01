@@ -19,7 +19,6 @@ import {
   Divider,
   Menu,
   MenuItem,
-  Container,
   Tooltip,
   Snackbar,
   Alert,
@@ -288,14 +287,15 @@ const Header = () => {
           borderBottom: '1px solid rgba(218, 41, 28, 0.1)',
         }}
       >
-        <Container maxWidth={false} disableGutters>
+        <Box sx={{ width: '100%' }}>
                      <Toolbar 
              sx={{ 
                display: 'grid',
                gridTemplateColumns: '1fr auto',
                gap: 0,
                // Further reduced header height while keeping logo size
-               minHeight: { xs: '30px', sm: '30px', md: '30px', lg: '25px', xl: '30px' },
+               maxHeight: { xs: '30px', sm: '30px', md: '30px', lg: '20px', xl: '10px' },
+             //  minHeight: { xs: '30px', sm: '30px', md: '30px', lg: '10px', xl: '30px' },
                px: { xs: 1, sm: 2, md: 0 },
                py: { xs: 0.25, sm: 0.5, md: 0 },
                width: '100%'
@@ -305,10 +305,12 @@ const Header = () => {
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center',
+              maxHeight: { xs: '30px', sm: '30px', md: '30px', lg: '20px', xl: '10px' },
               gap: 0,
               mx: 0,
               pl: 0,
               ml: 0
+              
             }}>
               {/* Logo Section */}
               <Link href="/" style={{ textDecoration: 'none', outline: 'none' }}>
@@ -627,7 +629,7 @@ const Header = () => {
               )}
             </Box>
           </Toolbar>
-        </Container>
+        </Box>
       </AppBar>
 
       {/* Mobile Drawer */}

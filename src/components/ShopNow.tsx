@@ -534,15 +534,19 @@ const ShopGallery = () => {
              <FormControl 
                sx={{ 
                  minWidth: { xs: '100%', sm: 200, md: 250 },
-                 flex: { xs: 'none', sm: '0 0 auto' }
+                 flex: { xs: 'none', sm: '0 0 auto' },
+                 margin: 0,
+                 '& .MuiFormControl-root': {
+                   margin: 0,
+                 }
                }}
                size="small"
              >
-               <InputLabel id="main-category-label">Main Category</InputLabel>
+               <InputLabel id="main-category-label">Category</InputLabel>
                                <Select
                   labelId="main-category-label"
                   value={selectedMainCategory}
-                  label="Main Category"
+                  label="Category"
                   onChange={handleMainCategoryChange}
                   sx={{
                     backgroundColor: 'white',
