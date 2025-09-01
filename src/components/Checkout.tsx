@@ -42,6 +42,7 @@ const Checkout = () => {
   
   const [activeStep, setActiveStep] = useState(0);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [paymentId, setPaymentId] = useState<string>('');
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -51,7 +52,12 @@ const Checkout = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = (paymentId?: string) => {
+    // Store payment ID and process order
+    if (paymentId) {
+      setPaymentId(paymentId);
+    }
+    
     // Simulate order processing
     setTimeout(() => {
       setOrderComplete(true);
@@ -106,7 +112,7 @@ const Checkout = () => {
       case 2:
         return <PaymentMethod onNext={handlePlaceOrder} onBack={handleBack} />;
       case 3:
-        return <OrderConfirmation onBack={handleBack} />;
+        return <OrderConfirmation onBack={handleBack} paymentId={paymentId} />;
       default:
         return null;
     }

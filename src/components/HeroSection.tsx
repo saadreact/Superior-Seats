@@ -197,7 +197,7 @@ const HeroSection = () => {
           display: 'flex',
           alignItems: 'center',
           position: 'relative',
-          cursor: isDragging ? 'grabbing' : 'grab',
+          cursor: isDragging ? 'grabbing' : 'default',
           overflow: 'hidden',
           userSelect: 'none',
           touchAction: 'none',
@@ -415,9 +415,10 @@ const HeroSection = () => {
                                variant="outlined"
                                onClick={() => router.push('/custom-seats')}
                              sx={{
-                               border: `2px solid ${theme.palette.primary.main}`,
-                               color: theme.palette.primary.main,
-                               backgroundColor: 'white',
+                             //  border: `1px solid ${theme.palette.primary.main}`,
+                             border: '2px solid white',
+                               color: 'white',
+                               backgroundColor: 'transparent',
                                fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
                                fontWeight: 600,
                                px: { xs: 2, sm: 2.5, md: 3, lg: 4, xl: 8 },
@@ -458,7 +459,7 @@ const HeroSection = () => {
               key={index}
               // Removed hover effects as requested
               style={{
-                cursor: 'pointer',
+                cursor: 'default',
               }}
             >
               <Box
@@ -468,7 +469,7 @@ const HeroSection = () => {
                   borderRadius: '50%',
                   backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.4)',
                   transition: 'all 0.3s ease',
-                  cursor: 'pointer',
+                  cursor: 'default',
                   // Removed hover effect as requested
                 }}
                 onClick={() => handleImageChange(index)}

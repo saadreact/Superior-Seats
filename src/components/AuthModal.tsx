@@ -41,7 +41,9 @@ const signUpSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Please enter a valid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  phone: z.string()
+    .min(10, 'Phone number must be at least 10 digits')
+    .regex(/^\d+$/, 'Numbers only'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -167,12 +169,31 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   };
 
   const handleSignUpChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement> | any) => {
+    let value = event.target.value;
+    
+    // For phone field, only allow digits
+    if (field === 'phone') {
+      const originalValue = value;
+      value = value.replace(/\D/g, '');
+      
+      // If non-digits were removed, show error message
+      if (originalValue !== value && originalValue.length > 0) {
+        setErrors(prev => ({ ...prev, phone: 'Numbers only' }));
+      } else {
+        setErrors(prev => ({ ...prev, phone: '' }));
+      }
+    }
+    
     setSignUpForm({
       ...signUpForm,
-      [field]: event.target.value,
+      [field]: value,
     });
     dispatch(clearError());
-    setErrors({});
+    
+    // Only clear errors for non-phone fields
+    if (field !== 'phone') {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   const validateSignIn = () => {
@@ -575,6 +596,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   helperText={errors.phone}
                   variant="outlined"
                   size="small"
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*',
+                    maxLength: 15
+                  }}
                   sx={{ 
                     mb: 2,
                     ...commonTextFieldStyles,
