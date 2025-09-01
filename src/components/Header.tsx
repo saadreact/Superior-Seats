@@ -28,7 +28,7 @@ import {
   ShoppingCart as ShoppingCartIcon,
   Logout as LogoutIcon,
   AccountCircle as AccountCircleIcon,
-  AdminPanelSettingsOutlined as AdminPanelSettingsIcon,
+  Settings as AdminPanelSettingsIcon,
 } from '@mui/icons-material';
 import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
@@ -38,6 +38,7 @@ import { RootState } from '@/store/store';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logoutUser } from '@/store/authSlice';
 import { isSuperAdmin } from '@/utils/auth';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import Cart from './Cart';
 import AuthModal from './AuthModal';
 
@@ -424,7 +425,6 @@ const Header = () => {
                       <MenuIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
                     </IconButton>
                   </Tooltip>
-                                  <Tooltip title="US Flag" arrow>
                    <Box sx={{ 
                      display: 'flex',
                      alignItems: 'center',
@@ -442,7 +442,6 @@ const Header = () => {
                         }}
                       />
                    </Box>
-                 </Tooltip>
                   <Tooltip title="Shopping Cart" arrow>
                     <IconButton
                       color="inherit"
@@ -474,7 +473,6 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                                    <Tooltip title="US Flag" arrow>
                     <Box sx={{ 
                       display: 'flex',
                       alignItems: 'center',
@@ -492,7 +490,6 @@ const Header = () => {
                         }}
                       />
                     </Box>
-                  </Tooltip>
                   <Tooltip title="Shopping Cart" arrow>
                                          <IconButton
                        color="inherit"
@@ -509,7 +506,7 @@ const Header = () => {
                          transition: 'all 0.2s ease',
                        }}
                      >
-                                             <Badge 
+                     <Badge 
                          badgeContent={totalItems} 
                          sx={{
                            '& .MuiBadge-badge': {
@@ -541,7 +538,7 @@ const Header = () => {
                             transition: 'all 0.2s ease',
                           }}
                         >
-                          <AdminPanelSettingsIcon sx={{ fontSize: { md: '1.8rem', lg: '2rem' } }} />
+                          <SupervisorAccountIcon sx={{ fontSize: { md: '1.8rem', lg: '2rem' } }} />
                         </IconButton>
                       </Link>
                     </Tooltip>

@@ -197,7 +197,7 @@ const HeroSection = () => {
           display: 'flex',
           alignItems: 'center',
           position: 'relative',
-          cursor: isDragging ? 'grabbing' : 'grab',
+          cursor: isDragging ? 'grabbing' : 'default',
           overflow: 'hidden',
           userSelect: 'none',
           touchAction: 'none',
@@ -459,7 +459,7 @@ const HeroSection = () => {
               key={index}
               // Removed hover effects as requested
               style={{
-                cursor: 'pointer',
+                cursor: 'default',
               }}
             >
               <Box
@@ -469,7 +469,7 @@ const HeroSection = () => {
                   borderRadius: '50%',
                   backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.4)',
                   transition: 'all 0.3s ease',
-                  cursor: 'pointer',
+                  cursor: 'default',
                   // Removed hover effect as requested
                 }}
                 onClick={() => handleImageChange(index)}
