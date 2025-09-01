@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -12,16 +12,46 @@ import { CheckCircle, Home, ShoppingCart } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { clearCart } from '@/store/cartSlice';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface OrderConfirmationProps {
   onBack: () => void;
+  paymentId?: string;
 }
 
-const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
+const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack, paymentId: propPaymentId }) => {
   const dispatch = useDispatch();
   const { items, totalItems, totalPrice } = useSelector((state: RootState) => state.cart);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const [orderId, setOrderId] = useState<string>('');
+  const [paymentId, setPaymentId] = useState<string>('');
+  const [orderStatus, setOrderStatus] = useState<'pending' | 'completed' | 'failed'>('pending');
+
+  useEffect(() => {
+    // Get order details from URL params or localStorage
+    const urlOrderId = searchParams.get('orderId');
+    const urlPaymentId = searchParams.get('paymentId');
+    
+    if (urlOrderId) {
+      setOrderId(urlOrderId);
+    } else {
+      // Generate a temporary order ID if not provided
+      setOrderId(`ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+    }
+    
+    if (urlPaymentId) {
+      setPaymentId(urlPaymentId);
+    } else if (propPaymentId) {
+      setPaymentId(propPaymentId);
+    }
+    
+    // Set order as completed if we have payment ID
+    if (urlPaymentId || propPaymentId) {
+      setOrderStatus('completed');
+    }
+  }, [searchParams]);
 
   const handleContinueShopping = () => {
     dispatch(clearCart());
@@ -114,8 +144,16 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onBack }) => {
           <Typography variant="h4" fontWeight="medium" color="success.main" gutterBottom sx={{ 
             fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
           }}>
-            Order #12345
+            Order #{orderId}
           </Typography>
+          {paymentId && (
+            <Typography variant="body2" color="text.secondary" sx={{ 
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              mb: 1
+            }}>
+              Payment ID: {paymentId}
+            </Typography>
+          )}
           <Typography variant="h6" color="text.secondary" sx={{ 
             mb: 1,
             fontSize: { xs: '1rem', sm: '1.25rem' }

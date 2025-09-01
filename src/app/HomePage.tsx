@@ -261,8 +261,8 @@ const HomePage = () => {
            >
             <Grid
               display="grid"
-              gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }}
-              gap={{ xs: 2, sm: 3, md: 4 }}
+              gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr' }}
+              gap={{ xs: 2, sm: 3, md: 4, lg: 4 }}
               sx={{ width: '100%' }}
             >
               {seatingProducts.map((product, index) => (
@@ -271,6 +271,7 @@ const HomePage = () => {
                   variants={productCardVariants}
                   sx={{
                     height: '100%',
+                    minHeight: { xs: '400px', sm: '450px', md: '500px', lg: '520px', xl: '540px' },
                     display: 'flex',
                     flexDirection: 'column',
                     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
@@ -282,48 +283,65 @@ const HomePage = () => {
                     image={product.image}
                     alt={product.title}
                     sx={{
-                      height: { xs: 150, sm: 180, md: 200 ,lg: '250px', xl: '250px'},
+                      height: { xs: 150, sm: 180, md: 200, lg: 220, xl: 240 },
+                      minHeight: { xs: 150, sm: 180, md: 200, lg: 220, xl: 240 },
                       objectFit: 'contain',
                       backgroundColor: 'grey.100',
                       width: '100%',
-                      fontSize: { xs: '0.875rem', sm: '0.875rem', md: '0.875rem', lg: '0.875rem', xl: '1rem' },
+                      flexShrink: 0,
                     }}
                   />
-                  <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
-                      <Typography variant="h6" sx={{ fontWeight: 'normal' }}>
-                        {product.title}
+                  <CardContent sx={{ 
+                    flexGrow: 1, 
+                    p: { xs: 2, sm: 2.5, md: 3 },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    height: '100%'
+                  }}>
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'normal', fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' } }}>
+                          {product.title}
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: 'black', fontWeight: 'normal', fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' } }}>
+                          {product.price}
+                        </Typography>
+                      </Box>
+                      <Typography sx={{ mb: { xs: 1.5, md: 2 }, color: 'black', fontWeight: 'normal', fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem' } }}>
+                        {product.description}
                       </Typography>
-                      <Typography variant="h6" sx={{ color: 'black', fontWeight: 'normal' }}>
-                        {product.price}
-                      </Typography>
+                      <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, md: 2 }, flexWrap: 'wrap' }}>
+                        {product.features.map((feature, featureIndex) => (
+                          <Chip
+                            key={`feature-${index}-${featureIndex}`}
+                            label={feature}
+                            size="small"
+                            sx={{ 
+                              backgroundColor: 'rgba(220, 38, 38, 0.8)', 
+                              color: 'white',
+                              fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '0.9rem', xl: '0.95rem' },
+                              fontWeight: 500,
+                              padding: { xs: '4px 8px', sm: '6px 10px', md: '8px 12px' },
+                              '& .MuiChip-label': {
+                                padding: { xs: '0 4px', sm: '0 6px', md: '0 8px' },
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }
+                            }}
+                          />
+                        ))}
+                      </Box>
                     </Box>
-                    <Typography  sx={{ mb: { xs: 1.5, md: 2 }, color: 'black', fontWeight: 'normal' }}>
-                      {product.description}
-                    </Typography>
-                                         <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, md: 2 }, flexWrap: 'wrap' }}>
-                       {product.features.map((feature, featureIndex) => (
-                         <Chip
-                           key={`feature-${index}-${featureIndex}`}
-                           label={feature}
-                           size="small"
-                           sx={{ 
-                             backgroundColor: 'rgba(220, 38, 38, 0.8)', 
-                             color: 'white',
-                             fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '0.9rem', xl: '0.95rem' },
-                             fontWeight: 500,
-                             padding: { xs: '4px 8px', sm: '6px 10px', md: '8px 12px' },
-                             '& .MuiChip-label': {
-                               padding: { xs: '0 4px', sm: '0 6px', md: '0 8px' },
-                               whiteSpace: 'nowrap',
-                               overflow: 'hidden',
-                               textOverflow: 'ellipsis',
-                             }
-                           }}
-                         />
-                       ))}
-                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' ,height: '40px'}}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      minHeight: '40px',
+                      mt: 'auto',
+                      pt: 1
+                    }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Star sx={{ fontSize: 16, color: 'warning.main' }} />
                         <Typography variant="body2" sx={{ fontWeight: 'regular' }}>
@@ -336,9 +354,13 @@ const HomePage = () => {
                         endIcon={<ArrowForward />}
                         onClick={() => handleOpenModal(product)}
                         sx={{
-                          height: { xs: '40px', sm: '40px', md: '35px', lg: '30px', xl: '35px' },
-                        
+                          height: { xs: '40px', sm: '40px', md: '35px', lg: '35px', xl: '35px' },
                           fontSize: { xs: '0.875rem', sm: '0.875rem', md: '0.875rem', lg: '0.875rem', xl: '1rem' },
+                          minHeight: '35px',
+                          boxShadow: 'none',
+                          '&:hover': {
+                            boxShadow: 'none',
+                          },
                         }}
                       >
                         View Details
