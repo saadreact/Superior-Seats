@@ -30,6 +30,7 @@ import {
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { loginUser, registerUser, clearError } from '@/store/authSlice';
+import { apiService } from '@/utils/api';
 
 // Zod validation schemas
 const signInSchema = z.object({
@@ -97,6 +98,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
   // Track if authentication was just completed
   const [justAuthenticated, setJustAuthenticated] = useState(false);
+
+  // Forgot password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
   // Redux state
   const dispatch = useAppDispatch();
@@ -287,6 +293,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     setSignUpForm({ name: '', username: '', email: '', phone: '', password: '', confirmPassword: '' });
     setTabValue(0);
     setJustAuthenticated(false);
+    setShowForgotPassword(false);
+    setForgotPasswordEmail('');
   };
 
   const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -294,6 +302,54 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
       return;
     }
     setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const handleForgotPassword = async () => {
+    console.log('handleForgotPassword called with email:', forgotPasswordEmail);
+    
+    if (!forgotPasswordEmail.trim()) {
+      console.log('Email is empty');
+      setSnackbar({
+        open: true,
+        message: 'Please enter your email address',
+        severity: 'warning',
+      });
+      return;
+    }
+
+    if (!forgotPasswordEmail.includes('@')) {
+      console.log('Email format is invalid');
+      setSnackbar({
+        open: true,
+        message: 'Please enter a valid email address',
+        severity: 'warning',
+      });
+      return;
+    }
+
+    console.log('Starting forgot password API call...');
+    setForgotPasswordLoading(true);
+    try {
+      console.log('Calling apiService.forgotPassword...');
+      const result = await apiService.forgotPassword(forgotPasswordEmail);
+      console.log('API call successful:', result);
+      setSnackbar({
+        open: true,
+        message: 'Password reset email sent successfully! Please check your email and click the reset link to set a new password.',
+        severity: 'success',
+      });
+      setShowForgotPassword(false);
+      setForgotPasswordEmail('');
+    } catch (error: any) {
+      console.error('API call failed:', error);
+      setSnackbar({
+        open: true,
+        message: error.message || 'Failed to send password reset email. Please try again.',
+        severity: 'error',
+      });
+    } finally {
+      setForgotPasswordLoading(false);
+    }
   };
 
   // Common field styles - matching ContactPage exactly
@@ -483,7 +539,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     ),
                   }}
                   sx={{ 
-                    mb: 3,
+                    mb: 1,
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -492,27 +548,54 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 3 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'primary.main',
+                      cursor: 'pointer',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      textDecoration: 'underline',
+                      '&:hover': {
+                        color: 'primary.dark',
+                      },
+                    }}
+                    onClick={() => {
+                      console.log('Forgot password button clicked');
+                      setShowForgotPassword(true);
+                    }}
+                  >
+                    Forgot Password?
+                  </Typography>
+                </Box>
+
                 <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <Button
                     variant="contained"
                     onClick={handleSignIn}
                     disabled={loading}
                     size="medium"
+                    disableRipple={false}
+                    TouchRippleProps={{
+                      center: true,
+                      color: 'rgba(255, 255, 255, 0.3)',
+                    }}
                     sx={{
-                      background: 'primary.main',
-                      height: '35px',
-                      px: 3,
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      fontWeight: 600,
+                      px: { xs: 4, sm: 6 },
+                      py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 },
                       borderRadius: 2,
-                      boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
                       textTransform: 'none',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 30px rgba(231, 43, 43, 0.4)',
-                      },
+                      letterSpacing: 0.5,
                       transition: 'all 0.3s ease',
-                      minWidth: '120px',
+                      minWidth: { xs: 160, sm: 180 },
+                      width: { xs: '100%', sm: 'auto' },
+                      boxShadow: 'none',
+                      '&:hover': {
+                        boxShadow: 'none',
+                      },
+                      '& .MuiTouchRipple-root': {
+                        borderRadius: 2,
+                      },
                     }}
                   >
                     {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign In'}
@@ -705,21 +788,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     onClick={handleSignUp}
                     disabled={loading}
                     size="medium"
+                    disableRipple={false}
+                    TouchRippleProps={{
+                      center: true,
+                      color: 'rgba(255, 255, 255, 0.3)',
+                    }}
                     sx={{
-                      background: 'primary.main',
-                      height: '35px',
-                      px: 3,
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      fontWeight: 600,
+                      px: { xs: 4, sm: 6 },
+                      py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 },
                       borderRadius: 2,
-                      boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
                       textTransform: 'none',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 30px rgba(231, 43, 43, 0.4)',
-                      },
+                      letterSpacing: 0.5,
                       transition: 'all 0.3s ease',
-                      minWidth: '120px',
+                      minWidth: { xs: 160, sm: 180 },
+                      width: { xs: '100%', sm: 'auto' },
+                      boxShadow: 'none',
+                      '&:hover': {
+                        boxShadow: 'none',
+                      },
+                      '& .MuiTouchRipple-root': {
+                        borderRadius: 2,
+                      },
                     }}
                   >
                     {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign Up'}
@@ -727,6 +816,122 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                 </Box>
               </Box>
             </TabPanel>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Forgot Password Modal */}
+      <Dialog
+        open={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            maxWidth: '400px',
+            width: '90%',
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            pb: 1,
+            px: 3,
+            pt: 2.5,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              fontWeight: 600,
+              color: '#DA291C',
+              fontSize: '1.25rem',
+              textAlign: 'center',
+              flex: 1,
+            }}
+          >
+            Reset Password
+          </Typography>
+          <IconButton
+            aria-label="close"
+            onClick={() => setShowForgotPassword(false)}
+            sx={{
+              color: 'grey.500',
+              p: 1,
+              '&:hover': {
+                color: 'grey.700',
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 3 }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              mb: 3, 
+              textAlign: 'center',
+              color: 'text.secondary',
+              lineHeight: 1.6,
+            }}
+          >
+            Enter your email address and we&apos;ll send you a link to reset your password.
+          </Typography>
+
+          <TextField
+            fullWidth
+            label="Email Address"
+            type="email"
+            value={forgotPasswordEmail}
+            onChange={(e) => setForgotPasswordEmail(e.target.value)}
+            variant="outlined"
+            size="small"
+            sx={{ 
+              mb: 3,
+              ...commonTextFieldStyles,
+            }}
+          />
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <Button
+              variant="contained"
+              onClick={handleForgotPassword}
+              disabled={forgotPasswordLoading}
+              size="medium"
+              disableRipple={false}
+              TouchRippleProps={{
+                center: true,
+                color: 'rgba(255, 255, 255, 0.3)',
+              }}
+              sx={{
+                px: 6,
+                py: 1.5,
+                borderRadius: 2,
+                textTransform: 'none',
+                letterSpacing: 0.5,
+                transition: 'all 0.3s ease',
+                minWidth: 180,
+                boxShadow: 'none',
+                '&:hover': {
+                  boxShadow: 'none',
+                },
+                '& .MuiTouchRipple-root': {
+                  borderRadius: 2,
+                },
+              }}
+            >
+              {forgotPasswordLoading ? <CircularProgress size={20} color="inherit" /> : 'Send Reset Link'}
+            </Button>
           </Box>
         </DialogContent>
       </Dialog>

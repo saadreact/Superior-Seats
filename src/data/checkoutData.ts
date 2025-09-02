@@ -33,9 +33,9 @@ export interface PaymentMethod {
 
 export const paymentMethods: PaymentMethod[] = [
   {
-    value: 'square',
-    label: 'Square Payment',
-    description: 'Secure payment processing with Square',
+    value: 'credit_card',
+    label: 'Credit Card',
+    description: 'Secure payment processing',
     icon: '💳'
   }
 ];

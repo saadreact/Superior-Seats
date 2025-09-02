@@ -1,6 +1,7 @@
 export const stats = [
-    { label: 'Years Experience', value: '25+', icon: 'TrendingUp' },
     { label: 'Seats Manufactured', value: '20,000+', icon: 'CheckCircle' },
+    { label: 'Years Experience', value: '25+', icon: 'TrendingUp' },
+
     // { label: 'Happy Customers', value: '98%', icon: 'Star' },
     // { label: 'Team Members', value: '25+', icon: 'People' },
   ];
