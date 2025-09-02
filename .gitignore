@@ -29,6 +29,18 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# environment files - NEVER commit these to version control
+.env
+.env.local
+.env.development
+.env.production
+.env.main
+env.local
+env.development
+env.production
+env.main
+env.example
+
 # vercel
 .vercel
 

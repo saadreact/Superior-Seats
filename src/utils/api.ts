@@ -70,19 +70,31 @@ api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      // Clear tokens on unauthorized
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('persist:auth');
-        console.log('401 error - tokens cleared from localStorage');
+      // Don't handle 401 for logout or refresh token endpoints to avoid infinite loops
+      if (error.config?.url?.includes('/logout') || error.config?.url?.includes('/refresh-token')) {
+        return Promise.reject(error);
       }
-      
-      // Don't redirect on logout endpoint to avoid infinite loops
-      if (!error.config?.url?.includes('/logout')) {
-        // Optionally redirect to login page for other 401 errors
-        // window.location.href = '/login';
+
+      // Try to refresh token before clearing everything
+      try {
+        console.log('API Interceptor: 401 error, attempting token refresh...');
+        await apiService.refreshToken();
+        
+        // Retry the original request with new token
+        console.log('API Interceptor: Token refreshed, retrying original request...');
+        const originalRequest = error.config;
+        originalRequest.headers.Authorization = `Bearer ${localStorage.getItem('auth_token')}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        console.log('API Interceptor: Token refresh failed, clearing tokens...');
+        // Clear tokens on unauthorized
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('persist:auth');
+          console.log('401 error - tokens cleared from localStorage');
+        }
       }
     }
     return Promise.reject(error);
@@ -201,6 +213,66 @@ class ApiService {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('persist:auth');
       console.log('Force logout - all auth data cleared');
+    }
+  }
+
+  // Forgot password
+  async forgotPassword(email: string) {
+    console.log('API Service: forgotPassword called with email:', email);
+    console.log('API Service: this.api exists:', !!this.api);
+    console.log('API Service: api instance:', this.api);
+    try {
+      console.log('API Service: Making POST request to /forgot-password');
+      const response = await this.api.post('/forgot-password', { email });
+      console.log('API Service: Response received:', response);
+      return response.data;
+    } catch (error: any) {
+      console.error('API Service: Error in forgot password:', error);
+      throw new Error(error.response?.data?.message || 'Failed to send password reset email');
+    }
+  }
+
+  // Reset password
+  async resetPassword(data: {
+    email: string;
+    token: string;
+    password: string;
+    password_confirmation: string;
+  }) {
+    console.log('API Service: resetPassword called with data:', { ...data, password: '[HIDDEN]' });
+    try {
+      console.log('API Service: Making POST request to /reset-password');
+      const response = await this.api.post('/reset-password', data);
+      console.log('API Service: Response received:', response);
+      return response.data;
+    } catch (error: any) {
+      console.error('API Service: Error in reset password:', error);
+      throw new Error(error.response?.data?.message || 'Failed to reset password');
+    }
+  }
+
+  // Refresh token
+  async refreshToken() {
+    console.log('API Service: refreshToken called');
+    try {
+      console.log('API Service: Making POST request to /refresh-token');
+      const response = await this.api.post('/refresh-token');
+      console.log('API Service: Token refresh response received:', response);
+      
+      // Update the stored token with the new one
+      if (response.data.token) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('auth_token', response.data.token);
+          console.log('API Service: Token updated in localStorage');
+        }
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('API Service: Error in refresh token:', error);
+      // If refresh fails, clear tokens and force logout
+      this.forceLogout();
+      throw new Error(error.response?.data?.message || 'Failed to refresh token');
     }
   }
 

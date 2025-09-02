@@ -3,6 +3,7 @@ import { Raleway } from 'next/font/google';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import { SelectedItemProvider } from '@/contexts/SelectedItemContext';
 import ReduxProvider from '@/components/ReduxProvider';
+
 // import FloatingButtonWrapper from '@/components/FloatingButtonWrapper';
 import './globals.css';
 

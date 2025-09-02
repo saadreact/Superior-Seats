@@ -51,30 +51,29 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
     setIsProcessing(true);
 
     try {
-      // Simulate Square payment processing
-      // In a real implementation, you would integrate with Square's Web Payments SDK
+      // Simulate payment processing
+      // In a real implementation, you would integrate with your payment gateway
       // For now, we'll simulate the payment process
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Simulate successful payment (replace with actual Square integration)
+      // Simulate successful payment (replace with actual payment gateway integration)
       const response = await fetch('/api/payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          sourceId: 'simulated_token_' + Date.now(),
           amount: validAmount,
           currency: currency,
-          buyerEmailAddress: formData.email || undefined,
+          email: formData.email || undefined,
           billingAddress: {
-            addressLine1: formData.billingAddress?.addressLine1,
-            addressLine2: formData.billingAddress?.addressLine2,
-            locality: formData.billingAddress?.city,
-            administrativeDistrictLevel1: formData.billingAddress?.state,
-            postalCode: formData.billingAddress?.postalCode,
+            address: formData.billingAddress?.addressLine1,
+            address2: formData.billingAddress?.addressLine2,
+            city: formData.billingAddress?.city,
+            state: formData.billingAddress?.state,
+            zipCode: formData.billingAddress?.postalCode,
             country: formData.billingAddress?.country,
           }
         }),
@@ -136,12 +135,12 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
       }}>
         <form onSubmit={handleSubmit}>
           <Stack spacing={{ xs: 2, sm: 2, md: 2, lg: 2, xl: 2 }}>
-            {/* Square Payment Info */}
+            {/* Payment Info */}
             <Alert severity="info" sx={{ 
               mb: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 },
               fontSize: { xs: '0.875rem', sm: '1rem' }
             }}>
-              💳 Secure payment processing powered by Square
+              💳 Secure payment processing
             </Alert>
 
             {/* Card Details */}
@@ -154,32 +153,59 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
                 Card Details
               </Typography>
               
-              {/* Square Card Container - Placeholder */}
-              <Box
+                          {/* Credit Card Input Fields */}
+            <TextField
+              fullWidth
+              label="Card Number"
+              value={formData.cardNumber}
+              onChange={handleInputChange('cardNumber')}
+              placeholder="1234 5678 9012 3456"
+              required
+              sx={{
+                mb: 2,
+                '& .MuiInputLabel-root': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }
+              }}
+            />
+            
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              <TextField
+                fullWidth
+                label="Expiry Date"
+                value={formData.expiryDate}
+                onChange={handleInputChange('expiryDate')}
+                placeholder="MM/YY"
+                required
                 sx={{
-                  minHeight: '200px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: 1,
-                  p: 2,
-                  mb: 2,
-                  backgroundColor: '#fafafa',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: 1
+                  '& .MuiInputLabel-root': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  },
+                  '& .MuiInputBase-input': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }
                 }}
-              >
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                  💳 Square Payment Integration
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                  Card input fields will be rendered here when Square SDK is integrated
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                  Currently using simulated payment processing
-                </Typography>
-              </Box>
+              />
+              <TextField
+                fullWidth
+                label="CVV"
+                value={formData.cvv}
+                onChange={handleInputChange('cvv')}
+                placeholder="123"
+                required
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  },
+                  '& .MuiInputBase-input': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }
+                }}
+              />
+            </Box>
               
               <TextField
                 fullWidth
