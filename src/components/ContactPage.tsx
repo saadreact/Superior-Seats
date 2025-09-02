@@ -361,25 +361,34 @@ const ContactPage = () => {
                    alignItems: 'center',
                    gap: { xs: 1.5, sm: 2 },
                  }}>
-                   <Button
-                     type="submit"
-                     variant="contained"
-                     size="medium"
-                     startIcon={<Send />}
-                                           sx={{
-                        px: { xs: 4, sm: 6 },
-                        py: { xs: 1, sm: 1.5,lg: 1,md: 1.2 },
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        letterSpacing: 0.5,
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                        },
-                        transition: 'all 0.3s ease',
-                        minWidth: { xs: 160, sm: 180 },
-                        width: { xs: '100%', sm: 'auto' },
+                                       <Button
+                      type="submit"
+                      variant="contained"
+                      size="medium"
+                      startIcon={<Send />}
+                      disableRipple={false}
+                      TouchRippleProps={{
+                        center: true,
+                        color: 'rgba(255, 255, 255, 0.3)',
                       }}
-                   >
+                                            sx={{
+                         px: { xs: 4, sm: 6 },
+                         py: { xs: 1, sm: 1.5,lg: 1,md: 1.2 },
+                         borderRadius: 2,
+                         textTransform: 'none',
+                         letterSpacing: 0.5,
+                         transition: 'all 0.3s ease',
+                         minWidth: { xs: 160, sm: 180 },
+                         width: { xs: '100%', sm: 'auto' },
+                         boxShadow: 'none',
+                         '&:hover': {
+                           boxShadow: 'none',
+                         },
+                         '& .MuiTouchRipple-root': {
+                           borderRadius: 2,
+                         },
+                       }}
+                    >
                      Send Message
                    </Button>
                                      <Typography

@@ -15,7 +15,7 @@ interface LogoButtonProps {
 const LogoButton = ({ onClick }: LogoButtonProps) => {
   return (
     <Tooltip
-      title="Start customizing your seat"
+      title="Seat Customizer Tool"
       placement="bottom"
       arrow
       componentsProps={{
