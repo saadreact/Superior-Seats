@@ -123,8 +123,8 @@ interface OrderStatistics {
 
 const OrdersPage = () => {
   const router = useRouter();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [statistics, setStatistics] = useState<OrderStatistics | null>(null);
+  	const [orders, setOrders] = useState<Order[]>([]);
+	const [statistics, setStatistics] = useState<OrderStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
@@ -150,53 +150,43 @@ const OrdersPage = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Fetch orders with current filters and pagination
-  const fetchOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = {
-        page: page + 1,
-        per_page: rowsPerPage,
-        ...Object.fromEntries(
-          Object.entries(filters).filter(([_, value]) => value !== '')
-        ),
-      };
+  	const fetchOrders = useCallback(async () => {
+		try {
+			setLoading(true);
+			const params = {
+				page: page + 1,
+				per_page: rowsPerPage,
+				...Object.fromEntries(
+					Object.entries(filters).filter(([_, value]) => value !== '')
+				),
+			};
 
-      const ordersResponse = await apiService.getOrders(params);
-      
-      console.log('Orders API Response:', ordersResponse);
-      
-      // Handle the correct response structure
-      setOrders(ordersResponse.data || []);
-      setTotalCount(ordersResponse.meta?.pagination?.total || 0);
-      
-      // Calculate statistics from the current page of orders data
-      // Note: These stats are based on the current page only, not all orders
-      const orders = ordersResponse.data || [];
-      const today = new Date().toDateString();
-      
-      const calculatedStats = {
-        total_orders: ordersResponse.meta?.pagination?.total || 0,
-        total_revenue: orders.reduce((sum: number, order: any) => sum + (parseFloat(order.total_amount) || 0), 0),
-        pending_orders: orders.filter((order: any) => order.status === 'pending').length,
-        processing_orders: orders.filter((order: any) => order.status === 'processing').length,
-        shipped_orders: orders.filter((order: any) => order.status === 'shipped').length,
-        delivered_orders: orders.filter((order: any) => order.status === 'delivered').length,
-        cancelled_orders: orders.filter((order: any) => order.status === 'cancelled').length,
-        today_orders: orders.filter((order: any) => 
-          new Date(order.created_at).toDateString() === today
-        ).length,
-        today_revenue: orders.filter((order: any) => 
-          new Date(order.created_at).toDateString() === today
-        ).reduce((sum: number, order: any) => sum + (parseFloat(order.total_amount) || 0), 0)
-      };
-      setStatistics(calculatedStats);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      setAlert({ type: 'error', message: 'Failed to load orders' });
-    } finally {
-      setLoading(false);
-    }
-  }, [page, rowsPerPage, filters]);
+			const ordersResponse = await apiService.getOrders(params);
+			const ordersData = ordersResponse.data || [];
+			setOrders(ordersData);
+			setTotalCount(ordersResponse.meta?.pagination?.total || 0);
+
+			// Stats from current page
+			const today = new Date().toDateString();
+			const calculatedStats = {
+				total_orders: ordersResponse.meta?.pagination?.total || 0,
+				total_revenue: ordersData.reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0),
+				pending_orders: ordersData.filter((o: any) => o.status === 'pending').length,
+				processing_orders: ordersData.filter((o: any) => o.status === 'processing').length,
+				shipped_orders: ordersData.filter((o: any) => o.status === 'shipped').length,
+				delivered_orders: ordersData.filter((o: any) => o.status === 'delivered').length,
+				cancelled_orders: ordersData.filter((o: any) => o.status === 'cancelled').length,
+				today_orders: ordersData.filter((o: any) => new Date(o.created_at).toDateString() === today).length,
+				today_revenue: ordersData.filter((o: any) => new Date(o.created_at).toDateString() === today).reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0)
+			};
+			setStatistics(calculatedStats);
+		} catch (error) {
+			console.error('Error fetching orders:', error);
+			setAlert({ type: 'error', message: 'Failed to load orders' });
+		} finally {
+			setLoading(false);
+		}
+	}, [page, rowsPerPage, filters]);
 
   useEffect(() => {
     fetchOrders();
@@ -608,12 +598,12 @@ const OrdersPage = () => {
                       </TableCell>
                       <TableCell>
                         <Box>
-                          <Typography variant="body2" fontWeight={500}>
-                            {order.user?.name || 'Unknown Customer'}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {order.user?.email || 'No email'}
-                          </Typography>
+                          											<Typography variant="body2" fontWeight={500}>
+												{order.user?.name || 'Unknown Customer'}
+											</Typography>
+											<Typography variant="caption" color="text.secondary">
+												{order.user?.email || 'No email'}
+											</Typography>
                           {order.user?.company_name && (
                             <Typography variant="caption" color="text.secondary" display="block">
                               {order.user.company_name}
