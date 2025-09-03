@@ -117,7 +117,14 @@ const PriceTiersPage = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handlePriceTierAdd}
-            sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
+            className="gradient-style"
+            sx={{ 
+              alignSelf: { xs: 'stretch', sm: 'auto' },
+              boxShadow: 'none',
+              '&:hover': {
+                boxShadow: 'none',
+              }
+            }}
           >
             Add Price Tier
           </Button>

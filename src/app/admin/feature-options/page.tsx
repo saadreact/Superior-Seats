@@ -143,7 +143,14 @@ const FeatureOptionsPage = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
-            sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
+            className="gradient-style"
+            sx={{ 
+              alignSelf: { xs: 'stretch', sm: 'auto' },
+              boxShadow: 'none',
+              '&:hover': {
+                boxShadow: 'none',
+              }
+            }}
           >
             Add Feature Option
           </Button>

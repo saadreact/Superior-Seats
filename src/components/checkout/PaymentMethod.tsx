@@ -10,7 +10,10 @@ import {
   Stack,
   Alert,
   CircularProgress,
-  Snackbar
+  Snackbar,
+  Radio,
+  RadioGroup,
+  Divider
 } from '@mui/material';
 import { paymentMethods, defaultPaymentData, PaymentFormData } from '@/data/checkoutData';
 
@@ -27,6 +30,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
   
   const [formData, setFormData] = useState<PaymentFormData>(defaultPaymentData);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentOption, setPaymentOption] = useState<'cash' | 'card'>('card');
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -58,45 +62,59 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Simulate successful payment (replace with actual payment gateway integration)
-      const response = await fetch('/api/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: validAmount,
-          currency: currency,
-          email: formData.email || undefined,
-          billingAddress: {
-            address: formData.billingAddress?.addressLine1,
-            address2: formData.billingAddress?.addressLine2,
-            city: formData.billingAddress?.city,
-            state: formData.billingAddress?.state,
-            zipCode: formData.billingAddress?.postalCode,
-            country: formData.billingAddress?.country,
-          }
-        }),
-      });
-
-      const paymentResult = await response.json();
-
-      if (paymentResult.success) {
+      if (paymentOption === 'cash') {
+        // Handle cash on delivery
         setSnackbar({
           open: true,
-          message: 'Payment processed successfully!',
+          message: 'Cash on delivery order placed successfully!',
           severity: 'success'
         });
-        
-        // Clear form
-        setFormData(defaultPaymentData);
         
         // Proceed to next step
         setTimeout(() => {
           onNext();
         }, 2000);
       } else {
-        throw new Error(paymentResult.error || 'Payment failed');
+        // Handle card payment (replace with actual payment gateway integration)
+        const response = await fetch('/api/payments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: validAmount,
+            currency: currency,
+            email: formData.email || undefined,
+            billingAddress: {
+              address: formData.billingAddress?.addressLine1,
+              address2: formData.billingAddress?.addressLine2,
+              city: formData.billingAddress?.city,
+              state: formData.billingAddress?.state,
+              zipCode: formData.billingAddress?.postalCode,
+              country: formData.billingAddress?.country,
+            }
+          }),
+        });
+
+        const paymentResult = await response.json();
+
+        if (paymentResult.success) {
+          setSnackbar({
+            open: true,
+            message: 'Payment processed successfully!',
+            severity: 'success'
+          });
+          
+          // Clear form
+          setFormData(defaultPaymentData);
+          
+          // Proceed to next step
+          setTimeout(() => {
+            onNext();
+          }, 2000);
+        } else {
+          throw new Error(paymentResult.error || 'Payment failed');
+        }
       }
     } catch (error: any) {
       console.error('Payment error:', error);
@@ -140,106 +158,177 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
               mb: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 },
               fontSize: { xs: '0.875rem', sm: '1rem' }
             }}>
-              💳 Secure payment processing
+              💳 Choose your payment method
             </Alert>
 
-            {/* Card Details */}
+            {/* Payment Options */}
             <Box>
               <Typography variant="h6" sx={{ 
-                mb: { xs: 2, sm: 3, md: 3, lg: 0, xl: 0 }, 
+                mb: { xs: 2, sm: 3, md: 3, lg: 1.5, xl: 1.5 }, 
                 fontWeight: 'bold',
                 fontSize: { xs: '1rem', sm: '1.25rem' }
               }}>
-                Card Details
+                Payment Method
               </Typography>
               
-                          {/* Credit Card Input Fields */}
-            <TextField
-              fullWidth
-              label="Card Number"
-              value={formData.cardNumber}
-              onChange={handleInputChange('cardNumber')}
-              placeholder="1234 5678 9012 3456"
-              required
-              sx={{
-                mb: 2,
-                '& .MuiInputLabel-root': {
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
-                },
-                '& .MuiInputBase-input': {
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
-                }
-              }}
-            />
-            
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-              <TextField
-                fullWidth
-                label="Expiry Date"
-                value={formData.expiryDate}
-                onChange={handleInputChange('expiryDate')}
-                placeholder="MM/YY"
-                required
-                sx={{
-                  '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
-                  },
-                  '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+              <RadioGroup
+                value={paymentOption}
+                onChange={(e) => setPaymentOption(e.target.value as 'cash' | 'card')}
+                sx={{ mb: 1 }}
+              >
+                <FormControlLabel
+                  value="cash"
+                  control={<Radio />}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        💵 Cash on Delivery
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Pay when you receive your order
+                      </Typography>
+                    </Box>
                   }
-                }}
-              />
-              <TextField
-                fullWidth
-                label="CVV"
-                value={formData.cvv}
-                onChange={handleInputChange('cvv')}
-                placeholder="123"
-                required
-                sx={{
-                  '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
-                  },
-                  '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  sx={{
+                    mb: 1.5,
+                    p: 1.5,
+                    border: '1px solid',
+                    borderColor: paymentOption === 'cash' ? 'primary.main' : 'grey.300',
+                    borderRadius: 2,
+                    backgroundColor: paymentOption === 'cash' ? 'primary.50' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: paymentOption === 'cash' ? 'primary.100' : 'grey.50'
+                    }
+                  }}
+                />
+                
+                <FormControlLabel
+                  value="card"
+                  control={<Radio />}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        💳 Credit/Debit Card
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Secure online payment
+                      </Typography>
+                    </Box>
                   }
-                }}
-              />
+                  sx={{
+                    p: 1.5,
+                    border: '1px solid',
+                    borderColor: paymentOption === 'card' ? 'primary.main' : 'grey.300',
+                    borderRadius: 2,
+                    backgroundColor: paymentOption === 'card' ? 'primary.50' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: paymentOption === 'card' ? 'primary.100' : 'grey.50'
+                    }
+                  }}
+                />
+              </RadioGroup>
             </Box>
-              
-              <TextField
-                fullWidth
-                label="Cardholder Name"
-                value={formData.cardHolderName}
-                onChange={handleInputChange('cardHolderName')}
-                placeholder="John Doe"
-                required
-                sx={{
-                  mb: 2,
-                  '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
-                  },
-                  '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
-                  }
-                }}
-              />
-              
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.saveCard}
-                    onChange={handleInputChange('saveCard')}
+
+            {/* Card Details - Only show when card option is selected */}
+            {paymentOption === 'card' && (
+              <Box>
+                <Divider sx={{ my: 1.5 }} />
+                <Typography variant="h6" sx={{ 
+                  mb: { xs: 2, sm: 3, md: 1.5, lg: 1.5, xl: 1.5 }, 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}>
+                  Card Details
+                </Typography>
+                
+                {/* Credit Card Input Fields */}
+                <TextField
+                  fullWidth
+                  label="Card Number"
+                  value={formData.cardNumber}
+                  onChange={handleInputChange('cardNumber')}
+                  placeholder="1234 5678 9012 3456"
+                  required={paymentOption === 'card'}
+                  sx={{
+                    mb: 2,
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    },
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    }
+                  }}
+                />
+                
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Expiry Date"
+                    value={formData.expiryDate}
+                    onChange={handleInputChange('expiryDate')}
+                    placeholder="MM/YY"
+                    required={paymentOption === 'card'}
+                    sx={{
+                      '& .MuiInputLabel-root': {
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      },
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }
+                    }}
                   />
-                }
-                label="Save this card for future purchases"
-                sx={{
-                  '& .MuiFormControlLabel-label': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  <TextField
+                    fullWidth
+                    label="CVV"
+                    value={formData.cvv}
+                    onChange={handleInputChange('cvv')}
+                    placeholder="123"
+                    required={paymentOption === 'card'}
+                    sx={{
+                      '& .MuiInputLabel-root': {
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      },
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }
+                    }}
+                  />
+                </Box>
+                
+                <TextField
+                  fullWidth
+                  label="Cardholder Name"
+                  value={formData.cardHolderName}
+                  onChange={handleInputChange('cardHolderName')}
+                  placeholder="John Doe"
+                  required={paymentOption === 'card'}
+                  sx={{
+                    mb: 2,
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    },
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    }
+                  }}
+                />
+                
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.saveCard}
+                      onChange={handleInputChange('saveCard')}
+                    />
                   }
-                }}
-              />
-            </Box>
+                  label="Save this card for future purchases"
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    }
+                  }}
+                />
+              </Box>
+            )}
 
                          {/* Navigation Buttons */}
              <Box sx={{ 
@@ -257,7 +346,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
                  sx={{ 
                    py: { xs: 1, sm: 1.25 },
                    px: { xs: 2, sm: 3 },
-                   fontSize: { xs: '0.9rem', sm: '1rem' },
+                   fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
                    minWidth: { xs: '120px', sm: '140px' },
                    height: { xs: '45px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
                    width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }
@@ -272,7 +361,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
                  sx={{ 
                    py: { xs: 1, sm: 1.25 },
                    px: { xs: 2, sm: 3 },
-                   fontSize: { xs: '0.9rem', sm: '1rem' },
+                   fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
                    minWidth: { xs: '120px', sm: '140px' },
                    height: { xs: '45px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
                    width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' },
@@ -293,8 +382,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
                     <CircularProgress size={20} sx={{ mr: 1, color: 'white' }} />
                     Processing...
                   </>
+                ) : paymentOption === 'cash' ? (
+                  `Place Order - $ ${validAmount.toFixed(2)}`
                 ) : (
-                  `Pay ${currency} ${validAmount.toFixed(2)}`
+                  `Pay $ ${validAmount.toFixed(2)}`
                 )}
               </Button>
             </Box>

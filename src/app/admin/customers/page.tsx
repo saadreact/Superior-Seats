@@ -149,7 +149,14 @@ const CustomersPage = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
-            sx={{ alignSelf: { xs: 'stretch', md: 'auto' } }}
+            className="gradient-style"
+            sx={{ 
+              alignSelf: { xs: 'stretch', md: 'auto' },
+              boxShadow: 'none',
+              '&:hover': {
+                boxShadow: 'none',
+              }
+            }}
           >
             Add Customer
           </Button>

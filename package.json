@@ -23,12 +23,15 @@
     "@types/react-dom": "^19.1.6",
     "@types/three": "^0.178.1",
     "axios": "^1.11.0",
+    "buffer": "^6.0.3",
     "eslint": "^9.32.0",
     "eslint-config-next": "^15.4.4",
     "framer-motion": "^12.23.11",
     "next": "^15.4.4",
+    "process": "^0.11.10",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-phone-number-input": "^3.4.12",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
 
@@ -43,5 +46,8 @@
     "typescript"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react-phone-number-input": "^3.0.17"
+  }
 }

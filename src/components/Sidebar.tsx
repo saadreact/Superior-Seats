@@ -24,7 +24,7 @@ import {
   ShoppingCart as OrderIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
-  Storefront as StorefrontIcon,
+
   AttachMoney as MoneyIcon,
   Inventory as InventoryIcon,
   ChevronLeft as ChevronLeftIcon,
@@ -34,6 +34,15 @@ import {
   ExpandMore as ExpandMoreIcon,
   Palette as PaletteIcon,
   Inventory2 as Inventory2Icon,
+  Chair as ChairIcon,
+  BackHand as BackHandIcon,
+  Replay as ReplayIcon,
+  LocalFireDepartment as HeatIcon,
+  Pattern as PatternIcon,
+  ColorLens as ColorIcon,
+  LocalOffer as PricingIcon,
+  Style as StyleIcon,
+  Build as FeatureIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -58,9 +67,24 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
 
   const menuItems = [
     {
+      text: 'Customers',
+      icon: <PeopleIcon />,
+      href: '/admin/customers',
+    },
+    {
       text: 'Dashboard',
       icon: <DashboardIcon />,
       href: '/admin',
+    },
+    {
+      text: 'Orders',
+      icon: <OrderIcon />,
+      href: '/admin/orders',
+    },
+    {
+      text: 'Price Tiers',
+      icon: <MoneyIcon />,
+      href: '/admin/price-tiers',
     },
     {
       text: 'Products',
@@ -72,28 +96,13 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <Inventory2Icon />,
       href: '/admin/products-2',
     },
-    {
-      text: 'Price Tiers',
-      icon: <MoneyIcon />,
-      href: '/admin/price-tiers',
-    },
-    {
-      text: 'Customers',
-      icon: <PeopleIcon />,
-      href: '/admin/customers',
-    },
-    {
-      text: 'Orders',
-      icon: <OrderIcon />,
-      href: '/admin/orders',
-    },
   ];
 
   const variationSubItems = [
     {
-      text: 'Variations',
-      icon: <SettingsIcon />,
-      href: '/admin/variations',
+      text: 'Arm Types',
+      icon: <CategoryIcon />,
+      href: '/admin/arm-types',
     },
     {
       text: 'Categories',
@@ -102,27 +111,22 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     },
     {
       text: 'Colors',
-      icon: <PaletteIcon />,
+      icon: <ColorIcon />,
       href: '/admin/colors',
     },
     {
-      text: 'Arm Types',
-      icon: <CategoryIcon />,
-      href: '/admin/arm-types',
-    },
-    {
       text: 'Color Vendors',
-      icon: <CategoryIcon />,
+      icon: <ColorIcon />,
       href: '/admin/color-vendors',
     },
     {
       text: 'Feature Options',
-      icon: <CategoryIcon />,
+      icon: <FeatureIcon />,
       href: '/admin/feature-options',
     },
     {
       text: 'Heat Options',
-      icon: <CategoryIcon />,
+      icon: <HeatIcon />,
       href: '/admin/heat-options',
     },
     {
@@ -132,38 +136,43 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     },
     {
       text: 'Lumbar Types',
-      icon: <CategoryIcon />,
+      icon: <BackHandIcon />,
       href: '/admin/lumbar-types',
     },
     {
       text: 'Material Types',
-      icon: <CategoryIcon />,
+      icon: <PaletteIcon />,
       href: '/admin/material-types',
     },
     {
-      text: 'Seat Types',
-      icon: <CategoryIcon />,
-      href: '/admin/seat-types',
-    },
-    {
-      text: 'Seat Stitch Patterns',
-      icon: <CategoryIcon />,
-      href: '/admin/seat-stitch-patterns',
-    },
-    {
-      text: 'Seat Pricing',
-      icon: <CategoryIcon />,
-      href: '/admin/seat-pricing',
-    },
-    {
       text: 'Recline Types',
-      icon: <CategoryIcon />,
+      icon: <ReplayIcon />,
       href: '/admin/recline-types',
     },
     {
+      text: 'Seat Pricing',
+      icon: <PricingIcon />,
+      href: '/admin/seat-pricing',
+    },
+    {
+      text: 'Seat Stitch Patterns',
+      icon: <PatternIcon />,
+      href: '/admin/seat-stitch-patterns',
+    },
+    {
       text: 'Seat Styles',
-      icon: <CategoryIcon />,
+      icon: <StyleIcon />,
       href: '/admin/seat-styles',
+    },
+    {
+      text: 'Seat Types',
+      icon: <ChairIcon />,
+      href: '/admin/seat-types',
+    },
+    {
+      text: 'Variations',
+      icon: <SettingsIcon />,
+      href: '/admin/variations',
     },
   ];
 
@@ -256,7 +265,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
             />
           </Box>
         )}
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {/* Collapse/Close Buttons */}
           {!isMobile && (
             <IconButton onClick={toggleCollapse} size="small">
               {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
@@ -464,37 +474,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
         )}
       </List>
 
-      {/* Customer View Section */}
-      {!collapsed && (
-        <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>
-          <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary', fontWeight: 600, fontSize: '0.75rem' }}>
-            Customer View
-          </Typography>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={() => handleNavigation('/')}
-              sx={{
-                borderRadius: 1,
-                minHeight: 36,
-                py: 0.75,
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <StorefrontIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="Back to Website"
-                primaryTypographyProps={{
-                  fontSize: '0.8rem',
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-        </Box>
-      )}
+
 
       {/* Footer */}
       <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>

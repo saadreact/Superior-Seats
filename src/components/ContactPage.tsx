@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import {
   Box,
@@ -14,13 +14,16 @@ import {
   RadioGroup,
   Snackbar,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import { Person, Business, Send, Phone, Email, LocationOn, AccessTime } from '@mui/icons-material';
 import { contactInfo, initialFormData, ContactFormData } from '@/data/ContactPage';
+import { sendContactForm } from '@/services/contactpageapi';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import HeroSectionCommon from './common/HeroSectionaCommon';
+
 
 // Validation schema
 const contactFormSchema = z.object({
@@ -43,6 +46,22 @@ const ContactPage = () => {
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
   const [errors, setErrors] = useState<ContactFormErrors>({} as ContactFormErrors);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('success');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Ensure form data is always valid (no null/undefined values)
+  useEffect(() => {
+    setFormData(prev => {
+      const sanitized = { ...prev };
+      Object.keys(sanitized).forEach(key => {
+        if (sanitized[key as keyof ContactFormData] === null || sanitized[key as keyof ContactFormData] === undefined) {
+          sanitized[key as keyof ContactFormData] = '';
+        }
+      });
+      return sanitized;
+    });
+  }, []);
 
   // Common styles for text fields (excluding Message field)
   const commonTextFieldStyles = {
@@ -87,13 +106,16 @@ const ContactPage = () => {
 
   const validateField = (field: keyof ContactFormData, value: string) => {
     try {
+      // Ensure value is always a string, never null or undefined
+      const stringValue = value || '';
+      
       if (field === 'phone') {
         // Only allow digits for phone
-        const digitsOnly = value.replace(/\D/g, '');
+        const digitsOnly = stringValue.replace(/\D/g, '');
         setFormData(prev => ({ ...prev, [field]: digitsOnly }));
         value = digitsOnly;
       } else {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData(prev => ({ ...prev, [field]: stringValue }));
       }
       
       // Validate the field
@@ -112,34 +134,87 @@ const ContactPage = () => {
   };
 
   const handleInputChange = (field: keyof ContactFormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
+    const value = event.target.value || '';
     validateField(field, value);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
     try {
       // Validate the entire form
       const validatedData = contactFormSchema.parse(formData);
-      console.log('Form submitted:', validatedData);
-      setSnackbarOpen(true);
-      setFormData(initialFormData);
-      setErrors({} as ContactFormErrors);
-    } catch (error) {
+      
+      // Set loading state
+      setIsSubmitting(true);
+      
+      // Prepare the data for API
+      const apiData = {
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        company: validatedData.company || '',
+        subject: validatedData.subject,
+        message: validatedData.message,
+      };
+      
+      // Make API call using the service
+      const result = await sendContactForm(apiData);
+      
+      // Handle success
+      if (result.success) {
+        setSnackbarMessage('Thank you! Your message has been sent successfully. We\'ll get back to you soon.');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        
+        // Reset form with safety check
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          company: '',
+          subject: '',
+          message: ''
+        });
+        setErrors({} as ContactFormErrors);
+      } else {
+        // Handle API error
+        setSnackbarMessage(result.message || 'An error occurred while sending your message. Please try again.');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+      
+    } catch (error: unknown) {
+      console.error('Form submission error:', error);
+      
+      let errorMessage = 'An error occurred while sending your message. Please try again.';
+      
       if (error instanceof z.ZodError) {
+        // Validation error
         const newErrors: ContactFormErrors = {} as ContactFormErrors;
         error.issues.forEach((issue) => {
           const field = issue.path[0] as keyof ContactFormData;
           newErrors[field] = issue.message;
         });
         setErrors(newErrors);
+        errorMessage = 'Please fix the errors in the form and try again.';
       }
+      
+      // Show error notification
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
+    setSnackbarMessage('');
   };
 
   return (
@@ -167,9 +242,17 @@ const ContactPage = () => {
         ]}
       />
       
+      {/* API Debug Component - Only show in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <Box sx={{ py: 2, backgroundColor: '#fafafa' }}>
+          <Container maxWidth="md">
+    
+          </Container>
+        </Box>
+      )}
 
       {/* Contact Form */}
-      <Box sx={{ py: { xs: 2, md: 1, lg: 1, xl: 4 }, backgroundColor: '#fafafa' }}>
+      <Box sx={{  backgroundColor: '#fafafa' }}>
         <Container maxWidth="md">
           <Typography
             variant="h3"
@@ -177,6 +260,7 @@ const ContactPage = () => {
               textAlign: 'center',
               fontWeight: 'medium',
               mb: 2,
+              mt: -2,
               color: 'text.primary',
               fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '2.5rem' ,xl: '2.5rem'},
 
@@ -361,35 +445,39 @@ const ContactPage = () => {
                    alignItems: 'center',
                    gap: { xs: 1.5, sm: 2 },
                  }}>
-                                       <Button
+               <Button
                       type="submit"
                       variant="contained"
                       size="medium"
-                      startIcon={<Send />}
+                      startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Send />}
+                      disabled={isSubmitting}
                       disableRipple={false}
                       TouchRippleProps={{
                         center: true,
                         color: 'rgba(255, 255, 255, 0.3)',
                       }}
-                                            sx={{
-                         px: { xs: 4, sm: 6 },
-                         py: { xs: 1, sm: 1.5,lg: 1,md: 1.2 },
-                         borderRadius: 2,
-                         textTransform: 'none',
-                         letterSpacing: 0.5,
-                         transition: 'all 0.3s ease',
-                         minWidth: { xs: 160, sm: 180 },
-                         width: { xs: '100%', sm: 'auto' },
-                         boxShadow: 'none',
-                         '&:hover': {
-                           boxShadow: 'none',
-                         },
-                         '& .MuiTouchRipple-root': {
-                           borderRadius: 2,
-                         },
-                       }}
+                      sx={{
+                        px: { xs: 4, sm: 6 },
+                        py: { xs: 1, sm: 1.5,lg: 1,md: 1.2 },
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        letterSpacing: 0.5,
+                        transition: 'all 0.3s ease',
+                        minWidth: { xs: 160, sm: 180 },
+                        width: { xs: '100%', sm: 'auto' },
+                        boxShadow: 'none',
+                        '&:hover': {
+                          boxShadow: 'none',
+                        },
+                        '& .MuiTouchRipple-root': {
+                          borderRadius: 2,
+                        },
+                        '&:disabled': {
+                          opacity: 0.7,
+                        },
+                      }}
                     >
-                     Send Message
+                     {isSubmitting ? 'Sending...' : 'Send Message'}
                    </Button>
                                      <Typography
                      variant="caption"
@@ -455,7 +543,7 @@ const ContactPage = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Success Snackbar */}
+      {/* Dynamic Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -464,10 +552,10 @@ const ContactPage = () => {
       >
         <Alert
           onClose={handleCloseSnackbar}
-          severity="success"
+          severity={snackbarSeverity}
           sx={{ width: '100%' }}
         >
-          Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Box>
