@@ -207,103 +207,102 @@ const AdminPayments = () => {
         </Box>
 
         {/* Stats Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <MotionCard
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Avatar sx={{ backgroundColor: '#4caf50', mr: 2 }}>
-                    <MoneyIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Revenue
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {formatCurrency(totalRevenue, 'USD')}
-                    </Typography>
-                  </Box>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' },
+            gap: 3,
+            mb: 4,
+          }}
+        >
+          <MotionCard
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ backgroundColor: '#4caf50', mr: 2 }}>
+                  <MoneyIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Revenue
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    {formatCurrency(totalRevenue, 'USD')}
+                  </Typography>
                 </Box>
-              </CardContent>
-            </MotionCard>
-          </Grid>
+              </Box>
+            </CardContent>
+          </MotionCard>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <MotionCard
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Avatar sx={{ backgroundColor: '#4caf50', mr: 2 }}>
-                    <SuccessIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Completed
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {completedPayments}
-                    </Typography>
-                  </Box>
+          <MotionCard
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ backgroundColor: '#4caf50', mr: 2 }}>
+                  <SuccessIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Completed
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    {completedPayments}
+                  </Typography>
                 </Box>
-              </CardContent>
-            </MotionCard>
-          </Grid>
+              </Box>
+            </CardContent>
+          </MotionCard>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <MotionCard
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Avatar sx={{ backgroundColor: '#ff9800', mr: 2 }}>
-                    <PendingIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Pending
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {pendingPayments}
-                    </Typography>
-                  </Box>
+          <MotionCard
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ backgroundColor: '#ff9800', mr: 2 }}>
+                  <PendingIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Pending
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    {pendingPayments}
+                  </Typography>
                 </Box>
-              </CardContent>
-            </MotionCard>
-          </Grid>
+              </Box>
+            </CardContent>
+          </MotionCard>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <MotionCard
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Avatar sx={{ backgroundColor: '#f44336', mr: 2 }}>
-                    <ErrorIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Failed
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {failedPayments}
-                    </Typography>
-                  </Box>
+          <MotionCard
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ backgroundColor: '#f44336', mr: 2 }}>
+                  <ErrorIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Failed
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    {failedPayments}
+                  </Typography>
                 </Box>
-              </CardContent>
-            </MotionCard>
-          </Grid>
-        </Grid>
+              </Box>
+            </CardContent>
+          </MotionCard>
+        </Box>
 
         {/* Search and Filters */}
         <Paper sx={{ p: 3, mb: 3 }}>
@@ -452,8 +451,15 @@ const AdminPayments = () => {
           </DialogTitle>
           <DialogContent>
             {selectedPayment && (
-              <Grid container spacing={3} sx={{ mt: 1 }}>
-                <Grid item xs={12} md={6}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                  gap: 3,
+                  mt: 1,
+                }}
+              >
+                <Box>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Customer Information
                   </Typography>
@@ -465,8 +471,8 @@ const AdminPayments = () => {
                       <strong>Email:</strong> {selectedPayment.email}
                     </Typography>
                   </Box>
-                </Grid>
-                <Grid item xs={12} md={6}>
+                </Box>
+                <Box>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Payment Information
                   </Typography>
@@ -488,8 +494,8 @@ const AdminPayments = () => {
                       />
                     </Typography>
                   </Box>
-                </Grid>
-                <Grid item xs={12}>
+                </Box>
+                <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Transaction Details
                   </Typography>
@@ -504,8 +510,8 @@ const AdminPayments = () => {
                       <strong>Date:</strong> {new Date(selectedPayment.date).toLocaleString()}
                     </Typography>
                   </Box>
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             )}
           </DialogContent>
           <DialogActions>
