@@ -365,19 +365,19 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   router.push('/checkout');
                 }}
                 sx={{
-                  backgroundColor: 'primary.main',
                   py: { xs: 1.5, sm: 1.75, md: 2 },
+                  height: { xs: '30px', sm: '30px', md: '40px', lg: '40px', xl: '40px' },
                   fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
-                  fontWeight: 600,
+                  fontWeight: 'medium',
                   borderRadius: { xs: 1.5, sm: 2 },
                   textTransform: 'none',
-                  boxShadow: { xs: '0 2px 8px rgba(211, 47, 47, 0.25)', sm: '0 4px 12px rgba(211, 47, 47, 0.3)' },
+                  backgroundColor: 'primary.main',
+                  boxShadow: 'none',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
                     backgroundColor: 'primary.dark',
-                    boxShadow: { xs: '0 4px 12px rgba(211, 47, 47, 0.35)', sm: '0 6px 20px rgba(211, 47, 47, 0.4)' },
-                    transform: 'translateY(-1px)'
+                    boxShadow: 'none',
                   },
-                  transition: 'all 0.2s ease'
                 }}
               >
                 Proceed to Checkout

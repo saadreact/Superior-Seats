@@ -1728,10 +1728,12 @@ class ApiService {
     name: string;
     hex_code?: string;
     description?: string;
+    color_vendor_id: number;
     is_active?: boolean;
-    
+    price_tier_ids: number[];
   }) {
     try {
+      console.log('API createColor - Sending data:', data);
       const response = await api.post('/colors', data);
       
       // Handle different response structures
@@ -1743,6 +1745,16 @@ class ApiService {
       return response.data;
     } catch (error: any) {
       console.error('Error creating color:', error);
+      console.error('Error response status:', error.response?.status);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response headers:', error.response?.headers);
+      
+      if (error.response?.status === 422) {
+        const validationErrors = error.response?.data?.errors || error.response?.data?.message;
+        console.error('Validation errors:', validationErrors);
+        throw new Error(`Validation failed: ${JSON.stringify(validationErrors)}`);
+      }
+      
       throw new Error(error.response?.data?.message || 'Failed to create color');
     }
   }
@@ -1752,11 +1764,17 @@ class ApiService {
     name?: string;
     hex_code?: string;
     description?: string;
+    color_vendor_id?: number;
     is_active?: boolean;
-    
+    price_tier_ids?: number[];
   }) {
     try {
+      console.log('API updateColor - Updating color with ID:', id);
+      console.log('API updateColor - Sending data:', data);
+      
       const response = await api.put(`/colors/${id}`, data);
+      
+      console.log('API updateColor - Response received:', response);
       
       // Handle different response structures
       if (response.data && response.data.data) {
@@ -1767,9 +1785,20 @@ class ApiService {
       return response.data;
     } catch (error: any) {
       console.error('Error updating color:', error);
+      console.error('Error response status:', error.response?.status);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response headers:', error.response?.headers);
+      
       if (error.response?.status === 404) {
         throw new Error('Color not found');
       }
+      
+      if (error.response?.status === 422) {
+        const validationErrors = error.response?.data?.errors || error.response?.data?.message;
+        console.error('Validation errors:', validationErrors);
+        throw new Error(`Update validation failed: ${JSON.stringify(validationErrors)}`);
+      }
+      
       throw new Error(error.response?.data?.message || 'Failed to update color');
     }
   }

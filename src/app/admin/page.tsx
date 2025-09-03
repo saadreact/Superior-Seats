@@ -69,6 +69,14 @@ const AdminDashboard = () => {
       color: '#ff5722',
       count: 2,
     },
+    {
+      title: 'Payments',
+      description: 'Monitor and manage payment transactions',
+      icon: <MoneyIcon sx={{ fontSize: 40 }} />,
+      href: '/admin/payments',
+      color: '#00c853',
+      count: 5,
+    },
   ];
 
   const stats = [
@@ -132,13 +140,9 @@ const AdminDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              sx={{
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: 3,
-                },
-                transition: 'all 0.3s ease-in-out',
-              }}
+                                sx={{
+                    transition: 'all 0.3s ease-in-out',
+                  }}
             >
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -195,10 +199,6 @@ const AdminDashboard = () => {
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 4,
-                    },
                     transition: 'all 0.3s ease-in-out',
                   }}
                 >
@@ -227,18 +227,20 @@ const AdminDashboard = () => {
                     />
                   </CardContent>
                   <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
-                    <Button
-                      variant="contained"
-                      href={module.href}
-                      sx={{
-                        backgroundColor: module.color,
-                        '&:hover': {
-                          backgroundColor: module.color,
-                          opacity: 0.9,
-                        },
-                      }}
-                    >
-                      Manage {module.title}
+                                         <Button
+                       variant="contained"
+                       href={module.href}
+                       sx={{
+                         backgroundColor: module.color,
+                         boxShadow: 'none',
+                         '&:hover': {
+                           backgroundColor: module.color,
+                           opacity: 0.9,
+                           boxShadow: 'none',
+                         },
+                       }}
+                     >
+                       {module.title}
                     </Button>
                   </CardActions>
                 </MotionCard>
