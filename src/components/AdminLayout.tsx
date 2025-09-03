@@ -22,6 +22,8 @@ import {
   Person as PersonIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  Storefront as StorefrontIcon,
+  ExitToApp as ExitToAppIcon,
 } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import AdminRouteGuard from './AdminRouteGuard';
@@ -122,6 +124,26 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
               {title}
             </Typography>
             
+            {/* Back to Website Button */}
+            <Button
+              variant="outlined"
+              startIcon={<ExitToAppIcon />}
+              onClick={() => router.push('/')}
+              sx={{
+                mr: 2,
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                '&:hover': {
+                  borderColor: 'primary.dark',
+                  backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                },
+                textTransform: 'none',
+                fontWeight: 500,
+              }}
+            >
+              Back to Website
+            </Button>
+
             {isAuthenticated && user ? (
               <>
                 <Tooltip title={`${user.username || user.name || user.email} (Click to logout)`} arrow>

@@ -310,10 +310,13 @@ const VariationsPage = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAddVariation}
+            className="gradient-style"
             sx={{
               backgroundColor: '#DA291C',
+              boxShadow: 'none',
               '&:hover': {
                 backgroundColor: '#B71C1C',
+                boxShadow: 'none',
               },
             }}
           >

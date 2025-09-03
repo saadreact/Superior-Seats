@@ -397,6 +397,13 @@ const OrdersPage = () => {
               startIcon={<AddIcon />}
               onClick={handleCreate}
               size="small"
+              className="gradient-style"
+              sx={{
+                boxShadow: 'none',
+                '&:hover': {
+                  boxShadow: 'none',
+                }
+              }}
             >
               New Order
             </Button>

@@ -53,6 +53,5 @@ export const seatingProducts: SeatingProduct[] = [
 export const stats: Stat[] = [
   { number: 25, label: 'Years Experience', suffix: '+' },
   { number: 20000, label: 'Custom Seats Built', suffix: '+' },
-
   { number: 50, label: 'Seat Models', suffix: '+' },
 ];

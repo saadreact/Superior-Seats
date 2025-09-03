@@ -101,9 +101,11 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: 8,
+          borderRadius: 4, // Changed from 8 to match custom styling
           fontWeight: 500,
           fontSize: '1rem',
+          letterSpacing: 0.5, // Added from custom styling
+          transition: 'all 0.3s ease', // Added from custom styling
           '@media (min-width:600px)': {
             fontSize: '0.9rem',
           },
@@ -118,12 +120,17 @@ export const theme = createTheme({
           },
         },
         contained: {
-         // boxShadow: '0 2px 8px rgba(211, 47, 47, 0.3)',
-         boxShadow: '0 2px 8px rgba(218, 41, 28, 1)',
-
+          // Custom styling from ContactPage button
+          boxShadow: 'none', // Changed from red shadow to none
           '&:hover': {
-            //boxShadow: '0 4px 12px rgba(211, 47, 47, 0.4)',
-            boxShadow: '0 4px 12px rgba(218, 41, 28, 1)',
+            boxShadow: 'none', // No shadow on hover
+          },
+          '&:disabled': {
+            opacity: 0.7, // Added disabled state styling
+          },
+          // Touch ripple styling
+          '& .MuiTouchRipple-root': {
+            borderRadius: 2,
           },
           // Add custom class for gradient styling
           '&.gradient-style': {

@@ -39,7 +39,6 @@ export const contactInfo = [
 
 // Form data interface
 export interface ContactFormData {
-  customerType: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -51,7 +50,6 @@ export interface ContactFormData {
 
 // Initial form data
 export const initialFormData: ContactFormData = {
-  customerType: 'retail',
   firstName: '',
   lastName: '',
   email: '',
