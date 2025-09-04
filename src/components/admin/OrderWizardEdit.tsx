@@ -262,7 +262,6 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 					variation_id: ci.variationId,
 					quantity: ci.quantity,
 					unit_price: ci.unitPrice,
-					discount_amount: ci.discountAmount || 0,
 				})),
 			};
 
@@ -321,7 +320,7 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 									{cartItems.map((it, idx) => (
 										<Card key={idx} variant="outlined">
 											<CardContent>
-												<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '4fr 2fr 2fr 2fr 2fr' }} gap={2} alignItems="center">
+												<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 120px 140px 160px auto', lg: '1fr 140px 160px 180px auto' }} gap={2} alignItems="center">
 													<FormControl fullWidth>
 														<InputLabel>Product</InputLabel>
 														<Select
@@ -341,9 +340,8 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 													</FormControl>
 													<TextField fullWidth type="number" label="Quantity" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} />
 													<TextField fullWidth type="number" label="Unit Price" value={it.unitPrice} onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) })} />
-													<TextField fullWidth type="number" label="Discount" value={it.discountAmount || 0} onChange={(e) => updateItem(idx, { discountAmount: Number(e.target.value) })} />
-													<Box display="flex" alignItems="center" justifyContent="space-between">
-														<Chip label={`$${((it.quantity * it.unitPrice) - (it.discountAmount || 0)).toFixed(2)}`} color="primary" />
+																									<Box display="flex" alignItems="center" justifyContent="space-between">
+													<Chip label={`$${((it.quantity * it.unitPrice)).toFixed(2)}`} color="primary" />
 														<IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton>
 													</Box>
 												</Box>
@@ -438,13 +436,13 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 									{cartItems.map((i, idx) => (
 										<Box key={idx} display="flex" justifyContent="space-between">
 											<Typography>{i.name || products.find(p => p.id === i.productId)?.name || 'Item'} x {i.quantity}</Typography>
-											<Typography>${((i.quantity * i.unitPrice) - (i.discountAmount || 0)).toFixed(2)}</Typography>
+											<Typography>${((i.quantity * i.unitPrice)).toFixed(2)}</Typography>
 										</Box>
 									))}
 																									<Divider sx={{ my: 1 }} />
 																<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
 																	<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
-																	<Chip label={`Discount: $${discount.toFixed(2)}`} />
+																	<Chip label={`Order Discount: $${discount.toFixed(2)}`} />
 																	<Chip label={`Tax: $${tax.toFixed(2)}`} />
 																	<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
 																</Box>
