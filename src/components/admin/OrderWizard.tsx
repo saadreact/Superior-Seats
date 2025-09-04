@@ -154,7 +154,7 @@ const OrderWizard: React.FC = () => {
 	}, []);
 
 	// Derived totals
-	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice) - (i.discountAmount || 0), 0), [cartItems]);
+	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
 	const grandTotal = useMemo(() => Math.max(0, subTotal - discount + tax), [subTotal, discount, tax]);
 
 	const handleAddItem = () => {
@@ -176,19 +176,18 @@ const OrderWizard: React.FC = () => {
 		setCartItems(prev => prev.filter((_, i) => i !== index));
 	};
 
-	const updateItem = (index: number, updates: Partial<CartItem>) => {
-		setCartItems(prev => prev.map((it, i) => {
-			if (i !== index) return it;
-			const updated: CartItem = { ...it, ...updates } as CartItem;
-			const qty = Number(updated.quantity) || 0;
-			const price = Number(updated.unitPrice) || 0;
-			const disc = Number(updated.discountAmount) || 0;
-			const lineTotal = Math.max(0, (qty * price) - disc);
-			updated.total = lineTotal;
-			updated.totalPrice = lineTotal;
-			return updated;
-		}));
-	};
+			const updateItem = (index: number, updates: Partial<CartItem>) => {
+			setCartItems(prev => prev.map((it, i) => {
+				if (i !== index) return it;
+				const updated: CartItem = { ...it, ...updates } as CartItem;
+				const qty = Number(updated.quantity) || 0;
+				const price = Number(updated.unitPrice) || 0;
+				const lineTotal = Math.max(0, (qty * price));
+				updated.total = lineTotal;
+				updated.totalPrice = lineTotal;
+				return updated;
+			}));
+		};
 
 	const canProceedFromStep = (stepIndex: number): boolean => {
 		if (stepIndex === 0) {
@@ -230,7 +229,6 @@ const OrderWizard: React.FC = () => {
 					name: ci.name || (products.find(p => p.id === ci.productId)?.name || 'Item'),
 					quantity: ci.quantity,
 					unitPrice: Number(ci.unitPrice) || 0,
-					discountAmount: Number(ci.discountAmount) || 0,
 					total: ci.total,
 					totalPrice: ci.totalPrice,
 				})),
@@ -326,7 +324,7 @@ const OrderWizard: React.FC = () => {
 									{cartItems.map((it, idx) => (
 										<Card key={idx} variant="outlined">
 											<CardContent>
-																												<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '4fr 2fr 2fr 2fr 2fr' }} gap={2} alignItems="center">
+																												<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 120px 140px 160px auto', lg: '1fr 140px 160px 180px auto' }} gap={2} alignItems="center">
 																	<FormControl fullWidth>
 																		<InputLabel>Product</InputLabel>
 																		<Select
@@ -346,9 +344,8 @@ const OrderWizard: React.FC = () => {
 																	</FormControl>
 																	<TextField fullWidth type="number" label="Quantity" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} />
 																	<TextField fullWidth type="number" label="Unit Price" value={it.unitPrice} onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) })} />
-																	<TextField fullWidth type="number" label="Discount" value={it.discountAmount || 0} onChange={(e) => updateItem(idx, { discountAmount: Number(e.target.value) })} />
-																	<Box display="flex" alignItems="center" justifyContent="space-between">
-																		<Chip label={`$${((it.quantity * it.unitPrice) - (it.discountAmount || 0)).toFixed(2)}`} color="primary" />
+																											<Box display="flex" alignItems="center" justifyContent="space-between">
+											<Chip label={`$${((it.quantity * it.unitPrice)).toFixed(2)}`} color="primary" />
 																		<IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton>
 																	</Box>
 																</Box>
@@ -443,13 +440,13 @@ const OrderWizard: React.FC = () => {
 									{cartItems.map((i, idx) => (
 										<Box key={idx} display="flex" justifyContent="space-between">
 											<Typography>{i.name || products.find(p => p.id === i.productId)?.name || 'Item'} x {i.quantity}</Typography>
-											<Typography>${((i.quantity * i.unitPrice) - (i.discountAmount || 0)).toFixed(2)}</Typography>
+																							<Typography>${((i.quantity * i.unitPrice)).toFixed(2)}</Typography>
 										</Box>
 									))}
 									<Divider sx={{ my: 1 }} />
 																			<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
 											<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
-											<Chip label={`Discount: $${discount.toFixed(2)}`} />
+											<Chip label={`Order Discount: $${discount.toFixed(2)}`} />
 											<Chip label={`Tax: $${tax.toFixed(2)}`} />
 											<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
 										</Box>

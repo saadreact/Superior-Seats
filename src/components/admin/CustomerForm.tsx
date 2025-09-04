@@ -16,6 +16,8 @@ interface CustomerFormProps {
   isViewMode?: boolean;
   onSubmit: (customer: any) => void;
   onCancel: () => void;
+  serverErrors?: Record<string, string>;
+  onClearServerError?: (field: string) => void;
 }
 
 const CustomerForm: React.FC<CustomerFormProps> = ({
@@ -23,6 +25,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   isViewMode = false,
   onSubmit,
   onCancel,
+  serverErrors = {},
+  onClearServerError,
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -92,6 +96,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  const getAllErrors = (): Record<string, string> => {
+    return { ...errors, ...serverErrors };
+  };
+
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -107,9 +115,13 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
   const handleFieldChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
+    // Clear client-side error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    // Clear server-side error for this field if provided
+    if (onClearServerError && serverErrors[field]) {
+      onClearServerError(field);
     }
   };
 
@@ -117,6 +129,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     { value: 'retail', label: 'Retail' },
     { value: 'wholesale', label: 'Wholesale' },
   ];
+
+  const allErrors = getAllErrors();
 
   return (
     <Box sx={{ pt: 2 }}>
@@ -136,7 +150,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             value={formData.name}
             onChange={(value) => handleFieldChange('name', value)}
             required
-            error={errors.name}
+            error={allErrors.name}
             disabled={isViewMode}
           />
 
@@ -147,7 +161,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             onChange={(value) => handleFieldChange('email', value)}
             type="email"
             required
-            error={errors.email}
+            error={allErrors.email}
             disabled={isViewMode}
           />
 
@@ -159,7 +173,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 value={formData.username}
                 onChange={(value) => handleFieldChange('username', value)}
                 required
-                error={errors.username}
+                error={allErrors.username}
                 disabled={isViewMode}
               />
 
@@ -170,7 +184,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 onChange={(value) => handleFieldChange('password', value)}
                 type="password"
                 required
-                error={errors.password}
+                error={allErrors.password}
                 disabled={isViewMode}
               />
             </>
@@ -194,7 +208,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             value={formData.phone}
             onChange={(value) => handleFieldChange('phone', value)}
             required
-            error={errors.phone}
+            error={allErrors.phone}
             disabled={isViewMode}
           />
 
@@ -204,7 +218,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             value={formData.address}
             onChange={(value) => handleFieldChange('address', value)}
             required
-            error={errors.address}
+            error={allErrors.address}
             disabled={isViewMode}
           />
         </Grid>
@@ -225,6 +239,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             label="Company Name"
             value={formData.company_name}
             onChange={(value) => handleFieldChange('company_name', value)}
+            error={allErrors.company_name}
             disabled={isViewMode}
           />
 
@@ -233,6 +248,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             label="Tax ID"
             value={formData.tax_id}
             onChange={(value) => handleFieldChange('tax_id', value)}
+            error={allErrors.tax_id}
             disabled={isViewMode}
           />
 
@@ -243,7 +259,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             onChange={(value) => handleFieldChange('customer_type', value)}
             options={customerTypeOptions}
             required
-            error={errors.customer_type}
+            error={allErrors.customer_type}
             disabled={isViewMode}
           />
 
@@ -253,6 +269,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             value={formData.price_tier_id}
             onChange={(value) => handleFieldChange('price_tier_id', parseInt(value))}
             type="number"
+            error={allErrors.price_tier_id}
             disabled={isViewMode}
           />
 
@@ -262,6 +279,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             value={formData.credit_limit}
             onChange={(value) => handleFieldChange('credit_limit', parseInt(value))}
             type="number"
+            error={allErrors.credit_limit}
             disabled={isViewMode}
           />
         </Grid>
