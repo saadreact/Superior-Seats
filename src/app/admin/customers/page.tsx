@@ -21,6 +21,7 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
+  TablePagination,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -42,55 +43,67 @@ const CustomersPage = () => {
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Fetch data on component mount
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1); // 1-based for API
+  const [rowsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [lastPage, setLastPage] = useState(1);
+
+  const fetchCustomers = async (page: number, perPage: number) => {
+    try {
+      setLoading(true);
+      const response = await apiService.getCustomers({ page, per_page: perPage });
+
+      // The API returns pagination payload at the top level
+      // Fallbacks included for safety in case of structure variations
+      const payload: any = response || {};
+      const customersData: any[] = Array.isArray(payload.data)
+        ? payload.data
+        : (payload.data?.data || []);
+
+      const total = payload.total ?? payload.data?.total ?? 0;
+      const apiPerPage = payload.per_page ?? perPage;
+      const apiCurrentPage = payload.current_page ?? page;
+      const apiLastPage = payload.last_page ?? (apiPerPage ? Math.ceil(total / apiPerPage) : 1);
+
+      const transformedCustomers: Customer[] = customersData.map((customer: any) => ({
+        id: String(customer.id),
+        customerTypeId: customer.customer_type || 'retail',
+        firstName: (customer.name || '').split(' ')[0] || (customer.name || ''),
+        lastName: (customer.name || '').split(' ').slice(1).join(' ') || '',
+        email: customer.email,
+        phone: customer.phone,
+        company: customer.company_name,
+        address: {
+          street: customer.address,
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'USA',
+        },
+        isActive: customer.is_active,
+        notes: '',
+        createdAt: new Date(customer.created_at),
+        updatedAt: new Date(customer.updated_at),
+      }));
+
+      setCustomers(transformedCustomers);
+      setTotalItems(Number(total) || 0);
+      setLastPage(Number(apiLastPage) || 1);
+      setCustomerTypes([]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setAlert({ type: 'error', message: 'Failed to load customers data' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on mount and when pagination changes
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await apiService.getCustomers();
-        
-        console.log('Customers API Response:', response);
-        
-        // The API returns customers in response.data.data (nested structure)
-        const customersData = response.data?.data || [];
-        
-        console.log('Extracted Customers Data:', customersData);
-        console.log('Total customers from API:', response.data?.total || 0);
-        
-        // Transform API data to match our interface
-        const transformedCustomers = customersData.map((customer: any) => ({
-          id: customer.id.toString(),
-          customerTypeId: customer.customer_type || 'retail',
-          firstName: customer.name.split(' ')[0] || customer.name,
-          lastName: customer.name.split(' ').slice(1).join(' ') || '',
-          email: customer.email,
-          phone: customer.phone,
-          company: customer.company_name,
-          address: {
-            street: customer.address,
-            city: '',
-            state: '',
-            zipCode: '',
-            country: 'USA',
-          },
-          isActive: customer.is_active,
-          notes: '',
-          createdAt: new Date(customer.created_at),
-          updatedAt: new Date(customer.updated_at),
-        }));
-
-        setCustomers(transformedCustomers);
-        setCustomerTypes([]); // No customer types available
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setAlert({ type: 'error', message: 'Failed to load customers data' });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    fetchCustomers(currentPage, rowsPerPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, rowsPerPage]);
 
   const getCustomerTypeName = (customerTypeId: string) => {
     const customerType = customerTypes.find(ct => ct.id === customerTypeId);
@@ -120,6 +133,8 @@ const CustomersPage = () => {
         await apiService.deleteCustomer(parseInt(customerToDelete.id));
         setCustomers(prev => prev.filter(c => c.id !== customerToDelete.id));
         setAlert({ type: 'success', message: 'Customer deleted successfully' });
+        // Optionally refetch to refresh totals
+        fetchCustomers(currentPage, rowsPerPage);
       } catch (error) {
         console.error('Error deleting customer:', error);
         setAlert({ type: 'error', message: 'Failed to delete customer' });
@@ -127,6 +142,10 @@ const CustomersPage = () => {
     }
     setIsDeleteDialogOpen(false);
     setCustomerToDelete(null);
+  };
+
+  const handleChangePage = (_: unknown, newPageZeroBased: number) => {
+    setCurrentPage(newPageZeroBased + 1);
   };
 
 
@@ -171,7 +190,7 @@ const CustomersPage = () => {
             {alert.message}
           </Alert>
         )}
-
+        
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
             <CircularProgress />
@@ -179,187 +198,197 @@ const CustomersPage = () => {
         ) : (
           <>
             {/* Desktop Table View */}
-        <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-          <TableContainer component={Paper} sx={{ 
-            borderRadius: 2, 
-            overflow: 'auto',
-            maxWidth: '100%',
-            '& .MuiTable-root': {
-              minWidth: 650,
-            },
-          }}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                  <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Company</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Customer Type</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
+            <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+              <TableContainer component={Paper} sx={{ 
+                borderRadius: 2, 
+                overflow: 'auto',
+                maxWidth: '100%',
+                '& .MuiTable-root': {
+                  minWidth: 650,
+                },
+              }}>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                      <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Company</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Customer Type</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {customers.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell>
+                          {customer.firstName} {customer.lastName}
+                        </TableCell>
+                        <TableCell>{customer.email}</TableCell>
+                        <TableCell>{customer.phone}</TableCell>
+                        <TableCell>{customer.company || '-'}</TableCell>
+                        <TableCell>{getCustomerTypeName(customer.customerTypeId)}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={customer.isActive ? 'Active' : 'Inactive'}
+                            color={customer.isActive ? 'success' : 'default'}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {customer.createdAt.toLocaleDateString()}
+                        </TableCell>
+                        <TableCell align="center" sx={{ minWidth: 120 }}>
+                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleView(customer)}
+                              title="View"
+                              sx={{ color: 'primary.main' }}
+                            >
+                              <ViewIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEdit(customer)}
+                              title="Edit"
+                              sx={{ color: 'primary.main' }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(customer)}
+                              title="Delete"
+                              color="error"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+
+            {/* Mobile Card View */}
+            <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
+              <Box sx={{ display: 'grid', gap: 2 }}>
                 {customers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell>
-                      {customer.firstName} {customer.lastName}
-                    </TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.phone}</TableCell>
-                    <TableCell>{customer.company || '-'}</TableCell>
-                    <TableCell>{getCustomerTypeName(customer.customerTypeId)}</TableCell>
-                    <TableCell>
+                  <Paper key={customer.id} sx={{ p: 2, borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          {customer.firstName} {customer.lastName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          {customer.email}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {customer.phone}
+                        </Typography>
+                      </Box>
                       <Chip
                         label={customer.isActive ? 'Active' : 'Inactive'}
                         color={customer.isActive ? 'success' : 'default'}
                         size="small"
                       />
-                    </TableCell>
-                    <TableCell>
-                      {customer.createdAt.toLocaleDateString()}
-                    </TableCell>
-                    <TableCell align="center" sx={{ minWidth: 120 }}>
-                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleView(customer)}
-                          title="View"
-                          sx={{ color: 'primary.main' }}
-                        >
-                          <ViewIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEdit(customer)}
-                          title="Edit"
-                          sx={{ color: 'primary.main' }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDelete(customer)}
-                          title="Delete"
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                    </Box>
+                    
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1, mb: 2 }}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Company
+                        </Typography>
+                        <Typography variant="body2">
+                          {customer.company || '-'}
+                        </Typography>
                       </Box>
-                    </TableCell>
-                  </TableRow>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Customer Type
+                        </Typography>
+                        <Typography variant="body2">
+                          {getCustomerTypeName(customer.customerTypeId)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
+                        <Typography variant="caption" color="text.secondary">
+                          Created
+                        </Typography>
+                        <Typography variant="body2">
+                          {customer.createdAt.toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleView(customer)}
+                        title="View"
+                        sx={{ color: 'primary.main' }}
+                      >
+                        <ViewIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEdit(customer)}
+                        title="Edit"
+                        sx={{ color: 'primary.main' }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(customer)}
+                        title="Delete"
+                        color="error"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  </Paper>
                 ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
+              </Box>
+            </Box>
 
-        {/* Mobile Card View */}
-        <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
-          <Box sx={{ display: 'grid', gap: 2 }}>
-            {customers.map((customer) => (
-              <Paper key={customer.id} sx={{ p: 2, borderRadius: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                      {customer.firstName} {customer.lastName}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                      {customer.email}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {customer.phone}
-                    </Typography>
-                  </Box>
-                  <Chip
-                    label={customer.isActive ? 'Active' : 'Inactive'}
-                    color={customer.isActive ? 'success' : 'default'}
-                    size="small"
-                  />
-                </Box>
-                
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1, mb: 2 }}>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Company
-                    </Typography>
-                    <Typography variant="body2">
-                      {customer.company || '-'}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Customer Type
-                    </Typography>
-                    <Typography variant="body2">
-                      {getCustomerTypeName(customer.customerTypeId)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Created
-                    </Typography>
-                    <Typography variant="body2">
-                      {customer.createdAt.toLocaleDateString()}
-                    </Typography>
-                  </Box>
-                </Box>
+            {/* Pagination Controls */}
+            <Box sx={{ mt: 2 }}>
+              <TablePagination
+                component="div"
+                count={totalItems}
+                page={Math.max(0, currentPage - 1)}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                rowsPerPageOptions={[]}
+              />
+            </Box>
 
-                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleView(customer)}
-                    title="View"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <ViewIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEdit(customer)}
-                    title="Edit"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(customer)}
-                    title="Delete"
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              </Paper>
-            ))}
-          </Box>
-        </Box>
-
-
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={isDeleteDialogOpen}
-          onClose={() => setIsDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete &quot;{customerToDelete?.firstName} {customerToDelete?.lastName}&quot;? This action cannot be undone.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={confirmDelete} color="error" variant="contained">
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+              open={isDeleteDialogOpen}
+              onClose={() => setIsDeleteDialogOpen(false)}
+            >
+              <DialogTitle>Confirm Delete</DialogTitle>
+              <DialogContent>
+                <Typography>
+                  Are you sure you want to delete &quot;{customerToDelete?.firstName} {customerToDelete?.lastName}&quot;? This action cannot be undone.
+                </Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setIsDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={confirmDelete} color="error" variant="contained">
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
           </>
         )}
       </Box>
