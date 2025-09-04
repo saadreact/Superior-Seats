@@ -955,7 +955,7 @@ class ApiService {
       
       const response = await api.post('/products', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          // Don't set Content-Type for FormData - let browser set it with boundary
         },
       });
       
@@ -1093,7 +1093,7 @@ class ApiService {
         
         const response = await api.post(`/products/${id}`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            // Don't set Content-Type for FormData - let browser set it with boundary
           },
         });
         
@@ -1325,7 +1325,7 @@ class ApiService {
       
       const response = await api.post('/variations', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          // Don't set Content-Type for FormData - let browser set it with boundary
         },
       });
       return response.data.data || response.data;
@@ -2081,14 +2081,52 @@ class ApiService {
   async createHeatOption(data: {
     name: string;
     description?: string;
+    image?: File | null;
+    price_tier_ids?: number[];
     is_active?: boolean;
-    
   }) {
     try {
-      const response = await api.post('/heat-options', data);
+      // Use FormData for file uploads
+      const formData = new FormData();
+      formData.append('name', data.name);
+      if (data.description) formData.append('description', data.description);
+      if (data.image) formData.append('image', data.image);
+      if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+        // Try both approaches for price_tier_ids
+        // Approach 1: Individual array fields (Laravel standard)
+        data.price_tier_ids.forEach(id => formData.append('price_tier_ids[]', id.toString()));
+        // Approach 2: JSON string (alternative backend expectation)
+        formData.append('price_tier_ids_json', JSON.stringify(data.price_tier_ids));
+      }
+      if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
+
+      // Enhanced debug logging
+      console.log('API Service - createHeatOption input data:', data);
+      console.log('API Service - FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
+      // Log the actual request being made
+      console.log('API Service - Making POST request to:', '/heat-options');
+      console.log('API Service - Request headers:', {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${getToken()}`
+      });
+
+      const response = await api.post('/heat-options', formData, {
+        headers: {
+          // Don't set Content-Type for FormData - let browser set it with boundary
+        },
+      });
+      
+      console.log('API Service - Response received:', response);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error creating heat option:', error);
+      console.error('API Service - Error creating heat option:', error);
+      console.error('API Service - Error response:', error.response);
+      console.error('API Service - Error status:', error.response?.status);
+      console.error('API Service - Error data:', error.response?.data);
       throw new Error(error.response?.data?.message || 'Failed to create heat option');
     }
   }
@@ -2097,14 +2135,55 @@ class ApiService {
   async updateHeatOption(id: number, data: {
     name?: string;
     description?: string;
+    image?: File | null;
+    price_tier_ids?: number[];
     is_active?: boolean;
-    
   }) {
     try {
-      const response = await api.put(`/heat-options/${id}`, data);
+      // Use FormData for file uploads
+      const formData = new FormData();
+      if (data.name) formData.append('name', data.name);
+      if (data.description) formData.append('description', data.description);
+      if (data.image) formData.append('image', data.image);
+      if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+        // Try both approaches for price_tier_ids
+        // Approach 1: Individual array fields (Laravel standard)
+        data.price_tier_ids.forEach(id => formData.append('price_tier_ids[]', id.toString()));
+        // Approach 2: JSON string (alternative backend expectation)
+        formData.append('price_tier_ids_json', JSON.stringify(data.price_tier_ids));
+      }
+      if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
+
+      // For FormData updates, use POST with _method: 'PUT' (Laravel convention)
+      formData.append('_method', 'PUT');
+      
+      // Enhanced debug logging
+      console.log('API Service - updateHeatOption input data:', data);
+      console.log('API Service - FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
+      // Log the actual request being made
+      console.log('API Service - Making POST request to:', `/heat-options/${id}`);
+      console.log('API Service - Request headers:', {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${getToken()}`
+      });
+
+      const response = await api.post(`/heat-options/${id}`, formData, {
+        headers: {
+          // Don't set Content-Type for FormData - let browser set it with boundary
+        },
+      });
+      
+      console.log('API Service - Response received:', response);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error updating heat option:', error);
+      console.error('API Service - Error updating heat option:', error);
+      console.error('API Service - Error response:', error.response);
+      console.error('API Service - Error status:', error.response?.status);
+      console.error('API Service - Error data:', error.response?.data);
       if (error.response?.status === 404) {
         throw new Error('Heat option not found');
       }
@@ -2231,14 +2310,72 @@ class ApiService {
   async createLumbarType(data: {
     name: string;
     description?: string;
+    image?: File | null;
+    price_tier_ids?: number[];
     is_active?: boolean;
-    
   }) {
     try {
-      const response = await api.post('/lumbar-types', data);
+      let requestData;
+      let headers = {};
+
+      if (data.image) {
+        // Use FormData for file upload
+        const formData = new FormData();
+        formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        // Only append image if it's actually a File object
+        if (data.image && data.image instanceof File) {
+          formData.append('image', data.image);
+        }
+        // If no image is provided, send a flag
+        if (!data.image) {
+          formData.append('no_image', 'true');
+        }
+        if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+          data.price_tier_ids.forEach(id => formData.append('price_tier_ids[]', id.toString()));
+        }
+        if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
+        
+        // Debug logging
+        console.log('API Service - createLumbarType data:', data);
+        console.log('API Service - FormData entries:');
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+        
+        requestData = formData;
+        // Don't set Content-Type for FormData - let browser set it with boundary
+        headers = {};
+      } else {
+        // Use JSON for non-file data
+        requestData = {
+          name: data.name,
+          description: data.description,
+          price_tier_ids: data.price_tier_ids,
+          is_active: data.is_active
+        };
+      }
+
+      const response = await api.post('/lumbar-types', requestData, { headers });
       return response.data?.data || response.data;
     } catch (error: any) {
       console.error('Error creating lumbar type:', error);
+      console.error('Error response status:', error.response?.status);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response headers:', error.response?.headers);
+      
+      if (error.response?.status === 422) {
+        // Validation error - show detailed validation messages
+        const validationErrors = error.response?.data?.errors;
+        if (validationErrors) {
+          const errorMessages = Object.entries(validationErrors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('; ');
+          throw new Error(`Validation failed: ${errorMessages}`);
+        }
+        throw new Error(error.response?.data?.message || 'Validation failed');
+      }
+      
       throw new Error(error.response?.data?.message || 'Failed to create lumbar type');
     }
   }
@@ -2247,17 +2384,73 @@ class ApiService {
   async updateLumbarType(id: number, data: {
     name?: string;
     description?: string;
+    image?: File | null;
+    price_tier_ids?: number[];
     is_active?: boolean;
-    
+    current_image?: string;
   }) {
     try {
-      const response = await api.put(`/lumbar-types/${id}`, data);
+      let requestData;
+      let headers = {};
+
+      // Always use FormData for updates to ensure consistency with Laravel
+      const formData = new FormData();
+      if (data.name) formData.append('name', data.name);
+      if (data.description) formData.append('description', data.description);
+      // Only append image if it's actually a File object
+      if (data.image && data.image instanceof File) {
+        formData.append('image', data.image);
+      }
+      // Include current image path if provided
+      if (data.current_image) {
+        formData.append('current_image', data.current_image);
+      }
+      // If no new image is selected and no current image is provided, send a flag
+      if (!data.image && !data.current_image) {
+        formData.append('no_image_change', 'true');
+      }
+      if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+        data.price_tier_ids.forEach(id => formData.append('price_tier_ids[]', id.toString()));
+      }
+      if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
+      
+      // Debug logging
+      console.log('API Service - updateLumbarType data:', data);
+      console.log('API Service - FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
+      requestData = formData;
+      // Don't set Content-Type for FormData - let browser set it with boundary
+      headers = {};
+
+      // Always use POST with _method: 'PUT' for Laravel convention
+      requestData.append('_method', 'PUT');
+      const response = await api.post(`/lumbar-types/${id}`, requestData, { headers });
       return response.data?.data || response.data;
     } catch (error: any) {
       console.error('Error updating lumbar type:', error);
+      console.error('Error response status:', error.response?.status);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response headers:', error.response?.headers);
+      
       if (error.response?.status === 404) {
         throw new Error('Lumbar type not found');
       }
+      
+      if (error.response?.status === 422) {
+        // Validation error - show detailed validation messages
+        const validationErrors = error.response?.data?.errors;
+        if (validationErrors) {
+          const errorMessages = Object.entries(validationErrors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('; ');
+          throw new Error(`Validation failed: ${errorMessages}`);
+        }
+        throw new Error(error.response?.data?.message || 'Validation failed');
+      }
+      
       throw new Error(error.response?.data?.message || 'Failed to update lumbar type');
     }
   }
@@ -2307,10 +2500,42 @@ class ApiService {
   async createMaterialType(data: {
     name: string;
     description?: string;
+    image?: File | null;
     is_active?: boolean;
+    price_tier_ids?: number[];
   }) {
     try {
-      const response = await api.post('/material-types', data);
+      let requestData;
+      let headers = {};
+
+      if (data.image) {
+        // Use FormData for file upload
+        const formData = new FormData();
+        formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        if (data.image) formData.append('image', data.image);
+        if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+          data.price_tier_ids.forEach(id => formData.append('price_tier_ids[]', id.toString()));
+        }
+        // Convert boolean to string for FormData
+        if (data.is_active !== undefined) {
+          formData.append('is_active', data.is_active ? '1' : '0');
+        }
+        
+        requestData = formData;
+        // Don't set Content-Type for FormData - let browser set it with boundary
+        headers = {};
+      } else {
+        // Use JSON for non-file data
+        requestData = {
+          name: data.name,
+          description: data.description,
+          price_tier_ids: data.price_tier_ids,
+          is_active: data.is_active
+        };
+      }
+
+      const response = await api.post('/material-types', requestData, { headers });
       return response.data?.data || response.data;
     } catch (error: any) {
       console.error('Error creating material type:', error);
@@ -2322,11 +2547,51 @@ class ApiService {
   async updateMaterialType(id: number, data: {
     name?: string;
     description?: string;
+    image?: File | null;
     is_active?: boolean;
+    price_tier_ids?: number[];
   }) {
     try {
-      const response = await api.put(`/material-types/${id}`, data);
-      return response.data?.data || response.data;
+      let requestData;
+      let headers = {};
+
+      if (data.image) {
+        // Use FormData for file upload
+        const formData = new FormData();
+        if (data.name) formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        if (data.image) formData.append('image', data.image);
+        if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+          data.price_tier_ids.forEach(id => formData.append('price_tier_ids[]', id.toString()));
+        }
+        // Convert boolean to string for FormData
+        if (data.is_active !== undefined) {
+          formData.append('is_active', data.is_active ? '1' : '0');
+        }
+        
+        requestData = formData;
+        // Don't set Content-Type for FormData - let browser set it with boundary
+        headers = {};
+      } else {
+        // Use JSON for non-file data
+        requestData = {
+          name: data.name,
+          description: data.description,
+          price_tier_ids: data.price_tier_ids,
+          is_active: data.is_active
+        };
+      }
+
+      // For FormData updates, use POST with _method: 'PUT' (Laravel convention)
+      if (requestData instanceof FormData) {
+        requestData.append('_method', 'PUT');
+        const response = await api.post(`/material-types/${id}`, requestData, { headers });
+        return response.data?.data || response.data;
+      } else {
+        // For JSON updates, use PUT directly
+        const response = await api.put(`/material-types/${id}`, requestData, { headers });
+        return response.data?.data || response.data;
+      }
     } catch (error: any) {
       console.error('Error updating material type:', error);
       if (error.response?.status === 404) {
@@ -2479,10 +2744,35 @@ class ApiService {
   async createSeatStitchPattern(data: {
     name: string;
     description?: string;
+    image: File;
+    price_tier_ids: number[];
   }) {
     try {
-      const response = await api.post('/seat-stitch-patterns', data);
-      return response.data?.data || response.data;
+      // Check if we have an image file to determine if we need FormData
+      if (data.image instanceof File) {
+        const formData = new FormData();
+        formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        formData.append('image', data.image);
+        
+        // Append price tier IDs as array
+        if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
+          data.price_tier_ids.forEach(id => {
+            formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        const response = await api.post('/seat-stitch-patterns', formData, {
+          headers: {
+            // Don't set Content-Type for FormData - let browser set it with boundary
+          },
+        });
+        return response.data?.data || response.data;
+      } else {
+        // Fallback to JSON if no image
+        const response = await api.post('/seat-stitch-patterns', data);
+        return response.data?.data || response.data;
+      }
     } catch (error: any) {
       console.error('Error creating seat stitch pattern:', error);
       throw new Error(error.response?.data?.message || 'Failed to create seat stitch pattern');
@@ -2493,10 +2783,38 @@ class ApiService {
   async updateSeatStitchPattern(id: number, data: {
     name?: string;
     description?: string;
+    image?: File | null;
+    price_tier_ids?: number[];
   }) {
     try {
-      const response = await api.put(`/seat-stitch-patterns/${id}`, data);
-      return response.data?.data || response.data;
+      // Check if we have an image file to determine if we need FormData
+      if (data.image instanceof File) {
+        const formData = new FormData();
+        if (data.name) formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        formData.append('image', data.image);
+        
+        // Append price tier IDs as array
+        if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
+          data.price_tier_ids.forEach(id => {
+            formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Use POST with _method: PUT for FormData (Laravel convention)
+        formData.append('_method', 'PUT');
+        
+        const response = await api.post(`/seat-stitch-patterns/${id}`, formData, {
+          headers: {
+            // Don't set Content-Type for FormData - let browser set it with boundary
+          },
+        });
+        return response.data?.data || response.data;
+      } else {
+        // Fallback to JSON if no image
+        const response = await api.put(`/seat-stitch-patterns/${id}`, data);
+        return response.data?.data || response.data;
+      }
     } catch (error: any) {
       console.error('Error updating seat stitch pattern:', error);
       if (error.response?.status === 404) {
@@ -2625,9 +2943,52 @@ class ApiService {
   async createReclineType(data: {
     name: string;
     description?: string;
+    image?: File | null;
+    price_tier_ids?: number[];
   }) {
     try {
-      const response = await api.post('/recline-types', data);
+      let requestData;
+      let headers = {};
+
+      if (data.image) {
+        // Use FormData for file upload
+        const formData = new FormData();
+        formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        
+        // Use standard 'image' field name
+        formData.append('image', data.image);
+        
+        if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+          data.price_tier_ids.forEach(id => formData.append('price_tier_ids[]', id.toString()));
+        }
+        
+        requestData = formData;
+        // Don't set Content-Type for FormData - let browser set it with boundary
+        headers = {};
+      } else {
+        // Use JSON for non-file requests
+        requestData = {
+          name: data.name,
+          description: data.description,
+          price_tier_ids: data.price_tier_ids
+        };
+      }
+
+      console.log('=== API SERVICE DEBUG ===');
+      console.log('Request Data Type:', typeof requestData);
+      console.log('Headers:', headers);
+      if (requestData instanceof FormData) {
+        console.log('FormData contents:');
+        for (let [key, value] of requestData.entries()) {
+          console.log(`${key}:`, value);
+        }
+      } else {
+        console.log('JSON Data:', requestData);
+      }
+      
+      const response = await api.post('/recline-types', requestData, { headers });
+      console.log('Response:', response.data);
       return response.data?.data || response.data;
     } catch (error: any) {
       console.error('Error creating recline type:', error);
@@ -2639,10 +3000,65 @@ class ApiService {
   async updateReclineType(id: number, data: {
     name?: string;
     description?: string;
+    image?: File | null;
+    price_tier_ids?: number[];
   }) {
     try {
-      const response = await api.put(`/recline-types/${id}`, data);
-      return response.data?.data || response.data;
+      let requestData;
+      let headers = {};
+
+      // Only use FormData if image is actually provided
+      if (data.image && data.image instanceof File) {
+        // Use FormData for file upload
+        const formData = new FormData();
+        if (data.name) formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        
+        // Use standard 'image' field name
+        formData.append('image', data.image);
+        
+        if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+          data.price_tier_ids.forEach(id => formData.append('price_tier_ids[]', id.toString()));
+        }
+        
+        requestData = formData;
+        // Don't set Content-Type for FormData - let browser set it with boundary
+        headers = {};
+      } else {
+        // Use JSON for non-file requests (when no new image is uploaded)
+        requestData = {
+          name: data.name,
+          description: data.description,
+          price_tier_ids: data.price_tier_ids
+        };
+      }
+
+      console.log('=== API SERVICE UPDATE DEBUG ===');
+      console.log('Request Data Type:', typeof requestData);
+      console.log('Headers:', headers);
+      if (requestData instanceof FormData) {
+        console.log('FormData contents:');
+        for (let [key, value] of requestData.entries()) {
+          console.log(`${key}:`, value);
+        }
+      } else {
+        console.log('JSON Data:', requestData);
+      }
+      
+      console.log('Final request data being sent:', requestData);
+      
+      // For FormData updates, use POST with _method: 'PUT' (Laravel convention)
+      if (requestData instanceof FormData) {
+        requestData.append('_method', 'PUT');
+        const response = await api.post(`/recline-types/${id}`, requestData, { headers });
+        console.log('Response:', response.data);
+        return response.data?.data || response.data;
+      } else {
+        // For JSON updates, use PUT directly
+        const response = await api.put(`/recline-types/${id}`, requestData, { headers });
+        console.log('Response:', response.data);
+        return response.data?.data || response.data;
+      }
     } catch (error: any) {
       console.error('Error updating recline type:', error);
       if (error.response?.status === 404) {

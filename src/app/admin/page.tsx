@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   Typography,
@@ -28,6 +29,8 @@ import { motion } from 'framer-motion';
 const MotionCard = motion.create(Card);
 
 const AdminDashboard = () => {
+  const router = useRouter();
+  
   const adminModules = [
     {
       title: 'Products',
@@ -38,20 +41,12 @@ const AdminDashboard = () => {
       count: 8,
     },
     {
-      title: 'Variations',
-      description: 'Manage product variations and configurations',
-      icon: <InventoryIcon sx={{ fontSize: 40 }} />,
-      href: '/admin/variations',
+      title: 'Categories',
+      description: 'Manage product categories and classifications',
+      icon: <CategoryIcon sx={{ fontSize: 40 }} />,
+      href: '/admin/categories',
       color: '#1976d2',
       count: 10,
-    },
-    {
-      title: 'Customer Types',
-      description: 'Manage customer categories and discount levels',
-      icon: <PeopleIcon sx={{ fontSize: 40 }} />,
-      href: '/admin/customer-types',
-      color: '#f57c00',
-      count: 3,
     },
     {
       title: 'Customers',
@@ -68,14 +63,6 @@ const AdminDashboard = () => {
       href: '/admin/orders',
       color: '#ff5722',
       count: 2,
-    },
-    {
-      title: 'Payments',
-      description: 'Monitor and manage payment transactions',
-      icon: <MoneyIcon sx={{ fontSize: 40 }} />,
-      href: '/admin/payments',
-      color: '#00c853',
-      count: 5,
     },
   ];
 
@@ -186,7 +173,7 @@ const AdminDashboard = () => {
           </Typography>
           <Grid
             display="grid"
-            gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr 1fr 1fr' }}
+            gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr 1fr' }}
             gap={{ xs: 2, sm: 3 }}
           >
             {adminModules.map((module, index) => (
@@ -227,20 +214,20 @@ const AdminDashboard = () => {
                     />
                   </CardContent>
                   <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
-                                         <Button
-                       variant="contained"
-                       href={module.href}
-                       sx={{
-                         backgroundColor: module.color,
-                         boxShadow: 'none',
-                         '&:hover': {
-                           backgroundColor: module.color,
-                           opacity: 0.9,
-                           boxShadow: 'none',
-                         },
-                       }}
-                     >
-                       {module.title}
+                    <Button
+                      variant="contained"
+                      onClick={() => router.push(module.href)}
+                      sx={{
+                        backgroundColor: module.color,
+                        boxShadow: 'none',
+                        '&:hover': {
+                          backgroundColor: module.color,
+                          opacity: 0.9,
+                          boxShadow: 'none',
+                        },
+                      }}
+                    >
+                      {module.title}
                     </Button>
                   </CardActions>
                 </MotionCard>

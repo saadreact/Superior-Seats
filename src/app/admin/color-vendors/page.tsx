@@ -5,12 +5,8 @@ import {
   Box,
   Typography,
   Button,
-  Card,
-  CardContent,
-  CardActions,
   IconButton,
   Chip,
-  Dialog,
   Alert,
   CircularProgress,
   Paper,
@@ -19,6 +15,14 @@ import {
   Stack,
   useTheme,
   useMediaQuery,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Dialog,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -58,6 +62,10 @@ const ColorVendorsPage = () => {
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadColorVendors = useCallback(async () => {
     try {
@@ -129,6 +137,16 @@ const ColorVendorsPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
+  };
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
@@ -142,9 +160,25 @@ const ColorVendorsPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Color Vendors
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
+              Color Vendors
+            </Typography>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search color vendors..."
+              value={searchTerm}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -160,24 +194,6 @@ const ColorVendorsPage = () => {
           >
             Add Color Vendor
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search color vendors..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -196,7 +212,7 @@ const ColorVendorsPage = () => {
           </Alert>
         )}
 
-        {/* Color Vendors Grid */}
+        {/* Color Vendors Table */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
@@ -211,100 +227,146 @@ const ColorVendorsPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { 
-              xs: '1fr', 
-              sm: 'repeat(2, 1fr)', 
-              md: 'repeat(3, 1fr)', 
-              lg: 'repeat(4, 1fr)' 
-            }, 
-            gap: 3 
-          }}>
-            {colorVendors.map((colorVendor) => (
-              <Card 
-                key={colorVendor.id}
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  '&:hover': {
-                    boxShadow: 6,
-                    transform: 'translateY(-4px)',
-                  },
-                  transition: 'all 0.3s ease-in-out',
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                  <Typography 
-                    variant="h6" 
-                    component="h2" 
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      mb: 2,
-                    }}
-                  >
-                    {colorVendor.name}
-                  </Typography>
-                  
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
-                    sx={{
-                      mb: 2,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      minHeight: '3rem',
-                    }}
-                  >
-                    {colorVendor.description || 'No description available'}
-                  </Typography>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Chip
-                      label={colorVendor.is_active ? 'Active' : 'Inactive'}
-                      size="small"
-                      color={colorVendor.is_active ? 'success' : 'default'}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      Code: {colorVendor.code}
-                    </Typography>
-                  </Box>
-                </CardContent>
-
-                <CardActions sx={{ justifyContent: 'center', pb: 2, gap: 1 }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleView(colorVendor)}
-                    title="View Details"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <ViewIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEdit(colorVendor)}
-                    title="Edit"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(colorVendor)}
-                    title="Delete"
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            ))}
-          </Box>
+          <Paper sx={{ overflow: 'hidden' }}>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                    <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Code</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Website</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Contact</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {colorVendors
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((colorVendor) => (
+                    <TableRow 
+                      key={colorVendor.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
+                      <TableCell>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {colorVendor.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {colorVendor.code}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            maxWidth: 300,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {colorVendor.description || 'No description available'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {colorVendor.website || 'N/A'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          {colorVendor.contact_email && (
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                              {colorVendor.contact_email}
+                            </Typography>
+                          )}
+                          {colorVendor.contact_phone && (
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                              {colorVendor.contact_phone}
+                            </Typography>
+                          )}
+                          {!colorVendor.contact_email && !colorVendor.contact_phone && (
+                            <Typography variant="body2" color="text.secondary">
+                              N/A
+                            </Typography>
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={colorVendor.is_active ? 'Active' : 'Inactive'}
+                          color={colorVendor.is_active ? 'success' : 'default'}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(colorVendor.created_at).toLocaleDateString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleView(colorVendor)}
+                            title="View Details"
+                            sx={{ color: 'primary.main' }}
+                          >
+                            <ViewIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(colorVendor)}
+                            title="Edit"
+                            sx={{ color: 'primary.main' }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(colorVendor)}
+                            title="Delete"
+                            color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            {/* Pagination */}
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={colorVendors.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
+            />
+          </Paper>
         )}
 
         {/* Delete Confirmation Dialog */}

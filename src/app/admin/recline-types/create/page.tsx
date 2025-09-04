@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -10,7 +10,16 @@ import {
   Paper,
   Alert,
   Stack,
-  CircularProgress} from '@mui/material';
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
+  Chip
+} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
@@ -20,15 +29,55 @@ const CreateReclineTypePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [priceTiers, setPriceTiers] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+    image: null as File | null,
+    price_tier_ids: [] as number[]
+  });
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadPriceTiers();
+  }, []);
+
+  const loadPriceTiers = async () => {
+    try {
+      const response = await apiService.getPriceTiers();
+      setPriceTiers(response || []);
+    } catch (err: any) {
+      console.error('Error loading price tiers:', err);
+    }
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value}));
+      [field]: value
+    }));
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, image: file }));
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePriceTierChange = (event: any) => {
+    const value = event.target.value;
+    setFormData(prev => ({
+      ...prev,
+      price_tier_ids: typeof value === 'string' ? [] : value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,11 +88,49 @@ const CreateReclineTypePage = () => {
       return;
     }
 
+    if (!formData.image) {
+      setError('Image is required');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       
-      await apiService.createReclineType(formData);
+      const submissionData = {
+        name: formData.name,
+        description: formData.description,
+        image: formData.image,
+        price_tier_ids: formData.price_tier_ids
+      };
+
+      console.log('=== RECLINE TYPE CREATION DEBUG ===');
+      console.log('Form Data:', submissionData);
+      console.log('Image File Details:', {
+        name: formData.image?.name,
+        size: formData.image?.size,
+        type: formData.image?.type,
+        lastModified: formData.image?.lastModified
+      });
+      console.log('Price Tier IDs:', formData.price_tier_ids);
+      
+      // Create FormData manually to see exactly what's being sent
+      const testFormData = new FormData();
+      testFormData.append('name', formData.name);
+      if (formData.description) testFormData.append('description', formData.description);
+      testFormData.append('image', formData.image);
+      if (formData.price_tier_ids && formData.price_tier_ids.length > 0) {
+        formData.price_tier_ids.forEach(id => testFormData.append('price_tier_ids[]', id.toString()));
+      }
+      
+      // Log FormData contents
+      console.log('=== FORMDATA CONTENTS ===');
+      for (let [key, value] of testFormData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      console.log('=== END FORMDATA CONTENTS ===');
+      
+      await apiService.createReclineType(submissionData);
       setSuccess('Recline Type created successfully!');
       
       // Redirect after a short delay
@@ -52,8 +139,14 @@ const CreateReclineTypePage = () => {
       }, 1500);
       
     } catch (err: any) {
+      console.error('=== RECLINE TYPE CREATION ERROR ===');
+      console.error('Error details:', err);
+      if (err.response) {
+        console.error('Response status:', err.response.status);
+        console.error('Response data:', err.response.data);
+        console.error('Response headers:', err.response.headers);
+      }
       setError(err.message || 'Failed to create recline type');
-      console.error('Error creating recline type:', err);
     } finally {
       setLoading(false);
     }
@@ -122,6 +215,78 @@ const CreateReclineTypePage = () => {
                   rows={3}
                   placeholder="Enter description (optional)"
                 />
+
+                {/* Image Upload */}
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
+                  Image
+                </Typography>
+
+                <Box>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      sx={{ mb: 2 }}
+                    >
+                      {formData.image ? `Image Selected: ${formData.image.name}` : 'Upload Image'}
+                    </Button>
+                  </label>
+                  
+                  {imagePreview && (
+                    <Box sx={{ mt: 2 }}>
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{
+                          width: 200,
+                          height: 200,
+                          objectFit: 'cover',
+                          borderRadius: 8,
+                          border: '1px solid #e0e0e0'
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Price Tiers */}
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
+                  Price Tiers
+                </Typography>
+
+                <FormControl fullWidth>
+                  <InputLabel>Select Price Tiers</InputLabel>
+                  <Select
+                    multiple
+                    value={formData.price_tier_ids}
+                    onChange={handlePriceTierChange}
+                    input={<OutlinedInput label="Select Price Tiers" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => {
+                          const tier = priceTiers.find(t => t.id === value);
+                          return (
+                            <Chip key={value} label={tier?.display_name || `Tier ${value}`} size="small" />
+                          );
+                        })}
+                      </Box>
+                    )}
+                  >
+                    {priceTiers.map((tier) => (
+                      <MenuItem key={tier.id} value={tier.id}>
+                        <Checkbox checked={formData.price_tier_ids.indexOf(tier.id) > -1} />
+                        <ListItemText primary={tier.display_name} secondary={tier.description} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
                 {/* Action Buttons */}
                 <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>
