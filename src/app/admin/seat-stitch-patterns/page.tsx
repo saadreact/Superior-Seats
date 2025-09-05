@@ -1,13 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
   Button,
-  Card,
-  CardContent,
-  CardActions,
   IconButton,
   Dialog,
   Alert,
@@ -16,14 +13,23 @@ import {
   TextField,
   InputAdornment,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Chip,
   useTheme,
-  useMediaQuery} from '@mui/material';
+  useMediaQuery
+} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
-  Search as SearchIcon} from '@mui/icons-material';
+  Search as SearchIcon
+} from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
@@ -32,8 +38,10 @@ interface SeatStitchPattern {
   id: number;
   name: string;
   description: string;
+  image: string | null;
   created_at: string;
   updated_at: string;
+  price_tiers: Array<{ id: number; name: string; display_name: string }>;
 }
 
 const SeatStitchPatternsPage = () => {
@@ -41,31 +49,30 @@ const SeatStitchPatternsPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [seatStitchPatterns, setSeatStitchPatterns] = useState<SeatStitchPattern[]>([]);
+  const [data, setData] = useState<SeatStitchPattern[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [seatStitchPatternToDelete, setSeatStitchPatternToDelete] = useState<SeatStitchPattern | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<SeatStitchPattern | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadSeatStitchPatterns = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const params: Record<string, any> = {};
-      if (searchTerm) params.search = searchTerm;
-      
-      const response = await apiService.getSeatStitchPatterns(params);
+      const response = await apiService.getSeatStitchPatterns();
       
       if (response && response.data) {
-        setSeatStitchPatterns(response.data);
+        setData(response.data);
       } else if (Array.isArray(response)) {
-        setSeatStitchPatterns(response);
+        setData(response);
       } else {
-        setSeatStitchPatterns([]);
+        setData([]);
       }
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
@@ -77,7 +84,7 @@ const SeatStitchPatternsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, []);
 
   useEffect(() => {
     loadSeatStitchPatterns();
@@ -87,25 +94,21 @@ const SeatStitchPatternsPage = () => {
     router.push('/admin/seat-stitch-patterns/create');
   };
 
-  const handleEdit = (seatStitchPattern: SeatStitchPattern) => {
-    router.push(`/admin/seat-stitch-patterns/${seatStitchPattern.id}/edit`);
+  const handleEdit = (item: SeatStitchPattern) => {
+    router.push(`/admin/seat-stitch-patterns/${item.id}/edit`);
   };
 
-  const handleView = (seatStitchPattern: SeatStitchPattern) => {
-    router.push(`/admin/seat-stitch-patterns/${seatStitchPattern.id}`);
-  };
-
-  const handleDelete = (seatStitchPattern: SeatStitchPattern) => {
-    setSeatStitchPatternToDelete(seatStitchPattern);
+  const handleDelete = (item: SeatStitchPattern) => {
+    setItemToDelete(item);
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (seatStitchPatternToDelete) {
+    if (itemToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteSeatStitchPattern(seatStitchPatternToDelete.id);
-        setSeatStitchPatterns(prev => prev.filter(item => item.id !== seatStitchPatternToDelete.id));
+        await apiService.deleteSeatStitchPattern(itemToDelete.id);
+        setData(prev => prev.filter(item => item.id !== itemToDelete.id));
         setAlert({ type: 'success', message: 'Seat Stitch Pattern deleted successfully' });
       } catch (err: any) {
         setError(err.message || 'Failed to delete seat stitch pattern');
@@ -115,12 +118,37 @@ const SeatStitchPatternsPage = () => {
       }
     }
     setIsDeleteDialogOpen(false);
-    setSeatStitchPatternToDelete(null);
+    setItemToDelete(null);
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+    setSearchQuery(event.target.value);
+    setPage(0);
   };
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      const searchTerm = searchQuery.toLowerCase();
+      return (
+        item.name?.toLowerCase().includes(searchTerm) ||
+        item.description?.toLowerCase().includes(searchTerm)
+      );
+    });
+  }, [data, searchQuery]);
+
+  const paginatedData = useMemo(() => {
+    const startIndex = page * rowsPerPage;
+    return filteredData.slice(startIndex, startIndex + rowsPerPage);
+  }, [filteredData, page, rowsPerPage]);
 
   return (
     <AdminLayout title="Seat Stitch Patterns">
@@ -158,14 +186,15 @@ const SeatStitchPatternsPage = () => {
           <TextField
             fullWidth
             placeholder="Search seat stitch patterns..."
-            value={searchTerm}
+            value={searchQuery}
             onChange={handleSearch}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <SearchIcon />
                 </InputAdornment>
-              )}}
+              )
+            }}
             sx={{ maxWidth: 400 }}
           />
         </Box>
@@ -186,100 +215,146 @@ const SeatStitchPatternsPage = () => {
           </Alert>
         )}
 
-        {/* Seat Stitch Patterns Grid */}
+        {/* Data Table */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : seatStitchPatterns.length === 0 ? (
+        ) : filteredData.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No seat stitch patterns found
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Seat Stitch Pattern" to create your first seat stitch pattern.`}
+              {searchQuery ? 'Try adjusting your search terms.' : 'Click "Add Seat Stitch Pattern" to create your first seat stitch pattern.'}
             </Typography>
           </Paper>
         ) : (
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { 
-              xs: '1fr', 
-              sm: 'repeat(2, 1fr)', 
-              md: 'repeat(3, 1fr)', 
-              lg: 'repeat(4, 1fr)' 
-            }, 
-            gap: 3 
-          }}>
-            {seatStitchPatterns.map((seatStitchPattern) => (
-              <Card 
-                key={seatStitchPattern.id}
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  '&:hover': {
-                    boxShadow: 6,
-                    transform: 'translateY(-4px)'},
-                  transition: 'all 0.3s ease-in-out'}}
-              >
-                <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                  <Typography 
-                    variant="h6" 
-                    component="h2" 
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      mb: 2}}
-                  >
-                    {seatStitchPattern.name}
-                  </Typography>
-                  
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
-                    sx={{
-                      mb: 2,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      minHeight: '3rem'}}
-                  >
-                    {seatStitchPattern.description || 'No description available'}
-                  </Typography>
-                </CardContent>
-
-                <CardActions sx={{ justifyContent: 'center', pb: 2, gap: 1 }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleView(seatStitchPattern)}
-                    title="View Details"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <ViewIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEdit(seatStitchPattern)}
-                    title="Edit"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(seatStitchPattern)}
-                    title="Delete"
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            ))}
-          </Box>
+          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+            <TableContainer>
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedData.map((item) => (
+                    <TableRow key={item.id} hover>
+                      <TableCell>
+                        {item.image ? (
+                          <Box
+                            component="img"
+                            src={`https://superiorseats.ali-khalid.com/api/storage/${item.image}`}
+                            alt={item.name}
+                            sx={{
+                              width: 60,
+                              height: 60,
+                              objectFit: 'cover',
+                              borderRadius: 1,
+                              border: '1px solid #e0e0e0'
+                            }}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.nextElementSibling?.setAttribute('style', 'display: block');
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 60,
+                              height: 60,
+                              bgcolor: 'grey.200',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: 1,
+                              border: '1px solid #e0e0e0'
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary">
+                              No Image
+                            </Typography>
+                          </Box>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {item.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {item.description || 'No description'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {item.price_tiers && item.price_tiers.length > 0 ? (
+                            item.price_tiers.map((tier) => (
+                              <Chip
+                                key={tier.id}
+                                label={tier.display_name || tier.name}
+                                size="small"
+                                variant="outlined"
+                                sx={{ fontSize: '0.75rem' }}
+                              />
+                            ))
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              No price tiers
+                            </Typography>
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(item)}
+                            title="Edit"
+                            sx={{ color: 'primary.main' }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(item)}
+                            title="Delete"
+                            color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            {/* Pagination */}
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredData.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Paper>
         )}
 
         {/* Delete Confirmation Dialog */}
@@ -292,7 +367,7 @@ const SeatStitchPatternsPage = () => {
               Confirm Delete
             </Typography>
             <Typography sx={{ mb: 3 }}>
-              Are you sure you want to delete &quot;{seatStitchPatternToDelete?.name}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;{itemToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>

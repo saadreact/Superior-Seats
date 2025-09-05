@@ -10,10 +10,25 @@ import {
   Paper,
   Alert,
   Stack,
-  CircularProgress} from '@mui/material';
-import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
+  Chip
+} from '@mui/material';
+import { ArrowBack as ArrowBackIcon, Save as SaveIcon, CloudUpload as CloudUploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
+
+interface PriceTier {
+  id: number;
+  name: string;
+  display_name: string;
+}
 
 const EditSeatStitchPatternPage = () => {
   const router = useRouter();
@@ -24,14 +39,35 @@ const EditSeatStitchPatternPage = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+    image: null as File | null,
+    price_tier_ids: [] as number[]
+  });
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
+    loadOptions();
     loadSeatStitchPattern();
   }, [id]);
+
+  const loadOptions = async () => {
+    try {
+      setLoadingOptions(true);
+      const priceTiersRes = await apiService.getPriceTiers();
+      setPriceTiers(Array.isArray(priceTiersRes) ? priceTiersRes : []);
+    } catch (err: any) {
+      console.error('Error loading options:', err);
+    } finally {
+      setLoadingOptions(false);
+    }
+  };
 
   const loadSeatStitchPattern = async () => {
     try {
@@ -39,9 +75,17 @@ const EditSeatStitchPatternPage = () => {
       setError(null);
       
       const seatStitchPattern = await apiService.getSeatStitchPattern(parseInt(id));
+      
       setFormData({
         name: seatStitchPattern.name || '',
-        description: seatStitchPattern.description || ''});
+        description: seatStitchPattern.description || '',
+        image: null,
+        price_tier_ids: seatStitchPattern.price_tiers?.map((tier: any) => tier.id) || []
+      });
+      
+      if (seatStitchPattern.image) {
+        setCurrentImage(seatStitchPattern.image);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load seat stitch pattern');
       console.error('Error loading seat stitch pattern:', err);
@@ -53,7 +97,35 @@ const EditSeatStitchPatternPage = () => {
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value}));
+      [field]: value
+    }));
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, image: file }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, image: null }));
+    setImagePreview(null);
+  };
+
+  const handlePriceTierChange = (event: any) => {
+    const value = event.target.value;
+    setFormData(prev => ({
+      ...prev,
+      price_tier_ids: typeof value === 'string' ? [] : value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,7 +140,16 @@ const EditSeatStitchPatternPage = () => {
       setLoading(true);
       setError(null);
       
-      await apiService.updateSeatStitchPattern(parseInt(id), formData);
+      const submissionData = {
+        name: formData.name,
+        description: formData.description,
+        image: formData.image,
+        price_tier_ids: formData.price_tier_ids
+      };
+
+      console.log('Submitting data:', submissionData);
+      
+      await apiService.updateSeatStitchPattern(parseInt(id), submissionData);
       setSuccess('Seat Stitch Pattern updated successfully!');
       
       // Redirect after a short delay
@@ -158,13 +239,129 @@ const EditSeatStitchPatternPage = () => {
                   placeholder="Enter description (optional)"
                 />
 
+                {/* Image Management */}
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
+                  Image Management
+                </Typography>
+
+                {/* Current Image */}
+                {currentImage && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      Current Image:
+                    </Typography>
+                    <Box
+                      component="img"
+                      src={`https://superiorseats.ali-khalid.com/api/storage/${currentImage}`}
+                      alt="Current"
+                      sx={{
+                        maxWidth: 200,
+                        maxHeight: 200,
+                        objectFit: 'cover',
+                        borderRadius: 1,
+                        border: '1px solid #e0e0e0'
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* New Image Upload */}
+                <Box>
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                    type="file"
+                    onChange={handleImageChange}
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<CloudUploadIcon />}
+                      sx={{ mb: 2, mr: 2 }}
+                    >
+                      {formData.image ? formData.image.name : 'Upload New Image'}
+                    </Button>
+                  </label>
+                  
+                  {formData.image && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={handleRemoveImage}
+                      sx={{ mb: 2 }}
+                    >
+                      Remove New Image
+                    </Button>
+                  )}
+                  
+                  {imagePreview && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        New Image Preview:
+                      </Typography>
+                      <Box
+                        component="img"
+                        src={imagePreview}
+                        alt="Preview"
+                        sx={{
+                          maxWidth: 200,
+                          maxHeight: 200,
+                          objectFit: 'cover',
+                          borderRadius: 1,
+                          border: '1px solid #e0e0e0'
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Price Tiers */}
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
+                  Price Tiers
+                </Typography>
+
+                <FormControl fullWidth>
+                  <InputLabel>Select Price Tiers</InputLabel>
+                  <Select
+                    multiple
+                    value={formData.price_tier_ids}
+                    onChange={handlePriceTierChange}
+                    input={<OutlinedInput label="Select Price Tiers" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => {
+                          const tier = priceTiers.find(t => t.id === value);
+                          return (
+                            <Chip
+                              key={value}
+                              label={tier ? (tier.display_name || tier.name) : value}
+                              size="small"
+                            />
+                          );
+                        })}
+                      </Box>
+                    )}
+                    disabled={loadingOptions}
+                  >
+                    {priceTiers.map((tier) => (
+                      <MenuItem key={tier.id} value={tier.id}>
+                        <Checkbox checked={formData.price_tier_ids.indexOf(tier.id) > -1} />
+                        <ListItemText primary={tier.display_name || tier.name} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
                 {/* Action Buttons */}
                 <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>
                   <Button
                     type="submit"
                     variant="contained"
                     startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                    disabled={loading}
+                    disabled={loading || loadingOptions}
                     sx={{ minWidth: 150, py: 1.5 }}
                   >
                     {loading ? 'Updating...' : 'Update Seat Stitch Pattern'}

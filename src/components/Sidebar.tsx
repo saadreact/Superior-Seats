@@ -64,28 +64,32 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   const router = useRouter();
   const pathname = usePathname();
   const [variationsExpanded, setVariationsExpanded] = useState(false);
+  
+
 
   const menuItems = [
-    {
-      text: 'Customers',
-      icon: <PeopleIcon />,
-      href: '/admin/customers',
-    },
+  
     {
       text: 'Dashboard',
       icon: <DashboardIcon />,
       href: '/admin',
     },
     {
+      text: 'Customers',
+      icon: <PeopleIcon />,
+      href: '/admin/customers',
+    },
+    {
+      text: 'Categories',
+      icon: <CategoryIcon />,
+      href: '/admin/categories',
+    },
+    {
       text: 'Orders',
       icon: <OrderIcon />,
       href: '/admin/orders',
     },
-    {
-      text: 'Price Tiers',
-      icon: <MoneyIcon />,
-      href: '/admin/price-tiers',
-    },
+
     {
       text: 'Products',
       icon: <InventoryIcon />,
@@ -96,6 +100,12 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <Inventory2Icon />,
       href: '/admin/products-2',
     },
+    {
+      text: 'Price Tiers',
+      icon: <MoneyIcon />,
+      href: '/admin/price-tiers',
+    },
+  
   ];
 
   const variationSubItems = [
@@ -103,11 +113,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Arm Types',
       icon: <CategoryIcon />,
       href: '/admin/arm-types',
-    },
-    {
-      text: 'Categories',
-      icon: <CategoryIcon />,
-      href: '/admin/categories',
     },
     {
       text: 'Colors',
@@ -177,20 +182,24 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   ];
 
   const handleNavigation = (href: string) => {
-    // If navigating to home page, clear breadcrumb history
-    if (href === '/') {
+    try {
+      // If navigating to home page, clear breadcrumb history
+      if (href === '/') {
+        localStorage.removeItem('breadcrumbHistory');
+        localStorage.removeItem('breadcrumb');
+        localStorage.removeItem('navigationHistory');
+        // Set to empty and remove again to ensure it's cleared
+        localStorage.setItem('breadcrumbHistory', '');
+        localStorage.removeItem('breadcrumbHistory');
+      }
       
-      localStorage.removeItem('breadcrumbHistory');
-      localStorage.removeItem('breadcrumb');
-      localStorage.removeItem('navigationHistory');
-      // Set to empty and remove again to ensure it's cleared
-      localStorage.setItem('breadcrumbHistory', '');
-      localStorage.removeItem('breadcrumbHistory');
-    }
-    
-    router.push(href);
-    if (isMobile) {
-      onClose();
+      router.push(href);
+      
+      if (isMobile) {
+        onClose();
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
     }
   };
 
@@ -220,7 +229,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
 
   const isVariationsActive = () => {
     return pathname.startsWith('/admin/variations') || 
-           pathname.startsWith('/admin/categories') || 
            pathname.startsWith('/admin/colors') ||
            pathname.startsWith('/admin/arm-types') ||
            pathname.startsWith('/admin/color-vendors') ||
@@ -328,10 +336,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
                 )}
               </ListItemButton>
             </ListItem>
-            {/* Add divider after Products 2 */}
-            {item.text === 'Products 2' && !collapsed && (
-              <Divider sx={{ my: 1, mx: 2 }} />
-            )}
+
           </React.Fragment>
         ))}
 
