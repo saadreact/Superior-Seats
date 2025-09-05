@@ -354,24 +354,13 @@ const CreateProduct2Page = () => {
     setLoading(true);
     
     try {
-      // Convert File objects to base64 strings for API
-      const convertFileToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      };
-
-      const imageData = await Promise.all(
-        formData.images.map(async (file, index) => ({
-          file: await convertFileToBase64(file),
-          alt_text: `Product image ${index + 1}`,
-          caption: `Product image ${index + 1}`,
-          set_primary: index === 0, // First image is primary
-        }))
-      );
+      // Convert File objects to the format expected by API (no base64 conversion needed)
+      const imageData = formData.images.map((file, index) => ({
+        file: file, // Pass File object directly
+        alt_text: `Product image ${index + 1}`,
+        caption: `Product image ${index + 1}`,
+        set_primary: index === 0, // First image is primary
+      }));
 
       // Create product data object
       const productData = {
@@ -385,6 +374,17 @@ const CreateProduct2Page = () => {
         // You may need to map the selected names to their corresponding IDs
         variation_ids: [], // This would need to be populated based on selected options
       };
+
+      // Debug: Log the data being sent
+      console.log('Products-2 data being sent to API:', {
+        ...productData,
+        images: productData.images?.map(img => ({
+          file: `File(${img.file.name}, ${img.file.size} bytes)`,
+          alt_text: img.alt_text,
+          caption: img.caption,
+          set_primary: img.set_primary
+        }))
+      });
 
       // Call API to create product
       await apiService.createProduct(productData);

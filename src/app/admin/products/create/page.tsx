@@ -15,7 +15,7 @@ import ProductForm from '@/components/admin/ProductForm';
 import { apiService } from '@/utils/api';
 
 interface ProductImage {
-  file: string;       // base64 string or URL
+  file: File;         // File object for multipart upload
   alt_text: string;
   caption: string;
   set_primary: boolean;
@@ -55,16 +55,15 @@ const CreateProductPage = () => {
       setError(null);
       setSuccess(null);
 
-      // Convert File[] -> ProductImage[]
+      // Convert File[] -> ProductImage[] (no base64 conversion needed)
       const images: ProductImage[] = [];
 
       if (productData.newImages && productData.newImages.length > 0) {
         for (let i = 0; i < productData.newImages.length; i++) {
           const file = productData.newImages[i];
-          const base64 = await fileToBase64(file);
 
           images.push({
-            file: base64 as string,
+            file: file,               // Pass File object directly
             alt_text: file.name,      // placeholder, can be replaced in ProductForm
             caption: '',
             set_primary: i === 0,     // first one primary by default
@@ -83,6 +82,17 @@ const CreateProductPage = () => {
         variation_ids: productData.variation_ids,
         images,
       };
+
+      // Debug: Log the data being sent
+      console.log('Product data being sent to API:', {
+        ...apiData,
+        images: apiData.images?.map(img => ({
+          file: `File(${img.file.name}, ${img.file.size} bytes)`,
+          alt_text: img.alt_text,
+          caption: img.caption,
+          set_primary: img.set_primary
+        }))
+      });
 
       await apiService.createProduct(apiData);
 
@@ -145,16 +155,4 @@ const CreateProductPage = () => {
 };
 
 export default CreateProductPage;
-
-/**
- * Helper: convert File -> base64 string
- */
-const fileToBase64 = (file: File): Promise<string | ArrayBuffer | null> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
-};
 

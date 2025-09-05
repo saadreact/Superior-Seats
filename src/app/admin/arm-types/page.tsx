@@ -37,7 +37,6 @@ interface ArmType {
   id: number;
   name: string;
   description: string;
-  is_active: boolean;
   
   created_at: string;
   updated_at: string;
@@ -223,7 +222,6 @@ const ArmTypesPage = () => {
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -257,14 +255,6 @@ const ArmTypesPage = () => {
                         >
                           {armType.description || 'No description available'}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={armType.is_active ? 'Active' : 'Inactive'}
-                          color={armType.is_active ? 'success' : 'default'}
-                          size="small"
-                          variant="outlined"
-                        />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

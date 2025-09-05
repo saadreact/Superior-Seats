@@ -39,7 +39,6 @@ interface MaterialType {
   name: string;
   description: string;
   image: string | null;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
   created_by: number | null;
@@ -258,7 +257,6 @@ const MaterialTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
@@ -329,13 +327,6 @@ const MaterialTypesPage = () => {
                         >
                           {materialtypes.description || 'No description available'}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={materialtypes.is_active ? 'Active' : 'Inactive'}
-                          size="small"
-                          color={materialtypes.is_active ? 'success' : 'default'}
-                        />
                       </TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={0.5} flexWrap="wrap">
