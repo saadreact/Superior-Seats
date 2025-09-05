@@ -153,9 +153,7 @@ const FeatureOptionsPage = () => {
           gap: { xs: 2, sm: 0 }
         }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-              Feature Options
-            </Typography>
+         
             {/* Search Bar positioned at top-left */}
             <TextField
               placeholder="Search feature options..."
@@ -184,7 +182,7 @@ const FeatureOptionsPage = () => {
               }
             }}
           >
-            Add Feature Option
+            Add
           </Button>
         </Box>
 

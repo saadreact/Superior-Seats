@@ -105,8 +105,15 @@ const AdminDashboard = () => {
     <AdminLayout title="Dashboard">
       <Box>
         {/* Welcome Section */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+        <Box sx={{ 
+          mb: 4, 
+          display: 'flex',
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          textAlign: 'center'
+        }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 500, }}>
             Welcome back! 👋
           </Typography>
           <Typography variant="body1" color="text.secondary">

@@ -502,9 +502,7 @@ const EditVariationPage = () => {
             >
               Back
             </Button>
-            <Typography variant="h4" component="h1">
-              Edit Variation
-            </Typography>
+          
           </Box>
         </Box>
 

@@ -1830,7 +1830,8 @@ class ApiService {
   async getArmTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/arm-types', { params });
-      return response.data?.data || response.data || [];
+      // Handle nested data structure: response.data.data.data
+      return response.data?.data?.data || response.data?.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching arm types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch arm types');
@@ -2056,7 +2057,8 @@ class ApiService {
   async getHeatOptions(params?: Record<string, any>) {
     try {
       const response = await api.get('/heat-options', { params });
-      return response.data?.data || response.data || [];
+      // Handle nested data structure: response.data.data.data
+      return response.data?.data?.data || response.data?.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching heat options:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch heat options');
@@ -2211,7 +2213,8 @@ class ApiService {
   async getItemTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/item-types', { params });
-      return response.data?.data || response.data || [];
+      // Handle nested data structure: response.data.data.data
+      return response.data?.data?.data || response.data?.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching item types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch item types');
@@ -2285,7 +2288,8 @@ class ApiService {
   async getLumbarTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/lumbar-types', { params });
-      return response.data?.data || response.data || [];
+      // Handle nested data structure: response.data.data.data
+      return response.data?.data?.data || response.data?.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching lumbar types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch lumbar types');
@@ -2475,7 +2479,8 @@ class ApiService {
   async getMaterialTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/material-types', { params });
-      return response.data?.data || response.data || [];
+      // Handle nested data structure: response.data.data.data
+      return response.data?.data?.data || response.data?.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching material types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch material types');
@@ -2647,7 +2652,8 @@ class ApiService {
   async getSeatTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/seat-types', { params });
-      return response.data?.data || response.data || [];
+      // Handle nested data structure: response.data.data.data
+      return response.data?.data?.data || response.data?.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching seat types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch seat types');
@@ -2719,7 +2725,8 @@ class ApiService {
   async getSeatStitchPatterns(params?: Record<string, any>) {
     try {
       const response = await api.get('/seat-stitch-patterns', { params });
-      return response.data?.data || response.data || [];
+      // Handle nested data structure: response.data.data.data
+      return response.data?.data?.data || response.data?.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching seat stitch patterns:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch seat stitch patterns');
@@ -2918,7 +2925,8 @@ class ApiService {
   async getReclineTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/recline-types', { params });
-      return response.data?.data || response.data || [];
+      // Handle nested data structure: response.data.data.data
+      return response.data?.data?.data || response.data?.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching recline types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch recline types');

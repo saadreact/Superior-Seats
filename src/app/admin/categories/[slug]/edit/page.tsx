@@ -121,9 +121,7 @@ const EditCategoryPage = () => {
   return (
     <AdminLayout title="Edit Category">
       <Box>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Edit Category
-        </Typography>
+      
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>

@@ -157,13 +157,11 @@ const SeatStitchPatternsPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between', 
+          justifyContent: 'flex-end', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Seat Stitch Patterns
-          </Typography>
+      
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -177,7 +175,7 @@ const SeatStitchPatternsPage = () => {
               }
             }}
           >
-            Add Seat Stitch Pattern
+            Add
           </Button>
         </Box>
 

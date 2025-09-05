@@ -156,9 +156,7 @@ const ViewVariationPage = () => {
             >
               Back
             </Button>
-            <Typography variant="h4" component="h1">
-              View Variation
-            </Typography>
+           
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>

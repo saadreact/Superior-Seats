@@ -158,9 +158,7 @@ const ItemTypesPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Item Types
-          </Typography>
+       
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -174,7 +172,7 @@ const ItemTypesPage = () => {
               }
             }}
           >
-            Add Item Type
+            Add
           </Button>
         </Box>
 

@@ -559,7 +559,7 @@ const OrderViewPage = () => {
                             {item.product?.name || 'Unknown Product'}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {item.product?.category?.name || 'Unknown Category'}
+                            {typeof item.product?.category === 'string' ? item.product.category : ((item.product?.category as any)?.name || 'Unknown Category')}
                           </Typography>
                         </Box>
                       </TableCell>

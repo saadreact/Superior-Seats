@@ -125,7 +125,7 @@ const CreateMaterialTypePage = () => {
   };
 
   return (
-    <AdminLayout title="Create Material Type">
+    <AdminLayout title="Create New Material Type">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -138,9 +138,7 @@ const CreateMaterialTypePage = () => {
           </Button>
         </Box>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Material Type
-        </Typography>
+    
 
         {/* Alerts */}
         {error && (

@@ -112,10 +112,7 @@ const EditSeatStylePage = () => {
           </Button>
         </Box>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Edit Seat Style
-        </Typography>
-
+      
         {/* Alerts */}
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>

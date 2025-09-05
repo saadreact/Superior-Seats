@@ -103,9 +103,7 @@ const ReclineTypeDetailsPage = () => {
           >
             Back to Recline Types
           </Button>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Recline Type Details
-          </Typography>
+        
           <Button
             variant="contained"
             startIcon={<EditIcon />}
