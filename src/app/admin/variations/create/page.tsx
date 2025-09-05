@@ -360,9 +360,7 @@ const CreateVariationPage = () => {
             >
               Back
             </Button>
-            <Typography variant="h4" component="h1">
-              Create Variation
-            </Typography>
+         
           </Box>
         </Box>
 

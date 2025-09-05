@@ -111,9 +111,7 @@ const SeatPricingDetailsPage = () => {
           >
             Back to Seat Pricing
           </Button>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Seat Pricing Details
-          </Typography>
+     
           <Button
             variant="contained"
             startIcon={<EditIcon />}

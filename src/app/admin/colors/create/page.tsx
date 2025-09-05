@@ -197,9 +197,7 @@ const CreateColorPage = () => {
           >
             Back to Colors
           </Button>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Add New Color
-          </Typography>
+        
         </Box>
 
         {alert && (

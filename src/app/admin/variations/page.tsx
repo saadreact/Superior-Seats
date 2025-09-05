@@ -303,9 +303,7 @@ const VariationsPage = () => {
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Variations
-          </Typography>
+       
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -320,7 +318,7 @@ const VariationsPage = () => {
               },
             }}
           >
-            Add Variation
+            Add
           </Button>
         </Box>
 

@@ -67,7 +67,7 @@ const CreateItemTypePage = () => {
   };
 
   return (
-    <AdminLayout title="Create Item Type">
+    <AdminLayout title="Create New Item Type">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -80,9 +80,7 @@ const CreateItemTypePage = () => {
           </Button>
         </Box>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Item Type
-        </Typography>
+   
 
         {/* Alerts */}
         {error && (

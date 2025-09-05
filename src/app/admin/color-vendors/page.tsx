@@ -28,7 +28,6 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -108,9 +107,6 @@ const ColorVendorsPage = () => {
     router.push(`/admin/color-vendors/${colorVendor.id}/edit`);
   };
 
-  const handleView = (colorVendor: ColorVendor) => {
-    router.push(`/admin/color-vendors/${colorVendor.id}`);
-  };
 
   const handleDelete = (colorVendor: ColorVendor) => {
     setColorVendorToDelete(colorVendor);
@@ -161,9 +157,7 @@ const ColorVendorsPage = () => {
           gap: { xs: 2, sm: 0 }
         }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-              Color Vendors
-            </Typography>
+         
             {/* Search Bar positioned at top-left */}
             <TextField
               placeholder="Search color vendors..."
@@ -316,14 +310,6 @@ const ColorVendorsPage = () => {
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleView(colorVendor)}
-                            title="View Details"
-                            sx={{ color: 'primary.main' }}
-                          >
-                            <ViewIcon />
-                          </IconButton>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(colorVendor)}

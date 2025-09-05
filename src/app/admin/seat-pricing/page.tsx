@@ -141,9 +141,8 @@ const SeatPricingPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Seat Pricing
-          </Typography>
+        
+     
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -157,7 +156,7 @@ const SeatPricingPage = () => {
               }
             }}
           >
-            Add Seat Pricing
+            Add
           </Button>
         </Box>
 
