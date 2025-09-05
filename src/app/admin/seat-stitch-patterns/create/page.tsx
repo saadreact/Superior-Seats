@@ -116,7 +116,11 @@ const CreateSeatStitchPatternPage = () => {
         price_tier_ids: formData.price_tier_ids
       };
 
-      console.log('Submitting data:', submissionData);
+      // Debug: Log the data being sent
+      console.log('Seat Stitch Pattern data being sent to API:', {
+        ...submissionData,
+        image: submissionData.image ? `File(${submissionData.image.name}, ${submissionData.image.size} bytes, ${submissionData.image.type})` : null
+      });
       
       await apiService.createSeatStitchPattern(submissionData);
       setSuccess('Seat Stitch Pattern created successfully!');

@@ -38,7 +38,6 @@ interface ItemType {
   id: number;
   name: string;
   description: string;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -231,7 +230,6 @@ const ItemTypesPage = () => {
                   <TableRow>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                   </TableRow>
@@ -257,13 +255,6 @@ const ItemTypesPage = () => {
                         >
                           {itemtypes.description || 'No description available'}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={itemtypes.is_active ? 'Active' : 'Inactive'}
-                          size="small"
-                          color={itemtypes.is_active ? 'success' : 'default'}
-                        />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
