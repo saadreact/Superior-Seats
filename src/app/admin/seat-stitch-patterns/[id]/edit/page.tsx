@@ -147,7 +147,11 @@ const EditSeatStitchPatternPage = () => {
         price_tier_ids: formData.price_tier_ids
       };
 
-      console.log('Submitting data:', submissionData);
+      // Debug: Log the data being sent
+      console.log('Seat Stitch Pattern edit data being sent to API:', {
+        ...submissionData,
+        image: submissionData.image ? `File(${submissionData.image.name}, ${submissionData.image.size} bytes, ${submissionData.image.type})` : null
+      });
       
       await apiService.updateSeatStitchPattern(parseInt(id), submissionData);
       setSuccess('Seat Stitch Pattern updated successfully!');

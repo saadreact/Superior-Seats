@@ -40,7 +40,6 @@ interface Color {
   hex_code: string;
   description: string;
   color_vendor_id: number;
-  is_active: boolean;
   price_tier_ids: number[];
   
   created_at: string;
@@ -51,7 +50,6 @@ interface ColorVendor {
   id: number;
   name: string;
   description?: string;
-  is_active?: boolean;
 }
 
 interface PriceTier {
@@ -61,7 +59,6 @@ interface PriceTier {
   description?: string;
   discount_off_retail_price: number;
   minimum_order_amount?: number;
-  is_active: boolean;
 }
 
 const ColorsPage = () => {
@@ -281,7 +278,6 @@ const ColorsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Vendor</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -359,14 +355,6 @@ const ColorsPage = () => {
                             </Typography>
                           )}
                         </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={color.is_active ? 'Active' : 'Inactive'}
-                          color={color.is_active ? 'success' : 'default'}
-                          size="small"
-                          variant="outlined"
-                        />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

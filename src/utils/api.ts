@@ -884,54 +884,44 @@ class ApiService {
     is_active?: boolean;
     variation_ids?: number[];
     images?: {
-      file: string;
+      file: File;
       alt_text: string;
       caption: string;
       set_primary: boolean;
     }[];
   }) {
     try {
-      // Convert base64 to File objects for FormData
+      // Create FormData for multipart upload
       const formData = new FormData();
       
-      // Add text fields
+      // Add text fields - ensure all required fields are present
       formData.append('name', data.name);
-      if (data.description) formData.append('description', data.description);
-      if (data.category_id !== undefined) formData.append('category_id', data.category_id.toString());
-      if (data.vehicle_trim_id !== undefined) formData.append('vehicle_trim_id', data.vehicle_trim_id.toString());
-      if (data.price !== undefined) formData.append('price', data.price.toString());
-      if (data.stock !== undefined) formData.append('stock', data.stock.toString());
-      if (data.is_active !== undefined) formData.append('is_active', data.is_active ? '1' : '0');
-      if (data.variation_ids) {
+      formData.append('description', data.description || '');
+      formData.append('category_id', (data.category_id || 1).toString());
+      formData.append('vehicle_trim_id', (data.vehicle_trim_id || 1).toString());
+      formData.append('price', (data.price || 0).toString());
+      formData.append('stock', (data.stock || 0).toString());
+      formData.append('is_active', (data.is_active !== undefined ? data.is_active : true) ? '1' : '0');
+      
+      if (data.variation_ids && data.variation_ids.length > 0) {
         data.variation_ids.forEach(id => {
           formData.append('variation_ids[]', id.toString());
         });
       }
       
-      // Convert base64 to File objects and add to FormData
+      // Add images as File objects directly
       if (data.images && data.images.length > 0) {
         // Ensure only one image is marked as primary
         let primaryFound = false;
-        const images = data.images; // Create a local reference
+        const images = data.images;
         
         console.log('Processing images for product creation:', images.length);
         
         for (let i = 0; i < images.length; i++) {
           const imageData = images[i];
-          const base64Data = imageData.file;
+          const file = imageData.file;
           
-          // Convert base64 to blob
-          const byteString = atob(base64Data.split(',')[1]);
-          const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
-          const ab = new ArrayBuffer(byteString.length);
-          const ia = new Uint8Array(ab);
-          for (let j = 0; j < byteString.length; j++) {
-            ia[j] = byteString.charCodeAt(j);
-          }
-          const blob = new Blob([ab], { type: mimeString });
-          
-          // Create File object
-          const file = new File([blob], `image_${i}.${mimeString.split('/')[1]}`, { type: mimeString });
+          // Add the file directly to FormData
           formData.append('images[]', file);
           
           // Ensure only the first primary image is marked as primary
@@ -953,9 +943,20 @@ class ApiService {
         console.log('Final primary image count:', primaryFound ? 1 : 0);
       }
       
+      // Debug: Log FormData contents
+      console.log('FormData being sent:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`${key}: ${value}`);
+        }
+      }
+      
       const response = await api.post('/products', formData, {
         headers: {
           // Don't set Content-Type for FormData - let browser set it with boundary
+          'Content-Type': undefined, // Explicitly remove Content-Type to let browser set it
         },
       });
       
@@ -967,6 +968,26 @@ class ApiService {
       return response.data;
     } catch (error: any) {
       console.error('Error creating product:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+  
+      // Handle 422 validation errors
+      if (error.response?.status === 422) {
+        const validationErrors = error.response?.data?.errors || error.response?.data?.message;
+        if (validationErrors) {
+          // If it's an object with field-specific errors, format them
+          if (typeof validationErrors === 'object') {
+            const errorMessages = Object.entries(validationErrors)
+              .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+              .join('; ');
+            throw new Error(`Validation failed: ${errorMessages}`);
+          } else {
+            throw new Error(`Validation failed: ${validationErrors}`);
+          }
+        } else {
+          throw new Error('Validation failed: Please check your input data and try again.');
+        }
+      }
   
       if (
         error.response?.data?.message?.includes('Duplicate entry') ||
@@ -999,7 +1020,7 @@ class ApiService {
     is_active?: boolean;
     variation_ids?: number[];
     images?: {
-      file: string;       // base64 string
+      file: File | string;  // File object or base64 string
       alt_text: string;
       caption: string;
       set_primary: boolean;
@@ -1010,11 +1031,12 @@ class ApiService {
   }) {
     try {
       // Check if images contain base64 data (JSON format) or File objects (FormData format)
-      const hasBase64Images = data.images && data.images.length > 0 && 
-        typeof data.images[0].file === 'string' && data.images[0].file.startsWith('data:');
+      const hasImages = data.images && data.images.length > 0;
+      const hasBase64Images = hasImages && 
+        typeof data.images![0].file === 'string' && data.images![0].file.startsWith('data:');
       
-      if (hasBase64Images) {
-        // Convert base64 to File objects for FormData
+      if (hasImages) {
+        // Create FormData for multipart upload
         const formData = new FormData();
         
         // Add text fields
@@ -1048,29 +1070,33 @@ class ApiService {
           formData.append('primary_image_index', data.primary_image_index.toString());
         }
         
-        // Convert base64 to File objects and add to FormData
-        // Ensure only one image is marked as primary
+        // Process images - handle both File objects and base64 strings
         let primaryFound = false;
-        const images = data.images!; // We know it exists because of the check above
+        const images = data.images!;
         
         console.log('Processing images for product update:', images.length);
         
         for (let i = 0; i < images.length; i++) {
           const imageData = images[i];
-          const base64Data = imageData.file;
+          let file: File;
           
-          // Convert base64 to blob
-          const byteString = atob(base64Data.split(',')[1]);
-          const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
-          const ab = new ArrayBuffer(byteString.length);
-          const ia = new Uint8Array(ab);
-          for (let j = 0; j < byteString.length; j++) {
-            ia[j] = byteString.charCodeAt(j);
+          if (hasBase64Images) {
+            // Convert base64 to File object
+            const base64Data = imageData.file as string;
+            const byteString = atob(base64Data.split(',')[1]);
+            const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let j = 0; j < byteString.length; j++) {
+              ia[j] = byteString.charCodeAt(j);
+            }
+            const blob = new Blob([ab], { type: mimeString });
+            file = new File([blob], `image_${i}.${mimeString.split('/')[1]}`, { type: mimeString });
+          } else {
+            // Use File object directly
+            file = imageData.file as File;
           }
-          const blob = new Blob([ab], { type: mimeString });
           
-          // Create File object
-          const file = new File([blob], `image_${i}.${mimeString.split('/')[1]}`, { type: mimeString });
           formData.append('images[]', file);
           
           // Ensure only the first primary image is marked as primary
@@ -1094,6 +1120,7 @@ class ApiService {
         const response = await api.post(`/products/${id}`, formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
+            'Content-Type': undefined, // Explicitly remove Content-Type to let browser set it
           },
         });
         
@@ -2760,7 +2787,12 @@ class ApiService {
         const formData = new FormData();
         formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
-        formData.append('image', data.image);
+        
+        // Append image with metadata like product pages
+        formData.append('images[]', data.image);
+        formData.append('image_data[0][alt_text]', data.image.name || 'Seat stitch pattern image');
+        formData.append('image_data[0][caption]', '');
+        formData.append('image_data[0][set_primary]', '1');
         
         // Append price tier IDs as array
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
@@ -2769,9 +2801,20 @@ class ApiService {
           });
         }
 
+        // Debug: Log FormData contents
+        console.log('Seat Stitch Pattern FormData being sent:');
+        for (let [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          } else {
+            console.log(`${key}: ${value}`);
+          }
+        }
+
         const response = await api.post('/seat-stitch-patterns', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
+            'Content-Type': undefined, // Explicitly remove Content-Type to let browser set it
           },
         });
         return response.data?.data || response.data;
@@ -2799,7 +2842,12 @@ class ApiService {
         const formData = new FormData();
         if (data.name) formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
-        formData.append('image', data.image);
+        
+        // Append image with metadata like product pages
+        formData.append('images[]', data.image);
+        formData.append('image_data[0][alt_text]', data.image.name || 'Seat stitch pattern image');
+        formData.append('image_data[0][caption]', '');
+        formData.append('image_data[0][set_primary]', '1');
         
         // Append price tier IDs as array
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
@@ -2811,9 +2859,20 @@ class ApiService {
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
         
+        // Debug: Log FormData contents
+        console.log('Seat Stitch Pattern Update FormData being sent:');
+        for (let [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          } else {
+            console.log(`${key}: ${value}`);
+          }
+        }
+        
         const response = await api.post(`/seat-stitch-patterns/${id}`, formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
+            'Content-Type': undefined, // Explicitly remove Content-Type to let browser set it
           },
         });
         return response.data?.data || response.data;
