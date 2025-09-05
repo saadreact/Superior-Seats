@@ -116,9 +116,7 @@ const EditFeatureOptionPage = () => {
           </Button>
         </Box>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Edit Feature Option
-        </Typography>
+      
 
         {/* Alerts */}
         {error && (

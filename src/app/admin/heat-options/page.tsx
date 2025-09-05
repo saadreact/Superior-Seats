@@ -182,9 +182,7 @@ const HeatOptionsPage = () => {
           gap: { xs: 2, sm: 0 }
         }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-              Heat Options
-            </Typography>
+        
             {/* Search Bar positioned at top-left */}
             <TextField
               placeholder="Search heat options..."
@@ -213,7 +211,7 @@ const HeatOptionsPage = () => {
               }
             }}
           >
-            Add Heat Option
+            Add
           </Button>
         </Box>
 

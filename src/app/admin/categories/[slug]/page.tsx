@@ -109,9 +109,7 @@ const CategoryDetailPage = () => {
           >
             Back to Categories
           </Button>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Category Details
-          </Typography>
+        
           <Button
             variant="contained"
             startIcon={<EditIcon />}

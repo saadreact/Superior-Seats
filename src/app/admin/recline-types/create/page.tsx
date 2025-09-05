@@ -170,9 +170,7 @@ const CreateReclineTypePage = () => {
           </Button>
         </Box>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Recline Type
-        </Typography>
+      
 
         {/* Alerts */}
         {error && (

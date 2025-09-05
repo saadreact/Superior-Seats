@@ -114,9 +114,7 @@ const HeatOptionDetailPage = () => {
           >
             Back to Heat Options
           </Button>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Heat Option Details
-          </Typography>
+       
           <Button
             variant="contained"
             startIcon={<EditIcon />}

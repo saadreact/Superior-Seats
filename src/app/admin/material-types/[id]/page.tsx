@@ -117,9 +117,7 @@ const MaterialTypeDetailPage = () => {
         </Box>
 
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Material Type Details
-          </Typography>
+       
           <Button
             variant="contained"
             startIcon={<EditIcon />}

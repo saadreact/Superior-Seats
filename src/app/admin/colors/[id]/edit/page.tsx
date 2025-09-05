@@ -281,9 +281,7 @@ const EditColorPage = () => {
           >
             Back to Colors
           </Button>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Edit Color: {color.name}
-          </Typography>
+      
         </Box>
 
         {alert && (

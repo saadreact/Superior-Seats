@@ -114,9 +114,7 @@ const LumbarTypeDetailPage = () => {
           >
             Back to Lumbar Types
           </Button>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Lumbar Type Details
-          </Typography>
+       
           <Button
             variant="contained"
             startIcon={<EditIcon />}

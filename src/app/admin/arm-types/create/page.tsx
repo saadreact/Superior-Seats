@@ -77,9 +77,7 @@ const CreateArmTypePage = () => {
           </Button>
         </Box>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Arm Type
-        </Typography>
+     
 
         {/* Alerts */}
         {error && (

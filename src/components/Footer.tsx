@@ -309,6 +309,28 @@ const Footer: React.FC<FooterProps> = () => {
                           >
                             7:00AM - 5:00PM
                           </Typography>
+                          <Typography
+                            sx={{
+                              opacity: 0.95,
+                              fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
+                              lineHeight: 1.3,
+                              fontWeight: 'medium',
+                              color: 'white',
+                            }}
+                          >
+                            Closed Hours
+                          </Typography>
+                          <Typography
+                            sx={{
+                              opacity: 0.95,
+                              fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.89rem', xl: '1rem' },
+                              lineHeight: 1.3,
+                              fontWeight: 'regular',
+                              color: 'white',
+                            }}
+                          >
+                            Saturday - Sunday
+                          </Typography>
                         </Box>
                       </Box>
 

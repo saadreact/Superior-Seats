@@ -176,9 +176,7 @@ const EditMaterialTypePage = () => {
           </Button>
         </Box>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Edit Material Type
-        </Typography>
+      
 
         {/* Alerts */}
         {error && (

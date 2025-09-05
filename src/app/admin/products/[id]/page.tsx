@@ -238,7 +238,7 @@ const ProductDetailPage = () => {
             <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
               <Chip 
                 icon={<CategoryIcon />}
-                label={product.category?.name || 'No Category'} 
+                label={typeof product.category === 'string' ? product.category : ((product.category as any)?.name || 'No Category')} 
                 sx={{ 
                   borderRadius: '20px',
                   bgcolor: '#dbeafe',
@@ -530,7 +530,7 @@ const ProductDetailPage = () => {
                         Category
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
-                        {product.category?.name || 'No category'}
+                        {typeof product.category === 'string' ? product.category : ((product.category as any)?.name || 'No category')}
                       </Typography>
                     </Box>
                     
