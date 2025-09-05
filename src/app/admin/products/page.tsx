@@ -137,16 +137,27 @@ const ProductsPage = () => {
         setProducts([]);
       }
     } catch (err: any) {
-      if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        setError('Please log in to access this page');
+      console.error('Error loading products:', err);
+      
+      if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+        setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+        // Redirect to home page where user can login
+        setTimeout(() => {
+          router.push('/');
+        }, 3000);
+      } else if (err.response?.status === 403) {
+        setError('Access denied. You do not have permission to view products.');
+      } else if (err.response?.status === 404) {
+        setError('Products endpoint not found. Please contact support.');
+      } else if (err.response?.status >= 500) {
+        setError('Server error. Please try again later.');
       } else {
         setError(err.message || 'Failed to load products. Please try again later.');
       }
-      console.error('Error loading products:', err);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, [searchTerm, router]);
 
   useEffect(() => {
     loadProducts();
@@ -272,7 +283,22 @@ const ProductsPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadProducts();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}

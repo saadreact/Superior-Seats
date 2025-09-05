@@ -149,22 +149,35 @@ const EditProduct2Page = () => {
         apiService.getReclineTypes(),
         apiService.getHeatOptions(),
         apiService.getMaterialTypes(),
-        apiService.getStitchPatterns(),
-        apiService.getSeatItemTypes(),
+        apiService.getSeatStitchPatterns(),
+        apiService.getItemTypes(),
         apiService.getColors(),
-        apiService.getProduct(id),
+        apiService.getProduct(parseInt(id)),
       ]);
 
-      setCategories(categoriesRes || []);
-      setSeatTypes(seatTypesRes || []);
-      setArmTypes(armTypesRes || []);
-      setLumbarTypes(lumbarTypesRes || []);
-      setReclineTypes(reclineTypesRes || []);
-      setHeatOptions(heatOptionsRes || []);
-      setMaterialTypes(materialTypesRes || []);
-      setStitchPatterns(stitchPatternsRes || []);
-      setSeatItemTypes(seatItemTypesRes || []);
-      setColors(colorsRes || []);
+      // Debug API responses
+      console.log('Seat Types API Response:', seatTypesRes);
+      console.log('Arm Types API Response:', armTypesRes);
+      console.log('Categories API Response:', categoriesRes);
+      
+      // Convert API responses to the expected format { name, price }
+      const convertToFormFormat = (items: any[]) => 
+        Array.isArray(items) ? items.map(item => ({ 
+          name: item.name || item.title || item.label || 'Unknown', 
+          price: item.price || item.cost || 0 
+        })) : [];
+      
+      // Ensure all responses are arrays and have the expected structure
+      setCategories(Array.isArray(categoriesRes) ? categoriesRes : []);
+      setSeatTypes(convertToFormFormat(seatTypesRes));
+      setArmTypes(convertToFormFormat(armTypesRes));
+      setLumbarTypes(convertToFormFormat(lumbarTypesRes));
+      setReclineTypes(convertToFormFormat(reclineTypesRes));
+      setHeatOptions(convertToFormFormat(heatOptionsRes));
+      setMaterialTypes(convertToFormFormat(materialTypesRes));
+      setStitchPatterns(convertToFormFormat(stitchPatternsRes));
+      setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
+      setColors(convertToFormFormat(colorsRes));
 
       // Set form data from product
       if (productRes) {
@@ -390,28 +403,40 @@ const EditProduct2Page = () => {
     setLoading(true);
     
     try {
+      // Convert File objects to base64 strings for API (only for new images)
+      const convertFileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      };
+
+      const imageData = await Promise.all(
+        formData.images.map(async (file, index) => ({
+          file: await convertFileToBase64(file),
+          alt_text: `Product image ${index + 1}`,
+          caption: `Product image ${index + 1}`,
+          set_primary: index === 0, // First image is primary
+        }))
+      );
+
       // Create product data object
       const productData = {
         name: formData.name,
-        category: formData.category,
         description: formData.description,
-        basePrice: formData.basePrice,
+        price: formData.basePrice,
         stock: formData.stock,
-        images: formData.images,
-        seatType: formData.seatType,
-        armType: formData.armType,
-        lumbarType: formData.lumbarType,
-        reclineType: formData.reclineType,
-        heatOption: formData.heatOption,
-        materialType: formData.materialType,
-        stitchPattern: formData.stitchPattern,
-        seatItemType: formData.seatItemType,
-        color: formData.color,
-        isActive: formData.isActive,
+        is_active: formData.isActive,
+        images: imageData,
+        // Note: The API might need these as IDs rather than names
+        // You may need to map the selected names to their corresponding IDs
+        variation_ids: [], // This would need to be populated based on selected options
       };
 
       // Call API to update product
-      await apiService.updateProduct(id, productData);
+      await apiService.updateProduct(parseInt(id), productData);
       
       setSuccess('Product updated successfully!');
       
@@ -430,43 +455,48 @@ const EditProduct2Page = () => {
     label: string,
     options: { name: string; price: number }[],
     required = true
-  ) => (
-    <FormControl fullWidth required={required} error={!!errors[field]}>
-      <InputLabel>{label}</InputLabel>
-      <Select
-        multiple
-        value={formData[field] as string[]}
-        onChange={handleMultiSelectChange(field)}
-        input={<OutlinedInput label={label} />}
-        renderValue={(selected) => (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {(selected as string[]).map((value) => (
-              <Box key={value} sx={{ 
-                backgroundColor: 'primary.main', 
-                color: 'white', 
-                px: 1, 
-                py: 0.5, 
-                borderRadius: 1, 
-                fontSize: '0.75rem' 
-              }}>
-                {value}
-              </Box>
-            ))}
-          </Box>
-        )}
-      >
-        {options.map((option) => (
-          <MenuItem key={option.name} value={option.name}>
-            <Checkbox checked={(formData[field] as string[]).indexOf(option.name) > -1} />
-            <ListItemText 
-              primary={`${option.name} (+$${option.price})`} 
-              secondary={option.price > 0 ? `Additional cost: $${option.price}` : 'No additional cost'}
-            />
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
+  ) => {
+    // Safety check to ensure options is an array
+    const safeOptions = Array.isArray(options) ? options : [];
+    
+    return (
+      <FormControl fullWidth required={required} error={!!errors[field]}>
+        <InputLabel>{label}</InputLabel>
+        <Select
+          multiple
+          value={formData[field] as string[]}
+          onChange={handleMultiSelectChange(field)}
+          input={<OutlinedInput label={label} />}
+          renderValue={(selected) => (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {(selected as string[]).map((value) => (
+                <Box key={value} sx={{ 
+                  backgroundColor: 'primary.main', 
+                  color: 'white', 
+                  px: 1, 
+                  py: 0.5, 
+                  borderRadius: 1, 
+                  fontSize: '0.75rem' 
+                }}>
+                  {value}
+                </Box>
+              ))}
+            </Box>
+          )}
+        >
+          {safeOptions.map((option) => (
+            <MenuItem key={option.name} value={option.name}>
+              <Checkbox checked={(formData[field] as string[]).indexOf(option.name) > -1} />
+              <ListItemText 
+                primary={`${option.name} (+$${option.price || 0})`} 
+                secondary={(option.price || 0) > 0 ? `Additional cost: $${option.price || 0}` : 'No additional cost'}
+              />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    );
+  };
 
   if (initialLoading) {
     return (
@@ -545,11 +575,11 @@ const EditProduct2Page = () => {
                       onChange={handleChange('category')}
                       label="Category"
                     >
-                      {categories.map((category) => (
+                      {Array.isArray(categories) ? categories.map((category) => (
                         <MenuItem key={category.name} value={category.name}>
                           {category.name}
                         </MenuItem>
-                      ))}
+                      )) : []}
                     </Select>
                   </FormControl>
                 </Box>

@@ -123,16 +123,27 @@ const ProductDetailPage = () => {
       
       setProduct(productData);
     } catch (err: any) {
-      if (err.message.includes('404') || err.message.includes('not found')) {
-        setError('Product not found');
-      } else {
-        setError(err.message || 'Failed to load product');
-      }
       console.error('Error loading product:', err);
+      
+      if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+        setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+        // Redirect to home page where user can login
+        setTimeout(() => {
+          router.push('/');
+        }, 3000);
+      } else if (err.response?.status === 403) {
+        setError('Access denied. You do not have permission to view this product.');
+      } else if (err.response?.status === 404 || err.message.includes('404') || err.message.includes('not found')) {
+        setError('Product not found. It may have been deleted.');
+      } else if (err.response?.status >= 500) {
+        setError('Server error. Please try again later.');
+      } else {
+        setError(err.message || 'Failed to load product. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [productId]);
+  }, [productId, router]);
 
   useEffect(() => {
     loadProduct();
@@ -160,7 +171,22 @@ const ProductDetailPage = () => {
     return (
       <AdminLayout title="Product Details">
         <Container maxWidth="lg">
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadProduct();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error || 'Product not found'}
           </Alert>
           <Button
