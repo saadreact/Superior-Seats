@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -14,6 +14,7 @@ import {
   Chip,
   Avatar,
   LinearProgress,
+  Alert,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -25,11 +26,15 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { motion } from 'framer-motion';
+import { apiService } from '@/utils/api';
 
 const MotionCard = motion.create(Card);
 
 const AdminDashboard = () => {
   const router = useRouter();
+  const [overview, setOverview] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
   const adminModules = [
     {
@@ -38,7 +43,6 @@ const AdminDashboard = () => {
       icon: <InventoryIcon sx={{ fontSize: 40 }} />,
       href: '/admin/products',
       color: '#388e3c',
-      count: 8,
     },
     {
       title: 'Categories',
@@ -46,7 +50,6 @@ const AdminDashboard = () => {
       icon: <CategoryIcon sx={{ fontSize: 40 }} />,
       href: '/admin/categories',
       color: '#1976d2',
-      count: 10,
     },
     {
       title: 'Customers',
@@ -54,7 +57,6 @@ const AdminDashboard = () => {
       icon: <PeopleIcon sx={{ fontSize: 40 }} />,
       href: '/admin/customers',
       color: '#9c27b0',
-      count: 2,
     },
     {
       title: 'Orders',
@@ -62,42 +64,61 @@ const AdminDashboard = () => {
       icon: <OrderIcon sx={{ fontSize: 40 }} />,
       href: '/admin/orders',
       color: '#ff5722',
-      count: 2,
     },
   ];
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await apiService.getDashboardOverview();
+        setOverview(data);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const stats = [
     {
       title: 'Total Revenue',
-      value: '$1,334.94',
-      change: '+12.5%',
-      positive: true,
+      value: overview?.total_revenue != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(String(overview.total_revenue))) : '-',
       icon: <MoneyIcon />,
       color: '#4caf50',
     },
     {
       title: 'Total Orders',
-      value: '2',
-      change: '+8.2%',
-      positive: true,
+      value: overview?.total_orders != null ? String(overview.total_orders) : '-',
       icon: <OrderIcon />,
       color: '#ff9800',
     },
     {
-      title: 'Active Customers',
-      value: '2',
-      change: '+5.1%',
-      positive: true,
+      title: "Today's Orders",
+      value: overview?.todays_orders != null ? String(overview.todays_orders) : '-',
+      icon: <OrderIcon />,
+      color: '#fb8c00',
+    },
+    {
+      title: 'Total Customers',
+      value: overview?.total_customers != null ? String(overview.total_customers) : '-',
       icon: <PeopleIcon />,
       color: '#2196f3',
     },
     {
-      title: 'Inventory Items',
-      value: '3',
-      change: '-2.3%',
-      positive: false,
-      icon: <InventoryIcon />,
-      color: '#9c27b0',
+      title: 'Retail Customers',
+      value: overview?.retail_customers != null ? String(overview.retail_customers) : '-',
+      icon: <PeopleIcon />,
+      color: '#8e24aa',
+    },
+    {
+      title: 'Wholesale Customers',
+      value: overview?.wholesale_customers != null ? String(overview.wholesale_customers) : '-',
+      icon: <PeopleIcon />,
+      color: '#6d4c41',
     },
   ];
 
@@ -121,6 +142,10 @@ const AdminDashboard = () => {
           </Typography>
         </Box>
 
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+        )}
+
         {/* Stats Cards */}
         <Grid
           display="grid"
@@ -134,9 +159,9 @@ const AdminDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-                                sx={{
-                    transition: 'all 0.3s ease-in-out',
-                  }}
+              sx={{
+                transition: 'all 0.3s ease-in-out',
+              }}
             >
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -153,20 +178,9 @@ const AdminDashboard = () => {
                       {stat.title}
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                      {stat.value}
+                      {loading ? '—' : stat.value}
                     </Typography>
                   </Box>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Chip
-                    label={stat.change}
-                    size="small"
-                    color={stat.positive ? 'success' : 'error'}
-                    variant="outlined"
-                  />
-                  <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
-                    vs last month
-                  </Typography>
                 </Box>
               </CardContent>
             </MotionCard>
@@ -184,85 +198,58 @@ const AdminDashboard = () => {
             gap={{ xs: 2, sm: 3 }}
           >
             {adminModules.map((module, index) => (
-                <MotionCard
-                  key={module.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.3s ease-in-out',
-                  }}
-                >
-                  <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        mb: 2,
-                        color: module.color,
-                      }}
-                    >
-                      {module.icon}
-                    </Box>
-                    <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
-                      {module.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {module.description}
-                    </Typography>
-                    <Chip
-                      label={`${module.count} items`}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                  </CardContent>
-                  <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
-                    <Button
-                      variant="contained"
-                      onClick={() => router.push(module.href)}
-                      sx={{
+              <MotionCard
+                key={module.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'all 0.3s ease-in-out',
+                }}
+              >
+                <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      mb: 2,
+                      color: module.color,
+                    }}
+                  >
+                    {module.icon}
+                  </Box>
+                  <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
+                    {module.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {module.description}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={() => router.push(module.href)}
+                    sx={{
+                      backgroundColor: module.color,
+                      boxShadow: 'none',
+                      '&:hover': {
                         backgroundColor: module.color,
+                        opacity: 0.9,
                         boxShadow: 'none',
-                        '&:hover': {
-                          backgroundColor: module.color,
-                          opacity: 0.9,
-                          boxShadow: 'none',
-                        },
-                      }}
-                    >
-                      {module.title}
-                    </Button>
-                  </CardActions>
-                </MotionCard>
+                      },
+                    }}
+                  >
+                    {module.title}
+                  </Button>
+                </CardActions>
+              </MotionCard>
             ))}
           </Grid>
         </Box>
 
-        {/* Recent Activity */}
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-            Recent Activity
-          </Typography>
-          <Box sx={{ mb: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography variant="body2">Orders this month</Typography>
-              <Typography variant="body2" color="text.secondary">
-                2 of 2
-              </Typography>
-            </Box>
-            <LinearProgress variant="determinate" value={100} sx={{ height: 8, borderRadius: 4 }} />
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="body2">Customer growth</Typography>
-            <Typography variant="body2" color="text.secondary">
-              100% complete
-            </Typography>
-          </Box>
-        </Paper>
       </Box>
     </AdminLayout>
   );
