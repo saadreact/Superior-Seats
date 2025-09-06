@@ -36,7 +36,6 @@ interface Variation {
   heat_option: string;
   seat_item_type: string;
   color: string;
-  is_active: boolean;
   image?: string;
   created_at: string;
   updated_at: string;
@@ -191,11 +190,6 @@ const ViewVariationPage = () => {
               <Typography variant="h5" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
                 {variation.name}
               </Typography>
-              <Chip
-                label={variation.is_active ? 'Active' : 'Inactive'}
-                color={variation.is_active ? 'success' : 'default'}
-                size="small"
-              />
             </Box>
 
             {/* Variation Image */}
@@ -254,13 +248,12 @@ const ViewVariationPage = () => {
               </Box>
             </Box>
 
-            {/* Status */}
+            {/* Information */}
             <Box>
               <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
-                Status
+                Information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                {renderField('Status', variation.is_active)}
                 {renderField('Created At', new Date(variation.created_at).toLocaleDateString())}
               </Box>
             </Box>

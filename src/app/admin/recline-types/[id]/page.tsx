@@ -13,7 +13,7 @@ import {
   Divider} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { reclineTypesService } from '@/services/recline-types';
 
 interface ReclineType {
   id: number;
@@ -41,7 +41,7 @@ const ReclineTypeDetailsPage = () => {
       setLoading(true);
       setError(null);
       
-      const data = await apiService.getReclineType(parseInt(id));
+      const data = await reclineTypesService.getReclineType(parseInt(id));
       setReclineType(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load recline type');

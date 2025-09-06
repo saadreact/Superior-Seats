@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { reclineTypesService } from '@/services/recline-types';
 
 const CreateReclineTypePage = () => {
   const router = useRouter();
@@ -46,7 +46,7 @@ const CreateReclineTypePage = () => {
 
   const loadPriceTiers = async () => {
     try {
-      const response = await apiService.getPriceTiers();
+      const response = await reclineTypesService.getPriceTiers();
       setPriceTiers(response || []);
     } catch (err: any) {
       console.error('Error loading price tiers:', err);
@@ -130,7 +130,7 @@ const CreateReclineTypePage = () => {
       }
       console.log('=== END FORMDATA CONTENTS ===');
       
-      await apiService.createReclineType(submissionData);
+      await reclineTypesService.createReclineType(submissionData);
       setSuccess('Recline Type created successfully!');
       
       // Redirect after a short delay

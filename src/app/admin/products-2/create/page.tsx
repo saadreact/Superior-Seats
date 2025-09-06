@@ -32,6 +32,11 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
+import { lumbarTypesService } from '@/services/lumbar-types';
+import { reclineTypesService } from '@/services/recline-types';
+import { heatOptionsService } from '@/services/heat-options';
+import { materialTypesService } from '@/services/material-types';
+import { seatStitchPatternService } from '@/services/seat-stitch-pattern';
 
 interface ProductPage2Form {
   // First Half - Product Fields
@@ -121,11 +126,11 @@ const CreateProduct2Page = () => {
         apiService.getCategories(),
         apiService.getSeatTypes(),
         apiService.getArmTypes(),
-        apiService.getLumbarTypes(),
-        apiService.getReclineTypes(),
-        apiService.getHeatOptions(),
-        apiService.getMaterialTypes(),
-        apiService.getSeatStitchPatterns(),
+        lumbarTypesService.getLumbarTypes(),
+        reclineTypesService.getReclineTypes(),
+        heatOptionsService.getHeatOptions(),
+        materialTypesService.getMaterialTypes(),
+        seatStitchPatternService.getSeatStitchPatterns(),
         apiService.getItemTypes(),
         apiService.getColors(),
       ]);
