@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { lumbarTypesService } from '@/services/lumbar-types';
 
 const CreateLumbarTypePage = () => {
   const router = useRouter();
@@ -56,7 +56,7 @@ const CreateLumbarTypePage = () => {
 
   const loadPriceTiers = async () => {
     try {
-      const response = await apiService.getPriceTiers();
+      const response = await lumbarTypesService.getPriceTiers();
       setPriceTiers(response || []);
     } catch (err) {
       console.error('Error loading price tiers:', err);
@@ -193,7 +193,7 @@ const CreateLumbarTypePage = () => {
         console.log(`${key}:`, value);
       }
       
-      await apiService.createLumbarType(submissionData);
+      await lumbarTypesService.createLumbarType(submissionData);
       setSuccess('Lumbar Type created successfully!');
       
       // Redirect after a short delay

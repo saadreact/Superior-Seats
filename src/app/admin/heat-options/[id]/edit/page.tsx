@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { heatOptionsService } from '@/services/heat-options';
 
 const EditHeatOptionPage = () => {
   const router = useRouter();
@@ -52,7 +52,7 @@ const EditHeatOptionPage = () => {
 
   const loadPriceTiers = async () => {
     try {
-      const response = await apiService.getPriceTiers();
+      const response = await heatOptionsService.getPriceTiers();
       setPriceTiers(response || []);
     } catch (err) {
       console.error('Error loading price tiers:', err);
@@ -64,7 +64,7 @@ const EditHeatOptionPage = () => {
       setInitialLoading(true);
       setError(null);
       
-      const heatOption = await apiService.getHeatOption(parseInt(id));
+      const heatOption = await heatOptionsService.getHeatOption(parseInt(id));
       setFormData({
         name: heatOption.name || '',
         description: heatOption.description || '',
@@ -132,7 +132,7 @@ const EditHeatOptionPage = () => {
         });
       }
       
-      const result = await apiService.updateHeatOption(parseInt(id), submissionData);
+      const result = await heatOptionsService.updateHeatOption(parseInt(id), submissionData);
       console.log('API response:', result);
       
       setSuccess('Heat Option updated successfully!');
@@ -249,7 +249,7 @@ const EditHeatOptionPage = () => {
                         Current Image:
                       </Typography>
                       <img
-                        src={`${process.env.NEXT_PUBLIC_API_URL}/storage/${currentImage}`}
+                        src={`https://superiorseats.ali-khalid.com/${currentImage}`}
                         alt="Current"
                         style={{
                           maxWidth: '200px',

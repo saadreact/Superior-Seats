@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { lumbarTypesService } from '@/services/lumbar-types';
 
 const EditLumbarTypePage = () => {
   const router = useRouter();
@@ -67,7 +67,7 @@ const EditLumbarTypePage = () => {
       setInitialLoading(true);
       setError(null);
       
-      const lumbarType = await apiService.getLumbarType(parseInt(id));
+      const lumbarType = await lumbarTypesService.getLumbarType(parseInt(id));
       console.log('Loaded lumbar type:', lumbarType);
       console.log('Price tiers from API:', lumbarType.price_tiers);
       
@@ -93,7 +93,7 @@ const EditLumbarTypePage = () => {
 
   const loadPriceTiers = async () => {
     try {
-      const response = await apiService.getPriceTiers();
+      const response = await lumbarTypesService.getPriceTiers();
       setPriceTiers(response || []);
     } catch (err) {
       console.error('Error loading price tiers:', err);
@@ -229,7 +229,7 @@ const EditLumbarTypePage = () => {
         console.log(`${key}:`, value);
       }
       
-      await apiService.updateLumbarType(parseInt(id), submissionData);
+      await lumbarTypesService.updateLumbarType(parseInt(id), submissionData);
       setSuccess('Lumbar Type updated successfully!');
       
       // Redirect after a short delay
@@ -330,7 +330,7 @@ const EditLumbarTypePage = () => {
                         Current Image:
                       </Typography>
                       <img
-                        src={`https://superiorseats.ali-khalid.com/api/storage/${currentImage}`}
+                        src={`https://superiorseats.ali-khalid.com/${currentImage}`}
                         alt="Current"
                         style={{
                           maxWidth: '100%',

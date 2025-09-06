@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { materialTypesService } from '@/services/material-types';
 
 const EditMaterialTypePage = () => {
   const router = useRouter();
@@ -57,7 +57,7 @@ const EditMaterialTypePage = () => {
       setInitialLoading(true);
       setError(null);
       
-      const materialtypes = await apiService.getMaterialType(parseInt(id));
+      const materialtypes = await materialTypesService.getMaterialType(parseInt(id));
       setFormData({
         name: materialtypes.name || '',
         description: materialtypes.description || '',
@@ -76,7 +76,7 @@ const EditMaterialTypePage = () => {
 
   const loadPriceTiers = async () => {
     try {
-      const response = await apiService.getPriceTiers();
+      const response = await materialTypesService.getPriceTiers();
       setPriceTiers(response || []);
     } catch (err) {
       console.error('Error loading price tiers:', err);
@@ -132,7 +132,7 @@ const EditMaterialTypePage = () => {
 
       console.log('Submitting data:', submissionData);
       
-      await apiService.updateMaterialType(parseInt(id), submissionData);
+      await materialTypesService.updateMaterialType(parseInt(id), submissionData);
       setSuccess('Material Type updated successfully!');
       
       // Redirect after a short delay
@@ -233,7 +233,7 @@ const EditMaterialTypePage = () => {
                         Current Image:
                       </Typography>
                       <img
-                        src={`${process.env.NEXT_PUBLIC_API_URL}/storage/${currentImage}`}
+                        src={`https://superiorseats.ali-khalid.com/${currentImage}`}
                         alt="Current"
                         style={{
                           maxWidth: '100%',

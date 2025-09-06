@@ -32,7 +32,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
-import { apiService } from '@/utils/api';
+import { materialTypesService } from '@/services/material-types';
 
 interface MaterialType {
   id: number;
@@ -79,6 +79,14 @@ const MaterialTypesPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  // Helper function to get material type image URL
+  const getMaterialTypeImage = (materialType: MaterialType) => {
+    if (materialType.image) {
+      return `https://superiorseats.ali-khalid.com/${materialType.image}`;
+    }
+    return null;
+  };
+
   const loadMaterialTypes = useCallback(async () => {
     try {
       setLoading(true);
@@ -87,7 +95,7 @@ const MaterialTypesPage = () => {
       const params: Record<string, any> = {};
       if (searchTerm) params.search = searchTerm;
       
-      const response = await apiService.getMaterialTypes(params);
+      const response = await materialTypesService.getMaterialTypes(params);
       
       console.log('Material Types API Response:', response);
       
@@ -134,7 +142,7 @@ const MaterialTypesPage = () => {
     if (materialtypesToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteMaterialType(materialtypesToDelete.id);
+        await materialTypesService.deleteMaterialType(materialtypesToDelete.id);
         setMaterialTypes(prev => prev.filter(item => item.id !== materialtypesToDelete.id));
         setAlert({ type: 'success', message: 'Material Type deleted successfully' });
       } catch (err: any) {
@@ -273,41 +281,62 @@ const MaterialTypesPage = () => {
                      return (
                     <TableRow key={materialtypes.id} hover>
                       <TableCell>
-                                                 {materialtypes.image ? (
-                           <Box
-                             component="img"
-                             src={`https://superiorseats.ali-khalid.com/api/storage/${materialtypes.image}`}
-                             alt={materialtypes.name}
-                            sx={{
-                              width: 60,
-                              height: 60,
-                              objectFit: 'cover',
-                              borderRadius: 1,
-                              border: '1px solid #e0e0e0'
-                            }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                            }}
-                          />
-                        ) : (
+                        <Box sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          position: 'relative',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {getMaterialTypeImage(materialtypes) ? (
+                            <Box
+                              component="img"
+                              src={getMaterialTypeImage(materialtypes)!}
+                              alt={materialtypes.name}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: 1,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                // Show fallback when image fails to load
+                                const fallback = target.parentElement?.querySelector('.image-fallback');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          
+                          {/* Fallback for when image is missing or fails to load */}
                           <Box
+                            className="image-fallback"
                             sx={{
-                              width: 60,
-                              height: 60,
-                              backgroundColor: '#f5f5f5',
+                              width: '100%',
+                              height: '100%',
+                              bgcolor: 'grey.200',
+                              display: getMaterialTypeImage(materialtypes) ? 'none' : 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
                               borderRadius: 1,
                               border: '1px solid #e0e0e0',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
+                              position: getMaterialTypeImage(materialtypes) ? 'absolute' : 'static',
+                              top: 0,
+                              left: 0
                             }}
                           >
-                            <Typography variant="caption" color="text.secondary">
-                              No Image
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                              {getMaterialTypeImage(materialtypes) ? 'Error' : 'No Image'}
                             </Typography>
                           </Box>
-                        )}
+                        </Box>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>

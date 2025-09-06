@@ -31,7 +31,7 @@ import {
   Search as SearchIcon} from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
-import { apiService } from '@/utils/api';
+import { heatOptionsService } from '@/services/heat-options';
 
 interface HeatOption {
   id: number;
@@ -86,6 +86,14 @@ const HeatOptionsPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  // Helper function to get heat option image URL
+  const getHeatOptionImage = (heatOption: HeatOption) => {
+    if (heatOption.image) {
+      return `https://superiorseats.ali-khalid.com/${heatOption.image}`;
+    }
+    return null;
+  };
+
   const loadHeatOptions = useCallback(async () => {
     try {
       setLoading(true);
@@ -98,7 +106,7 @@ const HeatOptionsPage = () => {
       const params: Record<string, any> = {};
       if (searchTerm) params.search = searchTerm;
       
-      const response = await apiService.getHeatOptions(params);
+      const response = await heatOptionsService.getHeatOptions(params);
       
       if (response && response.data) {
         setHeatOptions(response.data);
@@ -142,7 +150,7 @@ const HeatOptionsPage = () => {
     if (heatoptionsToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteHeatOption(heatoptionsToDelete.id);
+        await heatOptionsService.deleteHeatOption(heatoptionsToDelete.id);
         setHeatOptions(prev => prev.filter(item => item.id !== heatoptionsToDelete.id));
         setAlert({ type: 'success', message: 'Heat Option deleted successfully' });
       } catch (err: any) {
@@ -280,10 +288,10 @@ const HeatOptionsPage = () => {
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}>
-                          {heatOption.image ? (
+                          {getHeatOptionImage(heatOption) ? (
                             <Box
                               component="img"
-                              src={`${process.env.NEXT_PUBLIC_API_URL || 'https://superiorseats.ali-khalid.com/api'}/storage/${heatOption.image}`}
+                              src={getHeatOptionImage(heatOption)!}
                               alt={heatOption.name}
                               sx={{
                                 width: '100%',
@@ -313,18 +321,18 @@ const HeatOptionsPage = () => {
                               width: '100%',
                               height: '100%',
                               bgcolor: 'grey.200',
-                              display: heatOption.image ? 'none' : 'flex',
+                              display: getHeatOptionImage(heatOption) ? 'none' : 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               borderRadius: 1,
                               border: '1px solid #e0e0e0',
-                              position: heatOption.image ? 'absolute' : 'static',
+                              position: getHeatOptionImage(heatOption) ? 'absolute' : 'static',
                               top: 0,
                               left: 0
                             }}
                           >
                             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                              {heatOption.image ? 'Error' : 'No Image'}
+                              {getHeatOptionImage(heatOption) ? 'Error' : 'No Image'}
                             </Typography>
                           </Box>
                         </Box>

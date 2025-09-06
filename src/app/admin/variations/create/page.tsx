@@ -56,7 +56,6 @@ interface Variation {
   heat_option: string;
   seat_item_type: string;
   color: string;
-  is_active: boolean;
   image?: File;
 }
 
@@ -88,7 +87,6 @@ const CreateVariationPage = () => {
     heat_option: '',
     seat_item_type: '',
     color: '',
-    is_active: true,
     image: undefined,
   });
 
@@ -527,23 +525,6 @@ const CreateVariationPage = () => {
                 </Box>
               </Box>
 
-              {/* Status */}
-              <Box>
-                <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
-                  Status
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.is_active}
-                      onChange={handleSwitchChange('is_active')}
-                    />
-                  }
-                  label="Active"
-                />
-              </Box>
 
               {/* Actions */}
               <Box sx={{ 

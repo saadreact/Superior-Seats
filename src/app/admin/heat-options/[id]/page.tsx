@@ -13,7 +13,7 @@ import {
   Divider} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { heatOptionsService } from '@/services/heat-options';
 
 interface HeatOption {
   id: number;
@@ -42,7 +42,7 @@ const HeatOptionDetailPage = () => {
       setLoading(true);
       setError(null);
       
-      const data = await apiService.getHeatOption(parseInt(id));
+      const data = await heatOptionsService.getHeatOption(parseInt(id));
       setHeatOption(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load heat option');
