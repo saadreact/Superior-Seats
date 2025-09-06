@@ -13,7 +13,7 @@ import {
   Divider} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { lumbarTypesService } from '@/services/lumbar-types';
 
 interface LumbarType {
   id: number;
@@ -42,7 +42,7 @@ const LumbarTypeDetailPage = () => {
       setLoading(true);
       setError(null);
       
-      const data = await apiService.getLumbarType(parseInt(id));
+      const data = await lumbarTypesService.getLumbarType(parseInt(id));
       setLumbarType(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load lumbar type');

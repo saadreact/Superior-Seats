@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { heatOptionsService } from '@/services/heat-options';
 
 const CreateHeatOptionPage = () => {
   const router = useRouter();
@@ -66,7 +66,7 @@ const CreateHeatOptionPage = () => {
   useEffect(() => {
     const loadPriceTiers = async () => {
       try {
-        const response = await apiService.getPriceTiers();
+        const response = await heatOptionsService.getPriceTiers();
         setPriceTiers(response || []);
       } catch (err) {
         console.error('Error loading price tiers:', err);
@@ -97,7 +97,7 @@ const CreateHeatOptionPage = () => {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         image: formData.image,
-        price_tier_ids: formData.price_tier_ids.length > 0 ? formData.price_tier_ids : undefined
+        price_tier_ids: formData.price_tier_ids.length > 0 ? formData.price_tier_ids : []
       };
       
       console.log('Submitting heat option data:', submissionData);
@@ -107,7 +107,7 @@ const CreateHeatOptionPage = () => {
         type: formData.image?.type
       });
       
-      const result = await apiService.createHeatOption(submissionData);
+      const result = await heatOptionsService.createHeatOption(submissionData);
       console.log('API response:', result);
       
       setSuccess('Heat Option created successfully!');

@@ -60,7 +60,6 @@ interface Variation {
   heat_option: string;
   seat_item_type: string;
   color: string;
-  is_active: boolean;
   image?: string;
   created_at: string;
   updated_at: string;
@@ -153,7 +152,6 @@ const EditVariationPage = () => {
       heat_option: '',
       seat_item_type: '',
       color: '',
-      is_active: true,
       image: '',
       newImage: undefined,
     });
@@ -207,7 +205,6 @@ const EditVariationPage = () => {
           heat_option: variation.heat_option,
           seat_item_type: variation.seat_item_type,
           color: variation.color,
-          is_active: variation.is_active,
           image: variation.image || '',
           newImage: undefined,
         });
@@ -386,7 +383,6 @@ const EditVariationPage = () => {
         heat_option: formData.heat_option,
         seat_item_type: formData.seat_item_type,
         color: formData.color,
-        is_active: formData.is_active,
       };
       
       // Convert File to base64 if new image is uploaded
@@ -678,23 +674,6 @@ const EditVariationPage = () => {
                 </Box>
               </Box>
 
-              {/* Status */}
-              <Box>
-                <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
-                  Status
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.is_active}
-                      onChange={handleSwitchChange('is_active')}
-                    />
-                  }
-                  label="Active"
-                />
-              </Box>
 
               {/* Actions */}
               <Box sx={{ 

@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon, CloudUpload as CloudUploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { seatStitchPatternService } from '@/services/seat-stitch-pattern';
 
 interface PriceTier {
   id: number;
@@ -60,7 +60,7 @@ const EditSeatStitchPatternPage = () => {
   const loadOptions = async () => {
     try {
       setLoadingOptions(true);
-      const priceTiersRes = await apiService.getPriceTiers();
+      const priceTiersRes = await seatStitchPatternService.getPriceTiers();
       setPriceTiers(Array.isArray(priceTiersRes) ? priceTiersRes : []);
     } catch (err: any) {
       console.error('Error loading options:', err);
@@ -74,7 +74,7 @@ const EditSeatStitchPatternPage = () => {
       setInitialLoading(true);
       setError(null);
       
-      const seatStitchPattern = await apiService.getSeatStitchPattern(parseInt(id));
+      const seatStitchPattern = await seatStitchPatternService.getSeatStitchPattern(parseInt(id));
       
       setFormData({
         name: seatStitchPattern.name || '',
@@ -153,7 +153,7 @@ const EditSeatStitchPatternPage = () => {
         image: submissionData.image ? `File(${submissionData.image.name}, ${submissionData.image.size} bytes, ${submissionData.image.type})` : null
       });
       
-      await apiService.updateSeatStitchPattern(parseInt(id), submissionData);
+      await seatStitchPatternService.updateSeatStitchPattern(parseInt(id), submissionData);
       setSuccess('Seat Stitch Pattern updated successfully!');
       
       // Redirect after a short delay

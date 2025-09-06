@@ -32,7 +32,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
-import { apiService } from '@/utils/api';
+import { reclineTypesService } from '@/services/recline-types';
 
 interface ReclineType {
   id: number;
@@ -79,6 +79,14 @@ const ReclineTypesPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  // Helper function to get recline type image URL
+  const getReclineTypeImage = (reclineType: ReclineType) => {
+    if (reclineType.image) {
+      return `https://superiorseats.ali-khalid.com/${reclineType.image}`;
+    }
+    return null;
+  };
+
   const loadReclineTypes = useCallback(async () => {
     try {
       setLoading(true);
@@ -87,7 +95,7 @@ const ReclineTypesPage = () => {
       const params: Record<string, any> = {};
       if (searchTerm) params.search = searchTerm;
       
-      const response = await apiService.getReclineTypes(params);
+      const response = await reclineTypesService.getReclineTypes(params);
       
       console.log('Recline Types API Response:', response);
       
@@ -134,7 +142,7 @@ const ReclineTypesPage = () => {
     if (reclineTypeToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteReclineType(reclineTypeToDelete.id);
+        await reclineTypesService.deleteReclineType(reclineTypeToDelete.id);
         setReclineTypes(prev => prev.filter(item => item.id !== reclineTypeToDelete.id));
         setAlert({ type: 'success', message: 'Recline Type deleted successfully' });
       } catch (err: any) {
@@ -274,41 +282,62 @@ const ReclineTypesPage = () => {
                     return (
                     <TableRow key={reclineType.id} hover>
                       <TableCell>
-                        {reclineType.image ? (
+                        <Box sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          position: 'relative',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {getReclineTypeImage(reclineType) ? (
+                            <Box
+                              component="img"
+                              src={getReclineTypeImage(reclineType)!}
+                              alt={reclineType.name}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: 1,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                // Show fallback when image fails to load
+                                const fallback = target.parentElement?.querySelector('.image-fallback');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          
+                          {/* Fallback for when image is missing or fails to load */}
                           <Box
-                            component="img"
-                            src={`https://superiorseats.ali-khalid.com/api/storage/${reclineType.image}`}
-                            alt={reclineType.name}
+                            className="image-fallback"
                             sx={{
-                              width: 60,
-                              height: 60,
-                              objectFit: 'cover',
-                              borderRadius: 1,
-                              border: '1px solid #e0e0e0'
-                            }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <Box
-                            sx={{
-                              width: 60,
-                              height: 60,
-                              backgroundColor: '#f5f5f5',
+                              width: '100%',
+                              height: '100%',
+                              bgcolor: 'grey.200',
+                              display: getReclineTypeImage(reclineType) ? 'none' : 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
                               borderRadius: 1,
                               border: '1px solid #e0e0e0',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
+                              position: getReclineTypeImage(reclineType) ? 'absolute' : 'static',
+                              top: 0,
+                              left: 0
                             }}
                           >
-                            <Typography variant="caption" color="text.secondary">
-                              No Image
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                              {getReclineTypeImage(reclineType) ? 'Error' : 'No Image'}
                             </Typography>
                           </Box>
-                        )}
+                        </Box>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>

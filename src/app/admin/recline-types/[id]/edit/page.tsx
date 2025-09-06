@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { reclineTypesService } from '@/services/recline-types';
 
 const EditReclineTypePage = () => {
   const router = useRouter();
@@ -55,7 +55,7 @@ const EditReclineTypePage = () => {
       setInitialLoading(true);
       setError(null);
       
-      const reclineType = await apiService.getReclineType(parseInt(id));
+      const reclineType = await reclineTypesService.getReclineType(parseInt(id));
       setFormData({
         name: reclineType.name || '',
         description: reclineType.description || '',
@@ -73,7 +73,7 @@ const EditReclineTypePage = () => {
 
   const loadPriceTiers = async () => {
     try {
-      const response = await apiService.getPriceTiers();
+      const response = await reclineTypesService.getPriceTiers();
       setPriceTiers(response || []);
     } catch (err: any) {
       console.error('Error loading price tiers:', err);
@@ -133,7 +133,7 @@ const EditReclineTypePage = () => {
 
       console.log('Submitting recline type update data:', submissionData);
       
-      await apiService.updateReclineType(parseInt(id), submissionData);
+      await reclineTypesService.updateReclineType(parseInt(id), submissionData);
       setSuccess('Recline Type updated successfully!');
       
       // Redirect after a short delay
@@ -241,7 +241,7 @@ const EditReclineTypePage = () => {
                         Current Image:
                       </Typography>
                       <img
-                        src={`https://superiorseats.ali-khalid.com/api/storage/${currentImage}`}
+                        src={`https://superiorseats.ali-khalid.com/${currentImage}`}
                         alt="Current"
                         style={{
                           width: 200,

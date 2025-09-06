@@ -32,7 +32,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
-import { apiService } from '@/utils/api';
+import { lumbarTypesService } from '@/services/lumbar-types';
 
 interface LumbarType {
   id: number;
@@ -80,6 +80,14 @@ const LumbarTypesPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  // Helper function to get lumbar type image URL
+  const getLumbarTypeImage = (lumbarType: LumbarType) => {
+    if (lumbarType.image) {
+      return `https://superiorseats.ali-khalid.com/${lumbarType.image}`;
+    }
+    return null;
+  };
+
   const loadLumbarTypes = useCallback(async () => {
     try {
       setLoading(true);
@@ -88,7 +96,7 @@ const LumbarTypesPage = () => {
       const params: Record<string, any> = {};
       if (searchTerm) params.search = searchTerm;
       
-      const response = await apiService.getLumbarTypes(params);
+      const response = await lumbarTypesService.getLumbarTypes(params);
       
       if (response && response.data) {
         setLumbarTypes(response.data);
@@ -130,7 +138,7 @@ const LumbarTypesPage = () => {
     if (lumbartypesToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteLumbarType(lumbartypesToDelete.id);
+        await lumbarTypesService.deleteLumbarType(lumbartypesToDelete.id);
         setLumbarTypes(prev => prev.filter(item => item.id !== lumbartypesToDelete.id));
         setAlert({ type: 'success', message: 'Lumbar Type deleted successfully' });
       } catch (err: any) {
@@ -271,10 +279,10 @@ const LumbarTypesPage = () => {
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}>
-                          {lumbartypes.image ? (
+                          {getLumbarTypeImage(lumbartypes) ? (
                             <Box
                               component="img"
-                              src={`https://superiorseats.ali-khalid.com/api/storage/${lumbartypes.image}`}
+                              src={getLumbarTypeImage(lumbartypes)!}
                               alt={lumbartypes.name}
                               sx={{
                                 width: '100%',
@@ -304,18 +312,18 @@ const LumbarTypesPage = () => {
                               width: '100%',
                               height: '100%',
                               bgcolor: 'grey.200',
-                              display: lumbartypes.image ? 'none' : 'flex',
+                              display: getLumbarTypeImage(lumbartypes) ? 'none' : 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               borderRadius: 1,
                               border: '1px solid #e0e0e0',
-                              position: lumbartypes.image ? 'absolute' : 'static',
+                              position: getLumbarTypeImage(lumbartypes) ? 'absolute' : 'static',
                               top: 0,
                               left: 0
                             }}
                           >
                             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                              {lumbartypes.image ? 'Error' : 'No Image'}
+                              {getLumbarTypeImage(lumbartypes) ? 'Error' : 'No Image'}
                             </Typography>
                           </Box>
                         </Box>

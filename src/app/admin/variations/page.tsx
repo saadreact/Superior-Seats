@@ -45,7 +45,6 @@ interface Variation {
   heat_option: string;
   seat_item_type: string;
   color: string;
-  is_active: boolean;
   image?: string;
   created_at: string;
   updated_at: string;
@@ -137,7 +136,6 @@ const VariationsPage = () => {
               <TableCell>Seat Type</TableCell>
               <TableCell>Material</TableCell>
               <TableCell>Color</TableCell>
-              <TableCell>Status</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -176,13 +174,6 @@ const VariationsPage = () => {
               <TableCell>{variation.seat_type}</TableCell>
               <TableCell>{variation.material_type}</TableCell>
               <TableCell>{variation.color}</TableCell>
-              <TableCell>
-                <Chip
-                  label={variation.is_active ? 'Active' : 'Inactive'}
-                  color={variation.is_active ? 'success' : 'default'}
-                  size="small"
-                />
-              </TableCell>
               <TableCell align="center">
                 <IconButton
                   size="small"
@@ -260,12 +251,6 @@ const VariationsPage = () => {
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   Color: {variation.color}
                 </Typography>
-                <Chip
-                  label={variation.is_active ? 'Active' : 'Inactive'}
-                  color={variation.is_active ? 'success' : 'default'}
-                  size="small"
-                  sx={{ mt: 1 }}
-                />
               </Box>
             </Box>
           </CardContent>

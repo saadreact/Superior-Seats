@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { apiService } from '@/utils/api';
+import { materialTypesService } from '@/services/material-types';
 
 const CreateMaterialTypePage = () => {
   const router = useRouter();
@@ -48,7 +48,7 @@ const CreateMaterialTypePage = () => {
 
   const loadPriceTiers = async () => {
     try {
-      const response = await apiService.getPriceTiers();
+      const response = await materialTypesService.getPriceTiers();
       setPriceTiers(response || []);
     } catch (err) {
       console.error('Error loading price tiers:', err);
@@ -104,7 +104,7 @@ const CreateMaterialTypePage = () => {
 
       console.log('Submitting data:', submissionData);
       
-      await apiService.createMaterialType(submissionData);
+      await materialTypesService.createMaterialType(submissionData);
       setSuccess('Material Type created successfully!');
       
       // Redirect after a short delay

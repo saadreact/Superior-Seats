@@ -39,7 +39,6 @@ interface SeatStyle {
   name: string;
   seat_type_id: number;
   description: string;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -235,7 +234,6 @@ const SeatStylesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Seat Type ID</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                   </TableRow>
@@ -257,13 +255,6 @@ const SeatStylesPage = () => {
                         <Typography variant="body2">
                           {seatStyle.seat_type_id}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={seatStyle.is_active ? 'Active' : 'Inactive'}
-                          color={seatStyle.is_active ? 'success' : 'default'}
-                          size="small"
-                        />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

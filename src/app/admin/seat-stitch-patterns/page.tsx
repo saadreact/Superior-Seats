@@ -32,7 +32,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
-import { apiService } from '@/utils/api';
+import { seatStitchPatternService } from '@/services/seat-stitch-pattern';
 
 interface SeatStitchPattern {
   id: number;
@@ -65,7 +65,7 @@ const SeatStitchPatternsPage = () => {
       setLoading(true);
       setError(null);
       
-      const response = await apiService.getSeatStitchPatterns();
+      const response = await seatStitchPatternService.getSeatStitchPatterns();
       
       if (response && response.data) {
         setData(response.data);
@@ -107,7 +107,7 @@ const SeatStitchPatternsPage = () => {
     if (itemToDelete) {
       try {
         setDeleting(true);
-        await apiService.deleteSeatStitchPattern(itemToDelete.id);
+        await seatStitchPatternService.deleteSeatStitchPattern(itemToDelete.id);
         setData(prev => prev.filter(item => item.id !== itemToDelete.id));
         setAlert({ type: 'success', message: 'Seat Stitch Pattern deleted successfully' });
       } catch (err: any) {
@@ -149,6 +149,17 @@ const SeatStitchPatternsPage = () => {
     const startIndex = page * rowsPerPage;
     return filteredData.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredData, page, rowsPerPage]);
+
+  const getSeatStitchPatternImage = (pattern: SeatStitchPattern) => {
+    // Handle image path from API response
+    if (pattern.image) {
+      // The image path from database is already complete, just prepend the base URL
+      return `https://superiorseats.ali-khalid.com/${pattern.image}`;
+    }
+    
+    // Return null to show "No Image" placeholder instead of static fallback
+    return null;
+  };
 
   return (
     <AdminLayout title="Seat Stitch Patterns">
@@ -245,31 +256,47 @@ const SeatStitchPatternsPage = () => {
                   {paginatedData.map((item) => (
                     <TableRow key={item.id} hover>
                       <TableCell>
-                        {item.image ? (
+                        <Box
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          {getSeatStitchPatternImage(item) ? (
+                            <Box
+                              component="img"
+                              src={getSeatStitchPatternImage(item)!}
+                              alt={item.name}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: 1,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                // Show fallback when image fails to load
+                                const fallback = target.parentElement?.querySelector('.image-fallback');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
                           <Box
-                            component="img"
-                            src={`https://superiorseats.ali-khalid.com/api/storage/${item.image}`}
-                            alt={item.name}
-                            sx={{
-                              width: 60,
-                              height: 60,
-                              objectFit: 'cover',
-                              borderRadius: 1,
-                              border: '1px solid #e0e0e0'
-                            }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.nextElementSibling?.setAttribute('style', 'display: block');
-                            }}
-                          />
-                        ) : (
-                          <Box
+                            className="image-fallback"
                             sx={{
                               width: 60,
                               height: 60,
                               bgcolor: 'grey.200',
-                              display: 'flex',
+                              display: getSeatStitchPatternImage(item) ? 'none' : 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               borderRadius: 1,
@@ -280,7 +307,7 @@ const SeatStitchPatternsPage = () => {
                               No Image
                             </Typography>
                           </Box>
-                        )}
+                        </Box>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
