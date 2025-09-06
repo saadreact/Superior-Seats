@@ -2390,6 +2390,17 @@ class ApiService {
       throw new Error(error.response?.data?.message || 'Failed to delete seat style');
     }
   }
+
+  // Dashboard Overview
+  async getDashboardOverview() {
+    try {
+      const response = await api.get('/dashboard/overview');
+      // Return the raw data; caller can normalize
+      return response.data?.data ?? response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to load dashboard overview');
+    }
+  }
 }
 
 // Export singleton instance
