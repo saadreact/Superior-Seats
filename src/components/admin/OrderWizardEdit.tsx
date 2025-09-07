@@ -142,6 +142,9 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 					setFirstName((order?.user?.name || '').split(' ')[0] || '');
 					setLastName((order?.user?.name || '').split(' ').slice(1).join(' ') || '');
 					setEmail(order?.user?.email || '');
+					// Phone
+					const inferredPhone = (order as any)?.user?.phone || (order as any)?.shipping_address?.phone || (order as any)?.billing_address?.phone;
+					if (inferredPhone) setPhone(inferredPhone);
 
 					// Addresses - handle string or object
 					const parseAddress = (addr: any): Address => {
