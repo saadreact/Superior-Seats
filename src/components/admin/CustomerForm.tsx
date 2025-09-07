@@ -29,17 +29,17 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   onClearServerError,
 }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    username: '',
     password: '',
     customer_type: 'retail',
     phone: '',
     address: '',
+    city: '',
+    state: '',
     company_name: '',
-    tax_id: '',
     price_tier_id: 1,
-    credit_limit: 5000,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -47,18 +47,21 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   useEffect(() => {
     if (customer) {
       console.log('Customer data for form:', customer);
+      const name: string = customer.name || '';
+      const firstNameFromName = name.split(' ')[0] || '';
+      const lastNameFromName = name.split(' ').slice(1).join(' ') || '';
       setFormData({
-        name: customer.name || '',
+        first_name: customer.first_name || firstNameFromName,
+        last_name: customer.last_name || lastNameFromName,
         email: customer.email || '',
-        username: customer.user?.username || '',
         password: '', // Don't populate password for edit
         customer_type: customer.customer_type || 'retail',
         phone: customer.phone || '',
         address: customer.address || '',
+        city: customer.city || '',
+        state: customer.state || '',
         company_name: customer.company_name || '',
-        tax_id: customer.tax_id || '',
         price_tier_id: customer.price_tier_id || 1,
-        credit_limit: customer.credit_limit || 5000,
       });
     }
   }, [customer]);
@@ -66,18 +69,18 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'First name is required';
+    }
+
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = 'Last name is required';
     }
 
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
-    }
-
-    if (!customer && !formData.username.trim()) {
-      newErrors.username = 'Username is required';
     }
 
     if (!customer && !formData.password.trim()) {
@@ -116,11 +119,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const handleFieldChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear client-side error when user starts typing
-    if (errors[field]) {
+    if ((errors as any)[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
     // Clear server-side error for this field if provided
-    if (onClearServerError && serverErrors[field]) {
+    if (onClearServerError && (serverErrors as any)[field]) {
       onClearServerError(field);
     }
   };
@@ -145,12 +148,22 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
           gap={{ xs: 2, md: 3 }}
         >
           <FormField
-            name="name"
-            label="Full Name"
-            value={formData.name}
-            onChange={(value) => handleFieldChange('name', value)}
+            name="first_name"
+            label="First Name"
+            value={formData.first_name}
+            onChange={(value) => handleFieldChange('first_name', value)}
             required
-            error={allErrors.name}
+            error={allErrors.first_name}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="last_name"
+            label="Last Name"
+            value={formData.last_name}
+            onChange={(value) => handleFieldChange('last_name', value)}
+            required
+            error={allErrors.last_name}
             disabled={isViewMode}
           />
 
@@ -167,16 +180,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
           {!customer && (
             <>
-              <FormField
-                name="username"
-                label="Username"
-                value={formData.username}
-                onChange={(value) => handleFieldChange('username', value)}
-                required
-                error={allErrors.username}
-                disabled={isViewMode}
-              />
-
               <FormField
                 name="password"
                 label="Password"
@@ -221,6 +224,24 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             error={allErrors.address}
             disabled={isViewMode}
           />
+
+          <FormField
+            name="city"
+            label="City"
+            value={formData.city}
+            onChange={(value) => handleFieldChange('city', value)}
+            error={allErrors.city}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="state"
+            label="State"
+            value={formData.state}
+            onChange={(value) => handleFieldChange('state', value)}
+            error={allErrors.state}
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
@@ -243,15 +264,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isViewMode}
           />
 
-          <FormField
-            name="tax_id"
-            label="Tax ID"
-            value={formData.tax_id}
-            onChange={(value) => handleFieldChange('tax_id', value)}
-            error={allErrors.tax_id}
-            disabled={isViewMode}
-          />
-
           <SelectField
             name="customer_type"
             label="Customer Type"
@@ -270,16 +282,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             onChange={(value) => handleFieldChange('price_tier_id', parseInt(value))}
             type="number"
             error={allErrors.price_tier_id}
-            disabled={isViewMode}
-          />
-
-          <FormField
-            name="credit_limit"
-            label="Credit Limit"
-            value={formData.credit_limit}
-            onChange={(value) => handleFieldChange('credit_limit', parseInt(value))}
-            type="number"
-            error={allErrors.credit_limit}
             disabled={isViewMode}
           />
         </Grid>
