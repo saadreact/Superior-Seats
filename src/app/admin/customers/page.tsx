@@ -69,15 +69,16 @@ const CustomersPage = () => {
       const transformedCustomers: Customer[] = customersData.map((customer: any) => ({
         id: String(customer.id),
         customerTypeId: customer.customer_type || 'retail',
-        firstName: (customer.name || '').split(' ')[0] || (customer.name || ''),
-        lastName: (customer.name || '').split(' ').slice(1).join(' ') || '',
+        customerType: customer.customer_type || '',
+        firstName: (customer.first_name || (customer.name || '').split(' ')[0] || (customer.name || '')),
+        lastName: (customer.last_name || (customer.name || '').split(' ').slice(1).join(' ') || ''),
         email: customer.email,
         phone: customer.phone,
         company: customer.company_name,
         address: {
           street: customer.address,
-          city: '',
-          state: '',
+          city: customer.city || '',
+          state: customer.state || '',
           zipCode: '',
           country: 'USA',
         },
@@ -105,9 +106,12 @@ const CustomersPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, rowsPerPage]);
 
-  const getCustomerTypeName = (customerTypeId: string) => {
-    const customerType = customerTypes.find(ct => ct.id === customerTypeId);
-    return customerType?.name || 'Standard';
+  const getCustomerTypeName = (type: string) => {
+    if (!type) return '-';
+    const t = String(type).toLowerCase();
+    if (t === 'retail' || t === 'retail_customer') return 'Retail';
+    if (t === 'wholesale' || t === 'wholesale_customer') return 'Wholesale';
+    return t.charAt(0).toUpperCase() + t.slice(1);
   };
 
   const handleAdd = () => {
@@ -154,16 +158,13 @@ const CustomersPage = () => {
     <AdminLayout title="Customers">
       <Box>
         <Box sx={{ 
-          mb: 3, 
+          mb: 1, 
           display: 'flex', 
           flexDirection: { xs: 'column', md: 'row' },
-          justifyContent: 'space-between', 
+          justifyContent: 'flex-end', 
           alignItems: { xs: 'stretch', md: 'center' },
           gap: { xs: 2, md: 0 }
         }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Customers
-          </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -229,7 +230,7 @@ const CustomersPage = () => {
                         <TableCell>{customer.email}</TableCell>
                         <TableCell>{customer.phone}</TableCell>
                         <TableCell>{customer.company || '-'}</TableCell>
-                        <TableCell>{getCustomerTypeName(customer.customerTypeId)}</TableCell>
+                        <TableCell>{getCustomerTypeName(customer.customerType || customer.customerTypeId)}</TableCell>
                         <TableCell>
                           <Chip
                             label={customer.isActive ? 'Active' : 'Inactive'}

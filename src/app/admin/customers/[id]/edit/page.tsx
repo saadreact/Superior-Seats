@@ -61,19 +61,13 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
 
   return (
     <AdminLayout title="Edit Customer">
-      <Box sx={{ mb: 3 }}>
+      <Box>
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => router.push('/admin/customers')}
-          sx={{ mb: 2 }}
         >
           Back to Customers
         </Button>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ 
-          fontSize: { xs: '1.75rem', md: '2.125rem' }
-        }}>
-          Edit Customer: {customer?.name}
-        </Typography>
       </Box>
 
       {alert && (
