@@ -121,6 +121,14 @@ const ViewCustomerPage = () => {
     </Box>
   );
 
+  const getCustomerTypeName = (type?: string) => {
+    if (!type) return 'N/A';
+    const t = String(type).toLowerCase();
+    if (t === 'retail' || t === 'retail_customer') return 'Retail';
+    if (t === 'wholesale' || t === 'wholesale_customer') return 'Wholesale';
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  };
+
   if (loading) {
     return (
       <AdminLayout title="View Customer">
@@ -162,7 +170,6 @@ const ViewCustomerPage = () => {
       <Box>
         {/* Header */}
         <Box sx={{ 
-          mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between', 
@@ -177,11 +184,6 @@ const ViewCustomerPage = () => {
             >
               Back
             </Button>
-            <Typography variant="h4" component="h1" sx={{ 
-              fontSize: { xs: '1.75rem', md: '2.125rem' }
-            }}>
-              View Customer
-            </Typography>
           </Box>
           
           <Box sx={{ 
@@ -233,7 +235,7 @@ const ViewCustomerPage = () => {
                   size="small"
                 />
                 <Chip
-                  label={customer.customer_type}
+                  label={getCustomerTypeName(customer.customer_type)}
                   color="primary"
                   size="small"
                 />
@@ -256,6 +258,8 @@ const ViewCustomerPage = () => {
                 {renderField('Email', customer.email)}
                 {renderField('Phone', customer.phone)}
                 {renderField('Address', customer.address)}
+                {renderField('City', (customer as any).city)}
+                {renderField('State', (customer as any).state)}
               </Box>
             </Box>
 
@@ -271,8 +275,7 @@ const ViewCustomerPage = () => {
               <Box sx={{ mt: 2 }}>
                 {renderField('Company Name', customer.company_name)}
                 {renderField('Tax ID', customer.tax_id)}
-                {renderField('Customer Type', customer.customer_type)}
-                {renderField('Price Tier ID', customer.price_tier_id)}
+                {renderField('Customer Type', getCustomerTypeName(customer.customer_type))}
                 {renderField('Price Tier', customer.price_tier?.display_name)}
               </Box>
             </Box>
