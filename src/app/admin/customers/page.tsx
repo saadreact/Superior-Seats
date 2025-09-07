@@ -306,14 +306,6 @@ const CustomersPage = () => {
                           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                             <IconButton
                               size="small"
-                              onClick={() => handleView(customer)}
-                              title="View"
-                              sx={{ color: 'primary.main' }}
-                            >
-                              <ViewIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
                               onClick={() => handleEdit(customer)}
                               title="Edit"
                               sx={{ color: 'primary.main' }}
