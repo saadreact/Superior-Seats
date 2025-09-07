@@ -141,7 +141,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
                 fontWeight: 500,
               }}
             >
-              Exit
+              Shop
             </Button>
 
             {isAuthenticated && user ? (
