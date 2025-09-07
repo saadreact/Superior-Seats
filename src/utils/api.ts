@@ -1509,12 +1509,19 @@ class ApiService {
   // Get all customers
   async getCustomers(params: {
     search?: string;
-    customer_type?: string;
+    customer_type?: string; // retail, wholesale
     is_active?: boolean;
+    city?: string;
+    state?: string;
+    company_name?: string;
+    sort_by?: 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state';
+    sort_order?: 'asc' | 'desc';
     page?: number;
     per_page?: number;
   } = {}) {
-    const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
+    const queryString = new URLSearchParams(
+      Object.entries(params).filter(([_, v]) => v != null && v !== '') as string[][]
+    ).toString();
     const response = await api.get(`/customers${queryString ? `?${queryString}` : ''}`);
     // Return the full response.data which contains { data: [...], total, per_page, etc. }
     return response.data;
