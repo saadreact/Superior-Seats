@@ -401,6 +401,7 @@ class ApiService {
                 `${newOrder.customerInfo?.shippingAddress?.firstName || ''} ${newOrder.customerInfo?.shippingAddress?.lastName || ''}`.trim() || 
                 'Unknown Customer',
           email: newOrder.customerInfo?.email || 'unknown@example.com',
+          phone: newOrder.customerInfo?.phone || newOrder.customerInfo?.shippingAddress?.phone || newOrder.customerInfo?.billingAddress?.phone || undefined,
           customer_type: 'retail', // Default to retail if not specified
           company_name: newOrder.customerInfo?.shippingAddress?.company || undefined
         },

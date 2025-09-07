@@ -131,6 +131,7 @@ const OrdersPage = () => {
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   // Pagination states
   const [page, setPage] = useState(0);
@@ -142,12 +143,25 @@ const OrdersPage = () => {
     search: '',
     status: '',
     payment_status: '',
+    customer_id: '',
     date_from: '',
     date_to: '',
-    sort_by: 'created_at',
-    sort_order: 'desc' as 'asc' | 'desc',
+    min_amount: '',
+    max_amount: '',
+    sort: 'created_at',
+    order: 'desc' as 'asc' | 'desc',
   });
-  const [showFilters, setShowFilters] = useState(false);
+
+  const mapPaymentStatus = (status?: string) => {
+    if (!status) return '';
+    const s = status.toLowerCase();
+    if (['authorized', 'captured', 'completed'].includes(s)) return 'paid';
+    if (['pending', 'processing'].includes(s)) return 'pending';
+    if (['refunded', 'partially_refunded'].includes(s)) return 'refunded';
+    if (s === 'partial') return 'partial';
+    if (['failed', 'declined'].includes(s)) return 'failed';
+    return s;
+  };
 
   // Fetch orders with current filters and pagination
   	const fetchOrders = useCallback(async () => {
@@ -157,27 +171,81 @@ const OrdersPage = () => {
 				page: page + 1,
 				per_page: rowsPerPage,
 				...Object.fromEntries(
-					Object.entries(filters).filter(([_, value]) => value !== '')
+					Object.entries(filters).filter(([_, value]) => value !== '' && value !== null && value !== undefined)
 				),
-			};
+			} as any;
 
 			const ordersResponse = await apiService.getOrders(params);
-			const ordersData = ordersResponse.data || [];
-			setOrders(ordersData);
-			setTotalCount(ordersResponse.meta?.pagination?.total || 0);
+			const payload: any = ordersResponse || {};
+			const rawList: any[] = Array.isArray(payload.data)
+				? payload.data
+				: (Array.isArray(payload)
+					? payload
+					: (Array.isArray(payload.data?.data)
+						? payload.data.data
+						: (payload.orders || [])));
+			const total = payload.total ?? payload.meta?.pagination?.total ?? payload.data?.total ?? rawList.length;
+
+			const normalized: Order[] = rawList.map((o: any) => {
+				const cust = o.customer || o.user || {};
+				const nameCombined = `${cust.first_name || ''} ${cust.last_name || ''}`.trim();
+				const displayName = nameCombined || cust.name || cust.email || 'Unknown Customer';
+				const primaryPayment = Array.isArray(o.payments) && o.payments.length > 0 ? o.payments[0] : null;
+
+				return {
+					id: o.id,
+					order_number: o.order_number,
+					status: o.status,
+					payment_status: mapPaymentStatus(primaryPayment?.status),
+					payment_method: primaryPayment?.method || '',
+					total_amount: parseFloat(o.total_amount || o.grand_total || 0),
+					shipping_address: o.shipping_address || '',
+					billing_address: o.billing_address || '',
+					notes: o.notes || '',
+					invoice_number: o.invoice_number || '',
+					created_at: o.created_at,
+					updated_at: o.updated_at,
+					user: {
+						id: cust.id,
+						name: displayName,
+						email: cust.email,
+						customer_type: cust.customer_type,
+						company_name: cust.company_name,
+					},
+					items: (o.order_items || []).map((it: any) => ({
+						id: it.id,
+						product_id: parseInt(it.item_id) || 0,
+						variation_id: 0,
+						quantity: it.quantity,
+						unit_price: parseFloat(it.unit_price || 0),
+						total: parseFloat(it.total_price || 0),
+						product: {
+							name: it.name || 'Product',
+							category: '',
+						},
+						variation: {
+							name: it.name || 'Variation',
+							material_type: '',
+						},
+					})),
+				} as Order;
+			});
+
+			setOrders(normalized);
+			setTotalCount(Number(total) || 0);
 
 			// Stats from current page
 			const today = new Date().toDateString();
 			const calculatedStats = {
-				total_orders: ordersResponse.meta?.pagination?.total || 0,
-				total_revenue: ordersData.reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0),
-				pending_orders: ordersData.filter((o: any) => o.status === 'pending').length,
-				processing_orders: ordersData.filter((o: any) => o.status === 'processing').length,
-				shipped_orders: ordersData.filter((o: any) => o.status === 'shipped').length,
-				delivered_orders: ordersData.filter((o: any) => o.status === 'delivered').length,
-				cancelled_orders: ordersData.filter((o: any) => o.status === 'cancelled').length,
-				today_orders: ordersData.filter((o: any) => new Date(o.created_at).toDateString() === today).length,
-				today_revenue: ordersData.filter((o: any) => new Date(o.created_at).toDateString() === today).reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0)
+				total_orders: Number(total) || normalized.length,
+				total_revenue: normalized.reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0),
+				pending_orders: normalized.filter((o: any) => o.status === 'pending').length,
+				processing_orders: normalized.filter((o: any) => o.status === 'processing').length,
+				shipped_orders: normalized.filter((o: any) => o.status === 'shipped').length,
+				delivered_orders: normalized.filter((o: any) => o.status === 'delivered').length,
+				cancelled_orders: normalized.filter((o: any) => o.status === 'cancelled').length,
+				today_orders: normalized.filter((o: any) => new Date(o.created_at).toDateString() === today).length,
+				today_revenue: normalized.filter((o: any) => new Date(o.created_at).toDateString() === today).reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0)
 			};
 			setStatistics(calculatedStats);
 		} catch (error) {
@@ -202,10 +270,13 @@ const OrdersPage = () => {
       search: '',
       status: '',
       payment_status: '',
+      customer_id: '',
       date_from: '',
       date_to: '',
-      sort_by: 'created_at',
-      sort_order: 'desc',
+      min_amount: '',
+      max_amount: '',
+      sort: 'created_at',
+      order: 'desc',
     });
     setPage(0);
   };
@@ -259,7 +330,7 @@ const OrdersPage = () => {
   const handleExport = async () => {
     try {
       const filterParams = Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value !== '')
+        Object.entries(filters).filter(([_, value]) => value !== '' && value !== null && value !== undefined)
       );
       
       const blob = await apiService.exportOrders({
@@ -371,18 +442,10 @@ const OrdersPage = () => {
             <Button
               variant="outlined"
               startIcon={<FilterIcon />}
-              onClick={() => setShowFilters(!showFilters)}
+              onClick={() => setFilterDialogOpen(true)}
               size="small"
             >
               Filters
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<ExportIcon />}
-              onClick={handleExport}
-              size="small"
-            >
-              Export
             </Button>
             <Button
               variant="outlined"
@@ -465,92 +528,124 @@ const OrdersPage = () => {
           </Box>
         )}
 
-        {/* Filters */}
-        <Fade in={showFilters}>
-          <Card sx={{ mb: 3, display: showFilters ? 'block' : 'none' }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Filters
-              </Typography>
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: { 
-                  xs: '1fr', 
-                  sm: 'repeat(2, 1fr)', 
-                  md: '2fr 1fr 1fr 1fr 1fr auto' 
-                },
-                gap: 2 
-              }}>
-                <TextField
-                  fullWidth
-                  label="Search"
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                  placeholder="Order number, customer name..."
-                />
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={filters.status}
-                    onChange={(e) => handleFilterChange('status', e.target.value)}
-                    label="Status"
-                  >
-                    {statusOptions.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth>
-                  <InputLabel>Payment Status</InputLabel>
-                  <Select
-                    value={filters.payment_status}
-                    onChange={(e) => handleFilterChange('payment_status', e.target.value)}
-                    label="Payment Status"
-                  >
-                    {paymentStatusOptions.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  fullWidth
-                  label="From Date"
-                  type="date"
-                  value={filters.date_from}
-                  onChange={(e) => handleFilterChange('date_from', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  fullWidth
-                  label="To Date"
-                  type="date"
-                  value={filters.date_to}
-                  onChange={(e) => handleFilterChange('date_to', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <Button
-                  variant="outlined"
-                  onClick={clearFilters}
-                  startIcon={<ClearIcon />}
-                  sx={{ height: '56px', minWidth: '120px' }}
+        {/* Filters Dialog */}
+        <Dialog open={filterDialogOpen} onClose={() => setFilterDialogOpen(false)} maxWidth="lg" fullWidth>
+          <DialogTitle>Filter Orders</DialogTitle>
+          <DialogContent dividers>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Search"
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                placeholder="Order number, customer name or email"
+              />
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  label="Status"
                 >
-                  Clear
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Fade>
+                  {statusOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth>
+                <InputLabel>Payment Status</InputLabel>
+                <Select
+                  value={filters.payment_status}
+                  onChange={(e) => handleFilterChange('payment_status', e.target.value)}
+                  label="Payment Status"
+                >
+                  {paymentStatusOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr auto auto' }, gap: 2 }}>
+              <TextField
+                fullWidth
+                label="From Date"
+                type="date"
+                value={filters.date_from}
+                onChange={(e) => handleFilterChange('date_from', e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                label="To Date"
+                type="date"
+                value={filters.date_to}
+                onChange={(e) => handleFilterChange('date_to', e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                label="Customer ID"
+                type="number"
+                value={filters.customer_id}
+                onChange={(e) => handleFilterChange('customer_id', e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="Min Amount"
+                type="number"
+                value={filters.min_amount}
+                onChange={(e) => handleFilterChange('min_amount', e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="Max Amount"
+                type="number"
+                value={filters.max_amount}
+                onChange={(e) => handleFilterChange('max_amount', e.target.value)}
+              />
+              <FormControl fullWidth sx={{ minWidth: { md: 160 }, maxWidth: { md: 220 } }}>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={filters.sort}
+                  label="Sort By"
+                  onChange={(e) => handleFilterChange('sort', e.target.value)}
+                >
+                  <MenuItem value="created_at">Created</MenuItem>
+                  <MenuItem value="updated_at">Updated</MenuItem>
+                  <MenuItem value="total_amount">Total Amount</MenuItem>
+                  <MenuItem value="order_number">Order Number</MenuItem>
+                  <MenuItem value="status">Status</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl fullWidth sx={{ minWidth: { md: 120 }, maxWidth: { md: 160 } }}>
+                <InputLabel>Order</InputLabel>
+                <Select
+                  value={filters.order}
+                  label="Order"
+                  onChange={(e) => handleFilterChange('order', e.target.value)}
+                >
+                  <MenuItem value="asc">Asc</MenuItem>
+                  <MenuItem value="desc">Desc</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={clearFilters} startIcon={<ClearIcon />}>Clear</Button>
+            <Button onClick={() => setFilterDialogOpen(false)} variant="contained">Close</Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Orders Table */}
         <Card>
