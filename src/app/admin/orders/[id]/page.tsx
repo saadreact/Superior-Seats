@@ -381,7 +381,7 @@ const OrderViewPage = () => {
             <Button
               variant="outlined"
               startIcon={<UpdateIcon />}
-              onClick={() => setStatusUpdateDialogOpen(true)}
+              onClick={() => { setNewStatus(order?.status || ''); setStatusUpdateDialogOpen(true); }}
               size="small"
             >
               Update Status
