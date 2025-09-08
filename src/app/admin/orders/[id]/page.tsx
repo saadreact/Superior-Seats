@@ -546,7 +546,6 @@ const OrderViewPage = () => {
                     <TableCell>Variation</TableCell>
                     <TableCell align="right">Quantity</TableCell>
                     <TableCell align="right">Unit Price</TableCell>
-                    <TableCell align="right">Discount</TableCell>
                     <TableCell align="right">Total</TableCell>
                   </TableRow>
                 </TableHead>
@@ -575,16 +574,13 @@ const OrderViewPage = () => {
                       </TableCell>
                       <TableCell align="right">{item.quantity || 0}</TableCell>
                       <TableCell align="right">{formatCurrency(item.unit_price || 0)}</TableCell>
-                      <TableCell align="right">
-                        {(item.discount_amount || 0) > 0 ? formatCurrency(item.discount_amount || 0) : '-'}
-                      </TableCell>
                                               <TableCell align="right" sx={{ fontWeight: 600 }}>
                           {formatCurrency(item.total || 0)}
                         </TableCell>
                     </TableRow>
                   ))}
                   <TableRow>
-                    <TableCell colSpan={4} />
+                    <TableCell colSpan={3} />
                     <TableCell align="right">
                       <Typography variant="body1" fontWeight={600}>
                         Subtotal:
