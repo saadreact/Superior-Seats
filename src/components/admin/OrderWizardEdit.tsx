@@ -146,15 +146,6 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 					const inferredPhone = (order as any)?.user?.phone || (order as any)?.shipping_address?.phone || (order as any)?.billing_address?.phone;
 					if (inferredPhone) setPhone(inferredPhone);
 
-					// Shipping method from order.shippingMethod or notes e.g. "... (Ship: Express)"
-					const extractShip = (src: any): string | null => {
-						if (!src) return null;
-						const m = String(src).match(/\(Ship:\s*([^\)]+)\)/i);
-						return m?.[1]?.trim() || null;
-					};
-					const prefShip = (order as any)?.shippingMethod || extractShip((order as any)?.notes);
-					if (prefShip) setShippingMethod(prefShip);
-
 					// Addresses - handle string or object
 					const parseAddress = (addr: any): Address => {
 						if (!addr) return { ...defaultAddress };

@@ -649,191 +649,118 @@ const OrdersPage = () => {
 
         {/* Orders Table */}
         <Card>
-          {/* Desktop Table View */}
-          <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-            <TableContainer>
-              <Table>
-                <TableHead>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Order #</TableCell>
+                  <TableCell>Customer</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Payment</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>Items</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell align="center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading ? (
                   <TableRow>
-                    <TableCell>Order #</TableCell>
-                    <TableCell>Customer</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Payment</TableCell>
-                    <TableCell>Total</TableCell>
-                    <TableCell>Items</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell align="center">Actions</TableCell>
+                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                      <CircularProgress />
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                        <CircularProgress />
-                      </TableCell>
-                    </TableRow>
-                  ) : orders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                        <Typography color="text.secondary">
-                          No orders found
+                ) : orders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                      <Typography color="text.secondary">
+                        No orders found
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  orders.map((order) => (
+                    <TableRow key={order.id} hover>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={600}>
+                          {order.order_number}
                         </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    orders.map((order) => (
-                      <TableRow key={order.id} hover>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={600}>
-                            {order.order_number}
+                        {order.invoice_number && (
+                          <Typography variant="caption" color="text.secondary">
+                            Invoice: {order.invoice_number}
                           </Typography>
-                          {order.invoice_number && (
-                            <Typography variant="caption" color="text.secondary">
-                              Invoice: {order.invoice_number}
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Box>
+                          											<Typography variant="body2" fontWeight={500}>
+												{order.user?.name || 'Unknown Customer'}
+											</Typography>
+											<Typography variant="caption" color="text.secondary">
+												{order.user?.email || 'No email'}
+											</Typography>
+                          {order.user?.company_name && (
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {order.user.company_name}
                             </Typography>
                           )}
-                        </TableCell>
-                        <TableCell>
-                          <Box>
-                            <Typography variant="body2" fontWeight={500}>
-                              {order.user?.name || 'Unknown Customer'}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {order.user?.email || 'No email'}
-                            </Typography>
-                            {order.user?.company_name && (
-                              <Typography variant="caption" color="text.secondary" display="block">
-                                {order.user.company_name}
-                              </Typography>
-                            )}
-                          </Box>
-                        </TableCell>
-                        <TableCell>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={order.status || 'Unknown'}
+                          color={getStatusColor(order.status) as any}
+                          size="small"
+                          sx={{ textTransform: 'capitalize' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.5}>
                           <Chip
-                            label={order.status || 'Unknown'}
-                            color={getStatusColor(order.status) as any}
+                            label={order.payment_status || 'Unknown'}
+                            color={getPaymentStatusColor(order.payment_status) as any}
                             size="small"
                             sx={{ textTransform: 'capitalize' }}
                           />
-                        </TableCell>
-                        <TableCell>
-                          <Stack spacing={0.5}>
-                            <Chip
-                              label={order.payment_status || 'Unknown'}
-                              color={getPaymentStatusColor(order.payment_status) as any}
-                              size="small"
-                              sx={{ textTransform: 'capitalize' }}
-                            />
-                            {order.payment_method && (
-                              <Typography variant="caption" color="text.secondary">
-                                {order.payment_method.replace('_', ' ')}
-                              </Typography>
-                            )}
-                          </Stack>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={600}>
-                            {formatCurrency(order.total_amount || 0)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Tooltip title={`${order.items?.length || 0} items`}>
-                            <Badge badgeContent={order.items?.length || 0} color="primary">
-                              <CartIcon color="action" />
-                            </Badge>
-                          </Tooltip>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {formatDate(order.created_at)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuClick(e, order.id)}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-
-          {/* Mobile Card View */}
-          <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
-                <CircularProgress />
-              </Box>
-            ) : orders.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography color="text.secondary">No orders found</Typography>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'grid', gap: 2, p: 2 }}>
-                {orders.map((order) => (
-                  <Paper key={order.id} sx={{ p: 2, borderRadius: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600}>{order.order_number}</Typography>
-                        {order.invoice_number && (
-                          <Typography variant="caption" color="text.secondary">Invoice: {order.invoice_number}</Typography>
-                        )}
-                      </Box>
-                      <Chip label={order.status || 'Unknown'} color={getStatusColor(order.status) as any} size="small" sx={{ textTransform: 'capitalize' }} />
-                    </Box>
-                    <Box sx={{ mb: 1 }}>
-                      <Typography variant="body2" fontWeight={500}>{order.user?.name || 'Unknown Customer'}</Typography>
-                      <Typography variant="caption" color="text.secondary">{order.user?.email || 'No email'}</Typography>
-                      {order.user?.company_name && (
-                        <Typography variant="caption" color="text.secondary" display="block">{order.user.company_name}</Typography>
-                      )}
-                    </Box>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr' }, gap: 1, mb: 1 }}>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">Payment</Typography>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Chip label={order.payment_status || 'Unknown'} color={getPaymentStatusColor(order.payment_status) as any} size="small" sx={{ textTransform: 'capitalize' }} />
                           {order.payment_method && (
-                            <Typography variant="caption" color="text.secondary">{order.payment_method.replace('_', ' ')}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {order.payment_method.replace('_', ' ')}
+                            </Typography>
                           )}
                         </Stack>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">Total</Typography>
-                        <Typography variant="body2" fontWeight={600}>{formatCurrency(order.total_amount || 0)}</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">Items</Typography>
-                        <Typography variant="body2">{order.items?.length || 0}</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">Date</Typography>
-                        <Typography variant="body2">{formatDate(order.created_at)}</Typography>
-                      </Box>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                      <IconButton size="small" onClick={() => handleView(order.id)} sx={{ color: 'primary.main' }}>
-                        <ViewIcon />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => handleEdit(order.id)} sx={{ color: 'primary.main' }}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => confirmDelete(order)} color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </Paper>
-                ))}
-              </Box>
-            )}
-          </Box>
-
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={600}>
+                          {formatCurrency(order.total_amount || 0)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip title={`${order.items?.length || 0} items`}>
+                          <Badge badgeContent={order.items?.length || 0} color="primary">
+                            <CartIcon color="action" />
+                          </Badge>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {formatDate(order.created_at)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleMenuClick(e, order.id)}
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
             component="div"
