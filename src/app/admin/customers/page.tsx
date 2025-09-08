@@ -22,12 +22,20 @@ import {
   Alert,
   CircularProgress,
   TablePagination,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  InputAdornment,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Visibility as ViewIcon,
   Delete as DeleteIcon,
+  Search as SearchIcon,
+  FilterList as FilterIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { Customer, CustomerType } from '@/data/types';
@@ -42,6 +50,7 @@ const CustomersPage = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1); // 1-based for API
@@ -49,10 +58,51 @@ const CustomersPage = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [lastPage, setLastPage] = useState(1);
 
+  // Filters & sorting state
+  const [filters, setFilters] = useState({
+    search: '',
+    customer_type: '', // retail | wholesale
+    is_active: '', // '' | 'true' | 'false'
+    city: '',
+    state: '',
+    company_name: '',
+    sort_by: 'created_at' as 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state',
+    sort_order: 'desc' as 'asc' | 'desc',
+  });
+
+  const handleFilterChange = (key: keyof typeof filters, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      search: '',
+      customer_type: '',
+      is_active: '',
+      city: '',
+      state: '',
+      company_name: '',
+      sort_by: 'created_at',
+      sort_order: 'desc',
+    });
+  };
+
   const fetchCustomers = async (page: number, perPage: number) => {
     try {
       setLoading(true);
-      const response = await apiService.getCustomers({ page, per_page: perPage });
+      const response = await apiService.getCustomers({
+        page,
+        per_page: perPage,
+        search: filters.search || undefined,
+        customer_type: filters.customer_type || undefined,
+        is_active: filters.is_active === '' ? undefined : filters.is_active === 'true',
+        city: filters.city || undefined,
+        state: filters.state || undefined,
+        company_name: filters.company_name || undefined,
+        sort_by: filters.sort_by,
+        sort_order: filters.sort_order,
+      });
 
       // The API returns pagination payload at the top level
       // Fallbacks included for safety in case of structure variations
@@ -69,15 +119,16 @@ const CustomersPage = () => {
       const transformedCustomers: Customer[] = customersData.map((customer: any) => ({
         id: String(customer.id),
         customerTypeId: customer.customer_type || 'retail',
-        firstName: (customer.name || '').split(' ')[0] || (customer.name || ''),
-        lastName: (customer.name || '').split(' ').slice(1).join(' ') || '',
+        customerType: customer.customer_type || '',
+        firstName: (customer.first_name || (customer.name || '').split(' ')[0] || (customer.name || '')),
+        lastName: (customer.last_name || (customer.name || '').split(' ').slice(1).join(' ') || ''),
         email: customer.email,
         phone: customer.phone,
         company: customer.company_name,
         address: {
           street: customer.address,
-          city: '',
-          state: '',
+          city: customer.city || '',
+          state: customer.state || '',
           zipCode: '',
           country: 'USA',
         },
@@ -103,11 +154,14 @@ const CustomersPage = () => {
   useEffect(() => {
     fetchCustomers(currentPage, rowsPerPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, rowsPerPage]);
+  }, [currentPage, rowsPerPage, filters]);
 
-  const getCustomerTypeName = (customerTypeId: string) => {
-    const customerType = customerTypes.find(ct => ct.id === customerTypeId);
-    return customerType?.name || 'Standard';
+  const getCustomerTypeName = (type: string) => {
+    if (!type) return '-';
+    const t = String(type).toLowerCase();
+    if (t === 'retail' || t === 'retail_customer') return 'Retail';
+    if (t === 'wholesale' || t === 'wholesale_customer') return 'Wholesale';
+    return t.charAt(0).toUpperCase() + t.slice(1);
   };
 
   const handleAdd = () => {
@@ -153,17 +207,25 @@ const CustomersPage = () => {
   return (
     <AdminLayout title="Customers">
       <Box>
+        {/* Header Row with Filters button (left) and Add Customer (right) */}
         <Box sx={{ 
-          mb: 3, 
+          mb: 1, 
           display: 'flex', 
           flexDirection: { xs: 'column', md: 'row' },
           justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', md: 'center' },
-          gap: { xs: 2, md: 0 }
+          gap: { xs: 1, md: 0 }
         }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Customers
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<FilterIcon />}
+              onClick={() => setFilterDialogOpen(true)}
+              sx={{ boxShadow: 'none' }}
+            >
+              Filters
+            </Button>
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -242,14 +304,6 @@ const CustomersPage = () => {
                         </TableCell>
                         <TableCell align="center" sx={{ minWidth: 120 }}>
                           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleView(customer)}
-                              title="View"
-                              sx={{ color: 'primary.main' }}
-                            >
-                              <ViewIcon />
-                            </IconButton>
                             <IconButton
                               size="small"
                               onClick={() => handleEdit(customer)}
@@ -387,6 +441,79 @@ const CustomersPage = () => {
                 <Button onClick={confirmDelete} color="error" variant="contained">
                   Delete
                 </Button>
+              </DialogActions>
+            </Dialog>
+
+            {/* Filters Dialog */}
+            <Dialog open={filterDialogOpen} onClose={() => setFilterDialogOpen(false)} maxWidth="lg" fullWidth>
+              <DialogTitle>Filter Customers</DialogTitle>
+              <DialogContent dividers>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    placeholder="Search (name, email, company)"
+                    value={filters.search}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
+                  />
+                  <FormControl fullWidth>
+                    <InputLabel>Customer Type</InputLabel>
+                    <Select
+                      value={filters.customer_type}
+                      label="Customer Type"
+                      onChange={(e) => handleFilterChange('customer_type', e.target.value)}
+                    >
+                      <MenuItem value="">All</MenuItem>
+                      <MenuItem value="retail">Retail</MenuItem>
+                      <MenuItem value="wholesale">Wholesale</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Active</InputLabel>
+                    <Select
+                      value={filters.is_active}
+                      label="Active"
+                      onChange={(e) => handleFilterChange('is_active', e.target.value)}
+                    >
+                      <MenuItem value="">All</MenuItem>
+                      <MenuItem value="true">Active</MenuItem>
+                      <MenuItem value="false">Inactive</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr auto auto' }, gap: 2 }}>
+                  <TextField label="Company" value={filters.company_name} onChange={(e) => handleFilterChange('company_name', e.target.value)} />
+                  <TextField label="City" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)} />
+                  <TextField label="State" value={filters.state} onChange={(e) => handleFilterChange('state', e.target.value)} />
+                  <FormControl fullWidth sx={{ minWidth: { md: 160 }, maxWidth: { md: 220 } }}>
+                    <InputLabel>Sort By</InputLabel>
+                    <Select
+                      value={filters.sort_by}
+                      label="Sort By"
+                      onChange={(e) => handleFilterChange('sort_by', e.target.value)}
+                    >
+                      <MenuItem value="name">Name</MenuItem>
+                      <MenuItem value="email">Email</MenuItem>
+                      <MenuItem value="created_at">Created</MenuItem>
+                      <MenuItem value="customer_type">Customer Type</MenuItem>
+                      <MenuItem value="city">City</MenuItem>
+                      <MenuItem value="state">State</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth sx={{ minWidth: { md: 140 }, maxWidth: { md: 180 } }}>
+                    <InputLabel>Sort Order</InputLabel>
+                    <Select
+                      value={filters.sort_order}
+                      label="Sort Order"
+                      onChange={(e) => handleFilterChange('sort_order', e.target.value)}
+                    >
+                      <MenuItem value="asc">Asc</MenuItem>
+                      <MenuItem value="desc">Desc</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={resetFilters}>Clear</Button>
               </DialogActions>
             </Dialog>
           </>

@@ -401,6 +401,7 @@ class ApiService {
                 `${newOrder.customerInfo?.shippingAddress?.firstName || ''} ${newOrder.customerInfo?.shippingAddress?.lastName || ''}`.trim() || 
                 'Unknown Customer',
           email: newOrder.customerInfo?.email || 'unknown@example.com',
+          phone: newOrder.customerInfo?.phone || newOrder.customerInfo?.shippingAddress?.phone || newOrder.customerInfo?.billingAddress?.phone || undefined,
           customer_type: 'retail', // Default to retail if not specified
           company_name: newOrder.customerInfo?.shippingAddress?.company || undefined
         },
@@ -1509,12 +1510,19 @@ class ApiService {
   // Get all customers
   async getCustomers(params: {
     search?: string;
-    customer_type?: string;
+    customer_type?: string; // retail, wholesale
     is_active?: boolean;
+    city?: string;
+    state?: string;
+    company_name?: string;
+    sort_by?: 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state';
+    sort_order?: 'asc' | 'desc';
     page?: number;
     per_page?: number;
   } = {}) {
-    const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
+    const queryString = new URLSearchParams(
+      Object.entries(params).filter(([_, v]) => v != null && v !== '') as string[][]
+    ).toString();
     const response = await api.get(`/customers${queryString ? `?${queryString}` : ''}`);
     // Return the full response.data which contains { data: [...], total, per_page, etc. }
     return response.data;
@@ -2388,6 +2396,17 @@ class ApiService {
         throw new Error('Seat style not found');
       }
       throw new Error(error.response?.data?.message || 'Failed to delete seat style');
+    }
+  }
+
+  // Dashboard Overview
+  async getDashboardOverview() {
+    try {
+      const response = await api.get('/dashboard/overview');
+      // Return the raw data; caller can normalize
+      return response.data?.data ?? response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to load dashboard overview');
     }
   }
 }

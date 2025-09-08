@@ -193,34 +193,28 @@ const PriceTiersPage = () => {
                         <TableCell>
                           {new Date(priceTier.created_at).toLocaleDateString()}
                         </TableCell>
-                                                    <TableCell align="center" sx={{ minWidth: 140 }}>
-                              <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handlePriceTierView(priceTier)}
-                                  title="View"
-                                  sx={{ color: 'primary.main' }}
-                                >
-                                  <ViewIcon />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handlePriceTierEdit(priceTier)}
-                                  title="Edit"
-                                  sx={{ color: 'primary.main' }}
-                                >
-                                  <EditIcon />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handlePriceTierDelete(priceTier)}
-                                  title="Delete"
-                                  color="error"
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
+                        <TableCell align="center" sx={{ minWidth: 140 }}>
+                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handlePriceTierEdit(priceTier)}
+                              title="Edit"
+                              sx={{ color: 'primary.main' }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            {![1, 2].includes(Number(priceTier.id)) && (
+                              <IconButton
+                                size="small"
+                                onClick={() => handlePriceTierDelete(priceTier)}
+                                title="Delete"
+                                color="error"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                          </Box>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -271,28 +265,22 @@ const PriceTiersPage = () => {
                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                       <IconButton
                         size="small"
-                        onClick={() => handlePriceTierView(priceTier)}
-                        title="View"
-                        sx={{ color: 'primary.main' }}
-                      >
-                        <ViewIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
                         onClick={() => handlePriceTierEdit(priceTier)}
                         title="Edit"
                         sx={{ color: 'primary.main' }}
                       >
                         <EditIcon />
                       </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handlePriceTierDelete(priceTier)}
-                        title="Delete"
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      {![1, 2].includes(Number(priceTier.id)) && (
+                        <IconButton
+                          size="small"
+                          onClick={() => handlePriceTierDelete(priceTier)}
+                          title="Delete"
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      )}
                     </Box>
                   </Paper>
                 ))}
