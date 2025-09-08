@@ -31,12 +31,8 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
+import { productApi } from '@/services/productapi';
 import { apiService } from '@/utils/api';
-import { lumbarTypesService } from '@/services/lumbar-types';
-import { reclineTypesService } from '@/services/recline-types';
-import { heatOptionsService } from '@/services/heat-options';
-import { materialTypesService } from '@/services/material-types';
-import { seatStitchPatternService } from '@/services/seat-stitch-pattern';
 
 interface ProductPage2Form {
   // First Half - Product Fields
@@ -56,6 +52,7 @@ interface ProductPage2Form {
   materialType: string[];
   stitchPattern: string[];
   seatItemType: string[];
+  seatStyle: string[];
   color: string[];
   isActive: boolean;
 }
@@ -104,6 +101,7 @@ const EditProduct2Page = () => {
     materialType: [],
     stitchPattern: [],
     seatItemType: [],
+    seatStyle: [],
     color: [],
     isActive: true,
   });
@@ -112,18 +110,20 @@ const EditProduct2Page = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [success, setSuccess] = useState('');
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
   // Data state for dropdowns
-  const [categories, setCategories] = useState<{ name: string; price: number }[]>([]);
-  const [seatTypes, setSeatTypes] = useState<{ name: string; price: number }[]>([]);
-  const [armTypes, setArmTypes] = useState<{ name: string; price: number }[]>([]);
-  const [lumbarTypes, setLumbarTypes] = useState<{ name: string; price: number }[]>([]);
-  const [reclineTypes, setReclineTypes] = useState<{ name: string; price: number }[]>([]);
-  const [heatOptions, setHeatOptions] = useState<{ name: string; price: number }[]>([]);
-  const [materialTypes, setMaterialTypes] = useState<{ name: string; price: number }[]>([]);
-  const [stitchPatterns, setStitchPatterns] = useState<{ name: string; price: number }[]>([]);
-  const [seatItemTypes, setSeatItemTypes] = useState<{ name: string; price: number }[]>([]);
-  const [colors, setColors] = useState<{ name: string; price: number }[]>([]);
+  const [categories, setCategories] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [seatTypes, setSeatTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [armTypes, setArmTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [lumbarTypes, setLumbarTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [reclineTypes, setReclineTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [heatOptions, setHeatOptions] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [materialTypes, setMaterialTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [stitchPatterns, setStitchPatterns] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [seatItemTypes, setSeatItemTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [seatStyles, setSeatStyles] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [colors, setColors] = useState<{ id: number; name: string; price: number }[]>([]);
 
   useEffect(() => {
     loadInitialData();
@@ -133,7 +133,9 @@ const EditProduct2Page = () => {
     try {
       setInitialLoading(true);
       
-      // Load all required data for dropdowns and the product
+      console.log('🔍 Loading initial data for product ID:', id);
+      
+      // Load all required data for dropdowns and the product using productApi with fallbacks
       const [
         categoriesRes,
         seatTypesRes,
@@ -144,36 +146,39 @@ const EditProduct2Page = () => {
         materialTypesRes,
         stitchPatternsRes,
         seatItemTypesRes,
+        seatStylesRes,
         colorsRes,
         productRes,
       ] = await Promise.all([
-        apiService.getCategories(),
-        apiService.getSeatTypes(),
-        apiService.getArmTypes(),
-        lumbarTypesService.getLumbarTypes(),
-        reclineTypesService.getReclineTypes(),
-        heatOptionsService.getHeatOptions(),
-        materialTypesService.getMaterialTypes(),
-        seatStitchPatternService.getSeatStitchPatterns(),
-        apiService.getItemTypes(),
-        apiService.getColors(),
-        apiService.getProduct(parseInt(id)),
+        productApi.getCategories(),
+        productApi.getSeatTypes().catch(() => apiService.getSeatTypes()),
+        productApi.getArmTypes().catch(() => apiService.getArmTypes()),
+        productApi.getLumbarTypes(),
+        productApi.getReclineTypes(),
+        productApi.getHeatOptions(),
+        productApi.getMaterialTypes(),
+        productApi.getStitchPatterns(),
+        productApi.getItemTypes().catch(() => apiService.getItemTypes()),
+        productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
+        productApi.getColors(),
+        productApi.getProduct(parseInt(id)),
       ]);
 
-      // Debug API responses
-      console.log('Seat Types API Response:', seatTypesRes);
-      console.log('Arm Types API Response:', armTypesRes);
-      console.log('Categories API Response:', categoriesRes);
+      console.log('🔍 Product API Response:', productRes);
+      console.log('🔍 Product variations:', productRes?.variations);
+      console.log('🔍 Product images:', productRes?.images);
+      console.log('🔍 Product primary_image:', productRes?.primary_image);
       
-      // Convert API responses to the expected format { name, price }
-      const convertToFormFormat = (items: any[]) => 
+      // Convert API responses to the expected format { id, name, price }
+      const convertToFormFormat = (items: any[], hasPrice = true) => 
         Array.isArray(items) ? items.map(item => ({ 
+          id: item.id || 0,
           name: item.name || item.title || item.label || 'Unknown', 
-          price: item.price || item.cost || 0 
+          price: hasPrice ? (item.price || item.cost || 0) : 0
         })) : [];
       
       // Ensure all responses are arrays and have the expected structure
-      setCategories(Array.isArray(categoriesRes) ? categoriesRes : []);
+      setCategories(convertToFormFormat(categoriesRes));
       setSeatTypes(convertToFormFormat(seatTypesRes));
       setArmTypes(convertToFormFormat(armTypesRes));
       setLumbarTypes(convertToFormFormat(lumbarTypesRes));
@@ -182,28 +187,74 @@ const EditProduct2Page = () => {
       setMaterialTypes(convertToFormFormat(materialTypesRes));
       setStitchPatterns(convertToFormFormat(stitchPatternsRes));
       setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
+      setSeatStyles(convertToFormFormat(seatStylesRes, false)); // Seat styles don't have price
       setColors(convertToFormFormat(colorsRes));
+
+      // Helper function to extract variation names from API response
+      const extractVariationNames = (variations: any[], fieldName: string): string[] => {
+        if (!variations || !Array.isArray(variations)) {
+          console.log(`🔍 No variations array for ${fieldName}`);
+          return [];
+        }
+        console.log(`🔍 Processing ${fieldName} from ${variations.length} variations:`, variations);
+        const names = variations
+          .map((v, index) => {
+            console.log(`🔍 Variation ${index} for ${fieldName}:`, v);
+            const value = v[fieldName] || v[`${fieldName}_name`] || v[`${fieldName}_type`] || v.name;
+            console.log(`🔍 Extracted value for ${fieldName}:`, value);
+            return value;
+          })
+          .filter(Boolean)
+          .filter((name, index, arr) => arr.indexOf(name) === index);
+        console.log(`🔍 Final extracted ${fieldName}:`, names);
+        return names;
+      };
 
       // Set form data from product
       if (productRes) {
+        console.log('🔍 Setting form data from product response');
+        
+        // Handle existing images
+        const existingImageUrls: string[] = [];
+        if (productRes.images && Array.isArray(productRes.images)) {
+          console.log('🔍 Processing existing images:', productRes.images);
+          existingImageUrls.push(...productRes.images.map((img: any) => 
+            typeof img === 'string' ? img : img.image_path || img.image_url || ''
+          ).filter(Boolean));
+        }
+        
+        // Also check for primary_image
+        if (productRes.primary_image?.image_path) {
+          const primaryImageUrl = productRes.primary_image.image_path;
+          if (!existingImageUrls.includes(primaryImageUrl)) {
+            existingImageUrls.unshift(primaryImageUrl); // Add primary image first
+          }
+        }
+        
+        console.log('🔍 Existing image URLs:', existingImageUrls);
+        setExistingImages(existingImageUrls);
+
         setFormData({
           name: productRes.name || '',
-          category: productRes.category || '',
+          category: productRes.category?.name || '',
           description: productRes.description || '',
-          basePrice: productRes.basePrice || 0,
+          basePrice: parseFloat(productRes.price) || 0,
           stock: productRes.stock || 0,
-          images: [],
-          seatType: productRes.seatType || [],
-          armType: productRes.armType || [],
-          lumbarType: productRes.lumbarType || [],
-          reclineType: productRes.reclineType || [],
-          heatOption: productRes.heatOption || [],
-          materialType: productRes.materialType || [],
-          stitchPattern: productRes.stitchPattern || [],
-          seatItemType: productRes.seatItemType || [],
-          color: productRes.color || [],
-          isActive: productRes.isActive ?? true,
+          images: [], // Start with empty array for new file uploads
+          seatType: extractVariationNames(productRes.variations || [], 'seat_type'),
+          armType: extractVariationNames(productRes.variations || [], 'arm_type'),
+          lumbarType: extractVariationNames(productRes.variations || [], 'lumbar'),
+          reclineType: extractVariationNames(productRes.variations || [], 'recline_type'),
+          heatOption: extractVariationNames(productRes.variations || [], 'heat_option'),
+          materialType: extractVariationNames(productRes.variations || [], 'material_type'),
+          stitchPattern: extractVariationNames(productRes.variations || [], 'stitch_pattern'),
+          seatItemType: extractVariationNames(productRes.variations || [], 'seat_item_type'),
+          seatStyle: extractVariationNames(productRes.variations || [], 'seat_style'),
+          color: extractVariationNames(productRes.variations || [], 'color'),
+          isActive: productRes.is_active ?? true,
         });
+        
+        console.log('🔍 Form data set successfully');
       }
     } catch (error: any) {
       console.error('Error loading initial data:', error);
@@ -390,6 +441,10 @@ const EditProduct2Page = () => {
       newErrors.seatItemType = 'At least one seat item type is required';
     }
 
+    if (formData.seatStyle.length === 0) {
+      newErrors.seatStyle = 'At least one seat style is required';
+    }
+
     if (formData.color.length === 0) {
       newErrors.color = 'At least one color is required';
     }
@@ -408,40 +463,47 @@ const EditProduct2Page = () => {
     setLoading(true);
     
     try {
-      // Convert File objects to the format expected by API (no base64 conversion needed)
-      const imageData = formData.images.map((file, index) => ({
-        file: file, // Pass File object directly
-        alt_text: `Product image ${index + 1}`,
-        caption: `Product image ${index + 1}`,
-        set_primary: index === 0, // First image is primary
-      }));
+      // Helper function to map variation names to IDs
+      const mapNamesToIds = (selectedNames: string[], availableOptions: { id: number; name: string; price: number }[]): number[] => {
+        return selectedNames
+          .map(name => {
+            const option = availableOptions.find(opt => opt.name === name);
+            return option?.id;
+          })
+          .filter((id): id is number => id !== undefined);
+      };
 
-      // Create product data object
+      // Find selected category ID
+      const selectedCategory = categories.find(cat => cat.name === formData.category);
+      const categoryId = selectedCategory?.id;
+
+      // Create product data object using simple File array (like create page)
       const productData = {
         name: formData.name,
         description: formData.description,
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
-        images: imageData,
-        // Note: The API might need these as IDs rather than names
-        // You may need to map the selected names to their corresponding IDs
-        variation_ids: [], // This would need to be populated based on selected options
+        category_id: categoryId,
+        vehicle_trim_id: 1, // Default value, you might want to make this configurable
+        images: formData.images, // Simple File array like create page
+        
+        // Map variation names to IDs
+        seat_type_ids: mapNamesToIds(formData.seatType, seatTypes),
+        arm_type_ids: mapNamesToIds(formData.armType, armTypes),
+        lumbar_type_ids: mapNamesToIds(formData.lumbarType, lumbarTypes),
+        recline_type_ids: mapNamesToIds(formData.reclineType, reclineTypes),
+        heat_option_ids: mapNamesToIds(formData.heatOption, heatOptions),
+        material_type_ids: mapNamesToIds(formData.materialType, materialTypes),
+        seat_stitch_pattern_ids: mapNamesToIds(formData.stitchPattern, stitchPatterns),
+        item_type_ids: mapNamesToIds(formData.seatItemType, seatItemTypes),
+        seat_style_ids: mapNamesToIds(formData.seatStyle, seatStyles),
+        color_ids: mapNamesToIds(formData.color, colors),
       };
 
-      // Debug: Log the data being sent
-      console.log('Products-2 edit data being sent to API:', {
-        ...productData,
-        images: productData.images?.map(img => ({
-          file: `File(${img.file.name}, ${img.file.size} bytes)`,
-          alt_text: img.alt_text,
-          caption: img.caption,
-          set_primary: img.set_primary
-        }))
-      });
 
-      // Call API to update product
-      await apiService.updateProduct(parseInt(id), productData);
+      // Call the new productApi to update product
+      await productApi.updateProduct(parseInt(id), productData);
       
       setSuccess('Product updated successfully!');
       
@@ -458,7 +520,7 @@ const EditProduct2Page = () => {
   const renderMultiSelectField = (
     field: keyof ProductPage2Form,
     label: string,
-    options: { name: string; price: number }[],
+    options: { id: number; name: string; price: number }[],
     required = true
   ) => {
     // Safety check to ensure options is an array
@@ -641,55 +703,126 @@ const EditProduct2Page = () => {
                     Product Images
                   </Typography>
                   
-                  {/* Image Preview */}
+                  {/* Existing Images Preview */}
+                  {existingImages.length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+                        Existing Images:
+                      </Typography>
+                      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', sm: 'repeat(12, 1fr)', md: 'repeat(16, 1fr)' }, gap: 0, mb: 2 }}>
+                        {existingImages.map((imageUrl, index) => (
+                          <Box key={`existing-${index}`} sx={{ position: 'relative' }}>
+                            <img
+                              src={imageUrl.startsWith('http') ? imageUrl : `https://superiorseats.ali-khalid.com${imageUrl}`}
+                              alt={`Existing ${index + 1}`}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                aspectRatio: '1/1',
+                                objectFit: 'cover',
+                                borderRadius: 4,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60,
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
+                              }}
+                            />
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 2,
+                                left: 2,
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                                px: 0.5,
+                                py: 0.25,
+                                borderRadius: 0.5,
+                                fontSize: '0.6rem',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {index === 0 ? 'PRIMARY' : 'EXISTING'}
+                            </Box>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+
+                  {/* New Images Preview */}
                   {formData.images.length > 0 && (
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', sm: 'repeat(12, 1fr)', md: 'repeat(16, 1fr)' }, gap: 0, mb: 2 }}>
-                      {formData.images.map((image, index) => (
-                        <Box key={index} sx={{ position: 'relative' }}>
-                          <img
-                            src={URL.createObjectURL(image)}
-                            alt={`Preview ${index + 1}`}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              aspectRatio: '1/1',
-                              objectFit: 'cover',
-                              borderRadius: 4,
-                              border: '1px solid #e0e0e0',
-                              maxWidth: 60,
-                              maxHeight: 60,
-                            }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
-                            }}
-                          />
-                          <IconButton
-                            onClick={() => removeImage(index)}
-                            size="small"
-                            sx={{
-                              position: 'absolute',
-                              top: 2,
-                              right: 2,
-                              bgcolor: 'rgba(255, 255, 255, 0.95)',
-                              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                              width: 16,
-                              height: 16,
-                              border: '1px solid #fff',
-                              '&:hover': {
-                                bgcolor: 'rgba(255, 255, 255, 1)',
-                                transform: 'scale(1.1)',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                              },
-                              transition: 'all 0.2s ease-in-out',
-                              zIndex: 10,
-                            }}
-                          >
-                            <CloseIcon sx={{ fontSize: 10, color: '#666' }} />
-                          </IconButton>
-                        </Box>
-                      ))}
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+                        New Images:
+                      </Typography>
+                      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', sm: 'repeat(12, 1fr)', md: 'repeat(16, 1fr)' }, gap: 0, mb: 2 }}>
+                        {formData.images.map((image, index) => (
+                          <Box key={`new-${index}`} sx={{ position: 'relative' }}>
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`New ${index + 1}`}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                aspectRatio: '1/1',
+                                objectFit: 'cover',
+                                borderRadius: 4,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60,
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
+                              }}
+                            />
+                            <IconButton
+                              onClick={() => removeImage(index)}
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: 2,
+                                right: 2,
+                                bgcolor: 'rgba(255, 255, 255, 0.95)',
+                                boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                                width: 16,
+                                height: 16,
+                                border: '1px solid #fff',
+                                '&:hover': {
+                                  bgcolor: 'rgba(255, 255, 255, 1)',
+                                  transform: 'scale(1.1)',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                },
+                                transition: 'all 0.2s ease-in-out',
+                                zIndex: 10,
+                              }}
+                            >
+                              <CloseIcon sx={{ fontSize: 10, color: '#666' }} />
+                            </IconButton>
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 2,
+                                left: 2,
+                                bgcolor: 'success.main',
+                                color: 'white',
+                                px: 0.5,
+                                py: 0.25,
+                                borderRadius: 0.5,
+                                fontSize: '0.6rem',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              NEW
+                            </Box>
+                          </Box>
+                        ))}
+                      </Box>
                     </Box>
                   )}
                   
@@ -710,7 +843,7 @@ const EditProduct2Page = () => {
                         startIcon={<CloudUploadIcon />}
                         sx={{ mb: 1 }}
                       >
-                        Upload Images
+                        Add More Images
                       </Button>
                     </label>
                     {errors.images && (
@@ -765,7 +898,8 @@ const EditProduct2Page = () => {
                     {renderMultiSelectField('seatItemType', 'Seat Item Type', seatItemTypes)}
                   </Box>
 
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+                    {renderMultiSelectField('seatStyle', 'Seat Style', seatStyles)}
                     {renderMultiSelectField('color', 'Color', colors)}
                   </Box>
                 </Box>

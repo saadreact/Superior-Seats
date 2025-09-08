@@ -318,7 +318,7 @@ const Footer: React.FC<FooterProps> = () => {
                               color: 'white',
                             }}
                           >
-                            Closed Hours
+                            Days Closed
                           </Typography>
                           <Typography
                             sx={{
