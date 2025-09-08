@@ -31,6 +31,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
+import { productApi } from '@/services/productapi';
 import { apiService } from '@/utils/api';
 import { lumbarTypesService } from '@/services/lumbar-types';
 import { reclineTypesService } from '@/services/recline-types';
@@ -56,6 +57,7 @@ interface ProductPage2Form {
   materialType: string[];
   stitchPattern: string[];
   seatItemType: string[];
+  seatStyle: string[]; // Added new field
   color: string[];
   isActive: boolean;
 }
@@ -81,6 +83,7 @@ const CreateProduct2Page = () => {
     materialType: [],
     stitchPattern: [],
     seatItemType: [],
+    seatStyle: [], // Added new field
     color: [],
     isActive: true,
   });
@@ -91,16 +94,17 @@ const CreateProduct2Page = () => {
   const [initialLoading, setInitialLoading] = useState(true);
 
   // Data state for dropdowns
-  const [categories, setCategories] = useState<{ name: string; price: number }[]>([]);
-  const [seatTypes, setSeatTypes] = useState<{ name: string; price: number }[]>([]);
-  const [armTypes, setArmTypes] = useState<{ name: string; price: number }[]>([]);
-  const [lumbarTypes, setLumbarTypes] = useState<{ name: string; price: number }[]>([]);
-  const [reclineTypes, setReclineTypes] = useState<{ name: string; price: number }[]>([]);
-  const [heatOptions, setHeatOptions] = useState<{ name: string; price: number }[]>([]);
-  const [materialTypes, setMaterialTypes] = useState<{ name: string; price: number }[]>([]);
-  const [stitchPatterns, setStitchPatterns] = useState<{ name: string; price: number }[]>([]);
-  const [seatItemTypes, setSeatItemTypes] = useState<{ name: string; price: number }[]>([]);
-  const [colors, setColors] = useState<{ name: string; price: number }[]>([]);
+  const [categories, setCategories] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [seatTypes, setSeatTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [armTypes, setArmTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [lumbarTypes, setLumbarTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [reclineTypes, setReclineTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [heatOptions, setHeatOptions] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [materialTypes, setMaterialTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [stitchPatterns, setStitchPatterns] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [seatItemTypes, setSeatItemTypes] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [seatStyles, setSeatStyles] = useState<{ id: number; name: string; price: number }[]>([]); // Added new field
+  const [colors, setColors] = useState<{ id: number; name: string; price: number }[]>([]);
 
   useEffect(() => {
     loadInitialData();
@@ -110,7 +114,7 @@ const CreateProduct2Page = () => {
     try {
       setInitialLoading(true);
       
-      // Load all required data for dropdowns
+      // Load all required data for dropdowns using the new productApi with fallbacks
       const [
         categoriesRes,
         seatTypesRes,
@@ -121,34 +125,41 @@ const CreateProduct2Page = () => {
         materialTypesRes,
         stitchPatternsRes,
         seatItemTypesRes,
+        seatStylesRes,
         colorsRes,
       ] = await Promise.all([
-        apiService.getCategories(),
-        apiService.getSeatTypes(),
-        apiService.getArmTypes(),
-        lumbarTypesService.getLumbarTypes(),
-        reclineTypesService.getReclineTypes(),
-        heatOptionsService.getHeatOptions(),
-        materialTypesService.getMaterialTypes(),
-        seatStitchPatternService.getSeatStitchPatterns(),
-        apiService.getItemTypes(),
-        apiService.getColors(),
+        productApi.getCategories(),
+        productApi.getSeatTypes().catch(() => apiService.getSeatTypes()),
+        productApi.getArmTypes().catch(() => apiService.getArmTypes()),
+        productApi.getLumbarTypes(),
+        productApi.getReclineTypes(),
+        productApi.getHeatOptions(),
+        productApi.getMaterialTypes(),
+        productApi.getStitchPatterns(),
+        productApi.getItemTypes().catch(() => apiService.getItemTypes()),
+        productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
+        productApi.getColors(),
       ]);
 
       // Debug API responses
+      console.log('=== API RESPONSES DEBUG ===');
       console.log('Seat Types API Response:', seatTypesRes);
       console.log('Arm Types API Response:', armTypesRes);
+      console.log('Item Types API Response:', seatItemTypesRes);
+      console.log('Seat Styles API Response:', seatStylesRes);
       console.log('Categories API Response:', categoriesRes);
+      console.log('===========================');
       
-      // Convert API responses to the expected format { name, price }
-      const convertToFormFormat = (items: any[]) => 
+      // Convert API responses to the expected format { id, name, price }
+      const convertToFormFormat = (items: any[], hasPrice = true) => 
         Array.isArray(items) ? items.map(item => ({ 
+          id: item.id || 0,
           name: item.name || item.title || item.label || 'Unknown', 
-          price: item.price || item.cost || 0 
+          price: hasPrice ? (item.price || item.cost || 0) : 0
         })) : [];
       
       // Ensure all responses are arrays and have the expected structure
-      setCategories(Array.isArray(categoriesRes) ? categoriesRes : []);
+      setCategories(convertToFormFormat(categoriesRes));
       setSeatTypes(convertToFormFormat(seatTypesRes));
       setArmTypes(convertToFormFormat(armTypesRes));
       setLumbarTypes(convertToFormFormat(lumbarTypesRes));
@@ -157,6 +168,9 @@ const CreateProduct2Page = () => {
       setMaterialTypes(convertToFormFormat(materialTypesRes));
       setStitchPatterns(convertToFormFormat(stitchPatternsRes));
       setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
+      const processedSeatStyles = convertToFormFormat(seatStylesRes, false); // Seat styles don't have price
+      console.log('Processed Seat Styles:', processedSeatStyles);
+      setSeatStyles(processedSeatStyles);
       setColors(convertToFormFormat(colorsRes));
     } catch (error: any) {
       console.error('Error loading initial data:', error);
@@ -244,10 +258,21 @@ const CreateProduct2Page = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     
+    console.log('📁 handleImageChange called with files:', files);
+    console.log('📁 Files count:', files.length);
+    
     // Validate files
     const validFiles = files.filter(file => {
+      console.log('📁 Validating file:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        isFile: file instanceof File
+      });
+      
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
       if (!validTypes.includes(file.type)) {
+        console.log('❌ Invalid file type:', file.type);
         setErrors(prev => ({
           ...prev,
           images: 'Please select valid image files (JPEG, PNG, or GIF)',
@@ -256,6 +281,7 @@ const CreateProduct2Page = () => {
       }
       
       if (file.size > 2 * 1024 * 1024) {
+        console.log('❌ File too large:', file.size);
         setErrors(prev => ({
           ...prev,
           images: 'Image size must be less than 2MB',
@@ -263,13 +289,22 @@ const CreateProduct2Page = () => {
         return false;
       }
       
+      console.log('✅ File is valid');
       return true;
     });
     
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...validFiles],
-    }));
+    console.log('📁 Valid files count:', validFiles.length);
+    console.log('📁 Valid files:', validFiles);
+    
+    setFormData(prev => {
+      const newImages = [...prev.images, ...validFiles];
+      console.log('📁 Setting new images array:', newImages);
+      console.log('📁 New images count:', newImages.length);
+      return {
+        ...prev,
+        images: newImages,
+      };
+    });
     
     if (errors.images) {
       setErrors(prev => ({
@@ -341,6 +376,10 @@ const CreateProduct2Page = () => {
       newErrors.seatItemType = 'At least one seat item type is required';
     }
 
+    if (formData.seatStyle.length === 0) {
+      newErrors.seatStyle = 'At least one seat style is required';
+    }
+
     if (formData.color.length === 0) {
       newErrors.color = 'At least one color is required';
     }
@@ -359,40 +398,77 @@ const CreateProduct2Page = () => {
     setLoading(true);
     
     try {
-      // Convert File objects to the format expected by API (no base64 conversion needed)
-      const imageData = formData.images.map((file, index) => ({
-        file: file, // Pass File object directly
-        alt_text: `Product image ${index + 1}`,
-        caption: `Product image ${index + 1}`,
-        set_primary: index === 0, // First image is primary
-      }));
+      // Helper function to map variation names to IDs
+      const mapNamesToIds = (selectedNames: string[], availableOptions: { id: number; name: string; price: number }[]): number[] => {
+        return selectedNames
+          .map(name => {
+            const option = availableOptions.find(opt => opt.name === name);
+            return option?.id;
+          })
+          .filter((id): id is number => id !== undefined);
+      };
 
-      // Create product data object
+      // Find selected category ID
+      const selectedCategory = categories.find(cat => cat.name === formData.category);
+      const categoryId = selectedCategory?.id;
+
+      // Create product data object using simple File array (like lumbar types)
       const productData = {
         name: formData.name,
         description: formData.description,
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
-        images: imageData,
-        // Note: The API might need these as IDs rather than names
-        // You may need to map the selected names to their corresponding IDs
-        variation_ids: [], // This would need to be populated based on selected options
+        category_id: categoryId,
+        vehicle_trim_id: 1, // Default value, you might want to make this configurable
+        images: formData.images, // Simple File array like lumbar types
+        
+        // Map variation names to IDs
+        seat_type_ids: mapNamesToIds(formData.seatType, seatTypes),
+        arm_type_ids: mapNamesToIds(formData.armType, armTypes),
+        lumbar_type_ids: mapNamesToIds(formData.lumbarType, lumbarTypes),
+        recline_type_ids: mapNamesToIds(formData.reclineType, reclineTypes),
+        heat_option_ids: mapNamesToIds(formData.heatOption, heatOptions),
+        material_type_ids: mapNamesToIds(formData.materialType, materialTypes),
+        seat_stitch_pattern_ids: mapNamesToIds(formData.stitchPattern, stitchPatterns),
+        item_type_ids: mapNamesToIds(formData.seatItemType, seatItemTypes),
+        seat_style_ids: mapNamesToIds(formData.seatStyle, seatStyles),
+        color_ids: mapNamesToIds(formData.color, colors),
       };
 
       // Debug: Log the data being sent
-      console.log('Products-2 data being sent to API:', {
+      console.log('🔄 Products-2 data being sent to new productApi:', {
         ...productData,
-        images: productData.images?.map(img => ({
-          file: `File(${img.file.name}, ${img.file.size} bytes)`,
-          alt_text: img.alt_text,
-          caption: img.caption,
-          set_primary: img.set_primary
-        }))
+        images: productData.images?.map(file => `File(${file.name}, ${file.size} bytes)`)
       });
+      
+      // Debug: Check if images are actually present
+      console.log('🔄 FormData.images length:', formData.images.length);
+      console.log('🔄 FormData.images:', formData.images);
+      console.log('🔄 FormData.images type:', typeof formData.images);
+      console.log('🔄 FormData.images is array:', Array.isArray(formData.images));
+      console.log('🔄 ProductData.images length:', productData.images?.length);
+      console.log('🔄 ProductData.images:', productData.images);
+      console.log('🔄 ProductData.images type:', typeof productData.images);
+      console.log('🔄 ProductData.images is array:', Array.isArray(productData.images));
+      
+      // Check each image individually
+      if (productData.images && productData.images.length > 0) {
+        productData.images.forEach((file, index) => {
+          console.log(`🔄 Image ${index}:`, {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            isFile: file instanceof File,
+            constructor: file.constructor.name
+          });
+        });
+      } else {
+        console.log('❌ No images in productData.images');
+      }
 
-      // Call API to create product
-      await apiService.createProduct(productData);
+      // Call the new productApi to create product
+      await productApi.createProduct(productData);
       
       setSuccess('Product created successfully!');
       
@@ -409,11 +485,22 @@ const CreateProduct2Page = () => {
   const renderMultiSelectField = (
     field: keyof ProductPage2Form,
     label: string,
-    options: { name: string; price: number }[],
+    options: { id: number; name: string; price: number }[],
     required = true
   ) => {
     // Safety check to ensure options is an array
     const safeOptions = Array.isArray(options) ? options : [];
+    
+    // Debug logging for seat styles specifically
+    if (field === 'seatStyle') {
+      console.log(`Rendering ${label} field:`, {
+        field,
+        options,
+        safeOptions,
+        optionsLength: options?.length,
+        safeOptionsLength: safeOptions.length
+      });
+    }
     
     return (
       <FormControl fullWidth required={required} error={!!errors[field]}>
@@ -441,7 +528,7 @@ const CreateProduct2Page = () => {
           )}
         >
           {safeOptions.map((option) => (
-            <MenuItem key={option.name} value={option.name}>
+            <MenuItem key={option.id} value={option.name}>
               <Checkbox checked={(formData[field] as string[]).indexOf(option.name) > -1} />
               <ListItemText 
                 primary={`${option.name} (+$${option.price || 0})`} 
@@ -590,30 +677,59 @@ const CreateProduct2Page = () => {
                     Product Images
                   </Typography>
                   
+                  {/* Debug: Show current images state */}
+                  <Box sx={{ mb: 2, p: 1, bgcolor: 'grey.100', borderRadius: 1 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Debug: Images count: {formData.images.length}
+                    </Typography>
+                    {formData.images.length > 0 && (
+                      <Box>
+                        {formData.images.map((img, idx) => (
+                          <Typography key={idx} variant="caption" display="block">
+                            Image {idx}: {img?.name || 'No name'} ({img?.size || 0} bytes) - {img instanceof File ? 'File' : typeof img}
+                          </Typography>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                  
                   {/* Image Preview */}
                   {formData.images.length > 0 && (
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', sm: 'repeat(12, 1fr)', md: 'repeat(16, 1fr)' }, gap: 0, mb: 2 }}>
-                      {formData.images.map((image, index) => (
-                        <Box key={index} sx={{ position: 'relative' }}>
-                          <img
-                            src={URL.createObjectURL(image)}
-                            alt={`Preview ${index + 1}`}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              aspectRatio: '1/1',
-                              objectFit: 'cover',
-                              borderRadius: 4,
-                              border: '1px solid #e0e0e0',
-                              maxWidth: 60,
-                              maxHeight: 60,
-                            }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
-                            }}
-                          />
+                      {formData.images.map((image, index) => {
+                        console.log(`🖼️ Rendering image ${index}:`, {
+                          image,
+                          type: typeof image,
+                          isFile: image instanceof File,
+                          name: image?.name,
+                          size: image?.size
+                        });
+                        
+                        return (
+                          <Box key={index} sx={{ position: 'relative' }}>
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Preview ${index + 1}`}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                aspectRatio: '1/1',
+                                objectFit: 'cover',
+                                borderRadius: 4,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60,
+                              }}
+                              onError={(e) => {
+                                console.log(`❌ Image ${index} failed to load:`, e);
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
+                              }}
+                              onLoad={() => {
+                                console.log(`✅ Image ${index} loaded successfully`);
+                              }}
+                            />
                           <IconButton
                             onClick={() => removeImage(index)}
                             size="small"
@@ -638,7 +754,8 @@ const CreateProduct2Page = () => {
                             <CloseIcon sx={{ fontSize: 10, color: '#666' }} />
                           </IconButton>
                         </Box>
-                      ))}
+                        );
+                      })}
                     </Box>
                   )}
                   
@@ -714,7 +831,8 @@ const CreateProduct2Page = () => {
                     {renderMultiSelectField('seatItemType', 'Seat Item Type', seatItemTypes)}
                   </Box>
 
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+                    {renderMultiSelectField('seatStyle', 'Seat Style', seatStyles)}
                     {renderMultiSelectField('color', 'Color', colors)}
                   </Box>
                 </Box>
