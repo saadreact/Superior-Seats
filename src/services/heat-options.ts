@@ -33,7 +33,10 @@ class HeatOptionsService {
     name: string;
     description?: string;
     image: File;
+    cost: number;
+    price: number;
     price_tier_ids: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -41,6 +44,8 @@ class HeatOptionsService {
         const formData = new FormData();
         formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        formData.append('cost', data.cost.toString());
+        formData.append('price', data.price.toString());
         
         // Append single image (not as array) - heat options have only one image
         formData.append('image', data.image);
@@ -49,6 +54,13 @@ class HeatOptionsService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
           });
         }
 
@@ -93,7 +105,10 @@ class HeatOptionsService {
     name?: string;
     description?: string;
     image?: File | null;
+    cost?: number;
+    price?: number;
     price_tier_ids?: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -101,6 +116,8 @@ class HeatOptionsService {
         const formData = new FormData();
         if (data.name) formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        if (data.cost !== undefined) formData.append('cost', data.cost.toString());
+        if (data.price !== undefined) formData.append('price', data.price.toString());
         
         // Append single image (not as array) - heat options have only one image
         formData.append('image', data.image);
@@ -109,6 +126,13 @@ class HeatOptionsService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
           });
         }
 

@@ -84,6 +84,229 @@ export interface VehicleTrimsApiResponse {
   };
 }
 
+export interface ProductVariation {
+  id: number;
+  name: string;
+  value: string;
+  price_adjustment: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductImage {
+  id: number;
+  product_id: number;
+  image_path: string;
+  image_url: string;
+  alt_text: string;
+  caption: string | null;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Additional interfaces for variation data
+export interface Color {
+  id: number;
+  name: string;
+  hex_code: string;
+  description: string;
+  is_active: boolean;
+  color_vendor_id: number | null;
+  color_category_id: number | null;
+  price_tiers: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MaterialType {
+  id: number;
+  name: string;
+  description: string;
+  image?: string;
+  image_url?: string;
+  cost?: string | null;
+  price?: string | null;
+  is_active: boolean;
+  created_by?: number | null;
+  price_tiers: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HeatOption {
+  id: number;
+  name: string;
+  description: string;
+  image?: string;
+  image_url?: string;
+  cost?: string | null;
+  price?: string | null;
+  is_active: boolean | null;
+  created_by?: number | null;
+  price_tiers: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LumbarType {
+  id: number;
+  name: string;
+  description: string;
+  image?: string;
+  image_url?: string;
+  cost?: string | null;
+  price?: string | null;
+  is_active: boolean | null;
+  created_by?: number | null;
+  price_tiers: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReclineType {
+  id: number;
+  name: string;
+  description: string;
+  image?: string;
+  image_url?: string;
+  cost?: string | null;
+  price?: string | null;
+  is_active: boolean | null;
+  created_by?: number | null;
+  price_tiers: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SeatStitchPattern {
+  id: number;
+  name: string;
+  description: string;
+  image?: string;
+  image_url?: string;
+  cost?: string | null;
+  price?: string | null;
+  is_active: boolean | null;
+  created_by?: number | null;
+  price_tiers: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ArmType {
+  id: number;
+  name: string;
+  description: string;
+  image?: string;
+  image_url?: string;
+  cost?: string | null;
+  price?: string | null;
+  is_active: boolean | null;
+  created_by?: number | null;
+  price_tiers: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SeatType {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SeatStyle {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ItemType {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PriceTier {
+  id: number;
+  name: string;
+  description: string | null;
+  price_adjustment: string | null;
+  is_active: boolean | null;
+  created_at: string;
+  updated_at: string;
+  pivot?: {
+    color_id?: number;
+    price_tier_id: number;
+    price_adjustment: string;
+    is_active: number;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  stock: number;
+  is_active: boolean;
+  show_on_special_shop: boolean;
+  created_at: string;
+  updated_at: string;
+  vehicle_trim_id: number;
+  category_id: number;
+  category: Category;
+  variations: ProductVariation[];
+  vehicle_trim: VehicleTrim;
+  product_images: ProductImage[];
+  primary_image: ProductImage;
+  active_images: ProductImage[];
+  colors: Color[];
+  material_types: MaterialType[];
+  heat_options: HeatOption[];
+  lumbar_types: LumbarType[];
+  recline_types: ReclineType[];
+  seat_stitch_patterns: SeatStitchPattern[];
+  arm_types: ArmType[];
+  seat_types: SeatType[];
+  seat_styles: SeatStyle[];
+  item_types: ItemType[];
+}
+
+export interface ProductApiResponse {
+  status: string;
+  message: string;
+  data: Product;
+  errors: any;
+  meta: {
+    timestamp: string;
+    request_id: string;
+  };
+}
+
 export const CustomizedSeatApi = {
   // Get colors with optional search and vendor_id parameters
   getColors: async (search?: string, vendor_id?: number): Promise<Color[]> => {
@@ -144,7 +367,7 @@ export const CustomizedSeatApi = {
   },
 
   // Get all vehicle models (default call)
-  getAllVehicleModels: async (): Promise<VehicleModel[]> => {
+  getAllVehicleModels: async (): Promise<VehicleModel[]> =>{
     return CustomizedSeatApi.getVehicleModels();
   },
 
@@ -188,5 +411,26 @@ export const CustomizedSeatApi = {
   // Get vehicle trims by model and make
   getVehicleTrimsByModelAndMake: async (modelId: number, makeId: number): Promise<VehicleTrim[]> => {
     return CustomizedSeatApi.getVehicleTrims(modelId, makeId);
+  },
+
+  // Get product by ID
+  getProductById: async (id: number): Promise<Product> => {
+    try {
+      console.log('🔄 CustomizedSeatApi - Fetching product details for ID:', id);
+      
+      const response = await axios.get<ProductApiResponse>(
+        `${API_BASE_URL}/shop/products/${id}`
+      );
+
+      if (response.data.status === 'success') {
+        console.log('✅ CustomizedSeatApi - Product details fetched successfully:', response.data.data);
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch product details');
+      }
+    } catch (error) {
+      console.error('❌ CustomizedSeatApi - Error fetching product details:', error);
+      throw error;
+    }
   }
 };

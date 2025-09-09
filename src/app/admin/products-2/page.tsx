@@ -226,7 +226,7 @@ const Products2Page = () => {
   };
 
   return (
-    <AdminLayout title="Products 2">
+    <AdminLayout title="Products">
       <Box>
         <Box sx={{ 
           mb: 3, 
@@ -327,7 +327,6 @@ const Products2Page = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Variations</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -434,11 +433,6 @@ const Products2Page = () => {
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
                           {product.stock} units
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {product.variations?.length || 0} variation{(product.variations?.length || 0) !== 1 ? 's' : ''}
                         </Typography>
                       </TableCell>
                       <TableCell>

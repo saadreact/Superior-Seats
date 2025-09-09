@@ -1,13 +1,33 @@
 import api from '../utils/axios';
 
 // Types for API responses
+export interface ProductVariation {
+  id: number;
+  name: string;
+  value: string;
+  price_adjustment: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VehicleTrim {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Product {
   id: number;
   name: string;
   description?: string;
   price: number;
   category: string;
-  vehicle_trim?: string;
+  vehicle_trim?: VehicleTrim;
+  variations?: ProductVariation[];
   images?: string[] | any[];
   stock?: number;
   created_at: string;
@@ -126,6 +146,28 @@ class ShopGalleryApi {
       return response.data;
     } catch (error) {
       console.error('❌ ShopGalleryApi - getProducts error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get a single product by ID with variations
+   */
+  async getProductById(id: number): Promise<Product> {
+    try {
+      console.log('🛍️ ShopGalleryApi - getProductById called with ID:', id);
+      console.log('🔗 Request URL:', `${this.baseUrl}/products/${id}`);
+
+      const response = await api.get<ApiResponse<Product>>(
+        `${this.baseUrl}/products/${id}`
+      );
+
+      console.log('✅ ShopGalleryApi - getProductById response:', response.data);
+      console.log('📦 Product details:', response.data.data);
+
+      return response.data.data!;
+    } catch (error) {
+      console.error(`❌ ShopGalleryApi - getProductById error for ID ${id}:`, error);
       throw error;
     }
   }

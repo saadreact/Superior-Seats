@@ -90,13 +90,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/orders',
     },
 
+  
     {
       text: 'Products',
-      icon: <InventoryIcon />,
-      href: '/admin/products',
-    },
-    {
-      text: 'Products 2',
       icon: <Inventory2Icon />,
       href: '/admin/products-2',
     },

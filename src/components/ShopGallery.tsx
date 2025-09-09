@@ -62,7 +62,7 @@ import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { mainCategories, subCategories } from '@/data/ShopGallery';
 // NEW IMPORTS: Added to enable communication with CustomizedSeat component
-import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
+import { useSelectedItem, ProductVariations, VariationOption } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
 import { useRouter } from 'next/navigation'; // Next.js router for programmatic navigation
 import { useDispatch, useSelector } from 'react-redux';
 import { addItem } from '@/store/cartSlice';
@@ -363,21 +363,19 @@ const ShopGallery = () => {
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
   const handleCustomize = (item: Product) => {
-    // Prepare images array with full URLs using the getProductImages function
-    const imagesArray = getProductImages(item);
+    console.log('🔄 ShopGallery - Setting selected item ID:', item.id);
     
-    setSelectedItem({ // FUNCTION: Set the selected item in global context
-      id: item.id,
-      title: item.name,
-      category: item.category || 'seat',
-      subCategory: item.category || 'seat',
-      mainCategory: 'seats',
-      image: imagesArray.length > 0 ? imagesArray[0] : '/placeholder-image.jpg',
-      images: imagesArray, // ADDED: Pass the full images array
-      description: item.description || '',
-      price: item.price.toString(),
+    // Set only the product ID in the context
+    setSelectedItem({ 
+      id: item.id
     });
-    router.push('/customize-your-seat'); // FUNCTION: Navigate to customization page
+    
+    // Save product ID to localStorage
+    localStorage.setItem('selectedProductId', item.id.toString());
+    console.log('💾 ShopGallery - Saved product ID to localStorage:', item.id);
+    
+    // Navigate to customization page
+    router.push('/customize-your-seat');
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {

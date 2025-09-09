@@ -19,6 +19,7 @@ import {
   Checkbox,
   ListItemText,
   Chip,
+  FormControlLabel,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -34,8 +35,13 @@ const CreateHeatOptionPage = () => {
     name: '',
     description: '',
     image: null as File | null,
-    price_tier_ids: [] as number[]
+    cost: 0,
+    price: 0,
+    price_tier_ids: [] as number[],
+    price_adjustments: {} as Record<string, number>
   });
+  
+  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
   
   const [priceTiers, setPriceTiers] = useState<Array<{id: number, name: string, display_name: string}>>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -63,6 +69,30 @@ const CreateHeatOptionPage = () => {
     setFormData(prev => ({ ...prev, price_tier_ids: value }));
   };
 
+  const handlePriceAdjustmentChange = (tierId: number, adjustment: number) => {
+    setFormData(prev => ({
+      ...prev,
+      price_adjustments: {
+        ...prev.price_adjustments,
+        [tierId.toString()]: adjustment
+      }
+    }));
+  };
+
+  const handleEnablePriceTiersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setEnablePriceTiers(checked);
+    
+    // Clear price tiers and adjustments when disabled
+    if (!checked) {
+      setFormData(prev => ({
+        ...prev,
+        price_tier_ids: [],
+        price_adjustments: {}
+      }));
+    }
+  };
+
   useEffect(() => {
     const loadPriceTiers = async () => {
       try {
@@ -88,6 +118,16 @@ const CreateHeatOptionPage = () => {
       return;
     }
 
+    if (formData.cost <= 0) {
+      setError('Cost must be greater than 0');
+      return;
+    }
+
+    if (formData.price <= 0) {
+      setError('Price must be greater than 0');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -97,7 +137,10 @@ const CreateHeatOptionPage = () => {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         image: formData.image,
-        price_tier_ids: formData.price_tier_ids.length > 0 ? formData.price_tier_ids : []
+        cost: formData.cost,
+        price: formData.price,
+        price_tier_ids: enablePriceTiers && formData.price_tier_ids.length > 0 ? formData.price_tier_ids : [],
+        price_adjustments: enablePriceTiers && Object.keys(formData.price_adjustments).length > 0 ? formData.price_adjustments : undefined
       };
       
       console.log('Submitting heat option data:', submissionData);
@@ -157,9 +200,7 @@ const CreateHeatOptionPage = () => {
           </Button>
         </Box>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-          Create New Heat Option
-        </Typography>
+       
 
         {/* Alerts */}
         {error && (
@@ -202,6 +243,34 @@ const CreateHeatOptionPage = () => {
                   rows={3}
                   placeholder="Enter description (optional)"
                 />
+
+                {/* Pricing Information */}
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
+                  Pricing Information
+                </Typography>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter wholesale cost"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <TextField
+                    label="Price (Retail)"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                </Box>
 
                 {/* Image Upload */}
                 <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
@@ -246,32 +315,81 @@ const CreateHeatOptionPage = () => {
                   Price Tiers
                 </Typography>
 
-                <FormControl fullWidth>
-                  <InputLabel>Select Price Tiers</InputLabel>
-                  <Select
-                    multiple
-                    value={formData.price_tier_ids}
-                    onChange={handlePriceTierChange}
-                    input={<OutlinedInput label="Select Price Tiers" />}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {selected.map((value) => {
-                          const tier = priceTiers.find(t => t.id === value);
-                          return (
-                            <Chip key={value} label={tier?.display_name || value} size="small" />
-                          );
-                        })}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={enablePriceTiers}
+                      onChange={handleEnablePriceTiersChange}
+                      color="primary"
+                    />
+                  }
+                  label="Enable Price Tiers"
+                />
+
+                {enablePriceTiers && (
+                  <Box>
+                    <FormControl fullWidth>
+                      <InputLabel>Select Price Tiers</InputLabel>
+                      <Select
+                        multiple
+                        value={formData.price_tier_ids}
+                        onChange={handlePriceTierChange}
+                        input={<OutlinedInput label="Select Price Tiers" />}
+                        renderValue={(selected) => (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {selected.map((value) => {
+                              const tier = priceTiers.find(t => t.id === value);
+                              return (
+                                <Chip key={value} label={tier?.display_name || value} size="small" />
+                              );
+                            })}
+                          </Box>
+                        )}
+                      >
+                        {priceTiers.map((tier) => (
+                          <MenuItem key={tier.id} value={tier.id}>
+                            <Checkbox checked={formData.price_tier_ids.indexOf(tier.id) > -1} />
+                            <ListItemText primary={tier.display_name} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    {/* Price Adjustments for Selected Tiers */}
+                    {formData.price_tier_ids.length > 0 && (
+                      <Box sx={{ mt: 3 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                          Price Adjustments by Tier
+                        </Typography>
+                        <Stack spacing={2}>
+                          {formData.price_tier_ids.map((tierId) => {
+                            const tier = priceTiers.find(t => t.id === tierId);
+                            return (
+                              <Box key={tierId} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Typography variant="body2" sx={{ minWidth: 120, fontWeight: 500 }}>
+                                  {tier?.display_name}:
+                                </Typography>
+                                <TextField
+                                  label="Price Adjustment"
+                                  type="number"
+                                  size="small"
+                                  value={formData.price_adjustments[tierId.toString()] || 0}
+                                  onChange={(e) => handlePriceAdjustmentChange(tierId, parseFloat(e.target.value) || 0)}
+                                  placeholder="0"
+                                  inputProps={{ step: 0.01 }}
+                                  sx={{ maxWidth: 150 }}
+                                />
+                                <Typography variant="body2" color="text.secondary">
+                                  (Additional amount for this tier)
+                                </Typography>
+                              </Box>
+                            );
+                          })}
+                        </Stack>
                       </Box>
                     )}
-                  >
-                    {priceTiers.map((tier) => (
-                      <MenuItem key={tier.id} value={tier.id}>
-                        <Checkbox checked={formData.price_tier_ids.indexOf(tier.id) > -1} />
-                        <ListItemText primary={tier.display_name} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                  </Box>
+                )}
 
                 {/* Action Buttons */}
                 <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>

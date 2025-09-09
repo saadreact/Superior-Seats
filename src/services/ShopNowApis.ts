@@ -241,6 +241,7 @@ class ShopNowApis {
       return response.data.data;
     } catch (error) {
       console.error('❌ ShopNowApis - Error fetching active categories:', error);
+      
       throw error;
     }
   }
