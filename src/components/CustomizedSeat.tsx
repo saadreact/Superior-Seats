@@ -5,7 +5,7 @@ import { Grid } from '@mui/material';
 import { testimonials } from '@/data/testimonials';
 import Header from '@/components/Header';
 // VEHICLE DATA: Keep static vehicle data as requested
-import { vehicleYears, vehicleMakes } from '@/data/CustomizedSeat';
+import { vehicleMakes } from '@/data/CustomizedSeat';
 // Removed API imports and interfaces - keeping fields static
 // NEW IMPORTS: Added to enable communication between ShopGallery and CustomizedSeat components
 import { useSelectedItem, ProductVariations, VariationOption } from '@/contexts/SelectedItemContext'; // Context hook to access selected item data
@@ -188,15 +188,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   }, [selectedItem]);
   
   // State for vehicle information
-  const [selectedYear, setSelectedYear] = useState('');
   const [selectedMake, setSelectedMake] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedTrim, setSelectedTrim] = useState('');
   
   // State for variation options
   const [selectedRecline, setSelectedRecline] = useState('');
-  const [selectedChildRestraint, setSelectedChildRestraint] = useState('');
-  const [selectedMotorBackRelaxer, setSelectedMotorBackRelaxer] = useState('');
   const [selectedLumber, setSelectedLumber] = useState('');
   const [selectedHeatingCooling, setSelectedHeatingCooling] = useState('');
   
@@ -206,7 +203,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [selectedSeatStyle, setSelectedSeatStyle] = useState('');
   const [selectedMaterialType, setSelectedMaterialType] = useState('');
   const [selectedIncludedArm, setSelectedIncludedArm] = useState('');
-  const [selectedExtraArm, setSelectedExtraArm] = useState('');
   
 
 
@@ -247,12 +243,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     const reclinePrice = selectedRecline ? 
       getPriceFromTiers(variations?.recline_types?.find((r: any) => r.id.toString() === selectedRecline)) : 0;
     
-    const childRestraintPrice = selectedChildRestraint ? 
-      getPriceFromTiers(variations?.arm_types?.find((a: any) => a.id.toString() === selectedChildRestraint)) : 0;
-    
-    const motorBackRelaxerPrice = selectedMotorBackRelaxer ? 
-      getPriceFromTiers(variations?.arm_types?.find((a: any) => a.id.toString() === selectedMotorBackRelaxer)) : 0;
-    
     const lumberPrice = selectedLumber ? 
       getPriceFromTiers(variations?.lumbar_types?.find((l: any) => l.id.toString() === selectedLumber)) : 0;
     
@@ -275,11 +265,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     const includedArmPrice = selectedIncludedArm ? 
       getPriceFromTiers(variations?.arm_types?.find((a: any) => a.id.toString() === selectedIncludedArm)) : 0;
     
-    const extraArmPrice = selectedExtraArm ? 
-      getPriceFromTiers(variations?.arm_types?.find((a: any) => a.id.toString() === selectedExtraArm)) : 0;
-    
     // Calculate total
-    return baseSeatPrice + materialPrice + colorPrice + stitchingPrice + reclinePrice + childRestraintPrice + motorBackRelaxerPrice + lumberPrice + heatingCoolingPrice + seatTypePrice + itemTypePrice + seatStylePrice + materialTypePrice + includedArmPrice + extraArmPrice;
+    return baseSeatPrice + materialPrice + colorPrice + stitchingPrice + reclinePrice + lumberPrice + heatingCoolingPrice + seatTypePrice + itemTypePrice + seatStylePrice + materialTypePrice + includedArmPrice;
   };
 
   const totalPrice = calculateTotalPrice();
@@ -905,30 +892,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                        </Typography>
                      
                                            <Box className={styles.formRow}>
-                                                 {/* Vehicle Year */}
-                         <Box className={styles.formField}>
-                           <Typography variant="body2" className={styles.fieldLabel}>
-                             Vehicle Year:
-                           </Typography>
-                                                       <FormControl className={styles.formControl}>
-                              <Select
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(e.target.value)}
-                                displayEmpty
-                                className={styles.selectField}
-                              >
-                               <MenuItem value="" disabled>
-                                Year
-                               </MenuItem>
-                               {vehicleYears.map((year) => (
-                                 <MenuItem key={year.id} value={year.id}>
-                                   {year.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
-                         </Box>
-
                                                  {/* Vehicle Make */}
                          <Box className={styles.formField}>
                            <Typography variant="body2" className={styles.fieldLabel}>
@@ -1039,66 +1002,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               )) || (
                                 <MenuItem value="none" disabled>
                                   No recline options available
-                                </MenuItem>
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Box>
-
-                        {/* Child Restraint */}
-                        <Box className={styles.formField}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="body2" className={styles.fieldLabel}>
-                              Child Restraint:
-                            </Typography>
-                          </Box>
-                          <FormControl className={styles.formControl}>
-                             <Select
-                               value={selectedChildRestraint}
-                               onChange={(e) => setSelectedChildRestraint(e.target.value)}
-                               displayEmpty
-                               className={styles.selectField}
-                             >
-                              <MenuItem value="" disabled>
-                                Child Restraint
-                              </MenuItem>
-                              {variations?.arm_types?.map((restraint: any) => (
-                                <MenuItem key={restraint.id} value={restraint.id.toString()}>
-                                  {restraint.name}
-                                </MenuItem>
-                              )) || (
-                                <MenuItem value="none" disabled>
-                                  No child restraint options available
-                                </MenuItem>
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Box>
-
-                        {/* 6 Motor Back Relaxer */}
-                        <Box className={styles.formField}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="body2" className={styles.fieldLabel}>
-                              6 Motor Back Relaxer:
-                            </Typography>
-                          </Box>
-                          <FormControl className={styles.formControl}>
-                             <Select
-                               value={selectedMotorBackRelaxer}
-                               onChange={(e) => setSelectedMotorBackRelaxer(e.target.value)}
-                               displayEmpty
-                               className={styles.selectField}
-                             >
-                              <MenuItem value="" disabled>
-                                Motor Back Relaxer
-                              </MenuItem>
-                              {variations?.arm_types?.map((relaxer: any) => (
-                                <MenuItem key={relaxer.id} value={relaxer.id.toString()}>
-                                  {relaxer.name}
-                                </MenuItem>
-                              )) || (
-                                <MenuItem value="none" disabled>
-                                  No motor back relaxer options available
                                 </MenuItem>
                               )}
                             </Select>
@@ -1327,35 +1230,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                             </FormControl>
                           </Box>
 
-                          {/* Extra Arm */}
-                          <Box className={styles.formField}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography variant="body2" className={styles.fieldLabel}>
-                                Extra Arm:
-                              </Typography>
-                            </Box>
-                            <FormControl className={styles.formControl}>
-                               <Select
-                                 value={selectedExtraArm}
-                                 onChange={(e) => setSelectedExtraArm(e.target.value)}
-                                 displayEmpty
-                                 className={styles.selectField}
-                               >
-                                <MenuItem value="" disabled>
-                                  Extra Arm
-                                </MenuItem>
-                                {variations?.arm_types?.map((extraArm: any) => (
-                                  <MenuItem key={extraArm.id} value={extraArm.id.toString()}>
-                                    {extraArm.name}
-                                  </MenuItem>
-                                )) || (
-                                  <MenuItem value="none" disabled>
-                                    No extra arm options available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Box>
                        </Box>
                     </Box>
 

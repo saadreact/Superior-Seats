@@ -16,13 +16,9 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
-  InputAdornment,
 } from '@mui/material';
 import {
   Close as CloseIcon,
-  Edit as EditIcon,
-  Visibility,
-  VisibilityOff,
 } from '@mui/icons-material';
 import { customerAPI } from '@/api/customers';
 
@@ -31,7 +27,6 @@ const profileSchema = z.object({
   first_name: z.string().min(2, 'First name must be at least 2 characters'),
   last_name: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   address: z.string().min(5, 'Address must be at least 5 characters'),
   city: z.string().min(2, 'City must be at least 2 characters'),
@@ -55,7 +50,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [showPassword, setShowPassword] = useState(false);
 
   // Snackbar state
   const [snackbar, setSnackbar] = useState<{
@@ -73,7 +67,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     first_name: '',
     last_name: '',
     email: '',
-    password: '',
     phone: '',
     address: '',
     city: '',
@@ -109,7 +102,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         first_name: customerData.firstName || '',
         last_name: customerData.lastName || '',
         email: customerData.email || '',
-        password: '', // Don't load password for security
         phone: customerData.phone || '',
         address: customerData.address?.street || '',
         city: customerData.address?.city || '',
@@ -284,11 +276,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         PaperProps={{
           sx: {
             borderRadius: isMobile ? 0 : 2,
-            minHeight: isMobile ? '100vh' : 'auto',
-            maxWidth: isMobile ? '100%' : '450px',
+            minHeight: isMobile ? '100vh' : '650px',
+            maxWidth: isMobile ? '100%' : '550px',
             width: isMobile ? '100%' : '90%',
-            maxHeight: isMobile ? '100vh' : '90vh',
-            overflow: 'hidden',
+            maxHeight: isMobile ? '100vh' : '95vh',
+            display: 'flex',
+            flexDirection: 'column',
           },
         }}
       >
@@ -336,7 +329,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
+        <DialogContent sx={{ p: 0, flex: 1 }}>
           {loading ? (
             <Box sx={{ 
               display: 'flex', 
@@ -348,16 +341,20 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             </Box>
           ) : (
             <Box sx={{ 
-              py: { xs: 3, sm: 4, md: 5, lg: 0.1, xl: 0.8, xxl: 1},
-              pb: { xs: 4, sm: 5, md: 6, lg: 3, xl: 4, xxl: 5},
-              maxWidth: '400px',
+              py: { xs: 3, sm: 4, md: 4 },
+              px: { xs: 3, sm: 4, md: 4 },
+              maxWidth: '450px',
               mx: 'auto',
-              width: '100%'
+              width: '100%',
+              minHeight: '550px',
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1
             }}>
               <Typography 
                 variant="h6" 
                 sx={{ 
-                  mb: 1.5, 
+                  mb: 2, 
                   fontWeight: 600,
                   fontSize: { xs: '1rem', sm: '1.125rem' },
                   textAlign: 'center',
@@ -446,44 +443,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 }}
               />
 
-              <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                value={formData.password}
-                onChange={handleInputChange('password')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.password}
-                helperText={errors.password}
-                variant="outlined"
-                size="small"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        sx={{ color: 'text.secondary' }}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
 
               <TextField
                 fullWidth
@@ -611,36 +570,55 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               />
 
 
-              <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                width: '100%', 
+                mt: 'auto',
+                pt: 3,
+                pb: 2
+              }}>
                 <Button
                   variant="contained"
                   onClick={handleSubmit}
                   disabled={saving}
-                  size="medium"
-                  disableRipple={false}
-                  TouchRippleProps={{
-                    center: true,
-                    color: 'rgba(255, 255, 255, 0.3)',
-                  }}
+                  size="large"
                   sx={{
-                    px: { xs: 4, sm: 6 },
-                    py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 },
+                    px: 6,
+                    py: 1.5,
                     borderRadius: 2,
                     textTransform: 'none',
-                    letterSpacing: 0.5,
-                    transition: 'all 0.3s ease',
-                    minWidth: { xs: 160, sm: 180 },
-                    width: { xs: '100%', sm: 'auto' },
-                    boxShadow: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    minWidth: 200,
+                    width: '100%',
+                    backgroundColor: '#DA291C',
+                    color: 'white',
+                    boxShadow: '0 4px 8px rgba(218, 41, 28, 0.3)',
                     '&:hover': {
+                      backgroundColor: '#B71C1C',
+                      boxShadow: '0 6px 12px rgba(218, 41, 28, 0.4)',
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#ccc',
+                      color: '#666',
                       boxShadow: 'none',
                     },
-                    '& .MuiTouchRipple-root': {
-                      borderRadius: 2,
-                    },
+                    transition: 'all 0.3s ease',
                   }}
                 >
-                  {saving ? <CircularProgress size={20} color="inherit" /> : 'Update Profile'}
+                  {saving ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CircularProgress size={20} color="inherit" />
+                      <span>Updating...</span>
+                    </Box>
+                  ) : (
+                    'Update Profile'
+                  )}
                 </Button>
               </Box>
             </Box>

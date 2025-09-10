@@ -39,6 +39,8 @@ interface SeatStitchPattern {
   name: string;
   description: string;
   image: string | null;
+  cost: number;
+  price: number;
   created_at: string;
   updated_at: string;
   price_tiers: Array<{ id: number; name: string; display_name: string }>;
@@ -247,6 +249,8 @@ const SeatStitchPatternsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
@@ -317,6 +321,16 @@ const SeatStitchPatternsPage = () => {
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
                           {item.description || 'No description'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${item.cost || 0}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${item.price || 0}
                         </Typography>
                       </TableCell>
                       <TableCell>

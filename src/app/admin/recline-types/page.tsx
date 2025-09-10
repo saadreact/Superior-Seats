@@ -39,6 +39,8 @@ interface ReclineType {
   name: string;
   description: string;
   image: string | null;
+  cost: number;
+  price: number;
   created_at: string;
   updated_at: string;
   created_by: number | null;
@@ -265,6 +267,8 @@ const ReclineTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
@@ -356,6 +360,16 @@ const ReclineTypesPage = () => {
                           }}
                         >
                           {reclineType.description || 'No description available'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${reclineType.cost || 0}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${reclineType.price || 0}
                         </Typography>
                       </TableCell>
                       <TableCell>

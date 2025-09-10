@@ -33,6 +33,9 @@ class MaterialTypesService {
     name: string;
     description?: string;
     image?: File | null;
+    cost: number;
+    price: number;
+    is_active?: boolean;
     price_tier_ids: number[];
   }) {
     try {
@@ -41,6 +44,9 @@ class MaterialTypesService {
         const formData = new FormData();
         formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        formData.append('cost', data.cost.toString());
+        formData.append('price', data.price.toString());
+        if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
         
         // Append single image (not as array) - material types have only one image
         formData.append('image', data.image);
@@ -77,7 +83,15 @@ class MaterialTypesService {
         return response.data;
       } else {
         // Fallback to JSON if no image
-        const response = await api.post('/material-types', data);
+        const jsonData = {
+          name: data.name,
+          description: data.description,
+          cost: data.cost,
+          price: data.price,
+          is_active: data.is_active,
+          price_tier_ids: data.price_tier_ids
+        };
+        const response = await api.post('/material-types', jsonData);
         return response.data?.data || response.data;
       }
     } catch (error: any) {
@@ -93,6 +107,9 @@ class MaterialTypesService {
     name?: string;
     description?: string;
     image?: File | null;
+    cost?: number;
+    price?: number;
+    is_active?: boolean;
     price_tier_ids?: number[];
   }) {
     try {
@@ -101,6 +118,9 @@ class MaterialTypesService {
         const formData = new FormData();
         if (data.name) formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        if (data.cost !== undefined) formData.append('cost', data.cost.toString());
+        if (data.price !== undefined) formData.append('price', data.price.toString());
+        if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
         
         // Append single image (not as array) - material types have only one image
         formData.append('image', data.image);
@@ -139,9 +159,43 @@ class MaterialTypesService {
         }
         return response.data;
       } else {
-        // Fallback to JSON if no image
-        const response = await api.put(`/material-types/${id}`, data);
-        return response.data?.data || response.data;
+        // Use FormData even without image to ensure proper handling
+        const formData = new FormData();
+        if (data.name) formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        if (data.cost !== undefined) formData.append('cost', data.cost.toString());
+        if (data.price !== undefined) formData.append('price', data.price.toString());
+        if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
+        
+        // Append price tier IDs as array
+        if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
+          data.price_tier_ids.forEach(id => {
+            formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Use POST with _method: PUT for FormData (Laravel convention)
+        formData.append('_method', 'PUT');
+        
+        // Debug: Log FormData contents
+        console.log('Material Type Update FormData (no image) being sent:');
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}: ${value}`);
+        }
+        
+        const response = await api.post(`/material-types/${id}`, formData, {
+          headers: {
+            // Don't set Content-Type for FormData - let browser set it with boundary
+            'Content-Type': undefined, // Explicitly remove Content-Type to let browser set it
+          },
+        });
+        
+        if (response.data && response.data.data) {
+          return response.data.data;
+        } else if (response.data) {
+          return response.data;
+        }
+        return response.data;
       }
     } catch (error: any) {
       console.error('Error updating material type:', error);

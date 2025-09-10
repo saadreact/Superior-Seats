@@ -39,6 +39,8 @@ interface LumbarType {
   name: string;
   description: string;
   image: string;
+  cost: number;
+  price: number;
   is_active: boolean;
   created_by: number;
   created_at: string;
@@ -54,14 +56,6 @@ interface LumbarType {
     created_at: string;
     updated_at: string;
   };
-  price_tiers: Array<{
-    id: number;
-    name: string;
-    display_name: string;
-    discount_off_retail_price: string;
-    created_at: string;
-    updated_at: string;
-  }>;
 }
 
 const LumbarTypesPage = () => {
@@ -261,8 +255,8 @@ const LumbarTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                   </TableRow>
@@ -348,21 +342,13 @@ const LumbarTypesPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                          {lumbartypes.price_tiers?.map((tier) => (
-                            <Chip
-                              key={tier.id}
-                              label={tier.display_name}
-                              size="small"
-                              variant="outlined"
-                              sx={{ fontSize: '0.75rem' }}
-                            />
-                          )) || 'No price tiers'}
-                        </Stack>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${lumbartypes.cost || 0}
+                        </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {lumbartypes.creator?.username || 'Unknown'}
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${lumbartypes.price || 0}
                         </Typography>
                       </TableCell>
                       <TableCell>

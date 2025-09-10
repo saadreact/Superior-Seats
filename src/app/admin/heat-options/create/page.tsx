@@ -20,6 +20,7 @@ import {
   ListItemText,
   Chip,
   FormControlLabel,
+  Divider,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -216,14 +217,15 @@ const CreateHeatOptionPage = () => {
         )}
 
         {/* Form */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Paper sx={{ p: 4, maxWidth: 800, width: '100%' }}>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={3}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Basic Information */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1 }}>
-                  Basic Information
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Basic Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
                 
                 <TextField
                   label="Name"
@@ -232,6 +234,7 @@ const CreateHeatOptionPage = () => {
                   required
                   fullWidth
                   placeholder="Enter heat option name"
+                  sx={{ mb: 3 }}
                 />
 
                 <TextField
@@ -243,11 +246,14 @@ const CreateHeatOptionPage = () => {
                   rows={3}
                   placeholder="Enter description (optional)"
                 />
+                </Box>
 
                 {/* Pricing Information */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Pricing Information
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Pricing Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
@@ -271,12 +277,15 @@ const CreateHeatOptionPage = () => {
                     inputProps={{ min: 0, step: 0.01 }}
                   />
                 </Box>
+                </Box>
 
-                {/* Image Upload */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Image
-                </Typography>
-
+                {/* Image Upload Field */}
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Image
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+                
                 <Box>
                   <input
                     accept="image/*"
@@ -294,26 +303,30 @@ const CreateHeatOptionPage = () => {
                       {formData.image ? `Image Selected: ${formData.image.name}` : 'Upload Image'}
                     </Button>
                   </label>
+                  
                   {imagePreview && (
                     <Box sx={{ mt: 2 }}>
                       <img
                         src={imagePreview}
                         alt="Preview"
                         style={{
-                          maxWidth: '200px',
-                          maxHeight: '200px',
-                          objectFit: 'cover',
-                          borderRadius: '8px'
+                          maxWidth: '100%',
+                          maxHeight: 200,
+                          borderRadius: 8,
+                          border: '1px solid #e0e0e0'
                         }}
                       />
                     </Box>
                   )}
                 </Box>
+                </Box>
 
                 {/* Price Tiers */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Price Tiers
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Price Tiers
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
 
                 <FormControlLabel
                   control={
@@ -328,94 +341,67 @@ const CreateHeatOptionPage = () => {
 
                 {enablePriceTiers && (
                   <Box>
-                    <FormControl fullWidth>
-                      <InputLabel>Select Price Tiers</InputLabel>
-                      <Select
-                        multiple
-                        value={formData.price_tier_ids}
-                        onChange={handlePriceTierChange}
-                        input={<OutlinedInput label="Select Price Tiers" />}
-                        renderValue={(selected) => (
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {selected.map((value) => {
-                              const tier = priceTiers.find(t => t.id === value);
-                              return (
-                                <Chip key={value} label={tier?.display_name || value} size="small" />
-                              );
-                            })}
-                          </Box>
-                        )}
-                      >
-                        {priceTiers.map((tier) => (
-                          <MenuItem key={tier.id} value={tier.id}>
-                            <Checkbox checked={formData.price_tier_ids.indexOf(tier.id) > -1} />
-                            <ListItemText primary={tier.display_name} />
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-
-                    {/* Price Adjustments for Selected Tiers */}
-                    {formData.price_tier_ids.length > 0 && (
-                      <Box sx={{ mt: 3 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
-                          Price Adjustments by Tier
-                        </Typography>
-                        <Stack spacing={2}>
-                          {formData.price_tier_ids.map((tierId) => {
-                            const tier = priceTiers.find(t => t.id === tierId);
-                            return (
-                              <Box key={tierId} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Typography variant="body2" sx={{ minWidth: 120, fontWeight: 500 }}>
-                                  {tier?.display_name}:
-                                </Typography>
-                                <TextField
-                                  label="Price Adjustment"
-                                  type="number"
-                                  size="small"
-                                  value={formData.price_adjustments[tierId.toString()] || 0}
-                                  onChange={(e) => handlePriceAdjustmentChange(tierId, parseFloat(e.target.value) || 0)}
-                                  placeholder="0"
-                                  inputProps={{ step: 0.01 }}
-                                  sx={{ maxWidth: 150 }}
-                                />
-                                <Typography variant="body2" color="text.secondary">
-                                  (Additional amount for this tier)
-                                </Typography>
-                              </Box>
-                            );
-                          })}
-                        </Stack>
-                      </Box>
-                    )}
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                      Tier Pricing
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <TextField
+                        label="Retail Price"
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                        required
+                        fullWidth
+                        placeholder="Enter retail price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                      <TextField
+                        label="Wholesale Price"
+                        type="number"
+                        value={formData.cost}
+                        onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                        required
+                        fullWidth
+                        placeholder="Enter wholesale price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                    </Box>
                   </Box>
                 )}
+                </Box>
 
                 {/* Action Buttons */}
-                <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                    disabled={loading}
-                    sx={{ minWidth: 150, py: 1.5 }}
-                  >
-                    {loading ? 'Creating...' : 'Create Heat Option'}
-                  </Button>
-                  
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 2, 
+                  justifyContent: 'flex-end',
+                  flexDirection: { xs: 'column', sm: 'row' }
+                }}>
                   <Button
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
-                    sx={{ minWidth: 120, py: 1.5 }}
                   >
                     Cancel
                   </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    disabled={loading}
+                    sx={{
+                      backgroundColor: '#DA291C',
+                      '&:hover': {
+                        backgroundColor: '#B71C1C',
+                      },
+                    }}
+                  >
+                    {loading ? 'Creating...' : 'Create Heat Option'}
+                  </Button>
                 </Box>
-              </Stack>
-            </form>
-          </Paper>
-        </Box>
+            </Box>
+          </form>
+        </Paper>
       </Box>
     </AdminLayout>
   );

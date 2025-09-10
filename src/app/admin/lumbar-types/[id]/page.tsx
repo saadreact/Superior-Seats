@@ -19,6 +19,8 @@ interface LumbarType {
   id: number;
   name: string;
   description: string;
+  cost: number;
+  price: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -145,6 +147,30 @@ const LumbarTypeDetailPage = () => {
                   <Typography variant="body1" color="text.secondary">
                     {lumbartypes.description || 'No description available'}
                   </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Pricing
+                  </Typography>
+                  <Stack spacing={1}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Cost (Wholesale)
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        ${lumbartypes.cost || 0}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Price (Retail)
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        ${lumbartypes.price || 0}
+                      </Typography>
+                    </Box>
+                  </Stack>
                 </Box>
               </Stack>
             </Box>
