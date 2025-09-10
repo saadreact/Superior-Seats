@@ -37,7 +37,9 @@
 
     "three": "^0.178.0",
     "typescript": "^5.8.3",
-    "zod": "^4.0.14"
+    "zod": "^4.0.14",
+    "square": "^39.0.0",
+    "@square/web-payments-sdk-types": "^1.5.2"
   },
   "keywords": [
     "nextjs",

@@ -105,6 +105,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <MoneyIcon />,
       href: '/admin/price-tiers',
     },
+    {
+      text: 'Payments',
+      icon: <MoneyIcon />,
+      href: '/admin/payments',
+    },
   
   ];
 
