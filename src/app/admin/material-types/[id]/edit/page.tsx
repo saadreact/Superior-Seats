@@ -9,8 +9,6 @@ import {
   Button,
   Paper,
   Alert,
-  FormControlLabel,
-  Switch,
   Stack,
   CircularProgress,
   FormControl,
@@ -20,7 +18,9 @@ import {
   OutlinedInput,
   Checkbox,
   ListItemText,
-  Chip
+  Chip,
+  Divider,
+  FormControlLabel,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -43,29 +43,50 @@ const EditMaterialTypePage = () => {
     name: '',
     description: '',
     image: null as File | null,
-    is_active: true,
-    price_tier_ids: [] as number[]
+    cost: 0,
+    price: 0
   });
+  
+  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
 
   useEffect(() => {
     loadMaterialType();
-    loadPriceTiers();
   }, [id]);
+
+  // Debug form data changes
+  useEffect(() => {
+    console.log('Form data changed:', formData);
+    console.log('Image field type:', typeof formData.image);
+    console.log('Image field value:', formData.image);
+    if (formData.image) {
+      console.log('Image is File:', formData.image instanceof File);
+      console.log('Image constructor:', formData.image.constructor?.name);
+    }
+  }, [formData]);
 
   const loadMaterialType = async () => {
     try {
       setInitialLoading(true);
       setError(null);
       
-      const materialtypes = await materialTypesService.getMaterialType(parseInt(id));
+      const materialType = await materialTypesService.getMaterialType(parseInt(id));
+      console.log('Loaded material type:', materialType);
+      console.log('Price tiers from API:', materialType.price_tiers);
+      
+      const priceTierIds = materialType.price_tiers?.map((tier: any) => tier.id) || [];
+      console.log('Extracted price tier IDs:', priceTierIds);
+      console.log('Price tier IDs type:', typeof priceTierIds);
+      console.log('Price tier IDs is array:', Array.isArray(priceTierIds));
+      
       setFormData({
-        name: materialtypes.name || '',
-        description: materialtypes.description || '',
+        name: materialType.name || '',
+        description: materialType.description || '',
         image: null,
-        is_active: materialtypes.is_active ?? true,
-        price_tier_ids: materialtypes.price_tiers?.map((tier: any) => tier.id) || []
+        cost: materialType.cost || 0,
+        price: materialType.price || 0
       });
-      setCurrentImage(materialtypes.image);
+      setEnablePriceTiers(priceTierIds.length > 0);
+      setCurrentImage(materialType.image);
     } catch (err: any) {
       setError(err.message || 'Failed to load material type');
       console.error('Error loading material type:', err);
@@ -74,14 +95,7 @@ const EditMaterialTypePage = () => {
     }
   };
 
-  const loadPriceTiers = async () => {
-    try {
-      const response = await materialTypesService.getPriceTiers();
-      setPriceTiers(response || []);
-    } catch (err) {
-      console.error('Error loading price tiers:', err);
-    }
-  };
+  // Removed loadPriceTiers function as we're using simplified pricing
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -93,7 +107,19 @@ const EditMaterialTypePage = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      console.log('Image file selected:', file);
+      console.log('File type:', typeof file);
+      console.log('File instanceof File:', file instanceof File);
+      console.log('File name:', file.name);
+      console.log('File size:', file.size);
+      
       setFormData(prev => ({ ...prev, image: file }));
+      
+      // Verify the state was updated correctly
+      setTimeout(() => {
+        console.log('FormData after image update:', formData);
+      }, 0);
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -102,12 +128,11 @@ const EditMaterialTypePage = () => {
     }
   };
 
-  const handlePriceTierChange = (event: any) => {
-    const value = event.target.value;
-    setFormData(prev => ({
-      ...prev,
-      price_tier_ids: typeof value === 'string' ? value.split(',').map(Number) : value
-    }));
+  // Removed handlePriceTierChange function as we're using simplified pricing
+
+  const handleEnablePriceTiersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setEnablePriceTiers(checked);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,6 +140,23 @@ const EditMaterialTypePage = () => {
     
     if (!formData.name.trim()) {
       setError('Name is required');
+      return;
+    }
+
+    // Additional validation to ensure image is a File object if provided
+    if (formData.image && !(formData.image instanceof File)) {
+      console.error('Image is not a File object:', formData.image);
+      setError('Invalid image file. Please select a valid image.');
+      return;
+    }
+
+    if (formData.cost <= 0) {
+      setError('Cost must be greater than 0');
+      return;
+    }
+
+    if (formData.price <= 0) {
+      setError('Price must be greater than 0');
       return;
     }
 
@@ -126,11 +168,48 @@ const EditMaterialTypePage = () => {
         name: formData.name,
         description: formData.description,
         image: formData.image,
-        is_active: formData.is_active,
-        price_tier_ids: formData.price_tier_ids
+        cost: formData.cost,
+        price: formData.price,
+        price_tier_ids: [],
+        price_adjustments: undefined,
+        // Include current image path if no new image is selected
+        current_image: !formData.image && currentImage ? currentImage : undefined
       };
 
-      console.log('Submitting data:', submissionData);
+      // Additional debugging for submission data
+      console.log('=== SUBMISSION DEBUG ===');
+      console.log('FormData.image type:', typeof formData.image);
+      console.log('FormData.image value:', formData.image);
+      console.log('FormData.image instanceof File:', formData.image instanceof File);
+      console.log('SubmissionData.image type:', typeof submissionData.image);
+      console.log('SubmissionData.image value:', submissionData.image);
+      console.log('Current image path:', currentImage);
+      console.log('=== END SUBMISSION DEBUG ===');
+
+      // Debug logging
+      console.log('Form Data:', formData);
+      console.log('Image File:', formData.image);
+      console.log('Image File Name:', formData.image?.name);
+      console.log('Image File Size:', formData.image?.size);
+      console.log('Image File Type:', formData.image?.type);
+      console.log('Image instanceof File:', formData.image instanceof File);
+      console.log('Image constructor:', formData.image?.constructor?.name);
+      console.log('Submission Data:', submissionData);
+
+      // Create FormData manually to debug
+      const debugFormData = new FormData();
+      if (submissionData.name) debugFormData.append('name', submissionData.name);
+      if (submissionData.description) debugFormData.append('description', submissionData.description);
+      if (submissionData.image) debugFormData.append('image', submissionData.image);
+      if (submissionData.current_image) debugFormData.append('current_image', submissionData.current_image);
+      debugFormData.append('cost', submissionData.cost.toString());
+      debugFormData.append('price', submissionData.price.toString());
+
+      // Log FormData contents
+      console.log('Debug FormData entries:');
+      for (let [key, value] of debugFormData.entries()) {
+        console.log(`${key}:`, value);
+      }
       
       await materialTypesService.updateMaterialType(parseInt(id), submissionData);
       setSuccess('Material Type updated successfully!');
@@ -192,14 +271,15 @@ const EditMaterialTypePage = () => {
         )}
 
         {/* Form */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Paper sx={{ p: 4, maxWidth: 800, width: '100%' }}>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={3}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Basic Information */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1 }}>
-                  Basic Information
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Basic Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
                 
                 <TextField
                   label="Name"
@@ -208,6 +288,7 @@ const EditMaterialTypePage = () => {
                   required
                   fullWidth
                   placeholder="Enter material type name"
+                  sx={{ mb: 3 }}
                 />
 
                 <TextField
@@ -219,11 +300,45 @@ const EditMaterialTypePage = () => {
                   rows={3}
                   placeholder="Enter description (optional)"
                 />
+                </Box>
+
+                {/* Pricing Information */}
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Pricing Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter wholesale cost"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <TextField
+                    label="Price (Retail)"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                </Box>
+                </Box>
 
                 {/* Image Management */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, mt: 2 }}>
-                  Image
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Image
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
                 
                 <Box>
                   {/* Current Image */}
@@ -243,7 +358,26 @@ const EditMaterialTypePage = () => {
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder-image.png';
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            const fallback = document.createElement('div');
+                            fallback.textContent = 'Image not available';
+                            fallback.style.cssText = `
+                              max-width: 100%;
+                              max-height: 200px;
+                              border-radius: 8px;
+                              border: 1px solid #e0e0e0;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              background-color: #f5f5f5;
+                              color: #666;
+                              font-size: 14px;
+                              padding: 20px;
+                            `;
+                            parent.appendChild(fallback);
+                          }
                         }}
                       />
                     </Box>
@@ -286,80 +420,89 @@ const EditMaterialTypePage = () => {
                     </Box>
                   )}
                 </Box>
+                </Box>
 
                 {/* Price Tiers */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, mt: 2 }}>
-                  Price Tiers
-                </Typography>
-                
-                <FormControl fullWidth>
-                  <InputLabel>Select Price Tiers</InputLabel>
-                  <Select
-                    multiple
-                    value={formData.price_tier_ids}
-                    onChange={handlePriceTierChange}
-                    input={<OutlinedInput label="Select Price Tiers" />}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {selected.map((value) => {
-                          const tier = priceTiers.find(t => t.id === value);
-                          return (
-                            <Chip key={value} label={tier?.display_name || value} size="small" />
-                          );
-                        })}
-                      </Box>
-                    )}
-                  >
-                    {priceTiers.map((tier) => (
-                      <MenuItem key={tier.id} value={tier.id}>
-                        <Checkbox checked={formData.price_tier_ids.indexOf(tier.id) > -1} />
-                        <ListItemText primary={tier.display_name} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {/* Status */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Status
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Price Tiers
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
 
                 <FormControlLabel
                   control={
-                    <Switch
-                      checked={formData.is_active}
-                      onChange={(e) => handleInputChange('is_active', e.target.checked)}
+                    <Checkbox
+                      checked={enablePriceTiers}
+                      onChange={handleEnablePriceTiersChange}
                       color="primary"
                     />
                   }
-                  label="Active"
+                  label="Enable Price Tiers"
                 />
 
+                {enablePriceTiers && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                      Tier Pricing
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <TextField
+                        label="Retail Price"
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                        required
+                        fullWidth
+                        placeholder="Enter retail price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                      <TextField
+                        label="Wholesale Price"
+                        type="number"
+                        value={formData.cost}
+                        onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                        required
+                        fullWidth
+                        placeholder="Enter wholesale price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                    </Box>
+                  </Box>
+                )}
+                </Box>
+
                 {/* Action Buttons */}
-                <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                    disabled={loading}
-                    sx={{ minWidth: 150, py: 1.5 }}
-                  >
-                    {loading ? 'Updating...' : 'Update Material Type'}
-                  </Button>
-                  
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 2, 
+                  justifyContent: 'flex-end',
+                  flexDirection: { xs: 'column', sm: 'row' }
+                }}>
                   <Button
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
-                    sx={{ minWidth: 120, py: 1.5 }}
                   >
                     Cancel
                   </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    disabled={loading}
+                    sx={{
+                      backgroundColor: '#DA291C',
+                      '&:hover': {
+                        backgroundColor: '#B71C1C',
+                      },
+                    }}
+                  >
+                    {loading ? 'Updating...' : 'Update Material Type'}
+                  </Button>
                 </Box>
-              </Stack>
-            </form>
-          </Paper>
-        </Box>
+            </Box>
+          </form>
+        </Paper>
       </Box>
     </AdminLayout>
   );

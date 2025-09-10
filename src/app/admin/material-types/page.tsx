@@ -39,6 +39,8 @@ interface MaterialType {
   name: string;
   description: string;
   image: string | null;
+  cost: number;
+  price: number;
   created_at: string;
   updated_at: string;
   created_by: number | null;
@@ -53,14 +55,6 @@ interface MaterialType {
     created_at: string;
     updated_at: string;
   } | null;
-  price_tiers: Array<{
-    id: number;
-    name: string;
-    display_name: string;
-    discount_off_retail_price: string;
-    created_at: string;
-    updated_at: string;
-  }>;
 }
 
 const MaterialTypesPage = () => {
@@ -85,6 +79,13 @@ const MaterialTypesPage = () => {
       return `https://superiorseats.ali-khalid.com/${materialType.image}`;
     }
     return null;
+  };
+
+  // Helper function to safely format price values
+  const formatPrice = (value: number | string | undefined): string => {
+    if (value === undefined || value === null) return '0.00';
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(numValue) ? '0.00' : numValue.toFixed(2);
   };
 
   const loadMaterialTypes = useCallback(async () => {
@@ -265,7 +266,8 @@ const MaterialTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                   </TableRow>
@@ -358,23 +360,14 @@ const MaterialTypesPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                          {materialtypes.price_tiers?.length > 0 ? (
-                            materialtypes.price_tiers.map((tier) => (
-                              <Chip
-                                key={tier.id}
-                                label={tier.display_name}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: '0.75rem' }}
-                              />
-                            ))
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              No price tiers
-                            </Typography>
-                          )}
-                        </Stack>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${formatPrice(materialtypes.cost)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${formatPrice(materialtypes.price)}
+                        </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

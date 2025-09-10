@@ -33,6 +33,8 @@ class SeatStitchPatternService {
     name: string;
     description?: string;
     image: File;
+    cost: number;
+    price: number;
     price_tier_ids: number[];
   }) {
     try {
@@ -41,6 +43,8 @@ class SeatStitchPatternService {
         const formData = new FormData();
         formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        formData.append('cost', data.cost.toString());
+        formData.append('price', data.price.toString());
         
         // Append single image (not as array) - seat stitch patterns have only one image
         formData.append('image', data.image);
@@ -77,7 +81,14 @@ class SeatStitchPatternService {
         return response.data;
       } else {
         // Fallback to JSON if no image
-        const response = await api.post('/seat-stitch-patterns', data);
+        const jsonData = {
+          name: data.name,
+          description: data.description,
+          cost: data.cost,
+          price: data.price,
+          price_tier_ids: data.price_tier_ids
+        };
+        const response = await api.post('/seat-stitch-patterns', jsonData);
         return response.data?.data || response.data;
       }
     } catch (error: any) {
@@ -93,6 +104,8 @@ class SeatStitchPatternService {
     name?: string;
     description?: string;
     image?: File | null;
+    cost?: number;
+    price?: number;
     price_tier_ids?: number[];
   }) {
     try {
@@ -101,6 +114,8 @@ class SeatStitchPatternService {
         const formData = new FormData();
         if (data.name) formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        if (data.cost !== undefined) formData.append('cost', data.cost.toString());
+        if (data.price !== undefined) formData.append('price', data.price.toString());
         
         // Append single image (not as array) - seat stitch patterns have only one image
         formData.append('image', data.image);
@@ -140,7 +155,14 @@ class SeatStitchPatternService {
         return response.data;
       } else {
         // Fallback to JSON if no image
-        const response = await api.put(`/seat-stitch-patterns/${id}`, data);
+        const jsonData = {
+          name: data.name,
+          description: data.description,
+          cost: data.cost,
+          price: data.price,
+          price_tier_ids: data.price_tier_ids
+        };
+        const response = await api.put(`/seat-stitch-patterns/${id}`, jsonData);
         return response.data?.data || response.data;
       }
     } catch (error: any) {

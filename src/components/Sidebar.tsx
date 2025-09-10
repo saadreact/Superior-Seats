@@ -43,6 +43,7 @@ import {
   LocalOffer as PricingIcon,
   Style as StyleIcon,
   Build as FeatureIcon,
+  DirectionsCar as VehicleIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -169,6 +170,21 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Seat Types',
       icon: <ChairIcon />,
       href: '/admin/seat-types',
+    },
+    {
+      text: 'Vehicle Makes',
+      icon: <VehicleIcon />,
+      href: '/admin/vehicle-makes',
+    },
+    {
+      text: 'Vehicle Models',
+      icon: <VehicleIcon />,
+      href: '/admin/vehicle-models',
+    },
+    {
+      text: 'Vehicle Trims',
+      icon: <VehicleIcon />,
+      href: '/admin/vehicle-trims',
     },
     {
       text: 'Variations',
