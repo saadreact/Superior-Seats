@@ -10,10 +10,28 @@ import {
   Paper,
   Alert,
   Stack,
-  CircularProgress} from '@mui/material';
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
+  Chip,
+  Divider,
+  FormControlLabel,
+} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
+
+// Helper function to convert cost/price to number
+const parsePriceValue = (value: number | string | undefined): number => {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') return parseFloat(value) || 0;
+  return 0;
+};
 
 const EditArmTypePage = () => {
   const router = useRouter();
@@ -27,7 +45,12 @@ const EditArmTypePage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+    cost: 0,
+    price: 0
+  });
+  
+  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
 
   useEffect(() => {
     loadArmType();
@@ -39,9 +62,20 @@ const EditArmTypePage = () => {
       setError(null);
       
       const armType = await apiService.getArmType(parseInt(id));
+      console.log('Loaded arm type data:', armType);
+      
+      const costValue = parsePriceValue(armType.cost);
+      const priceValue = parsePriceValue(armType.price);
+      
       setFormData({
         name: armType.name || '',
-        description: armType.description || ''});
+        description: armType.description || '',
+        cost: costValue,
+        price: priceValue
+      });
+      
+      // Enable price tiers if cost or price is set
+      setEnablePriceTiers(costValue > 0 || priceValue > 0);
     } catch (err: any) {
       setError(err.message || 'Failed to load arm type');
       console.error('Error loading arm type:', err);
@@ -53,7 +87,13 @@ const EditArmTypePage = () => {
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value}));
+      [field]: field === 'cost' || field === 'price' ? (typeof value === 'number' ? value : 0) : value
+    }));
+  };
+
+  const handleEnablePriceTiersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setEnablePriceTiers(checked);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,12 +104,33 @@ const EditArmTypePage = () => {
       return;
     }
 
+    if (formData.cost < 0) {
+      setError('Cost cannot be negative');
+      return;
+    }
+
+    if (formData.price < 0) {
+      setError('Price cannot be negative');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       
-      await apiService.updateArmType(parseInt(id), formData);
-      setSuccess('Arm type updated successfully!');
+      const submissionData = {
+        name: formData.name,
+        description: formData.description,
+        cost: formData.cost,
+        price: formData.price,
+        price_tier_ids: [],
+        price_adjustments: undefined
+      };
+      
+      console.log('Updating arm type with data:', submissionData);
+      const result = await apiService.updateArmType(parseInt(id), submissionData);
+      console.log('Update arm type result:', result);
+      setSuccess('Arm Type updated successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
@@ -127,15 +188,16 @@ const EditArmTypePage = () => {
         )}
 
         {/* Form */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Paper sx={{ p: 4, maxWidth: 800, width: '100%' }}>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={3}>
-                {/* Basic Information */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {/* Basic Information */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                   Basic Information
                 </Typography>
-                
+                <Divider sx={{ mb: 3 }} />
+              
                 <TextField
                   label="Name"
                   value={formData.name}
@@ -143,6 +205,7 @@ const EditArmTypePage = () => {
                   required
                   fullWidth
                   placeholder="Enter arm type name"
+                  sx={{ mb: 3 }}
                 />
 
                 <TextField
@@ -154,32 +217,116 @@ const EditArmTypePage = () => {
                   rows={3}
                   placeholder="Enter description (optional)"
                 />
+              </Box>
 
-                {/* Action Buttons */}
-                <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                    disabled={loading}
-                    sx={{ minWidth: 150, py: 1.5 }}
-                  >
-                    {loading ? 'Updating...' : 'Update Arm Type'}
-                  </Button>
-                  
-                  <Button
-                    variant="outlined"
-                    onClick={handleBack}
-                    disabled={loading}
-                    sx={{ minWidth: 120, py: 1.5 }}
-                  >
-                    Cancel
-                  </Button>
+              {/* Pricing Information */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Pricing Information
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost ?? 0}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    fullWidth
+                    placeholder="Enter wholesale cost"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <TextField
+                    label="Price (Retail)"
+                    type="number"
+                    value={formData.price ?? 0}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                    fullWidth
+                    placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
                 </Box>
-              </Stack>
-            </form>
-          </Paper>
-        </Box>
+              </Box>
+
+              {/* Price Tiers */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Price Tiers
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={enablePriceTiers}
+                      onChange={handleEnablePriceTiersChange}
+                      color="primary"
+                    />
+                  }
+                  label="Enable Price Tiers"
+                />
+
+                {enablePriceTiers && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                      Tier Pricing
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <TextField
+                        label="Retail Price"
+                        type="number"
+                        value={formData.price ?? 0}
+                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                        fullWidth
+                        placeholder="Enter retail price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                      <TextField
+                        label="Wholesale Price"
+                        type="number"
+                        value={formData.cost ?? 0}
+                        onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                        fullWidth
+                        placeholder="Enter wholesale price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Action Buttons */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 2, 
+                justifyContent: 'flex-end',
+                flexDirection: { xs: 'column', sm: 'row' }
+              }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleBack}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  startIcon={<SaveIcon />}
+                  disabled={loading}
+                  sx={{
+                    backgroundColor: '#DA291C',
+                    '&:hover': {
+                      backgroundColor: '#B71C1C',
+                    },
+                  }}
+                >
+                  {loading ? 'Updating...' : 'Update Arm Type'}
+                </Button>
+              </Box>
+            </Box>
+          </form>
+        </Paper>
       </Box>
     </AdminLayout>
   );

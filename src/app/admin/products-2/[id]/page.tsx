@@ -83,11 +83,10 @@ interface Product {
   stock: number;
   images?: string[];
   is_active: boolean;
+  show_on_special_shop: boolean;
   created_at: string;
   updated_at: string;
-  vehicle_trim_id?: number | null;
   category_id?: number | null;
-  vehicle_trim?: any | null;
   primary_image?: {
     id: number;
     product_id: number;
@@ -217,7 +216,6 @@ const ProductDetailPage = () => {
       seatItemTypes: new Set<string>(),
       seatStyles: new Set<string>(),
       colors: new Set<string>(),
-      vehicleTrims: new Set<string>(),
     };
 
     variations.forEach(variation => {
@@ -231,7 +229,6 @@ const ProductDetailPage = () => {
       if (variation.seat_item_type) counts.seatItemTypes.add(variation.seat_item_type);
       if (variation.seat_style) counts.seatStyles.add(variation.seat_style);
       if (variation.color) counts.colors.add(variation.color);
-      if ((variation as any).vehicle_trim) counts.vehicleTrims.add((variation as any).vehicle_trim);
     });
 
     return {
@@ -245,7 +242,6 @@ const ProductDetailPage = () => {
       seatItemTypes: Array.from(counts.seatItemTypes),
       seatStyles: Array.from(counts.seatStyles),
       colors: Array.from(counts.colors),
-      vehicleTrims: Array.from(counts.vehicleTrims),
     };
   };
 
@@ -380,6 +376,16 @@ const ProductDetailPage = () => {
               label={product.is_active ? 'Active' : 'Inactive'}
               color={product.is_active ? 'success' : 'default'}
               sx={{ borderRadius: '20px' }}
+            />
+            <Chip 
+              icon={<TagIcon />}
+              label={(product as any).show_on_special_shop ? 'Special Shop' : 'Regular Product'}
+              sx={{ 
+                borderRadius: '20px',
+                bgcolor: (product as any).show_on_special_shop ? '#fef3c7' : '#f3f4f6',
+                color: (product as any).show_on_special_shop ? '#92400e' : '#374151',
+                border: (product as any).show_on_special_shop ? '1px solid #fbbf24' : '1px solid #d1d5db'
+              }}
             />
           </Stack>
         </Box>
@@ -544,6 +550,17 @@ const ProductDetailPage = () => {
                     <Chip
                       label={product.is_active ? 'Active' : 'Inactive'}
                       color={product.is_active ? 'success' : 'default'}
+                      size="small"
+                    />
+                  </Box>
+                  
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ color: '#64748b', mb: 1 }}>
+                      Shop Type
+                    </Typography>
+                    <Chip
+                      label={(product as any).show_on_special_shop ? 'Special Shop' : 'Regular Product'}
+                      color={(product as any).show_on_special_shop ? 'warning' : 'default'}
                       size="small"
                     />
                   </Box>
@@ -727,41 +744,6 @@ const ProductDetailPage = () => {
             </Card>
         </Box>
 
-        {/* Vehicle Information */}
-        {variationCounts.vehicleTrims.length > 0 && (
-          <Box sx={{ mt: 4 }}>
-            <Card sx={{ 
-              borderRadius: '16px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-            }}>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#1e293b' }}>
-                  Vehicle Information
-                </Typography>
-                
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-                  {/* Vehicle Details */}
-                  <Box sx={{ flex: { xs: '1', md: '1' } }}>
-                    <Stack spacing={2}>
-                      {variationCounts.vehicleTrims.length > 0 && (
-                        <Box>
-                          <Typography variant="subtitle2" sx={{ color: '#64748b', mb: 1 }}>
-                            Vehicle Trims ({variationCounts.vehicleTrims.length})
-                          </Typography>
-                          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                            {variationCounts.vehicleTrims.map((type, index) => (
-                              <Chip key={index} label={type} size="small" variant="outlined" />
-                            ))}
-                          </Stack>
-                        </Box>
-                      )}
-                    </Stack>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        )}
 
         {/* Variations List */}
         {product.variations && product.variations.length > 0 && (

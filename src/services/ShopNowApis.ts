@@ -74,6 +74,7 @@ export interface Product {
   price: string;
   stock: number;
   is_active: boolean;
+  show_on_special_shop?: boolean;
   created_at: string;
   updated_at: string;
   vehicle_trim_id: number;

@@ -82,6 +82,7 @@ export interface Product {
   stock: number;
   images?: string[];
   is_active: boolean;
+  show_on_special_shop: boolean;
   created_at: string;
   updated_at: string;
   vehicle_trim_id?: number | null;
@@ -120,6 +121,7 @@ export interface ProductData {
   price: number;
   stock: number;
   is_active: boolean;
+  show_on_special_shop?: boolean;
   category_id?: number;
   vehicle_trim_id?: number;
   images?: File[];
@@ -252,6 +254,7 @@ class ProductApi {
       formData.append("price", data.price.toString());
       formData.append("stock", data.stock.toString());
       formData.append("is_active", data.is_active ? "1" : "0");
+      formData.append("show_on_special_shop", data.show_on_special_shop ? "1" : "0");
 
       if (data.category_id) {
         formData.append("category_id", data.category_id.toString());
@@ -403,6 +406,8 @@ class ProductApi {
         formData.append("stock", data.stock.toString());
       if (data.is_active !== undefined)
         formData.append("is_active", data.is_active ? "1" : "0");
+      if (data.show_on_special_shop !== undefined)
+        formData.append("show_on_special_shop", data.show_on_special_shop ? "1" : "0");
 
       if (data.category_id !== undefined) {
         formData.append("category_id", data.category_id.toString());
