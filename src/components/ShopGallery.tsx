@@ -148,17 +148,17 @@ const ShopGallery = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch products
-      console.log('🚀 ShopGallery - Fetching products from API...');
-      const productsResponse = await shopGalleryApi.getProducts();
-      console.log('✅ ShopGallery - Products API Response:', productsResponse);
+      // Fetch special products only
+      console.log('🚀 ShopGallery - Fetching special products from API...');
+      const productsResponse = await shopGalleryApi.getSpecialProducts();
+      console.log('✅ ShopGallery - Special Products API Response:', productsResponse);
       
       if (productsResponse.status === 'success' && productsResponse.data) {
         setApiProducts(productsResponse.data);
-        console.log('📦 Products loaded:', productsResponse.data.length);
+        console.log('📦 Special products loaded:', productsResponse.data.length);
       } else {
-        setError('Failed to load products');
-        console.error('❌ Products API returned error status');
+        setError('Failed to load special products');
+        console.error('❌ Special Products API returned error status');
       }
       
       // Fetch price tiers (always fetch for potential wholesale customers)
@@ -470,7 +470,7 @@ const ShopGallery = () => {
                 mb: 2,
                 fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
               }}>
-                Loading products...
+                Loading special products...
               </Typography>
             </Box>
           )}

@@ -1100,3 +1100,88 @@
 .finalDivider {
   margin: 1.5rem 0;
 }
+
+/* Price Overlay Styles */
+.priceOverlay {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background-color: rgba(211, 47, 47, 0.9);
+  color: white;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: bold;
+  z-index: 2;
+  min-width: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+@media (min-width: 600px) {
+  .priceOverlay {
+    top: 3px;
+    right: 3px;
+    padding: 3px 5px;
+    font-size: 0.7rem;
+    min-width: 24px;
+  }
+}
+
+.priceText {
+  color: white;
+  font-weight: bold;
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+@media (min-width: 600px) {
+  .priceText {
+    font-size: 0.7rem;
+  }
+}
+
+/* Color Price Overlay - Special styling for color options */
+.colorPriceOverlay {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: rgba(211, 47, 47, 0.9);
+  color: white;
+  padding: 2px 4px;
+  border-radius: 50%;
+  font-size: 0.5rem;
+  font-weight: bold;
+  z-index: 2;
+  min-width: 16px;
+  min-height: 16px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  .colorPriceOverlay {
+    top: -10px;
+    right: -10px;
+    padding: 3px 5px;
+    font-size: 0.6rem;
+    min-width: 18px;
+    min-height: 18px;
+  }
+}
+
+.colorPriceText {
+  color: white;
+  font-weight: bold;
+  font-size: 0.5rem;
+  line-height: 1;
+}
+
+@media (min-width: 600px) {
+  .colorPriceText {
+    font-size: 0.6rem;
+  }
+}

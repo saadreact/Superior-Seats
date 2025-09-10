@@ -206,67 +206,101 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   
 
 
-  // Helper function to get price from price_tiers
-  const getPriceFromTiers = (item: any): number => {
-    if (!item?.price_tiers || item.price_tiers.length === 0) return 0;
+  // Helper function to get price from API response
+  const getPriceFromItem = (item: any): number => {
+    if (!item) return 0;
     
-    // Look for retail_price tier first, then any tier with pivot data
-    const retailTier = item.price_tiers.find((tier: any) => tier.name === 'retail_price');
-    if (retailTier?.pivot?.price_adjustment) {
-      return parseFloat(retailTier.pivot.price_adjustment) || 0;
+    // Use direct price field from API response (handle both string and number formats)
+    if (item.price !== undefined && item.price !== null) {
+      const price = typeof item.price === 'string' ? parseFloat(item.price) : Number(item.price);
+      return isNaN(price) ? 0 : price;
     }
     
-    // Fallback to any tier with pivot data
-    const tierWithPivot = item.price_tiers.find((tier: any) => tier.pivot?.price_adjustment);
-    if (tierWithPivot?.pivot?.price_adjustment) {
-      return parseFloat(tierWithPivot.pivot.price_adjustment) || 0;
+    // Fallback to price_tiers if direct price is not available
+    if (item.price_tiers && item.price_tiers.length > 0) {
+      // Look for retail_price tier first, then any tier with pivot data
+      const retailTier = item.price_tiers.find((tier: any) => tier.name === 'retail_price');
+      if (retailTier?.pivot?.price_adjustment) {
+        const price = parseFloat(retailTier.pivot.price_adjustment);
+        return isNaN(price) ? 0 : price;
+      }
+      
+      // Fallback to any tier with pivot data
+      const tierWithPivot = item.price_tiers.find((tier: any) => tier.pivot?.price_adjustment);
+      if (tierWithPivot?.pivot?.price_adjustment) {
+        const price = parseFloat(tierWithPivot.pivot.price_adjustment);
+        return isNaN(price) ? 0 : price;
+      }
     }
     
     return 0;
   };
 
   const calculateTotalPrice = () => {
-    // Get base seat price from product data
-    const baseSeatPrice = productData ? parseFloat(productData.price.replace('$', '')) : 0;
+    // Get base seat price from product data (handle different price formats)
+    let baseSeatPrice = 0;
+    if (productData?.price) {
+      const priceStr = productData.price.toString().replace(/[$,]/g, '');
+      baseSeatPrice = parseFloat(priceStr) || 0;
+    }
     
-    // Get prices from API variation data using price_tiers
+    // Get prices from API variation data using direct price field
     const materialPrice = selectedTexture !== 'none' ? 
-      getPriceFromTiers(variations?.material_types?.find((m: any) => m.id.toString() === selectedTexture)) : 0;
+      getPriceFromItem(variations?.material_types?.find((m: any) => m.id.toString() === selectedTexture)) : 0;
     
     const colorPrice = selectedColor !== 'none' ? 
-      getPriceFromTiers(variations?.colors?.find((c: any) => c.id.toString() === selectedColor)) : 0;
+      getPriceFromItem(variations?.colors?.find((c: any) => c.id.toString() === selectedColor)) : 0;
     
     const stitchingPrice = selectedStitching !== 'none' ? 
-      getPriceFromTiers(variations?.seat_stitch_patterns?.find((s: any) => s.id.toString() === selectedStitching)) : 0;
+      getPriceFromItem(variations?.seat_stitch_patterns?.find((s: any) => s.id.toString() === selectedStitching)) : 0;
     
     // Get variation prices from API data
     const reclinePrice = selectedRecline ? 
-      getPriceFromTiers(variations?.recline_types?.find((r: any) => r.id.toString() === selectedRecline)) : 0;
+      getPriceFromItem(variations?.recline_types?.find((r: any) => r.id.toString() === selectedRecline)) : 0;
     
     const lumberPrice = selectedLumber ? 
-      getPriceFromTiers(variations?.lumbar_types?.find((l: any) => l.id.toString() === selectedLumber)) : 0;
+      getPriceFromItem(variations?.lumbar_types?.find((l: any) => l.id.toString() === selectedLumber)) : 0;
     
     const heatingCoolingPrice = selectedHeatingCooling ? 
-      getPriceFromTiers(variations?.heat_options?.find((h: any) => h.id.toString() === selectedHeatingCooling)) : 0;
+      getPriceFromItem(variations?.heat_options?.find((h: any) => h.id.toString() === selectedHeatingCooling)) : 0;
     
     // Get seat prices from API data
     const seatTypePrice = selectedSeatType ? 
-      getPriceFromTiers(variations?.seat_types?.find((s: any) => s.id.toString() === selectedSeatType)) : 0;
+      getPriceFromItem(variations?.seat_types?.find((s: any) => s.id.toString() === selectedSeatType)) : 0;
     
     const itemTypePrice = selectedItemType ? 
-      getPriceFromTiers(variations?.item_types?.find((i: any) => i.id.toString() === selectedItemType)) : 0;
+      getPriceFromItem(variations?.item_types?.find((i: any) => i.id.toString() === selectedItemType)) : 0;
     
     const seatStylePrice = selectedSeatStyle ? 
-      getPriceFromTiers(variations?.seat_styles?.find((s: any) => s.id.toString() === selectedSeatStyle)) : 0;
+      getPriceFromItem(variations?.seat_styles?.find((s: any) => s.id.toString() === selectedSeatStyle)) : 0;
     
     const materialTypePrice = selectedMaterialType ? 
-      getPriceFromTiers(variations?.material_types?.find((m: any) => m.id.toString() === selectedMaterialType)) : 0;
+      getPriceFromItem(variations?.material_types?.find((m: any) => m.id.toString() === selectedMaterialType)) : 0;
     
     const includedArmPrice = selectedIncludedArm ? 
-      getPriceFromTiers(variations?.arm_types?.find((a: any) => a.id.toString() === selectedIncludedArm)) : 0;
+      getPriceFromItem(variations?.arm_types?.find((a: any) => a.id.toString() === selectedIncludedArm)) : 0;
     
     // Calculate total
-    return baseSeatPrice + materialPrice + colorPrice + stitchingPrice + reclinePrice + lumberPrice + heatingCoolingPrice + seatTypePrice + itemTypePrice + seatStylePrice + materialTypePrice + includedArmPrice;
+    const total = baseSeatPrice + materialPrice + colorPrice + stitchingPrice + reclinePrice + lumberPrice + heatingCoolingPrice + seatTypePrice + itemTypePrice + seatStylePrice + materialTypePrice + includedArmPrice;
+    
+    // Debug logging to help troubleshoot price calculation
+    console.log('💰 Price Calculation Debug:', {
+      baseSeatPrice,
+      materialPrice,
+      colorPrice,
+      stitchingPrice,
+      reclinePrice,
+      lumberPrice,
+      heatingCoolingPrice,
+      seatTypePrice,
+      itemTypePrice,
+      seatStylePrice,
+      materialTypePrice,
+      includedArmPrice,
+      total
+    });
+    
+    return total;
   };
 
   const totalPrice = calculateTotalPrice();
@@ -657,6 +691,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                        <Typography variant="h6" className={styles.sectionTitle}>
                          Choose Your Material
                        </Typography>
+                       {selectedTexture !== 'none' && (() => {
+                         const selectedMaterial = variations?.material_types?.find((m: any) => m.id.toString() === selectedTexture);
+                         const price = Number(selectedMaterial?.price);
+                         return selectedMaterial?.price && price > 0 ? (
+                           <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                             +${price.toFixed(2)}
+                           </Typography>
+                         ) : null;
+                       })()}
                      </Box>
                     
                                          {/* Selected Material Name - Removed to show only on hover */}
@@ -739,7 +782,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                        <Typography variant="h6" className={styles.sectionTitle}>
                          Choose Your Color
                        </Typography>
-                       
+                       {selectedColor !== 'none' && (() => {
+                         const selectedColorItem = variations?.colors?.find((c: any) => c.id.toString() === selectedColor);
+                         const price = Number(selectedColorItem?.price);
+                         return selectedColorItem?.price && price > 0 ? (
+                           <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                             +${price.toFixed(2)}
+                           </Typography>
+                         ) : null;
+                       })()}
                      </Box>
                      
                      {/* Dynamic color display from variation data */}
@@ -813,6 +864,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         <Typography variant="h6" className={styles.sectionTitle}>
                           Choose Your Stitching Pattern
                         </Typography>
+                        {selectedStitching !== 'none' && (() => {
+                          const selectedStitchingItem = variations?.seat_stitch_patterns?.find((s: any) => s.id.toString() === selectedStitching);
+                          const price = Number(selectedStitchingItem?.price);
+                          return selectedStitchingItem?.price && price > 0 ? (
+                            <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                              +${price.toFixed(2)}
+                            </Typography>
+                          ) : null;
+                        })()}
                       </Box>
                      
                      <Box className={styles.stitchingOptionsContainer}>
@@ -983,6 +1043,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                              <Typography variant="body2" className={styles.fieldLabel}>
                                Recline:
+                               {selectedRecline && (() => {
+                                 const selectedReclineItem = variations?.recline_types?.find((r: any) => r.id.toString() === selectedRecline);
+                                 return selectedReclineItem?.price && parseFloat(selectedReclineItem.price.toString()) > 0 ? (
+                                   <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                     +${parseFloat(selectedReclineItem.price.toString()).toFixed(2)}
+                                   </span>
+                                 ) : null;
+                               })()}
                              </Typography>
                            </Box>
                            <FormControl className={styles.formControl}>
@@ -1013,6 +1081,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="body2" className={styles.fieldLabel}>
                               Lumber:
+                               {selectedLumber && (() => {
+                                 const selectedLumberItem = variations?.lumbar_types?.find((l: any) => l.id.toString() === selectedLumber);
+                                 return selectedLumberItem?.price && parseFloat(selectedLumberItem.price.toString()) > 0 ? (
+                                   <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                     +${parseFloat(selectedLumberItem.price.toString()).toFixed(2)}
+                                   </span>
+                                 ) : null;
+                               })()}
                             </Typography>
                           </Box>
                           <FormControl className={styles.formControl}>
@@ -1043,6 +1119,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="body2" className={styles.fieldLabel}>
                               Heating and Cooling:
+                               {selectedHeatingCooling && (() => {
+                                 const selectedHeatingItem = variations?.heat_options?.find((h: any) => h.id.toString() === selectedHeatingCooling);
+                                 return selectedHeatingItem?.price && parseFloat(selectedHeatingItem.price.toString()) > 0 ? (
+                                   <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                     +${parseFloat(selectedHeatingItem.price.toString()).toFixed(2)}
+                                   </span>
+                                 ) : null;
+                               })()}
                             </Typography>
                           </Box>
                           <FormControl className={styles.formControl}>
@@ -1085,6 +1169,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Typography variant="body2" className={styles.fieldLabel}>
                                 Seat Type:
+                                 {selectedSeatType && (() => {
+                                   const selectedSeatTypeItem = variations?.seat_types?.find((s: any) => s.id.toString() === selectedSeatType);
+                                   const price = Number(selectedSeatTypeItem?.price);
+                                   return selectedSeatTypeItem?.price && price > 0 ? (
+                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                       +${price.toFixed(2)}
+                                     </span>
+                                   ) : null;
+                                 })()}
                               </Typography>
                             </Box>
                             <FormControl className={styles.formControl}>
@@ -1115,6 +1208,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Typography variant="body2" className={styles.fieldLabel}>
                                 Item Type:
+                                 {selectedItemType && (() => {
+                                   const selectedItemTypeItem = variations?.item_types?.find((i: any) => i.id.toString() === selectedItemType);
+                                   const price = Number(selectedItemTypeItem?.price);
+                                   return selectedItemTypeItem?.price && price > 0 ? (
+                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                       +${price.toFixed(2)}
+                                     </span>
+                                   ) : null;
+                                 })()}
                               </Typography>
                             </Box>
                             <FormControl className={styles.formControl}>
@@ -1145,6 +1247,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Typography variant="body2" className={styles.fieldLabel}>
                                 Seat Style:
+                                 {selectedSeatStyle && (() => {
+                                   const selectedSeatStyleItem = variations?.seat_styles?.find((s: any) => s.id.toString() === selectedSeatStyle);
+                                   const price = Number(selectedSeatStyleItem?.price);
+                                   return selectedSeatStyleItem?.price && price > 0 ? (
+                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                       +${price.toFixed(2)}
+                                     </span>
+                                   ) : null;
+                                 })()}
                               </Typography>
                             </Box>
                             <FormControl className={styles.formControl}>
@@ -1175,6 +1286,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Typography variant="body2" className={styles.fieldLabel}>
                                 Material Type:
+                                 {selectedMaterialType && (() => {
+                                   const selectedMaterialTypeItem = variations?.material_types?.find((m: any) => m.id.toString() === selectedMaterialType);
+                                   const price = Number(selectedMaterialTypeItem?.price);
+                                   return selectedMaterialTypeItem?.price && price > 0 ? (
+                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                       +${price.toFixed(2)}
+                                     </span>
+                                   ) : null;
+                                 })()}
                               </Typography>
                             </Box>
                             <FormControl className={styles.formControl}>
@@ -1205,6 +1325,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Typography variant="body2" className={styles.fieldLabel}>
                                 Included Arm:
+                                 {selectedIncludedArm && (() => {
+                                   const selectedIncludedArmItem = variations?.arm_types?.find((a: any) => a.id.toString() === selectedIncludedArm);
+                                   const price = Number(selectedIncludedArmItem?.price);
+                                   return selectedIncludedArmItem?.price && price > 0 ? (
+                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                       +${price.toFixed(2)}
+                                     </span>
+                                   ) : null;
+                                 })()}
                               </Typography>
                             </Box>
                             <FormControl className={styles.formControl}>

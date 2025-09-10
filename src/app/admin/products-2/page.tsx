@@ -21,6 +21,8 @@ import {
   TableRow,
   TablePagination,
   Dialog,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -28,6 +30,7 @@ import {
   Delete as DeleteIcon,
   Visibility as ViewIcon,
   Search as SearchIcon,
+  CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
@@ -52,11 +55,10 @@ interface Product {
   stock: number;
   images?: string[];
   is_active: boolean;
+  show_on_special_shop: boolean;
   created_at: string;
   updated_at: string;
-  vehicle_trim_id?: number | null;
   category_id?: number | null;
-  vehicle_trim?: any | null;
   primary_image?: {
     id: number;
     product_id: number;
@@ -113,6 +115,7 @@ const Products2Page = () => {
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showOnlySpecial, setShowOnlySpecial] = useState(false);
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -203,6 +206,11 @@ const Products2Page = () => {
     setPage(0); // Reset to first page when searching
   };
 
+  const handleSpecialFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setShowOnlySpecial(event.target.checked);
+    setPage(0); // Reset to first page when filtering
+  };
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -224,6 +232,14 @@ const Products2Page = () => {
     
     return '/TruckImages/01.jpg';
   };
+
+  // Filter products based on special shop status
+  const filteredProducts = products.filter(product => {
+    if (showOnlySpecial) {
+      return product.show_on_special_shop === true;
+    }
+    return true; // Show all products when filter is off
+  });
 
   return (
     <AdminLayout title="Products">
@@ -252,6 +268,44 @@ const Products2Page = () => {
               sx={{ maxWidth: 400 }}
               size="small"
             />
+
+            {/* Special Products Filter */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showOnlySpecial}
+                    onChange={handleSpecialFilterChange}
+                    sx={{
+                      color: '#4caf50',
+                      '&.Mui-checked': {
+                        color: '#4caf50',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckIcon sx={{ fontSize: '1rem', color: '#4caf50' }} />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      Show only Special Shop products
+                    </Typography>
+                  </Box>
+                }
+                sx={{ 
+                  alignSelf: 'flex-start',
+                  '& .MuiFormControlLabel-label': {
+                    color: showOnlySpecial ? '#4caf50' : 'text.secondary'
+                  }
+                }}
+              />
+              
+              {/* Product count indicator */}
+              <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                Showing {filteredProducts.length} of {products.length} products
+                {showOnlySpecial && ` (Special Shop only)`}
+              </Typography>
+            </Box>
           </Box>
           <Button
             variant="contained"
@@ -306,13 +360,15 @@ const Products2Page = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No products found
+              {showOnlySpecial ? 'No special shop products found' : 'No products found'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Product" to create your first product.'}
+              {searchTerm ? 'Try adjusting your search terms.' : 
+               showOnlySpecial ? 'No products are marked for special shop.' : 
+               'Click "Add Product" to create your first product.'}
             </Typography>
           </Paper>
         ) : (
@@ -325,14 +381,15 @@ const Products2Page = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Shop Type</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {products
+                  {filteredProducts
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((product) => (
                     <TableRow 
@@ -442,6 +499,13 @@ const Products2Page = () => {
                           color={product.is_active ? 'success' : 'default'}
                         />
                       </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={(product as any).show_on_special_shop ? 'Special Shop' : 'Regular'}
+                          size="small"
+                          color={(product as any).show_on_special_shop ? 'warning' : 'default'}
+                        />
+                      </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                           <IconButton
@@ -480,7 +544,7 @@ const Products2Page = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={products.length}
+              count={filteredProducts.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
