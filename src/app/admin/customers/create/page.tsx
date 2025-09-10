@@ -76,11 +76,7 @@ const CreateCustomerPage = () => {
         >
           Back to Customers
         </Button>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ 
-          fontSize: { xs: '1.75rem', md: '2.125rem' }
-        }}>
-          Create New Customer
-        </Typography>
+    
       </Box>
 
       {alert && (

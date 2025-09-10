@@ -576,7 +576,7 @@ const EditProduct2Page = () => {
   }
 
   return (
-    <AdminLayout title="Edit Product - Products 2">
+    <AdminLayout title="Edit Product">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -586,11 +586,9 @@ const EditProduct2Page = () => {
               onClick={handleBackToList}
               sx={{ color: 'text.secondary' }}
             >
-              Back to Products 2
+              Back
             </Button>
-            <Typography variant="h4" component="h1">
-              Edit Product
-            </Typography>
+           
           </Box>
         </Box>
 
