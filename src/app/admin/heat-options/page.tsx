@@ -38,6 +38,9 @@ interface HeatOption {
   name: string;
   description: string;
   image: string;
+  cost: number | string;
+  price: number | string;
+  price_adjustments?: Record<string, number | string>;
   created_by: number;
   created_at: string;
   updated_at: string;
@@ -92,6 +95,13 @@ const HeatOptionsPage = () => {
       return `https://superiorseats.ali-khalid.com/${heatOption.image}`;
     }
     return null;
+  };
+
+  // Helper function to safely format numbers
+  const formatPrice = (value: number | string | undefined): string => {
+    if (value === undefined || value === null) return '0.00';
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(numValue) ? '0.00' : numValue.toFixed(2);
   };
 
   const loadHeatOptions = useCallback(async () => {
@@ -262,6 +272,8 @@ const HeatOptionsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cost</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
@@ -354,6 +366,16 @@ const HeatOptionsPage = () => {
                           }}
                         >
                           {heatOption.description || 'No description available'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: 'success.main' }}>
+                          ${formatPrice(heatOption.cost)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: 'primary.main' }}>
+                          ${formatPrice(heatOption.price)}
                         </Typography>
                       </TableCell>
                       <TableCell>

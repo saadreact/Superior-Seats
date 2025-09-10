@@ -500,6 +500,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   type="email"
                   value={signInForm.email}
                   onChange={handleSignInChange('email')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignIn();
+                    }
+                  }}
                   error={!!errors.email}
                   helperText={errors.email}
                   variant="outlined"
@@ -520,6 +525,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   type={showPassword ? 'text' : 'password'}
                   value={signInForm.password}
                   onChange={handleSignInChange('password')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignIn();
+                    }
+                  }}
                   error={!!errors.password}
                   helperText={errors.password}
                   variant="outlined"
@@ -635,6 +645,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   type="text"
                   value={signUpForm.name}
                   onChange={handleSignUpChange('name')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
                   error={!!errors.name}
                   helperText={errors.name}
                   variant="outlined"
@@ -655,6 +670,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   type="text"
                   value={signUpForm.username}
                   onChange={handleSignUpChange('username')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
                   error={!!errors.username}
                   helperText={errors.username}
                   variant="outlined"
@@ -675,6 +695,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   type="tel"
                   value={signUpForm.phone}
                   onChange={handleSignUpChange('phone')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
                   error={!!errors.phone}
                   helperText={errors.phone}
                   variant="outlined"
@@ -700,6 +725,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   type="email"
                   value={signUpForm.email}
                   onChange={handleSignUpChange('email')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
                   error={!!errors.email}
                   helperText={errors.email}
                   variant="outlined"
@@ -720,6 +750,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   type={showPassword ? 'text' : 'password'}
                   value={signUpForm.password}
                   onChange={handleSignUpChange('password')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
                   error={!!errors.password}
                   helperText={errors.password}
                   variant="outlined"
@@ -754,6 +789,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={signUpForm.confirmPassword}
                   onChange={handleSignUpChange('confirmPassword')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
                   error={!!errors.confirmPassword}
                   helperText={errors.confirmPassword}
                   variant="outlined"
@@ -894,6 +934,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             type="email"
             value={forgotPasswordEmail}
             onChange={(e) => setForgotPasswordEmail(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleForgotPassword();
+              }
+            }}
             variant="outlined"
             size="small"
             sx={{ 

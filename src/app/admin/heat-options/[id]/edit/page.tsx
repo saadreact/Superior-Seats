@@ -38,7 +38,10 @@ const EditHeatOptionPage = () => {
     name: '',
     description: '',
     image: null as File | null,
-    price_tier_ids: [] as number[]
+    cost: 0,
+    price: 0,
+    price_tier_ids: [] as number[],
+    price_adjustments: {} as Record<string, number>
   });
   
   const [priceTiers, setPriceTiers] = useState<Array<{id: number, name: string, display_name: string}>>([]);
@@ -69,7 +72,10 @@ const EditHeatOptionPage = () => {
         name: heatOption.name || '',
         description: heatOption.description || '',
         image: null,
-        price_tier_ids: heatOption.price_tiers?.map((tier: any) => tier.id) || []
+        cost: heatOption.cost || 0,
+        price: heatOption.price || 0,
+        price_tier_ids: heatOption.price_tiers?.map((tier: any) => tier.id) || [],
+        price_adjustments: heatOption.price_adjustments || {}
       });
       setCurrentImage(heatOption.image || null);
     } catch (err: any) {
@@ -103,11 +109,31 @@ const EditHeatOptionPage = () => {
     setFormData(prev => ({ ...prev, price_tier_ids: value }));
   };
 
+  const handlePriceAdjustmentChange = (tierId: number, adjustment: number) => {
+    setFormData(prev => ({
+      ...prev,
+      price_adjustments: {
+        ...prev.price_adjustments,
+        [tierId.toString()]: adjustment
+      }
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name.trim()) {
       setError('Name is required');
+      return;
+    }
+
+    if (formData.cost <= 0) {
+      setError('Cost must be greater than 0');
+      return;
+    }
+
+    if (formData.price <= 0) {
+      setError('Price must be greater than 0');
       return;
     }
 
@@ -120,7 +146,10 @@ const EditHeatOptionPage = () => {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         image: formData.image,
-        price_tier_ids: formData.price_tier_ids.length > 0 ? formData.price_tier_ids : undefined
+        cost: formData.cost,
+        price: formData.price,
+        price_tier_ids: formData.price_tier_ids.length > 0 ? formData.price_tier_ids : undefined,
+        price_adjustments: Object.keys(formData.price_adjustments).length > 0 ? formData.price_adjustments : undefined
       };
       
       console.log('Updating heat option data:', submissionData);
@@ -236,6 +265,34 @@ const EditHeatOptionPage = () => {
                   placeholder="Enter description (optional)"
                 />
 
+                {/* Pricing Information */}
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
+                  Pricing Information
+                </Typography>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter wholesale cost"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <TextField
+                    label="Price (Retail)"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                </Box>
+
                 {/* Image Upload */}
                 <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
                   Image
@@ -330,6 +387,40 @@ const EditHeatOptionPage = () => {
                     ))}
                   </Select>
                 </FormControl>
+
+                {/* Price Adjustments for Selected Tiers */}
+                {formData.price_tier_ids.length > 0 && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                      Price Adjustments by Tier
+                    </Typography>
+                    <Stack spacing={2}>
+                      {formData.price_tier_ids.map((tierId) => {
+                        const tier = priceTiers.find(t => t.id === tierId);
+                        return (
+                          <Box key={tierId} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Typography variant="body2" sx={{ minWidth: 120, fontWeight: 500 }}>
+                              {tier?.display_name}:
+                            </Typography>
+                            <TextField
+                              label="Price Adjustment"
+                              type="number"
+                              size="small"
+                              value={formData.price_adjustments[tierId.toString()] || 0}
+                              onChange={(e) => handlePriceAdjustmentChange(tierId, parseFloat(e.target.value) || 0)}
+                              placeholder="0"
+                              inputProps={{ step: 0.01 }}
+                              sx={{ maxWidth: 150 }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              (Additional amount for this tier)
+                            </Typography>
+                          </Box>
+                        );
+                      })}
+                    </Stack>
+                  </Box>
+                )}
 
                 {/* Action Buttons */}
                 <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>

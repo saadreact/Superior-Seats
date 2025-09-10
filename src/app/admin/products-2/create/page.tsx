@@ -543,7 +543,7 @@ const CreateProduct2Page = () => {
 
   if (initialLoading) {
     return (
-      <AdminLayout title="Create Product - Products 2">
+      <AdminLayout title="Create Product">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
@@ -552,7 +552,7 @@ const CreateProduct2Page = () => {
   }
 
   return (
-    <AdminLayout title="Create Product - Products 2">
+    <AdminLayout title="Create Product">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -562,7 +562,7 @@ const CreateProduct2Page = () => {
               onClick={handleBackToList}
               sx={{ color: 'text.secondary' }}
             >
-              Back to Products 2
+              Back 
             </Button>
         
           </Box>
