@@ -18,7 +18,9 @@ import {
   OutlinedInput,
   Checkbox,
   ListItemText,
-  Chip
+  Chip,
+  Divider,
+  FormControlLabel,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -39,8 +41,12 @@ const EditReclineTypePage = () => {
     name: '',
     description: '',
     image: null as File | null,
+    cost: 0,
+    price: 0,
     price_tier_ids: [] as number[]
   });
+  
+  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -56,12 +62,16 @@ const EditReclineTypePage = () => {
       setError(null);
       
       const reclineType = await reclineTypesService.getReclineType(parseInt(id));
+      const priceTierIds = reclineType.price_tiers?.map((tier: any) => tier.id) || [];
       setFormData({
         name: reclineType.name || '',
         description: reclineType.description || '',
         image: null,
-        price_tier_ids: reclineType.price_tiers?.map((tier: any) => tier.id) || []
+        cost: reclineType.cost || 0,
+        price: reclineType.price || 0,
+        price_tier_ids: priceTierIds
       });
+      setEnablePriceTiers(priceTierIds.length > 0);
       setCurrentImage(reclineType.image);
     } catch (err: any) {
       setError(err.message || 'Failed to load recline type');
@@ -107,11 +117,34 @@ const EditReclineTypePage = () => {
     }));
   };
 
+  const handleEnablePriceTiersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setEnablePriceTiers(checked);
+    
+    // Clear price tiers when disabled
+    if (!checked) {
+      setFormData(prev => ({
+        ...prev,
+        price_tier_ids: []
+      }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name.trim()) {
       setError('Name is required');
+      return;
+    }
+
+    if (formData.cost <= 0) {
+      setError('Cost must be greater than 0');
+      return;
+    }
+
+    if (formData.price <= 0) {
+      setError('Price must be greater than 0');
       return;
     }
 
@@ -123,7 +156,9 @@ const EditReclineTypePage = () => {
       const submissionData: any = {
         name: formData.name,
         description: formData.description,
-        price_tier_ids: formData.price_tier_ids
+        cost: formData.cost,
+        price: formData.price,
+        price_tier_ids: enablePriceTiers && formData.price_tier_ids.length > 0 ? formData.price_tier_ids : []
       };
 
       // Only add image to submission data if a new image is selected
@@ -193,14 +228,15 @@ const EditReclineTypePage = () => {
         )}
 
         {/* Form */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Paper sx={{ p: 4, maxWidth: 800, width: '100%' }}>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={3}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Basic Information */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1 }}>
-                  Basic Information
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Basic Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
                 
                 <TextField
                   label="Name"
@@ -209,6 +245,7 @@ const EditReclineTypePage = () => {
                   required
                   fullWidth
                   placeholder="Enter recline type name"
+                  sx={{ mb: 3 }}
                 />
 
                 <TextField
@@ -220,18 +257,45 @@ const EditReclineTypePage = () => {
                   rows={3}
                   placeholder="Enter description (optional)"
                 />
+                </Box>
 
-                {/* Image Management */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Image
-                </Typography>
-                
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  {currentImage 
-                    ? 'Current image will be kept unless you upload a new one or remove it.' 
-                    : 'No current image. Upload an image to add one.'
-                  }
-                </Typography>
+                {/* Pricing Information */}
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Pricing Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter wholesale cost"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <TextField
+                    label="Price (Retail)"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                </Box>
+                </Box>
+
+                {/* Image Upload */}
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Image
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
 
                 <Box>
                   {/* Current Image */}
@@ -244,139 +308,129 @@ const EditReclineTypePage = () => {
                         src={`https://superiorseats.ali-khalid.com/${currentImage}`}
                         alt="Current"
                         style={{
-                          width: 200,
-                          height: 200,
+                          maxWidth: '200px',
+                          maxHeight: '200px',
                           objectFit: 'cover',
-                          borderRadius: 8,
-                          border: '1px solid #e0e0e0'
+                          borderRadius: '8px'
                         }}
                       />
                     </Box>
                   )}
 
-                  {/* New Image Upload */}
-                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      style={{ display: 'none' }}
-                      id="image-upload"
-                    />
-                    <label htmlFor="image-upload">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                      >
-                        {formData.image ? `Change Image: ${formData.image.name}` : 'Upload New Image'}
-                      </Button>
-                    </label>
-                    
-                    {/* Clear Image Button */}
-                    {(formData.image || currentImage) && (
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => {
-                          setFormData(prev => ({ ...prev, image: null }));
-                          setImagePreview(null);
-                        }}
-                      >
-                        Remove Image
-                      </Button>
-                    )}
-                  </Box>
-                  
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                    type="file"
+                    onChange={handleImageChange}
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      sx={{ mb: 2 }}
+                    >
+                      {formData.image ? `Image Selected: ${formData.image.name}` : 'Upload Image'}
+                    </Button>
+                  </label>
                   {imagePreview && (
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        New Image Preview:
-                      </Typography>
                       <img
                         src={imagePreview}
                         alt="Preview"
                         style={{
-                          width: 200,
-                          height: 200,
+                          maxWidth: '200px',
+                          maxHeight: '200px',
                           objectFit: 'cover',
-                          borderRadius: 8,
-                          border: '1px solid #e0e0e0'
+                          borderRadius: '8px'
                         }}
                       />
                     </Box>
                   )}
                 </Box>
+                </Box>
 
                 {/* Price Tiers */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Price Tiers
-                </Typography>
-
-                <FormControl fullWidth>
-                  <InputLabel>Select Price Tiers</InputLabel>
-                  <Select
-                    multiple
-                    value={formData.price_tier_ids}
-                    onChange={handlePriceTierChange}
-                    input={<OutlinedInput label="Select Price Tiers" />}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {selected.map((value) => {
-                          const tier = priceTiers.find(t => t.id === value);
-                          return (
-                            <Chip key={value} label={tier?.display_name || `Tier ${value}`} size="small" />
-                          );
-                        })}
-                      </Box>
-                    )}
-                  >
-                    {priceTiers.map((tier) => (
-                      <MenuItem key={tier.id} value={tier.id}>
-                        <Checkbox checked={formData.price_tier_ids.indexOf(tier.id) > -1} />
-                        <ListItemText primary={tier.display_name} secondary={tier.description} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {/* Update Summary */}
-                <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, border: 1, borderColor: 'grey.200' }}>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Update Summary:</strong> 
-                    {formData.image 
-                      ? ' New image will be uploaded and replace current image.' 
-                      : currentImage 
-                        ? ' Current image will be kept.' 
-                        : ' No image will be set.'
-                    }
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Price Tiers
                   </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={enablePriceTiers}
+                      onChange={handleEnablePriceTiersChange}
+                      color="primary"
+                    />
+                  }
+                  label="Enable Price Tiers"
+                />
+
+                {enablePriceTiers && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                      Tier Pricing
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <TextField
+                        label="Retail Price"
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                        required
+                        fullWidth
+                        placeholder="Enter retail price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                      <TextField
+                        label="Wholesale Price"
+                        type="number"
+                        value={formData.cost}
+                        onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                        required
+                        fullWidth
+                        placeholder="Enter wholesale price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                    </Box>
+                  </Box>
+                )}
                 </Box>
 
                 {/* Action Buttons */}
-                <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                    disabled={loading}
-                    sx={{ minWidth: 150, py: 1.5 }}
-                  >
-                    {loading ? 'Updating...' : 'Update Recline Type'}
-                  </Button>
-                  
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 2, 
+                  justifyContent: 'flex-end',
+                  flexDirection: { xs: 'column', sm: 'row' }
+                }}>
                   <Button
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
-                    sx={{ minWidth: 120, py: 1.5 }}
                   >
                     Cancel
                   </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    disabled={loading}
+                    sx={{
+                      backgroundColor: '#DA291C',
+                      '&:hover': {
+                        backgroundColor: '#B71C1C',
+                      },
+                    }}
+                  >
+                    {loading ? 'Updating...' : 'Update Recline Type'}
+                  </Button>
                 </Box>
-              </Stack>
-            </form>
-          </Paper>
-        </Box>
+            </Box>
+          </form>
+        </Paper>
       </Box>
     </AdminLayout>
   );

@@ -18,7 +18,9 @@ import {
   OutlinedInput,
   Checkbox,
   ListItemText,
-  Chip
+  Chip,
+  Divider,
+  FormControlLabel,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -36,11 +38,14 @@ const CreateLumbarTypePage = () => {
     name: '',
     description: '',
     image: null as File | null,
-    price_tier_ids: [] as number[]
+    cost: 0,
+    price: 0
   });
+  
+  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
 
   useEffect(() => {
-    loadPriceTiers();
+    // No need to load price tiers for simplified pricing
   }, []);
 
   // Debug form data changes
@@ -54,14 +59,7 @@ const CreateLumbarTypePage = () => {
     }
   }, [formData]);
 
-  const loadPriceTiers = async () => {
-    try {
-      const response = await lumbarTypesService.getPriceTiers();
-      setPriceTiers(response || []);
-    } catch (err) {
-      console.error('Error loading price tiers:', err);
-    }
-  };
+  // Removed loadPriceTiers function as we're using simplified pricing
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -94,33 +92,11 @@ const CreateLumbarTypePage = () => {
     }
   };
 
-  const handlePriceTierChange = (event: any) => {
-    const value = event.target.value;
-    console.log('handlePriceTierChange - Raw value:', value);
-    console.log('handlePriceTierChange - Value type:', typeof value);
-    console.log('handlePriceTierChange - Is array:', Array.isArray(value));
-    
-    // Ensure we always get an array of numbers
-    let numericIds: number[] = [];
-    if (Array.isArray(value)) {
-      numericIds = value.map(id => {
-        const numId = Number(id);
-        console.log(`Converting id "${id}" to number: ${numId}`);
-        return numId;
-      });
-    } else if (value !== null && value !== undefined) {
-      // Handle single value case
-      const numId = Number(value);
-      console.log(`Converting single value "${value}" to number: ${numId}`);
-      numericIds = [numId];
-    }
-    
-    console.log('handlePriceTierChange - Final numeric IDs:', numericIds);
-    
-    setFormData(prev => ({
-      ...prev,
-      price_tier_ids: numericIds
-    }));
+  // Removed handlePriceTierChange function as we're using simplified pricing
+
+  const handleEnablePriceTiersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setEnablePriceTiers(checked);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,6 +119,16 @@ const CreateLumbarTypePage = () => {
       return;
     }
 
+    if (formData.cost <= 0) {
+      setError('Cost must be greater than 0');
+      return;
+    }
+
+    if (formData.price <= 0) {
+      setError('Price must be greater than 0');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -151,7 +137,10 @@ const CreateLumbarTypePage = () => {
         name: formData.name,
         description: formData.description,
         image: formData.image,
-        price_tier_ids: formData.price_tier_ids
+        cost: formData.cost,
+        price: formData.price,
+        price_tier_ids: [],
+        price_adjustments: undefined
       };
 
       // Additional debugging for submission data
@@ -159,13 +148,8 @@ const CreateLumbarTypePage = () => {
       console.log('FormData.image type:', typeof formData.image);
       console.log('FormData.image value:', formData.image);
       console.log('FormData.image instanceof File:', formData.image instanceof File);
-      console.log('FormData.price_tier_ids type:', typeof formData.price_tier_ids);
-      console.log('FormData.price_tier_ids value:', formData.price_tier_ids);
-      console.log('FormData.price_tier_ids isArray:', Array.isArray(formData.price_tier_ids));
       console.log('SubmissionData.image type:', typeof submissionData.image);
       console.log('SubmissionData.image value:', submissionData.image);
-      console.log('SubmissionData.price_tier_ids type:', typeof submissionData.price_tier_ids);
-      console.log('SubmissionData.price_tier_ids value:', submissionData.price_tier_ids);
       console.log('=== END SUBMISSION DEBUG ===');
 
       // Debug logging
@@ -183,9 +167,8 @@ const CreateLumbarTypePage = () => {
       debugFormData.append('name', submissionData.name);
       if (submissionData.description) debugFormData.append('description', submissionData.description);
       if (submissionData.image) debugFormData.append('image', submissionData.image);
-      if (submissionData.price_tier_ids && submissionData.price_tier_ids.length > 0) {
-        submissionData.price_tier_ids.forEach(id => debugFormData.append('price_tier_ids[]', id.toString()));
-      }
+      debugFormData.append('cost', submissionData.cost.toString());
+      debugFormData.append('price', submissionData.price.toString());
 
       // Log FormData contents
       console.log('Debug FormData entries:');
@@ -243,14 +226,15 @@ const CreateLumbarTypePage = () => {
         )}
 
         {/* Form */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Paper sx={{ p: 4, maxWidth: 800, width: '100%' }}>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={3}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Basic Information */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1 }}>
-                  Basic Information
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Basic Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
                 
                 <TextField
                   label="Name"
@@ -259,6 +243,7 @@ const CreateLumbarTypePage = () => {
                   required
                   fullWidth
                   placeholder="Enter lumbar type name"
+                  sx={{ mb: 3 }}
                 />
 
                 <TextField
@@ -270,11 +255,45 @@ const CreateLumbarTypePage = () => {
                   rows={3}
                   placeholder="Enter description (optional)"
                 />
+                </Box>
+
+                {/* Pricing Information */}
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Pricing Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter wholesale cost"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <TextField
+                    label="Price (Retail)"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                </Box>
+                </Box>
 
                 {/* Image Upload Field */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, mt: 2 }}>
-                  Image
-                </Typography>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Image
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
                 
                 <Box>
                   <input
@@ -309,69 +328,89 @@ const CreateLumbarTypePage = () => {
                     </Box>
                   )}
                 </Box>
+                </Box>
 
                 {/* Price Tiers */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, mt: 2 }}>
-                  Price Tiers
-                </Typography>
-                
-                <FormControl fullWidth>
-                  <InputLabel>Select Price Tiers</InputLabel>
-                  <Select
-                    multiple
-                    value={formData.price_tier_ids}
-                    onChange={handlePriceTierChange}
-                    input={<OutlinedInput label="Select Price Tiers" />}
-                    onOpen={() => {
-                      console.log('Select opened - current value:', formData.price_tier_ids);
-                      console.log('Select opened - current value type:', typeof formData.price_tier_ids);
-                      console.log('Select opened - current value is array:', Array.isArray(formData.price_tier_ids));
-                    }}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {selected.map((value) => {
-                          const tier = priceTiers.find(t => t.id === value);
-                          return (
-                            <Chip key={value} label={tier?.display_name || value} size="small" />
-                          );
-                        })}
-                      </Box>
-                    )}
-                  >
-                    {priceTiers.map((tier) => (
-                      <MenuItem key={tier.id} value={tier.id}>
-                        <Checkbox checked={formData.price_tier_ids.indexOf(tier.id) > -1} />
-                        <ListItemText primary={tier.display_name} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                    Price Tiers
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={enablePriceTiers}
+                      onChange={handleEnablePriceTiersChange}
+                      color="primary"
+                    />
+                  }
+                  label="Enable Price Tiers"
+                />
+
+                {enablePriceTiers && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                      Tier Pricing
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <TextField
+                        label="Retail Price"
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                        required
+                        fullWidth
+                        placeholder="Enter retail price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                      <TextField
+                        label="Wholesale Price"
+                        type="number"
+                        value={formData.cost}
+                        onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                        required
+                        fullWidth
+                        placeholder="Enter wholesale price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                    </Box>
+                  </Box>
+                )}
+                </Box>
 
                 {/* Action Buttons */}
-                <Box sx={{ display: 'flex', gap: 2, pt: 3, justifyContent: 'center' }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                    disabled={loading}
-                    sx={{ minWidth: 150, py: 1.5 }}
-                  >
-                    {loading ? 'Creating...' : 'Create Lumbar Type'}
-                  </Button>
-                  
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 2, 
+                  justifyContent: 'flex-end',
+                  flexDirection: { xs: 'column', sm: 'row' }
+                }}>
                   <Button
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
-                    sx={{ minWidth: 120, py: 1.5 }}
                   >
                     Cancel
                   </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    disabled={loading}
+                    sx={{
+                      backgroundColor: '#DA291C',
+                      '&:hover': {
+                        backgroundColor: '#B71C1C',
+                      },
+                    }}
+                  >
+                    {loading ? 'Creating...' : 'Create Lumbar Type'}
+                  </Button>
                 </Box>
-              </Stack>
-            </form>
-          </Paper>
-        </Box>
+            </Box>
+          </form>
+        </Paper>
       </Box>
     </AdminLayout>
   );

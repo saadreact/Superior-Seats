@@ -4,6 +4,7 @@ import ThemeRegistry from '@/components/ThemeRegistry';
 import { SelectedItemProvider } from '@/contexts/SelectedItemContext';
 import ReduxProvider from '@/components/ReduxProvider';
 import Script from 'next/script';
+import AutoRefreshInitializer from '@/components/AutoRefreshInitializer';
 
 // import FloatingButtonWrapper from '@/components/FloatingButtonWrapper';
 import './globals.css';
@@ -37,6 +38,7 @@ export default function RootLayout({
         <ReduxProvider>
           <ThemeRegistry>
             <SelectedItemProvider>
+              <AutoRefreshInitializer />
               {children}
               {/* <FloatingButtonWrapper /> */}
             </SelectedItemProvider>

@@ -33,6 +33,8 @@ class LumbarTypesService {
     name: string;
     description?: string;
     image: File;
+    cost: number;
+    price: number;
     price_tier_ids: number[];
   }) {
     try {
@@ -41,6 +43,8 @@ class LumbarTypesService {
         const formData = new FormData();
         formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        formData.append('cost', data.cost.toString());
+        formData.append('price', data.price.toString());
         
         // Append single image (not as array) - lumbar types have only one image
         formData.append('image', data.image);
@@ -77,7 +81,14 @@ class LumbarTypesService {
         return response.data;
       } else {
         // Fallback to JSON if no image
-        const response = await api.post('/lumbar-types', data);
+        const jsonData = {
+          name: data.name,
+          description: data.description,
+          cost: data.cost,
+          price: data.price,
+          price_tier_ids: data.price_tier_ids
+        };
+        const response = await api.post('/lumbar-types', jsonData);
         return response.data?.data || response.data;
       }
     } catch (error: any) {
@@ -93,7 +104,10 @@ class LumbarTypesService {
     name?: string;
     description?: string;
     image?: File | null;
+    cost?: number;
+    price?: number;
     price_tier_ids?: number[];
+    current_image?: string;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -101,9 +115,14 @@ class LumbarTypesService {
         const formData = new FormData();
         if (data.name) formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        if (data.cost !== undefined) formData.append('cost', data.cost.toString());
+        if (data.price !== undefined) formData.append('price', data.price.toString());
         
         // Append single image (not as array) - lumbar types have only one image
         formData.append('image', data.image);
+        
+        // Include current image path if no new image is selected
+        if (data.current_image) formData.append('current_image', data.current_image);
         
         // Append price tier IDs as array
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
@@ -140,7 +159,15 @@ class LumbarTypesService {
         return response.data;
       } else {
         // Fallback to JSON if no image
-        const response = await api.put(`/lumbar-types/${id}`, data);
+        const jsonData = {
+          name: data.name,
+          description: data.description,
+          cost: data.cost,
+          price: data.price,
+          price_tier_ids: data.price_tier_ids,
+          current_image: data.current_image
+        };
+        const response = await api.put(`/lumbar-types/${id}`, jsonData);
         return response.data?.data || response.data;
       }
     } catch (error: any) {

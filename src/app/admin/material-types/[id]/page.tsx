@@ -20,6 +20,8 @@ interface MaterialType {
   id: number;
   name: string;
   description: string;
+  cost: number;
+  price: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -68,6 +70,13 @@ const MaterialTypeDetailPage = () => {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'});
+  };
+
+  // Helper function to safely format price values
+  const formatPrice = (value: number | string | undefined): string => {
+    if (value === undefined || value === null) return '0.00';
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(numValue) ? '0.00' : numValue.toFixed(2);
   };
 
   if (loading) {
@@ -152,6 +161,24 @@ const MaterialTypeDetailPage = () => {
 
                 <Box>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Cost (Wholesale)
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    ${formatPrice(materialtypes.cost)}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Price (Retail)
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    ${formatPrice(materialtypes.price)}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     Status
                   </Typography>
                   <Chip
@@ -160,7 +187,6 @@ const MaterialTypeDetailPage = () => {
                     size="small"
                   />
                 </Box>
-
 
               </Stack>
             </Box>

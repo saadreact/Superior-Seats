@@ -37,13 +37,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   
   const adminModules = [
-    {
-      title: 'Products',
-      description: 'Manage product catalog and inventory',
-      icon: <InventoryIcon sx={{ fontSize: 40 }} />,
-      href: '/admin/products',
-      color: '#388e3c',
-    },
+  
     {
       title: 'Categories',
       description: 'Manage product categories and classifications',

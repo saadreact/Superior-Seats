@@ -13,7 +13,7 @@ const apiClient = axios.create({
 
 // Request interceptor for auth tokens
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -26,9 +26,9 @@ apiClient.interceptors.response.use(
   (error) => {
     console.error('API Error:', error);
     if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Handle unauthorized access - don't redirect automatically
+      // Let the component handle the error appropriately
+      console.warn('Unauthorized access - token may be invalid or expired');
     }
     return Promise.reject(error);
   }

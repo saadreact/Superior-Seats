@@ -138,7 +138,44 @@ const EditCategoryPage = () => {
         <Paper sx={{ p: 3 }}>
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={3}>
-              
+              <TextField
+                fullWidth
+                label="Category Name"
+                value={formData.name}
+                onChange={handleChange('name')}
+                required
+                placeholder="Enter category name"
+                error={!!error && !formData.name.trim()}
+                helperText={!formData.name.trim() && error ? 'Category name is required' : ''}
+              />
+
+              <TextField
+                fullWidth
+                label="Description"
+                value={formData.description}
+                onChange={handleChange('description')}
+                placeholder="Enter category description"
+                multiline
+                rows={3}
+              />
+
+              <TextField
+                fullWidth
+                label="Slug"
+                value={formData.slug}
+                onChange={handleChange('slug')}
+                placeholder="Enter category slug (e.g., truck-seats)"
+                helperText="URL-friendly version of the name (lowercase, hyphens instead of spaces)"
+              />
+
+              <TextField
+                fullWidth
+                label="Image URL"
+                value={formData.image_url}
+                onChange={handleChange('image_url')}
+                placeholder="Enter image URL"
+                helperText="Optional: URL to category image"
+              />
 
               <FormControlLabel
                 control={

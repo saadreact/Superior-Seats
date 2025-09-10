@@ -2,17 +2,34 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-// TYPES: Define the structure for selected item
+// TYPES: Define the structure for selected item (now only stores product ID)
 export interface SelectedItem {
   id: number;
-  title: string;
-  category: string;
-  subCategory: string;
-  mainCategory: string;
-  image: string;
-  images?: string[]; // Optional array of additional product images
-  description: string;
-  price: string;
+}
+
+// TYPES: Define the structure for product variations
+export interface ProductVariations {
+  vehicle_trim?: VariationOption[];
+  colors?: VariationOption[];
+  material_types?: VariationOption[];
+  heat_options?: VariationOption[];
+  lumbar_types?: VariationOption[];
+  recline_types?: VariationOption[];
+  seat_stitch_patterns?: VariationOption[];
+  arm_types?: VariationOption[];
+  seat_types?: VariationOption[];
+  seat_styles?: VariationOption[];
+  item_types?: VariationOption[];
+}
+
+// TYPES: Define the structure for individual variation options
+export interface VariationOption {
+  id: number;
+  name: string;
+  price?: number;
+  image?: string;
+  hex_code?: string;
+  is_active?: boolean | null;
 }
 
 // CONTEXT INTERFACE: Define the context structure

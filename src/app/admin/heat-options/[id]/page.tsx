@@ -19,9 +19,26 @@ interface HeatOption {
   id: number;
   name: string;
   description: string;
+  cost: number | string;
+  price: number | string;
+  price_adjustments?: Record<string, number | string>;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  price_tiers?: Array<{
+    id: number;
+    name: string;
+    display_name: string;
+    discount_off_retail_price: string;
+    created_at: string;
+    updated_at: string;
+    pivot: {
+      heat_option_id: number;
+      price_tier_id: number;
+      created_at: string;
+      updated_at: string;
+    };
+  }>;
 }
 
 const HeatOptionDetailPage = () => {
@@ -68,6 +85,13 @@ const HeatOptionDetailPage = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  // Helper function to safely format numbers
+  const formatPrice = (value: number | string | undefined): string => {
+    if (value === undefined || value === null) return '0.00';
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(numValue) ? '0.00' : numValue.toFixed(2);
   };
 
   if (loading) {
@@ -146,6 +170,53 @@ const HeatOptionDetailPage = () => {
                     {heatoptions.description || 'No description available'}
                   </Typography>
                 </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Pricing
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Cost (Wholesale)
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>
+                        ${formatPrice(heatoptions.cost)}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Price (Retail)
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                        ${formatPrice(heatoptions.price)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+
+                {heatoptions.price_tiers && heatoptions.price_tiers.length > 0 && (
+                  <Box>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                      Price Tiers
+                    </Typography>
+                    <Stack spacing={1}>
+                      {heatoptions.price_tiers.map((tier) => (
+                        <Box key={tier.id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Typography variant="body2" sx={{ minWidth: 120, fontWeight: 500 }}>
+                            {tier.display_name}:
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {heatoptions.price_adjustments?.[tier.id.toString()] 
+                              ? `+$${formatPrice(heatoptions.price_adjustments[tier.id.toString()])}`
+                              : 'No adjustment'
+                            }
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
               </Stack>
             </Box>
 

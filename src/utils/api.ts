@@ -5,30 +5,25 @@ const getToken = (): string | null => {
   if (typeof window !== 'undefined') {
     // Check both possible storage keys
     const directToken = localStorage.getItem('auth_token');
-    console.log('Direct token from localStorage:', directToken);
     if (directToken) return directToken;
     
     // Check Redux persist storage
     const persistAuth = localStorage.getItem('persist:auth');
-    console.log('Redux persist auth:', persistAuth);
     if (persistAuth) {
       try {
         const authData = JSON.parse(persistAuth);
-        console.log('Parsed authData:', authData);
         if (authData.token) {
           // authData.token is already a JSON string, so we need to parse it
           // But first, let's check if it's already a string or if it needs parsing
           let token = authData.token;
-          console.log('Raw token from authData:', token);
           if (typeof token === 'string' && token.startsWith('"') && token.endsWith('"')) {
             // It's a JSON string, parse it
             token = JSON.parse(token);
-            console.log('Parsed token:', token);
           }
           return token;
         }
       } catch (e) {
-        console.error('Error parsing persist auth:', e);
+        // Error parsing persist auth
       }
     }
   }
@@ -49,14 +44,8 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = getToken();
-    console.log('Request interceptor - URL:', config.url);
-    console.log('Request interceptor - Token found:', !!token);
-    console.log('Request interceptor - Token value:', token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('Request interceptor - Authorization header set:', config.headers.Authorization);
-    } else {
-      console.log('Request interceptor - No token available, skipping auth header');
     }
     return config;
   },
@@ -79,21 +68,17 @@ api.interceptors.response.use(
 
       // Try to refresh token before clearing everything
       try {
-        console.log('API Interceptor: 401 error, attempting token refresh...');
         await apiService.refreshToken();
         
         // Retry the original request with new token
-        console.log('API Interceptor: Token refreshed, retrying original request...');
         const originalRequest = error.config;
         originalRequest.headers.Authorization = `Bearer ${localStorage.getItem('auth_token')}`;
         return api(originalRequest);
       } catch (refreshError) {
-        console.log('API Interceptor: Token refresh failed, clearing tokens...');
         // Clear tokens on unauthorized
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('persist:auth');
-          console.log('401 error - tokens cleared from localStorage');
         }
       }
     }
@@ -105,6 +90,9 @@ api.interceptors.response.use(
 class ApiService {
   // Expose axios instance for direct use
   api = api;
+  
+  // Auto-refresh interval
+  private refreshInterval: NodeJS.Timeout | null = null;
 
   // Authentication
   async login(email: string, password: string) {
@@ -127,6 +115,10 @@ class ApiService {
     // Store token in localStorage for immediate use
     if (typeof window !== 'undefined' && token) {
       localStorage.setItem('auth_token', token);
+      // Store token generation time
+      localStorage.setItem('token_generated_at', Date.now().toString());
+      // Start auto-refresh timer
+      this.startAutoRefresh();
     }
     
     return {
@@ -150,6 +142,10 @@ class ApiService {
     // Store token
     if (typeof window !== 'undefined') {
       localStorage.setItem('auth_token', data.token);
+      // Store token generation time
+      localStorage.setItem('token_generated_at', Date.now().toString());
+      // Start auto-refresh timer
+      this.startAutoRefresh();
     }
     
     // Ensure the user object has the name field from the registration data
@@ -169,20 +165,21 @@ class ApiService {
   async logout() {
     try {
       await api.post('/logout');
-      console.log('Logout successful');
     } catch (error: any) {
       // Handle 401 errors gracefully - this is expected when token is expired
       if (error.response?.status === 401) {
-        console.log('Token expired or invalid during logout - this is normal');
+        // Token expired or invalid during logout - this is normal
       } else {
         console.error('Logout error:', error);
       }
     } finally {
+      // Stop auto-refresh timer
+      this.stopAutoRefresh();
       // Clear tokens regardless of API call success
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('token_generated_at');
         localStorage.removeItem('persist:auth');
-        console.log('Local storage cleared');
       }
     }
   }
@@ -209,25 +206,21 @@ class ApiService {
 
   // Force logout and clear all auth data
   forceLogout(): void {
+    // Stop auto-refresh timer
+    this.stopAutoRefresh();
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('token_generated_at');
       localStorage.removeItem('persist:auth');
-      console.log('Force logout - all auth data cleared');
     }
   }
 
   // Forgot password
   async forgotPassword(email: string) {
-    console.log('API Service: forgotPassword called with email:', email);
-    console.log('API Service: this.api exists:', !!this.api);
-    console.log('API Service: api instance:', this.api);
     try {
-      console.log('API Service: Making POST request to /forgot-password');
       const response = await this.api.post('/forgot-password', { email });
-      console.log('API Service: Response received:', response);
       return response.data;
     } catch (error: any) {
-      console.error('API Service: Error in forgot password:', error);
       throw new Error(error.response?.data?.message || 'Failed to send password reset email');
     }
   }
@@ -239,42 +232,128 @@ class ApiService {
     password: string;
     password_confirmation: string;
   }) {
-    console.log('API Service: resetPassword called with data:', { ...data, password: '[HIDDEN]' });
     try {
-      console.log('API Service: Making POST request to /reset-password');
       const response = await this.api.post('/reset-password', data);
-      console.log('API Service: Response received:', response);
       return response.data;
     } catch (error: any) {
-      console.error('API Service: Error in reset password:', error);
       throw new Error(error.response?.data?.message || 'Failed to reset password');
     }
   }
 
   // Refresh token
   async refreshToken() {
-    console.log('API Service: refreshToken called');
     try {
-      console.log('API Service: Making POST request to /refresh-token');
-      const response = await this.api.post('/refresh-token');
-      console.log('API Service: Token refresh response received:', response);
+      // Make the refresh token request with proper headers
+      const response = await this.api.post('/refresh-token', {}, {
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': '', // Empty CSRF token as shown in your curl
+        }
+      });
+      
+      // Handle different response structures
+      let newToken;
+      if (response.data.data && response.data.data.token) {
+        // Nested structure: response.data.data.token
+        newToken = response.data.data.token;
+      } else if (response.data.token) {
+        // Direct structure: response.data.token
+        newToken = response.data.token;
+      } else if (response.data.access_token) {
+        // Alternative structure: response.data.access_token
+        newToken = response.data.access_token;
+      } else {
+        throw new Error('No token received from refresh endpoint');
+      }
       
       // Update the stored token with the new one
-      if (response.data.token) {
+      if (newToken) {
         if (typeof window !== 'undefined') {
-          localStorage.setItem('auth_token', response.data.token);
-          console.log('API Service: Token updated in localStorage');
+          localStorage.setItem('auth_token', newToken);
+          // Update token generation time
+          localStorage.setItem('token_generated_at', Date.now().toString());
+          
+          console.log('🔄 Token refreshed successfully');
+          
         }
       }
       
       return response.data;
     } catch (error: any) {
-      console.error('API Service: Error in refresh token:', error);
+      console.error('Token refresh failed:', error);
       // If refresh fails, clear tokens and force logout
       this.forceLogout();
       throw new Error(error.response?.data?.message || 'Failed to refresh token');
     }
   }
+
+  // Start automatic token refresh after 50 minutes
+  private startAutoRefresh(): void {
+    // Clear any existing interval
+    this.stopAutoRefresh();
+    
+    // Calculate time until 50 minutes from token generation
+    const refreshTime = this.calculateRefreshTime();
+    
+    if (refreshTime > 0) {
+      console.log(`🔄 Auto-refresh scheduled in ${Math.round(refreshTime / 1000 / 60)} minutes`);
+      
+      this.refreshInterval = setTimeout(async () => {
+        if (this.isAuthenticated()) {
+          try {
+            await this.refreshToken();
+            // Schedule next refresh after successful refresh
+            this.startAutoRefresh();
+          } catch (error) {
+            console.error('Auto-refresh failed:', error);
+            // Retry in 5 minutes if refresh fails
+            this.refreshInterval = setTimeout(() => this.startAutoRefresh(), 5 * 60 * 1000);
+          }
+        }
+      }, refreshTime);
+    }
+  }
+
+  // Calculate when to refresh token (50 minutes after generation)
+  private calculateRefreshTime(): number {
+    if (typeof window === 'undefined') return 0;
+    
+    const tokenGeneratedAt = localStorage.getItem('token_generated_at');
+    if (!tokenGeneratedAt) return 0;
+    
+    const generatedTime = parseInt(tokenGeneratedAt);
+    const currentTime = Date.now();
+    const timeElapsed = currentTime - generatedTime;
+    
+    // 50 minutes in milliseconds
+    const refreshInterval = 50 * 60 * 1000;
+    
+    if (timeElapsed >= refreshInterval) {
+      // Token is already 50+ minutes old, refresh immediately
+      return 0;
+    } else {
+      // Calculate remaining time until 50 minutes
+      return refreshInterval - timeElapsed;
+    }
+  }
+
+
+  // Stop automatic token refresh
+  private stopAutoRefresh(): void {
+    if (this.refreshInterval) {
+      clearTimeout(this.refreshInterval);
+      this.refreshInterval = null;
+    }
+  }
+
+
+  // Initialize auto-refresh if user is already authenticated
+  initializeAutoRefresh(): void {
+    if (this.isAuthenticated()) {
+      this.startAutoRefresh();
+    }
+  }
+
 
   // Helper method to map new API payment statuses to frontend expected statuses
   private mapPaymentStatus(apiStatus: string | undefined): string {
@@ -1066,7 +1145,6 @@ class ApiService {
             formData.append('removed_images[]', imagePath);
           });
         }
-        
         if (data.primary_image_index !== undefined) {
           formData.append('primary_image_index', data.primary_image_index.toString());
         }
@@ -2170,10 +2248,8 @@ class ApiService {
   async testAuthenticatedCall() {
     try {
       const response = await api.get('/orders');
-      console.log('Authenticated API call successful:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Authenticated API call failed:', error);
       throw error;
     }
   }

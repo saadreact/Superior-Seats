@@ -38,6 +38,7 @@ import { reclineTypesService } from '@/services/recline-types';
 import { heatOptionsService } from '@/services/heat-options';
 import { materialTypesService } from '@/services/material-types';
 import { seatStitchPatternService } from '@/services/seat-stitch-pattern';
+import { vehicleTrimsApiService } from '@/services/vehicleTrimsApi';
 
 interface ProductPage2Form {
   // First Half - Product Fields
@@ -59,6 +60,10 @@ interface ProductPage2Form {
   seatItemType: string[];
   seatStyle: string[]; // Added new field
   color: string[];
+  
+  // Vehicle Variation Fields
+  vehicleTrim: number[];
+  
   isActive: boolean;
 }
 
@@ -85,6 +90,7 @@ const CreateProduct2Page = () => {
     seatItemType: [],
     seatStyle: [], // Added new field
     color: [],
+    vehicleTrim: [],
     isActive: true,
   });
 
@@ -105,6 +111,9 @@ const CreateProduct2Page = () => {
   const [seatItemTypes, setSeatItemTypes] = useState<{ id: number; name: string; price: number }[]>([]);
   const [seatStyles, setSeatStyles] = useState<{ id: number; name: string; price: number }[]>([]); // Added new field
   const [colors, setColors] = useState<{ id: number; name: string; price: number }[]>([]);
+  
+  // Vehicle variation data state
+  const [vehicleTrims, setVehicleTrims] = useState<{ id: number; name: string; price: number }[]>([]);
 
   useEffect(() => {
     loadInitialData();
@@ -127,6 +136,7 @@ const CreateProduct2Page = () => {
         seatItemTypesRes,
         seatStylesRes,
         colorsRes,
+        vehicleTrimsRes,
       ] = await Promise.all([
         productApi.getCategories(),
         productApi.getSeatTypes().catch(() => apiService.getSeatTypes()),
@@ -139,6 +149,7 @@ const CreateProduct2Page = () => {
         productApi.getItemTypes().catch(() => apiService.getItemTypes()),
         productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
         productApi.getColors(),
+        vehicleTrimsApiService.getVehicleTrims({ per_page: 100 }),
       ]);
 
       // Debug API responses
@@ -148,6 +159,7 @@ const CreateProduct2Page = () => {
       console.log('Item Types API Response:', seatItemTypesRes);
       console.log('Seat Styles API Response:', seatStylesRes);
       console.log('Categories API Response:', categoriesRes);
+      console.log('Vehicle Trims API Response:', vehicleTrimsRes);
       console.log('===========================');
       
       // Convert API responses to the expected format { id, name, price }
@@ -172,6 +184,9 @@ const CreateProduct2Page = () => {
       console.log('Processed Seat Styles:', processedSeatStyles);
       setSeatStyles(processedSeatStyles);
       setColors(convertToFormFormat(colorsRes));
+      
+      // Set vehicle variation data (vehicle variations don't have price)
+      setVehicleTrims(convertToFormFormat(vehicleTrimsRes?.data || [], false));
     } catch (error: any) {
       console.error('Error loading initial data:', error);
       
@@ -216,10 +231,43 @@ const CreateProduct2Page = () => {
     event: any
   ) => {
     const value = event.target.value;
-    setFormData(prev => ({
-      ...prev,
-      [field]: typeof value === 'string' ? value.split(',') : value,
-    }));
+    
+    // Special handling for vehicle trim (store IDs instead of names)
+    if (field === 'vehicleTrim') {
+      const selectedValues: number[] = typeof value === 'string' ? value.split(',').map(Number) : value;
+      setFormData(prev => ({
+        ...prev,
+        [field]: selectedValues,
+      }));
+    } else {
+      // Regular handling for other fields (store names)
+      const selectedValues: string[] = typeof value === 'string' ? value.split(',') : value;
+      
+      // Check if "None" is being selected
+      const isSelectingNone = selectedValues.includes('None');
+      const wasNoneSelected = (formData[field] as string[]).includes('None');
+      
+      let finalValues: string[];
+      
+      if (isSelectingNone && !wasNoneSelected) {
+        // If "None" is being selected and it wasn't selected before, clear all other selections
+        finalValues = ['None'];
+      } else if (isSelectingNone && wasNoneSelected) {
+        // If "None" is being deselected, keep other selections
+        finalValues = selectedValues.filter(val => val !== 'None');
+      } else if (!isSelectingNone && wasNoneSelected) {
+        // If selecting other options while "None" was selected, remove "None" and keep new selections
+        finalValues = selectedValues.filter(val => val !== 'None');
+      } else {
+        // Normal selection without "None" involved
+        finalValues = selectedValues;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        [field]: finalValues,
+      }));
+    }
     
     if (errors[field]) {
       setErrors(prev => ({
@@ -344,44 +392,51 @@ const CreateProduct2Page = () => {
       newErrors.stock = 'Stock cannot be negative';
     }
 
-    if (formData.seatType.length === 0) {
-      newErrors.seatType = 'At least one seat type is required';
+    // Helper function to check if field has valid selection (either has options or "None")
+    const hasValidSelection = (field: string[] | number[]) => field.length > 0;
+
+    if (!hasValidSelection(formData.seatType)) {
+      newErrors.seatType = 'Please select at least one seat type or "None"';
     }
 
-    if (formData.armType.length === 0) {
-      newErrors.armType = 'At least one arm type is required';
+    if (!hasValidSelection(formData.armType)) {
+      newErrors.armType = 'Please select at least one arm type or "None"';
     }
 
-    if (formData.lumbarType.length === 0) {
-      newErrors.lumbarType = 'At least one lumbar type is required';
+    if (!hasValidSelection(formData.lumbarType)) {
+      newErrors.lumbarType = 'Please select at least one lumbar type or "None"';
     }
 
-    if (formData.reclineType.length === 0) {
-      newErrors.reclineType = 'At least one recline type is required';
+    if (!hasValidSelection(formData.reclineType)) {
+      newErrors.reclineType = 'Please select at least one recline type or "None"';
     }
 
-    if (formData.heatOption.length === 0) {
-      newErrors.heatOption = 'At least one heat option is required';
+    if (!hasValidSelection(formData.heatOption)) {
+      newErrors.heatOption = 'Please select at least one heat option or "None"';
     }
 
-    if (formData.materialType.length === 0) {
-      newErrors.materialType = 'At least one material type is required';
+    if (!hasValidSelection(formData.materialType)) {
+      newErrors.materialType = 'Please select at least one material type or "None"';
     }
 
-    if (formData.stitchPattern.length === 0) {
-      newErrors.stitchPattern = 'At least one stitch pattern is required';
+    if (!hasValidSelection(formData.stitchPattern)) {
+      newErrors.stitchPattern = 'Please select at least one stitch pattern or "None"';
     }
 
-    if (formData.seatItemType.length === 0) {
-      newErrors.seatItemType = 'At least one seat item type is required';
+    if (!hasValidSelection(formData.seatItemType)) {
+      newErrors.seatItemType = 'Please select at least one seat item type or "None"';
     }
 
-    if (formData.seatStyle.length === 0) {
-      newErrors.seatStyle = 'At least one seat style is required';
+    if (!hasValidSelection(formData.seatStyle)) {
+      newErrors.seatStyle = 'Please select at least one seat style or "None"';
     }
 
-    if (formData.color.length === 0) {
-      newErrors.color = 'At least one color is required';
+    if (!hasValidSelection(formData.color)) {
+      newErrors.color = 'Please select at least one color or "None"';
+    }
+
+    if (!hasValidSelection(formData.vehicleTrim)) {
+      newErrors.vehicleTrim = 'Please select at least one vehicle trim or "None"';
     }
 
     setErrors(newErrors);
@@ -398,9 +453,10 @@ const CreateProduct2Page = () => {
     setLoading(true);
     
     try {
-      // Helper function to map variation names to IDs
+      // Helper function to map variation names to IDs (excluding "None")
       const mapNamesToIds = (selectedNames: string[], availableOptions: { id: number; name: string; price: number }[]): number[] => {
         return selectedNames
+          .filter(name => name !== 'None') // Filter out "None" selections
           .map(name => {
             const option = availableOptions.find(opt => opt.name === name);
             return option?.id;
@@ -434,6 +490,9 @@ const CreateProduct2Page = () => {
         item_type_ids: mapNamesToIds(formData.seatItemType, seatItemTypes),
         seat_style_ids: mapNamesToIds(formData.seatStyle, seatStyles),
         color_ids: mapNamesToIds(formData.color, colors),
+        
+        // Map vehicle trim IDs (already stored as IDs)
+        vehicle_trim_ids: formData.vehicleTrim,
       };
 
       // Debug: Log the data being sent
@@ -491,6 +550,9 @@ const CreateProduct2Page = () => {
     // Safety check to ensure options is an array
     const safeOptions = Array.isArray(options) ? options : [];
     
+    // Check if this is a vehicle field (no cost display)
+    const isVehicleField = field === 'vehicleTrim';
+    
     // Debug logging for seat styles specifically
     if (field === 'seatStyle') {
       console.log(`Rendering ${label} field:`, {
@@ -507,32 +569,64 @@ const CreateProduct2Page = () => {
         <InputLabel>{label}</InputLabel>
         <Select
           multiple
-          value={formData[field] as string[]}
+          value={isVehicleField ? (formData[field] as number[]) : (formData[field] as string[])}
           onChange={handleMultiSelectChange(field)}
           input={<OutlinedInput label={label} />}
           renderValue={(selected) => (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {(selected as string[]).map((value) => (
-                <Box key={value} sx={{ 
-                  backgroundColor: 'primary.main', 
-                  color: 'white', 
-                  px: 1, 
-                  py: 0.5, 
-                  borderRadius: 1, 
-                  fontSize: '0.75rem' 
-                }}>
-                  {value}
-                </Box>
-              ))}
+              {isVehicleField ? 
+                (selected as number[]).map((id) => {
+                  const option = safeOptions.find(opt => opt.id === id);
+                  return (
+                    <Box key={id} sx={{ 
+                      backgroundColor: 'primary.main', 
+                      color: 'white', 
+                      px: 1, 
+                      py: 0.5, 
+                      borderRadius: 1, 
+                      fontSize: '0.75rem' 
+                    }}>
+                      {option?.name || `ID: ${id}`}
+                    </Box>
+                  );
+                }) :
+                (selected as string[]).map((value) => (
+                  <Box key={value} sx={{ 
+                    backgroundColor: 'primary.main', 
+                    color: 'white', 
+                    px: 1, 
+                    py: 0.5, 
+                    borderRadius: 1, 
+                    fontSize: '0.75rem' 
+                  }}>
+                    {value}
+                  </Box>
+                ))
+              }
             </Box>
           )}
         >
-          {safeOptions.map((option) => (
-            <MenuItem key={option.id} value={option.name}>
-              <Checkbox checked={(formData[field] as string[]).indexOf(option.name) > -1} />
+          {/* None option - only for non-vehicle fields */}
+          {!isVehicleField && (
+            <MenuItem key="none" value="None">
+              <Checkbox checked={(formData[field] as string[]).indexOf('None') > -1} />
               <ListItemText 
-                primary={`${option.name} (+$${option.price || 0})`} 
-                secondary={(option.price || 0) > 0 ? `Additional cost: $${option.price || 0}` : 'No additional cost'}
+                primary="None"
+                sx={{ fontStyle: 'italic', color: 'text.secondary' }}
+              />
+            </MenuItem>
+          )}
+          
+          {/* Regular options */}
+          {safeOptions.map((option) => (
+            <MenuItem key={option.id} value={isVehicleField ? option.id : option.name}>
+              <Checkbox checked={isVehicleField ? 
+                (formData[field] as number[]).indexOf(option.id) > -1 : 
+                (formData[field] as string[]).indexOf(option.name) > -1
+              } />
+              <ListItemText 
+                primary={isVehicleField ? option.name : `${option.name} (+$${option.price || 0})`}
+                secondary={isVehicleField ? undefined : undefined}
               />
             </MenuItem>
           ))}
@@ -543,7 +637,7 @@ const CreateProduct2Page = () => {
 
   if (initialLoading) {
     return (
-      <AdminLayout title="Create Product - Products 2">
+      <AdminLayout title="Create Product">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
@@ -552,7 +646,7 @@ const CreateProduct2Page = () => {
   }
 
   return (
-    <AdminLayout title="Create Product - Products 2">
+    <AdminLayout title="Create Product">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -562,7 +656,7 @@ const CreateProduct2Page = () => {
               onClick={handleBackToList}
               sx={{ color: 'text.secondary' }}
             >
-              Back to Products 2
+              Back 
             </Button>
         
           </Box>
@@ -834,6 +928,17 @@ const CreateProduct2Page = () => {
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
                     {renderMultiSelectField('seatStyle', 'Seat Style', seatStyles)}
                     {renderMultiSelectField('color', 'Color', colors)}
+                  </Box>
+                </Box>
+
+                {/* Vehicle Information Section */}
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
+                    Vehicle Information
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+                    {renderMultiSelectField('vehicleTrim', 'Vehicle Trim', vehicleTrims)}
                   </Box>
                 </Box>
 

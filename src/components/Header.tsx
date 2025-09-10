@@ -29,6 +29,7 @@ import {
   Logout as LogoutIcon,
   AccountCircle as AccountCircleIcon,
   Settings as AdminPanelSettingsIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
@@ -41,9 +42,11 @@ import { isSuperAdmin } from '@/utils/auth';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import Cart from './Cart';
 import AuthModal from './AuthModal';
+import EditProfileModal from './EditProfileModal';
 
 const Header = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const [currentPath, setCurrentPath] = useState('');
   
@@ -98,9 +101,9 @@ const Header = () => {
     { text: 'Customize Your Seat', href: '/custom-seats' },
     { text: 'Shop Now', href: '/shop-now' },
     { text: 'Shop Specials', href: '/ShopGallery' },
-    { text: 'Gallery', href: '/gallery' },
-    { text: 'About', href: '/about' },
-    { text: 'Contact', href: '/contact' },
+    { text: 'Gallery', href: '/Gallery' },
+    { text: 'About', href: '/About' },
+    { text: 'Contact', href: '/Contact' },
   ];
 
   const handleAuthClick = () => {
@@ -113,6 +116,21 @@ const Header = () => {
 
   const handleUserMenuClose = () => {
     setUserMenuAnchor(null);
+  };
+
+  const handleEditProfile = () => {
+    console.log('Edit Profile clicked. User data:', user);
+    console.log('User ID:', user?.id, 'Customer ID:', user?.customer_id);
+    setEditProfileModalOpen(true);
+    handleUserMenuClose();
+  };
+
+  const handleProfileUpdated = (updatedUser: any) => {
+    setSnackbar({
+      open: true,
+      message: 'Profile updated successfully!',
+      severity: 'success',
+    });
   };
 
   const handleLogout = async () => {
@@ -585,6 +603,21 @@ const Header = () => {
                           }
                         }}
                       >
+                        {(user.id || user.customer_id) && (
+                          <MenuItem 
+                            onClick={handleEditProfile}
+                            sx={{
+                              py: 1.5,
+                              px: 2,
+                              '&:hover': {
+                                backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                              }
+                            }}
+                          >
+                            <EditIcon sx={{ mr: 1.5, fontSize: '1.2rem' }} />
+                            Edit Profile
+                          </MenuItem>
+                        )}
                         <MenuItem 
                           onClick={handleLogout}
                           sx={{
@@ -657,6 +690,15 @@ const Header = () => {
         open={authModalOpen} 
         onClose={() => setAuthModalOpen(false)} 
       />
+
+      {isAuthenticated && user && (user.id || user.customer_id) && (
+        <EditProfileModal 
+          open={editProfileModalOpen} 
+          onClose={() => setEditProfileModalOpen(false)}
+          customerId={user.id || user.customer_id}
+          onProfileUpdated={handleProfileUpdated}
+        />
+      )}
 
       {/* Snackbar for notifications */}
       <Snackbar

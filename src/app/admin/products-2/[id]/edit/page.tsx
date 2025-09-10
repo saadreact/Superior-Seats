@@ -33,6 +33,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { productApi } from '@/services/productapi';
 import { apiService } from '@/utils/api';
+import { vehicleTrimsApiService } from '@/services/vehicleTrimsApi';
 
 interface ProductPage2Form {
   // First Half - Product Fields
@@ -54,6 +55,10 @@ interface ProductPage2Form {
   seatItemType: string[];
   seatStyle: string[];
   color: string[];
+  
+  // Vehicle Variation Fields
+  vehicleTrim: number[];
+  
   isActive: boolean;
 }
 
@@ -103,6 +108,7 @@ const EditProduct2Page = () => {
     seatItemType: [],
     seatStyle: [],
     color: [],
+    vehicleTrim: [],
     isActive: true,
   });
 
@@ -124,6 +130,9 @@ const EditProduct2Page = () => {
   const [seatItemTypes, setSeatItemTypes] = useState<{ id: number; name: string; price: number }[]>([]);
   const [seatStyles, setSeatStyles] = useState<{ id: number; name: string; price: number }[]>([]);
   const [colors, setColors] = useState<{ id: number; name: string; price: number }[]>([]);
+  
+  // Vehicle variation data state
+  const [vehicleTrims, setVehicleTrims] = useState<{ id: number; name: string; price: number }[]>([]);
 
   useEffect(() => {
     loadInitialData();
@@ -148,6 +157,7 @@ const EditProduct2Page = () => {
         seatItemTypesRes,
         seatStylesRes,
         colorsRes,
+        vehicleTrimsRes,
         productRes,
       ] = await Promise.all([
         productApi.getCategories(),
@@ -161,6 +171,7 @@ const EditProduct2Page = () => {
         productApi.getItemTypes().catch(() => apiService.getItemTypes()),
         productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
         productApi.getColors(),
+        vehicleTrimsApiService.getVehicleTrims({ per_page: 100 }),
         productApi.getProduct(parseInt(id)),
       ]);
 
@@ -189,6 +200,9 @@ const EditProduct2Page = () => {
       setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
       setSeatStyles(convertToFormFormat(seatStylesRes, false)); // Seat styles don't have price
       setColors(convertToFormFormat(colorsRes));
+      
+      // Set vehicle variation data (vehicle variations don't have price)
+      setVehicleTrims(convertToFormFormat(vehicleTrimsRes?.data || [], false));
 
       // Helper function to extract variation names from API response
       const extractVariationNames = (variations: any[], fieldName: string): string[] => {
@@ -208,6 +222,29 @@ const EditProduct2Page = () => {
           .filter((name, index, arr) => arr.indexOf(name) === index);
         console.log(`🔍 Final extracted ${fieldName}:`, names);
         return names;
+      };
+
+      // Helper function to extract variation IDs from API response (for vehicle trim)
+      const extractVariationIds = (variations: any[], fieldName: string, availableOptions: { id: number; name: string; price: number }[]): number[] => {
+        if (!variations || !Array.isArray(variations)) {
+          console.log(`🔍 No variations array for ${fieldName}`);
+          return [];
+        }
+        console.log(`🔍 Processing ${fieldName} IDs from ${variations.length} variations:`, variations);
+        const ids = variations
+          .map((v, index) => {
+            console.log(`🔍 Variation ${index} for ${fieldName}:`, v);
+            const value = v[fieldName] || v[`${fieldName}_name`] || v[`${fieldName}_type`] || v.name;
+            console.log(`🔍 Extracted value for ${fieldName}:`, value);
+            
+            // Find the ID for this name
+            const option = availableOptions.find(opt => opt.name === value);
+            return option?.id;
+          })
+          .filter((id): id is number => id !== undefined)
+          .filter((id, index, arr) => arr.indexOf(id) === index);
+        console.log(`🔍 Final extracted ${fieldName} IDs:`, ids);
+        return ids;
       };
 
       // Set form data from product
@@ -251,6 +288,7 @@ const EditProduct2Page = () => {
           seatItemType: extractVariationNames(productRes.variations || [], 'seat_item_type'),
           seatStyle: extractVariationNames(productRes.variations || [], 'seat_style'),
           color: extractVariationNames(productRes.variations || [], 'color'),
+          vehicleTrim: extractVariationIds(productRes.variations || [], 'vehicle_trim', vehicleTrims),
           isActive: productRes.is_active ?? true,
         });
         
@@ -302,10 +340,43 @@ const EditProduct2Page = () => {
     event: any
   ) => {
     const value = event.target.value;
-    setFormData(prev => ({
-      ...prev,
-      [field]: typeof value === 'string' ? value.split(',') : value,
-    }));
+    
+    // Special handling for vehicle trim (store IDs instead of names)
+    if (field === 'vehicleTrim') {
+      const selectedValues: number[] = typeof value === 'string' ? value.split(',').map(Number) : value;
+      setFormData(prev => ({
+        ...prev,
+        [field]: selectedValues,
+      }));
+    } else {
+      // Regular handling for other fields (store names)
+      const selectedValues: string[] = typeof value === 'string' ? value.split(',') : value;
+      
+      // Check if "None" is being selected
+      const isSelectingNone = selectedValues.includes('None');
+      const wasNoneSelected = (formData[field] as string[]).includes('None');
+      
+      let finalValues: string[];
+      
+      if (isSelectingNone && !wasNoneSelected) {
+        // If "None" is being selected and it wasn't selected before, clear all other selections
+        finalValues = ['None'];
+      } else if (isSelectingNone && wasNoneSelected) {
+        // If "None" is being deselected, keep other selections
+        finalValues = selectedValues.filter(val => val !== 'None');
+      } else if (!isSelectingNone && wasNoneSelected) {
+        // If selecting other options while "None" was selected, remove "None" and keep new selections
+        finalValues = selectedValues.filter(val => val !== 'None');
+      } else {
+        // Normal selection without "None" involved
+        finalValues = selectedValues;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        [field]: finalValues,
+      }));
+    }
     
     if (errors[field]) {
       setErrors(prev => ({
@@ -344,10 +415,21 @@ const EditProduct2Page = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     
+    console.log('📁 handleImageChange called with files:', files);
+    console.log('📁 Files count:', files.length);
+    
     // Validate files
     const validFiles = files.filter(file => {
+      console.log('📁 Validating file:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        isFile: file instanceof File
+      });
+      
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
       if (!validTypes.includes(file.type)) {
+        console.log('❌ Invalid file type:', file.type);
         setErrors(prev => ({
           ...prev,
           images: 'Please select valid image files (JPEG, PNG, or GIF)',
@@ -356,6 +438,7 @@ const EditProduct2Page = () => {
       }
       
       if (file.size > 2 * 1024 * 1024) {
+        console.log('❌ File too large:', file.size);
         setErrors(prev => ({
           ...prev,
           images: 'Image size must be less than 2MB',
@@ -363,13 +446,22 @@ const EditProduct2Page = () => {
         return false;
       }
       
+      console.log('✅ File is valid');
       return true;
     });
     
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...validFiles],
-    }));
+    console.log('📁 Valid files count:', validFiles.length);
+    console.log('📁 Valid files:', validFiles);
+    
+    setFormData(prev => {
+      const newImages = [...prev.images, ...validFiles];
+      console.log('📁 Setting new images array:', newImages);
+      console.log('📁 New images count:', newImages.length);
+      return {
+        ...prev,
+        images: newImages,
+      };
+    });
     
     if (errors.images) {
       setErrors(prev => ({
@@ -409,44 +501,51 @@ const EditProduct2Page = () => {
       newErrors.stock = 'Stock cannot be negative';
     }
 
-    if (formData.seatType.length === 0) {
-      newErrors.seatType = 'At least one seat type is required';
+    // Helper function to check if field has valid selection (either has options or "None")
+    const hasValidSelection = (field: string[] | number[]) => field.length > 0;
+
+    if (!hasValidSelection(formData.seatType)) {
+      newErrors.seatType = 'Please select at least one seat type or "None"';
     }
 
-    if (formData.armType.length === 0) {
-      newErrors.armType = 'At least one arm type is required';
+    if (!hasValidSelection(formData.armType)) {
+      newErrors.armType = 'Please select at least one arm type or "None"';
     }
 
-    if (formData.lumbarType.length === 0) {
-      newErrors.lumbarType = 'At least one lumbar type is required';
+    if (!hasValidSelection(formData.lumbarType)) {
+      newErrors.lumbarType = 'Please select at least one lumbar type or "None"';
     }
 
-    if (formData.reclineType.length === 0) {
-      newErrors.reclineType = 'At least one recline type is required';
+    if (!hasValidSelection(formData.reclineType)) {
+      newErrors.reclineType = 'Please select at least one recline type or "None"';
     }
 
-    if (formData.heatOption.length === 0) {
-      newErrors.heatOption = 'At least one heat option is required';
+    if (!hasValidSelection(formData.heatOption)) {
+      newErrors.heatOption = 'Please select at least one heat option or "None"';
     }
 
-    if (formData.materialType.length === 0) {
-      newErrors.materialType = 'At least one material type is required';
+    if (!hasValidSelection(formData.materialType)) {
+      newErrors.materialType = 'Please select at least one material type or "None"';
     }
 
-    if (formData.stitchPattern.length === 0) {
-      newErrors.stitchPattern = 'At least one stitch pattern is required';
+    if (!hasValidSelection(formData.stitchPattern)) {
+      newErrors.stitchPattern = 'Please select at least one stitch pattern or "None"';
     }
 
-    if (formData.seatItemType.length === 0) {
-      newErrors.seatItemType = 'At least one seat item type is required';
+    if (!hasValidSelection(formData.seatItemType)) {
+      newErrors.seatItemType = 'Please select at least one seat item type or "None"';
     }
 
-    if (formData.seatStyle.length === 0) {
-      newErrors.seatStyle = 'At least one seat style is required';
+    if (!hasValidSelection(formData.seatStyle)) {
+      newErrors.seatStyle = 'Please select at least one seat style or "None"';
     }
 
-    if (formData.color.length === 0) {
-      newErrors.color = 'At least one color is required';
+    if (!hasValidSelection(formData.color)) {
+      newErrors.color = 'Please select at least one color or "None"';
+    }
+
+    if (!hasValidSelection(formData.vehicleTrim)) {
+      newErrors.vehicleTrim = 'Please select at least one vehicle trim or "None"';
     }
 
     setErrors(newErrors);
@@ -463,9 +562,10 @@ const EditProduct2Page = () => {
     setLoading(true);
     
     try {
-      // Helper function to map variation names to IDs
+      // Helper function to map variation names to IDs (excluding "None")
       const mapNamesToIds = (selectedNames: string[], availableOptions: { id: number; name: string; price: number }[]): number[] => {
         return selectedNames
+          .filter(name => name !== 'None') // Filter out "None" selections
           .map(name => {
             const option = availableOptions.find(opt => opt.name === name);
             return option?.id;
@@ -499,8 +599,41 @@ const EditProduct2Page = () => {
         item_type_ids: mapNamesToIds(formData.seatItemType, seatItemTypes),
         seat_style_ids: mapNamesToIds(formData.seatStyle, seatStyles),
         color_ids: mapNamesToIds(formData.color, colors),
+        
+        // Map vehicle trim IDs (already stored as IDs)
+        vehicle_trim_ids: formData.vehicleTrim,
       };
 
+      // Debug: Log the data being sent
+      console.log('🔄 Products-2 data being sent to new productApi:', {
+        ...productData,
+        images: productData.images?.map(file => `File(${file.name}, ${file.size} bytes)`)
+      });
+      
+      // Debug: Check if images are actually present
+      console.log('🔄 FormData.images length:', formData.images.length);
+      console.log('🔄 FormData.images:', formData.images);
+      console.log('🔄 FormData.images type:', typeof formData.images);
+      console.log('🔄 FormData.images is array:', Array.isArray(formData.images));
+      console.log('🔄 ProductData.images length:', productData.images?.length);
+      console.log('🔄 ProductData.images:', productData.images);
+      console.log('🔄 ProductData.images type:', typeof productData.images);
+      console.log('🔄 ProductData.images is array:', Array.isArray(productData.images));
+      
+      // Check each image individually
+      if (productData.images && productData.images.length > 0) {
+        productData.images.forEach((file, index) => {
+          console.log(`🔄 Image ${index}:`, {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            isFile: file instanceof File,
+            constructor: file.constructor.name
+          });
+        });
+      } else {
+        console.log('❌ No images in productData.images');
+      }
 
       // Call the new productApi to update product
       await productApi.updateProduct(parseInt(id), productData);
@@ -526,37 +659,83 @@ const EditProduct2Page = () => {
     // Safety check to ensure options is an array
     const safeOptions = Array.isArray(options) ? options : [];
     
+    // Check if this is a vehicle field (no cost display)
+    const isVehicleField = field === 'vehicleTrim';
+    
+    // Debug logging for seat styles specifically
+    if (field === 'seatStyle') {
+      console.log(`Rendering ${label} field:`, {
+        field,
+        options,
+        safeOptions,
+        optionsLength: options?.length,
+        safeOptionsLength: safeOptions.length
+      });
+    }
+    
     return (
       <FormControl fullWidth required={required} error={!!errors[field]}>
         <InputLabel>{label}</InputLabel>
         <Select
           multiple
-          value={formData[field] as string[]}
+          value={isVehicleField ? (formData[field] as number[]) : (formData[field] as string[])}
           onChange={handleMultiSelectChange(field)}
           input={<OutlinedInput label={label} />}
           renderValue={(selected) => (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {(selected as string[]).map((value) => (
-                <Box key={value} sx={{ 
-                  backgroundColor: 'primary.main', 
-                  color: 'white', 
-                  px: 1, 
-                  py: 0.5, 
-                  borderRadius: 1, 
-                  fontSize: '0.75rem' 
-                }}>
-                  {value}
-                </Box>
-              ))}
+              {isVehicleField ? 
+                (selected as number[]).map((id) => {
+                  const option = safeOptions.find(opt => opt.id === id);
+                  return (
+                    <Box key={id} sx={{ 
+                      backgroundColor: 'primary.main', 
+                      color: 'white', 
+                      px: 1, 
+                      py: 0.5, 
+                      borderRadius: 1, 
+                      fontSize: '0.75rem' 
+                    }}>
+                      {option?.name || `ID: ${id}`}
+                    </Box>
+                  );
+                }) :
+                (selected as string[]).map((value) => (
+                  <Box key={value} sx={{ 
+                    backgroundColor: 'primary.main', 
+                    color: 'white', 
+                    px: 1, 
+                    py: 0.5, 
+                    borderRadius: 1, 
+                    fontSize: '0.75rem' 
+                  }}>
+                    {value}
+                  </Box>
+                ))
+              }
             </Box>
           )}
         >
-          {safeOptions.map((option) => (
-            <MenuItem key={option.name} value={option.name}>
-              <Checkbox checked={(formData[field] as string[]).indexOf(option.name) > -1} />
+          {/* None option - only for non-vehicle fields */}
+          {!isVehicleField && (
+            <MenuItem key="none" value="None">
+              <Checkbox checked={(formData[field] as string[]).indexOf('None') > -1} />
               <ListItemText 
-                primary={`${option.name} (+$${option.price || 0})`} 
-                secondary={(option.price || 0) > 0 ? `Additional cost: $${option.price || 0}` : 'No additional cost'}
+                primary="None"
+                sx={{ fontStyle: 'italic', color: 'text.secondary' }}
+              />
+            </MenuItem>
+          )}
+          
+          {/* Regular options */}
+          {safeOptions.map((option) => (
+            <MenuItem key={option.id} value={isVehicleField ? option.id : option.name}>
+              <Checkbox checked={isVehicleField ? 
+                (formData[field] as number[]).indexOf(option.id) > -1 : 
+                (formData[field] as string[]).indexOf(option.name) > -1
+              } />
+              <ListItemText 
+                primary={isVehicleField ? option.name : `${option.name} (+$${option.price || 0})`}
+                secondary={isVehicleField ? undefined : undefined}
               />
             </MenuItem>
           ))}
@@ -576,7 +755,7 @@ const EditProduct2Page = () => {
   }
 
   return (
-    <AdminLayout title="Edit Product - Products 2">
+    <AdminLayout title="Edit Product">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -586,11 +765,9 @@ const EditProduct2Page = () => {
               onClick={handleBackToList}
               sx={{ color: 'text.secondary' }}
             >
-              Back to Products 2
+              Back 
             </Button>
-            <Typography variant="h4" component="h1">
-              Edit Product
-            </Typography>
+           
           </Box>
         </Box>
 
@@ -703,6 +880,22 @@ const EditProduct2Page = () => {
                     Product Images
                   </Typography>
                   
+                  {/* Debug: Show current images state */}
+                  <Box sx={{ mb: 2, p: 1, bgcolor: 'grey.100', borderRadius: 1 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Debug: Images count: {formData.images.length}
+                    </Typography>
+                    {formData.images.length > 0 && (
+                      <Box>
+                        {formData.images.map((img, idx) => (
+                          <Typography key={idx} variant="caption" display="block">
+                            Image {idx}: {img?.name || 'No name'} ({img?.size || 0} bytes) - {img instanceof File ? 'File' : typeof img}
+                          </Typography>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                  
                   {/* Existing Images Preview */}
                   {existingImages.length > 0 && (
                     <Box sx={{ mb: 2 }}>
@@ -760,27 +953,40 @@ const EditProduct2Page = () => {
                         New Images:
                       </Typography>
                       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', sm: 'repeat(12, 1fr)', md: 'repeat(16, 1fr)' }, gap: 0, mb: 2 }}>
-                        {formData.images.map((image, index) => (
-                          <Box key={`new-${index}`} sx={{ position: 'relative' }}>
-                            <img
-                              src={URL.createObjectURL(image)}
-                              alt={`New ${index + 1}`}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                aspectRatio: '1/1',
-                                objectFit: 'cover',
-                                borderRadius: 4,
-                                border: '1px solid #e0e0e0',
-                                maxWidth: 60,
-                                maxHeight: 60,
-                              }}
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
-                              }}
-                            />
+                        {formData.images.map((image, index) => {
+                          console.log(`🖼️ Rendering image ${index}:`, {
+                            image,
+                            type: typeof image,
+                            isFile: image instanceof File,
+                            name: image?.name,
+                            size: image?.size
+                          });
+                          
+                          return (
+                            <Box key={index} sx={{ position: 'relative' }}>
+                              <img
+                                src={URL.createObjectURL(image)}
+                                alt={`Preview ${index + 1}`}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  aspectRatio: '1/1',
+                                  objectFit: 'cover',
+                                  borderRadius: 4,
+                                  border: '1px solid #e0e0e0',
+                                  maxWidth: 60,
+                                  maxHeight: 60,
+                                }}
+                                onError={(e) => {
+                                  console.log(`❌ Image ${index} failed to load:`, e);
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
+                                }}
+                                onLoad={() => {
+                                  console.log(`✅ Image ${index} loaded successfully`);
+                                }}
+                              />
                             <IconButton
                               onClick={() => removeImage(index)}
                               size="small"
@@ -804,24 +1010,9 @@ const EditProduct2Page = () => {
                             >
                               <CloseIcon sx={{ fontSize: 10, color: '#666' }} />
                             </IconButton>
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: 2,
-                                left: 2,
-                                bgcolor: 'success.main',
-                                color: 'white',
-                                px: 0.5,
-                                py: 0.25,
-                                borderRadius: 0.5,
-                                fontSize: '0.6rem',
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              NEW
-                            </Box>
                           </Box>
-                        ))}
+                          );
+                        })}
                       </Box>
                     </Box>
                   )}
@@ -843,7 +1034,7 @@ const EditProduct2Page = () => {
                         startIcon={<CloudUploadIcon />}
                         sx={{ mb: 1 }}
                       >
-                        Add More Images
+                        Upload Images
                       </Button>
                     </label>
                     {errors.images && (
@@ -901,6 +1092,17 @@ const EditProduct2Page = () => {
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
                     {renderMultiSelectField('seatStyle', 'Seat Style', seatStyles)}
                     {renderMultiSelectField('color', 'Color', colors)}
+                  </Box>
+                </Box>
+
+                {/* Vehicle Information Section */}
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
+                    Vehicle Information
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+                    {renderMultiSelectField('vehicleTrim', 'Vehicle Trim', vehicleTrims)}
                   </Box>
                 </Box>
 

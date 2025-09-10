@@ -468,21 +468,19 @@ const ShopGallery = () => {
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
   const handleCustomize = (item: Product) => {
-    // Prepare images array with full URLs using the getProductImages function
-    const imagesArray = getProductImages(item);
+    console.log('🔄 ShopNow - Setting selected item ID:', item.id);
     
-    setSelectedItem({ // FUNCTION: Set the selected item in global context
-      id: item.id,
-      title: item.name,
-      category: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
-      subCategory: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
-      mainCategory: 'seats',
-      image: imagesArray.length > 0 ? imagesArray[0] : '/placeholder-image.jpg',
-      images: imagesArray, // ADDED: Pass the full images array
-      description: item.description || '',
-      price: item.price.toString(),
+    // Set only the product ID in the context
+    setSelectedItem({ 
+      id: item.id
     });
-    router.push('/customize-your-seat'); // FUNCTION: Navigate to customization page
+    
+    // Save product ID to localStorage
+    localStorage.setItem('selectedProductId', item.id.toString());
+    console.log('💾 ShopNow - Saved product ID to localStorage:', item.id);
+    
+    // Navigate to customization page
+    router.push('/customize-your-seat');
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
