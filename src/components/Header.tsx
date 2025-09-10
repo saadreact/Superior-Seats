@@ -101,9 +101,9 @@ const Header = () => {
     { text: 'Customize Your Seat', href: '/custom-seats' },
     { text: 'Shop Now', href: '/shop-now' },
     { text: 'Shop Specials', href: '/ShopGallery' },
-    { text: 'Gallery', href: '/Gallery' },
-    { text: 'About', href: '/About' },
-    { text: 'Contact', href: '/Contact' },
+    { text: 'Gallery', href: '/gallery' },
+    { text: 'About', href: '/about' },
+    { text: 'Contact', href: '/contact' },
   ];
 
   const handleAuthClick = () => {
