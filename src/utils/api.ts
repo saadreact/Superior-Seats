@@ -1957,8 +1957,11 @@ class ApiService {
   async createArmType(data: {
     name: string;
     description?: string;
+    cost?: number;
+    price?: number;
     is_active?: boolean;
-    
+    price_tier_ids?: number[];
+    price_adjustments?: any;
   }) {
     try {
       const response = await api.post('/arm-types', data);
@@ -1973,8 +1976,11 @@ class ApiService {
   async updateArmType(id: number, data: {
     name?: string;
     description?: string;
+    cost?: number;
+    price?: number;
     is_active?: boolean;
-    
+    price_tier_ids?: number[];
+    price_adjustments?: any;
   }) {
     try {
       const response = await api.put(`/arm-types/${id}`, data);

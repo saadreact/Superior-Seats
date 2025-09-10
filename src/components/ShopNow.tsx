@@ -186,21 +186,27 @@ const ShopGallery = () => {
     setLoading(true);
     setError(null);
     
-    // Fetch products
-    console.log('🚀 ShopGallery - Fetching products from API...');
+    // Fetch products (excluding special products)
+    console.log('🚀 ShopNow - Fetching regular products from API (excluding special products)...');
     try {
       const productsResponse = await shopNowApis.getProducts();
-      console.log('✅ ShopGallery - Products API Response:', productsResponse);
+      console.log('✅ ShopNow - Products API Response:', productsResponse);
       
       if (productsResponse.status === 'success' && productsResponse.data) {
-        setApiProducts(productsResponse.data);
-        console.log('📦 Products loaded:', productsResponse.data.length);
+        // Filter out special products (products with show_on_special_shop: true)
+        const regularProducts = productsResponse.data.filter(product => 
+          !product.show_on_special_shop
+        );
+        setApiProducts(regularProducts);
+        console.log('📦 ShopNow - Regular products loaded (special products filtered out):', regularProducts.length);
+        console.log('🔍 ShopNow - Total products from API:', productsResponse.data.length);
+        console.log('🚫 ShopNow - Special products filtered out:', productsResponse.data.length - regularProducts.length);
       } else {
-        console.warn('⚠️ ShopGallery - Products API returned non-success status:', productsResponse);
+        console.warn('⚠️ ShopNow - Products API returned non-success status:', productsResponse);
         setApiProducts([]); // Set empty array as fallback
       }
     } catch (error) {
-      console.warn('⚠️ ShopGallery - Error fetching products, using fallback:', error);
+      console.warn('⚠️ ShopNow - Error fetching products, using fallback:', error);
       setApiProducts([]); // Set empty array as fallback
       setError('Failed to load products');
     }
