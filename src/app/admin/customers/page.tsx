@@ -36,6 +36,7 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { Customer, CustomerType } from '@/data/types';
@@ -72,7 +73,12 @@ const CustomersPage = () => {
 
   const handleFilterChange = (key: keyof typeof filters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSearch = () => {
     setCurrentPage(1);
+    fetchCustomers(1, rowsPerPage);
+    setFilterDialogOpen(false);
   };
 
   const resetFilters = () => {
@@ -86,6 +92,8 @@ const CustomersPage = () => {
       sort_by: 'created_at',
       sort_order: 'desc',
     });
+    setCurrentPage(1);
+    fetchCustomers(1, rowsPerPage);
   };
 
   const fetchCustomers = async (page: number, perPage: number) => {
@@ -154,7 +162,7 @@ const CustomersPage = () => {
   useEffect(() => {
     fetchCustomers(currentPage, rowsPerPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, rowsPerPage, filters]);
+  }, [currentPage, rowsPerPage]);
 
   const getCustomerTypeName = (type: string) => {
     if (!type) return '-';
@@ -446,13 +454,27 @@ const CustomersPage = () => {
 
             {/* Filters Dialog */}
             <Dialog open={filterDialogOpen} onClose={() => setFilterDialogOpen(false)} maxWidth="lg" fullWidth>
-              <DialogTitle>Filter Customers</DialogTitle>
+              <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Filter Customers
+                <IconButton
+                  onClick={() => setFilterDialogOpen(false)}
+                  size="small"
+                  sx={{ color: 'text.secondary' }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </DialogTitle>
               <DialogContent dividers>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr 1fr' }, gap: 2 }}>
                   <TextField
                     placeholder="Search (name, email, company)"
                     value={filters.search}
                     onChange={(e) => handleFilterChange('search', e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch();
+                      }
+                    }}
                     InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
                   />
                   <FormControl fullWidth>
@@ -514,6 +536,9 @@ const CustomersPage = () => {
               </DialogContent>
               <DialogActions>
                 <Button onClick={resetFilters}>Clear</Button>
+                <Button onClick={handleSearch} variant="contained" startIcon={<SearchIcon />}>
+                  Search
+                </Button>
               </DialogActions>
             </Dialog>
           </>

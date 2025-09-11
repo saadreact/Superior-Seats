@@ -42,6 +42,7 @@ const PriceTiersPage = () => {
   const [loading, setLoading] = useState(false);
   const [isPriceTierDeleteDialogOpen, setIsPriceTierDeleteDialogOpen] = useState(false);
   const [priceTierToDelete, setPriceTierToDelete] = useState<PriceTier | null>(null);
+  const [customerCounts, setCustomerCounts] = useState<Record<number, number>>({});
   
   // Alert State
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -50,6 +51,13 @@ const PriceTiersPage = () => {
   useEffect(() => {
     loadPriceTiers();
   }, []);
+
+  // Load customer counts when price tiers change
+  useEffect(() => {
+    if (priceTiers.length > 0) {
+      loadCustomerCounts();
+    }
+  }, [priceTiers]);
 
   // Price Tiers Functions
   const loadPriceTiers = async () => {
@@ -62,6 +70,68 @@ const PriceTiersPage = () => {
       console.error('Error loading price tiers:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCustomerCounts = async () => {
+    try {
+      // Fetch all customers using the existing API with high per_page to get all customers
+      const response = await apiService.getCustomers({ 
+        per_page: 1000, // Get all customers in one request
+        page: 1,
+        sort_by: 'created_at',
+        sort_order: 'desc'
+      });
+      
+      console.log('Customer counts - Full API Response:', response);
+      
+      // Handle the correct response structure based on the API response
+      let customersData: any[] = [];
+      
+      // Check different possible response structures
+      if (response?.data?.data && Array.isArray(response.data.data)) {
+        customersData = response.data.data;
+        console.log('Using response.data.data structure');
+      } else if (response?.data && Array.isArray(response.data)) {
+        customersData = response.data;
+        console.log('Using response.data structure');
+      } else if (Array.isArray(response)) {
+        customersData = response;
+        console.log('Using direct response array');
+      } else {
+        console.log('No valid data structure found in response');
+        return;
+      }
+      
+      console.log('Customer counts - Extracted customers data:', customersData);
+      console.log('Customer counts - Data length:', customersData.length);
+      
+      // Count customers by price_tier_id
+      const counts: Record<number, number> = {};
+      
+      customersData.forEach((customer: any) => {
+        console.log('Processing customer:', {
+          id: customer.id,
+          name: customer.name || `${customer.first_name} ${customer.last_name}`,
+          customer_type: customer.customer_type,
+          price_tier_id: customer.price_tier_id
+        });
+        
+        if (customer.price_tier_id !== null && customer.price_tier_id !== undefined) {
+          const tierId = Number(customer.price_tier_id);
+          counts[tierId] = (counts[tierId] || 0) + 1;
+          console.log(`✅ Added customer ${customer.id} to tier ${tierId}, new count: ${counts[tierId]}`);
+        } else {
+          console.log(`❌ Customer ${customer.id} has no price_tier_id (null/undefined)`);
+        }
+      });
+      
+      console.log('Customer counts - Final counts by price tier:', counts);
+      setCustomerCounts(counts);
+    } catch (error: any) {
+      console.error('Error loading customer counts:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      // Don't show error to user as this is secondary data
     }
   };
 
@@ -177,7 +247,7 @@ const PriceTiersPage = () => {
                         <TableCell>{priceTier.discount_off_retail_price}%</TableCell>
                         <TableCell>
                           <Chip
-                            label={priceTier.customers_count || 0}
+                            label={customerCounts[priceTier.id] || 0}
                             color="primary"
                             size="small"
                             variant="outlined"
@@ -257,7 +327,7 @@ const PriceTiersPage = () => {
                           Customers
                         </Typography>
                         <Typography variant="body2">
-                          {priceTier.customers_count || 0}
+                          {customerCounts[priceTier.id] || 0}
                         </Typography>
                       </Box>
                     </Box>
