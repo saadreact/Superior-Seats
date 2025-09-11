@@ -63,6 +63,15 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Don't handle 401 for logout or refresh token endpoints to avoid infinite loops
       if (error.config?.url?.includes('/logout') || error.config?.url?.includes('/refresh-token')) {
+        // If refresh token fails, force logout and redirect
+        if (error.config?.url?.includes('/refresh-token')) {
+          console.log('🔄 Refresh token failed with 401, forcing logout');
+          apiService.forceLogout();
+          // Redirect to login page
+          if (typeof window !== 'undefined') {
+            window.location.href = '/';
+          }
+        }
         return Promise.reject(error);
       }
 
@@ -75,11 +84,14 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${localStorage.getItem('auth_token')}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // Clear tokens on unauthorized
+        console.log('🔄 Token refresh failed, forcing logout and redirect');
+        // Clear tokens and force logout
+        apiService.forceLogout();
+        // Redirect to login page
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('persist:auth');
+          window.location.href = '/';
         }
+        return Promise.reject(error);
       }
     }
     return Promise.reject(error);
@@ -206,12 +218,30 @@ class ApiService {
 
   // Force logout and clear all auth data
   forceLogout(): void {
+    console.log('🔄 Force logout initiated');
+    
     // Stop auto-refresh timer
     this.stopAutoRefresh();
+    
     if (typeof window !== 'undefined') {
+      // Clear all authentication related data
       localStorage.removeItem('auth_token');
       localStorage.removeItem('token_generated_at');
       localStorage.removeItem('persist:auth');
+      localStorage.removeItem('user');
+      localStorage.removeItem('auth');
+      
+      // Clear any other auth-related keys
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('auth') || key.includes('token') || key.includes('user'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      console.log('🔄 All authentication data cleared');
     }
   }
 
@@ -281,8 +311,20 @@ class ApiService {
       return response.data;
     } catch (error: any) {
       console.error('Token refresh failed:', error);
-      // If refresh fails, clear tokens and force logout
-      this.forceLogout();
+      
+      // If refresh fails with 401, it means the refresh token is also expired
+      if (error.response?.status === 401) {
+        console.log('🔄 Refresh token expired, forcing logout');
+        this.forceLogout();
+        // Redirect to login page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/';
+        }
+      } else {
+        // For other errors, just clear tokens
+        this.forceLogout();
+      }
+      
       throw new Error(error.response?.data?.message || 'Failed to refresh token');
     }
   }
@@ -304,9 +346,14 @@ class ApiService {
             await this.refreshToken();
             // Schedule next refresh after successful refresh
             this.startAutoRefresh();
-          } catch (error) {
+          } catch (error: any) {
             console.error('Auto-refresh failed:', error);
-            // Retry in 5 minutes if refresh fails
+            // If refresh fails with 401, don't retry - user will be logged out
+            if (error.response?.status === 401) {
+              console.log('🔄 Auto-refresh failed with 401, user will be logged out');
+              return;
+            }
+            // Retry in 5 minutes for other errors
             this.refreshInterval = setTimeout(() => this.startAutoRefresh(), 5 * 60 * 1000);
           }
         }

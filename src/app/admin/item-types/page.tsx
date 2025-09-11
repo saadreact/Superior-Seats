@@ -153,11 +153,10 @@ const ItemTypesPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between', 
+          justifyContent: 'flex-end', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-       
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -223,9 +222,9 @@ const ItemTypesPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <>
-            <TableContainer component={Paper} sx={{ mb: 2 }}>
-              <Table>
+          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+            <TableContainer>
+              <Table stickyHeader>
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
@@ -238,21 +237,12 @@ const ItemTypesPage = () => {
                   {paginatedData.map((itemtypes) => (
                     <TableRow key={itemtypes.id} hover>
                       <TableCell>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {itemtypes.name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary"
-                          sx={{
-                            maxWidth: 300,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
+                        <Typography variant="body2" color="text.secondary">
                           {itemtypes.description || 'No description available'}
                         </Typography>
                       </TableCell>
@@ -286,8 +276,7 @@ const ItemTypesPage = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-
-            {/* Pagination */}
+            
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
@@ -297,7 +286,7 @@ const ItemTypesPage = () => {
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
-          </>
+          </Paper>
         )}
 
         {/* Delete Confirmation Dialog */}
