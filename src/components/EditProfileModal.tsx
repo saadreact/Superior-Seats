@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  TextField,
   Button,
   Typography,
   Box,
@@ -16,13 +15,15 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
+  Grid,
 } from '@mui/material';
 import {
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { customerAPI } from '@/api/customers';
+import { apiService } from '@/utils/api';
+import { FormField, FormActions } from '@/components/common/FormComponents';
 
-// Zod validation schema - matching the specified fields
+// Zod validation schema - only editable fields
 const profileSchema = z.object({
   first_name: z.string().min(2, 'First name must be at least 2 characters'),
   last_name: z.string().min(2, 'Last name must be at least 2 characters'),
@@ -37,19 +38,27 @@ const profileSchema = z.object({
 interface EditProfileModalProps {
   open: boolean;
   onClose: () => void;
-  customerId: number;
+  user: any; // Pass the full user object with role data
   onProfileUpdated?: (updatedCustomer: any) => void;
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ 
   open, 
   onClose, 
-  customerId, 
+  user, 
   onProfileUpdated 
 }) => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [customerId, setCustomerId] = useState<number | null>(null);
+  
+  // Store non-editable values from API response
+  const [customerData, setCustomerData] = useState<{
+    customer_type: string;
+    price_tier_id: number;
+    is_active: boolean;
+  } | null>(null);
 
   // Snackbar state
   const [snackbar, setSnackbar] = useState<{
@@ -62,7 +71,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     severity: 'info',
   });
 
-  // Form state - matching the specified fields
+  // Form state - only editable fields
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -79,56 +88,74 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   // Load customer profile data
   useEffect(() => {
-    if (open && customerId && customerId > 0) {
-      loadCustomerProfile();
+    if (open && user && user.role) {
+      loadCustomerFromAPI();
     }
-  }, [open, customerId]);
+  }, [open, user]);
 
-  const loadCustomerProfile = async () => {
+  // Load customer data using the customer API
+  const loadCustomerFromAPI = async () => {
     try {
       setLoading(true);
-      console.log('Loading customer profile for ID:', customerId);
+      console.log('🔍 Loading customer from API. User data:', user);
+      console.log('🔍 User role data:', user.role);
       
-      // Validate customer ID
-      if (!customerId || customerId <= 0) {
-        throw new Error('Invalid customer ID');
+      // First, we need to find the customer ID
+      // The role object should have an ID field that represents the customer ID
+      const customerId = user.role?.id;
+      
+      if (!customerId) {
+        throw new Error('Customer ID not found in user role. Please contact support.');
       }
       
-      // Use the existing customer API
-      const customerData = await customerAPI.getCustomerById(customerId.toString());
-      console.log('Customer data loaded:', customerData);
+      console.log('🔍 Found customer ID:', customerId);
+      setCustomerId(customerId);
       
-      setFormData({
-        first_name: customerData.firstName || '',
-        last_name: customerData.lastName || '',
-        email: customerData.email || '',
-        phone: customerData.phone || '',
-        address: customerData.address?.street || '',
-        city: customerData.address?.city || '',
-        state: customerData.address?.state || '',
-        company_name: customerData.company || '',
+      // Now call the customer API to get the full customer data
+      console.log('🔍 Calling customer API for ID:', customerId);
+      const response = await apiService.getCustomer(customerId);
+      console.log('🔍 Customer API response:', response);
+      
+      // Handle the API response structure
+      const customer = response.data?.data || response.data || response;
+      console.log('🔍 Extracted customer data:', customer);
+      
+      // Store non-editable values from API response
+      setCustomerData({
+        customer_type: customer.customer_type || 'retail',
+        price_tier_id: customer.price_tier_id || 1,
+        is_active: customer.is_active !== undefined ? customer.is_active : true,
       });
+      
+      // Load the form data from the API response (only editable fields)
+      const name = customer.name || '';
+      const firstNameFromName = name.split(' ')[0] || '';
+      const lastNameFromName = name.split(' ').slice(1).join(' ') || '';
+      
+      const formDataToSet = {
+        first_name: customer.first_name || firstNameFromName || '',
+        last_name: customer.last_name || lastNameFromName || '',
+        email: customer.email || '',
+        phone: customer.phone || '',
+        address: customer.address || '',
+        city: customer.city || '',
+        state: customer.state || '',
+        company_name: customer.company_name || '',
+      };
+      
+      console.log('🔍 Setting form data from API:', formDataToSet);
+      console.log('🔍 Storing non-editable data:', {
+        customer_type: customer.customer_type || 'retail',
+        price_tier_id: customer.price_tier_id || 1,
+        is_active: customer.is_active !== undefined ? customer.is_active : true,
+      });
+      setFormData(formDataToSet);
+      
     } catch (error: any) {
-      console.error('Error loading customer profile:', error);
-      
-      // Handle different types of errors
-      let errorMessage = 'Failed to load customer profile';
-      
-      if (error.response?.status === 401) {
-        errorMessage = 'Authentication required. Please log in again.';
-      } else if (error.response?.status === 404) {
-        errorMessage = 'Customer profile not found.';
-      } else if (error.response?.status === 403) {
-        errorMessage = 'Access denied. You do not have permission to view this profile.';
-      } else if (error.message) {
-        errorMessage = error.message;
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      }
-      
+      console.error('❌ Error loading customer from API:', error);
       setSnackbar({
         open: true,
-        message: errorMessage,
+        message: error.message || 'Failed to load customer profile. Please contact support.',
         severity: 'error',
       });
     } finally {
@@ -136,9 +163,20 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     }
   };
 
+
   const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const value = event.target.value;
     
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+    
+    // Clear errors for the field
+    setErrors(prev => ({ ...prev, [field]: '' }));
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -174,24 +212,27 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       setSaving(true);
       console.log('Submitting customer data:', formData);
       
-      // Convert form data to match the Customer type structure
+      // Convert form data to match the customer API structure (same as curl example)
+      // Use stored non-editable values from the GET API response
       const updateData = {
-        firstName: formData.first_name,
-        lastName: formData.last_name,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         email: formData.email,
         phone: formData.phone,
-        address: {
-          street: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zipCode: '', // Not provided in form
-          country: 'USA', // Default
-        },
-        company: formData.company_name,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        company_name: formData.company_name,
+        customer_type: customerData?.customer_type || 'retail',
+        price_tier_id: customerData?.price_tier_id || 1,
+        is_active: customerData?.is_active !== undefined ? customerData.is_active : true,
       };
 
-      // Use the existing customer API
-      const updatedCustomer = await customerAPI.updateCustomer(customerId.toString(), updateData);
+      // Use the centralized API service
+      if (!customerId) {
+        throw new Error('Customer ID not found');
+      }
+      const updatedCustomer = await apiService.updateCustomer(customerId!, updateData);
       console.log('Customer updated successfully:', updatedCustomer);
       
       setSnackbar({
@@ -235,53 +276,25 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
-  // Common field styles - matching AuthModal exactly
-  const commonTextFieldStyles = {
-    '& .MuiOutlinedInput-root': {
-      borderRadius: 2,
-      height: '35px',
-      backgroundColor: 'rgba(255,255,255,0.8)',
-      '&:hover fieldset': {
-        borderColor: 'primary.main',
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: 'primary.main',
-        borderWidth: 2,
-      },
-      '&.Mui-focused': {
-        backgroundColor: 'white',
-      },
-    },
-    '& .MuiInputLabel-root': {
-      color: 'text.secondary',
-      transform: 'translate(14px, 8px) scale(1)',
-      '&.Mui-focused': {
-        color: 'primary.main',
-        transform: 'translate(14px, -9px) scale(0.75)',
-      },
-      '&.MuiFormLabel-filled': {
-        transform: 'translate(14px, -9px) scale(0.75)',
-      },
-    },
-  };
 
   return (
     <>
       <Dialog
         open={open}
         onClose={handleClose}
-        maxWidth="sm"
+        maxWidth="lg"
         fullWidth
         fullScreen={isMobile}
         PaperProps={{
           sx: {
             borderRadius: isMobile ? 0 : 2,
-            minHeight: isMobile ? '100vh' : '650px',
-            maxWidth: isMobile ? '100%' : '550px',
-            width: isMobile ? '100%' : '90%',
+            minHeight: isMobile ? '90vh' : '600px',
+            maxWidth: isMobile ? '100%' : '1200px',
+            width: isMobile ? '100%' : '95%',
             maxHeight: isMobile ? '100vh' : '95vh',
             display: 'flex',
             flexDirection: 'column',
+            overflow: 'visible',
           },
         }}
       >
@@ -292,9 +305,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             alignItems: 'center',
             pb: 1,
             px: { xs: 2, sm: 3 },
-            pt: { xs: 2, sm: 2.5 },
+            pt: { xs: 2, sm: 2.5, lg: 0, xl: 0},
             borderBottom: '1px solid',
             borderColor: 'divider',
+            width: '100%',
           }}
         >
           <Typography 
@@ -329,7 +343,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{ p: 0, flex: 1 }}>
+        <DialogContent sx={{ 
+          p: 0, 
+          flex: 1, 
+          overflow: 'visible',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
           {loading ? (
             <Box sx={{ 
               display: 'flex', 
@@ -341,285 +361,331 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             </Box>
           ) : (
             <Box sx={{ 
-              py: { xs: 3, sm: 4, md: 4 },
-              px: { xs: 3, sm: 4, md: 4 },
-              maxWidth: '450px',
+              py: { xs: 2, sm: 2.5, md: 2.5 , lg: 0, xl: 0},
+              px: { xs: 3, sm: 4, md: 4 , lg: 0, xl: 0},
+              maxWidth: '1100px',
               mx: 'auto',
               width: '100%',
-              minHeight: '550px',
               display: 'flex',
               flexDirection: 'column',
-              flex: 1
+              flex: 1,
+              overflow: 'visible'
             }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  mb: 2, 
-                  fontWeight: 600,
-                  fontSize: { xs: '1rem', sm: '1.125rem' },
-                  textAlign: 'center',
-                  color: 'text.primary',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                Update your profile information
-              </Typography>
-
-              <TextField
-                fullWidth
-                label="First Name"
-                type="text"
-                value={formData.first_name}
-                onChange={handleInputChange('first_name')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.first_name}
-                helperText={errors.first_name}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Last Name"
-                type="text"
-                value={formData.last_name}
-                onChange={handleInputChange('last_name')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.last_name}
-                helperText={errors.last_name}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange('email')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.email}
-                helperText={errors.email}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-
-              <TextField
-                fullWidth
-                label="Phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleInputChange('phone')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.phone}
-                helperText={errors.phone}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Address"
-                type="text"
-                value={formData.address}
-                onChange={handleInputChange('address')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.address}
-                helperText={errors.address}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="City"
-                type="text"
-                value={formData.city}
-                onChange={handleInputChange('city')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.city}
-                helperText={errors.city}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="State"
-                type="text"
-                value={formData.state}
-                onChange={handleInputChange('state')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.state}
-                helperText={errors.state}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Company Name"
-                type="text"
-                value={formData.company_name}
-                onChange={handleInputChange('company_name')}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.company_name}
-                helperText={errors.company_name}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  '& .MuiFormHelperText-root': {
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                width: '100%', 
-                mt: 'auto',
-                pt: 3,
-                pb: 2
-              }}>
-                <Button
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={saving}
-                  size="large"
-                  sx={{
-                    px: 6,
-                    py: 1.5,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    minWidth: 200,
-                    width: '100%',
-                    backgroundColor: '#DA291C',
-                    color: 'white',
-                    boxShadow: '0 4px 8px rgba(218, 41, 28, 0.3)',
-                    '&:hover': {
-                      backgroundColor: '#B71C1C',
-                      boxShadow: '0 6px 12px rgba(218, 41, 28, 0.4)',
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                    },
-                    '&:disabled': {
-                      backgroundColor: '#ccc',
-                      color: '#666',
-                      boxShadow: 'none',
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
+              {/* Basic Information */}
+              <Box sx={{ mb: 0 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'black' }}>
+                  Basic Information
+                </Typography>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
                 >
-                  {saving ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CircularProgress size={20} color="inherit" />
-                      <span>Updating...</span>
-                    </Box>
-                  ) : (
-                    'Update Profile'
-                  )}
-                </Button>
+                  <FormField
+                    name="first_name"
+                    label="First Name"
+                    value={formData.first_name}
+                    onChange={(value) => handleFieldChange('first_name', value)}
+                    required
+                    error={errors.first_name}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '40px',
+                        minWidth: '100px',
+                        '& input': {
+                          fontSize: '14px',
+                          padding: '8px 12px',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        '&.MuiInputLabel-shrink': {
+                          fontSize: '12px',
+                        },
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontSize: '11px',
+                        marginTop: '2px',
+                        marginLeft: '0px',
+                      },
+                    }}
+                  />
+
+                  <FormField
+                    name="last_name"
+                    label="Last Name"
+                    value={formData.last_name}
+                    onChange={(value) => handleFieldChange('last_name', value)}
+                    required
+                    error={errors.last_name}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '40px',
+                        minWidth: '100px',
+                        '& input': {
+                          fontSize: '14px',
+                          padding: '8px 12px',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        '&.MuiInputLabel-shrink': {
+                          fontSize: '12px',
+                        },
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontSize: '11px',
+                        marginTop: '2px',
+                        marginLeft: '0px',
+                      },
+                    }}
+                  />
+
+                  <FormField
+                    name="email"
+                    label="Email Address"
+                    value={formData.email}
+                    onChange={(value) => handleFieldChange('email', value)}
+                    type="email"
+                    required
+                    error={errors.email}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '40px',
+                        minWidth: '100px',
+                        '& input': {
+                          fontSize: '14px',
+                          padding: '8px 12px',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        '&.MuiInputLabel-shrink': {
+                          fontSize: '12px',
+                        },
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontSize: '11px',
+                        marginTop: '2px',
+                        marginLeft: '0px',
+                      },
+                    }}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Contact Information */}
+              <Box sx={{ mb: 0.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'black' }}>
+                  Contact Information
+                </Typography>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="phone"
+                    label="Phone Number"
+                    value={formData.phone}
+                    onChange={(value) => handleFieldChange('phone', value)}
+                    required
+                    error={errors.phone}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '40px',
+                        minWidth: '100px',
+                        '& input': {
+                          fontSize: '14px',
+                          padding: '8px 12px',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        '&.MuiInputLabel-shrink': {
+                          fontSize: '12px',
+                        },
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontSize: '11px',
+                        marginTop: '2px',
+                        marginLeft: '0px',
+                      },
+                    }}
+                  />
+
+                  <FormField
+                    name="address"
+                    label="Address"
+                    value={formData.address}
+                    onChange={(value) => handleFieldChange('address', value)}
+                    required
+                    error={errors.address}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '40px',
+                        minWidth: '100px',
+                        '& input': {
+                          fontSize: '14px',
+                          padding: '8px 12px',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        '&.MuiInputLabel-shrink': {
+                          fontSize: '12px',
+                        },
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontSize: '11px',
+                        marginTop: '2px',
+                        marginLeft: '0px',
+                      },
+                    }}
+                  />
+
+                  <FormField
+                    name="city"
+                    label="City"
+                    value={formData.city}
+                    onChange={(value) => handleFieldChange('city', value)}
+                    error={errors.city}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '40px',
+                        minWidth: '100px',
+                        '& input': {
+                          fontSize: '14px',
+                          padding: '8px 12px',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        '&.MuiInputLabel-shrink': {
+                          fontSize: '12px',
+                        },
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontSize: '11px',
+                        marginTop: '2px',
+                        marginLeft: '0px',
+                      },
+                    }}
+                  />
+
+                  <FormField
+                    name="state"
+                    label="State"
+                    value={formData.state}
+                    onChange={(value) => handleFieldChange('state', value)}
+                    error={errors.state}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '40px',
+                        minWidth: '100px',
+                        '& input': {
+                          fontSize: '14px',
+                          padding: '8px 12px',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        '&.MuiInputLabel-shrink': {
+                          fontSize: '12px',
+                        },
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontSize: '11px',
+                        marginTop: '2px',
+                        marginLeft: '0px',
+                      },
+                    }}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Business Information */}
+              <Box sx={{ mb: 0.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'black' }}>
+                  Business Information
+                </Typography>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="company_name"
+                    label="Company Name"
+                    value={formData.company_name}
+                    onChange={(value) => handleFieldChange('company_name', value)}
+                    error={errors.company_name}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '40px',
+                        minWidth: '100px',
+                        '& input': {
+                          fontSize: '14px',
+                          padding: '8px 12px',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        '&.MuiInputLabel-shrink': {
+                          fontSize: '12px',
+                        },
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontSize: '11px',
+                        marginTop: '2px',
+                        marginLeft: '0px',
+                      },
+                    }}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Form Actions */}
+              <Box sx={{ mt: -1 }}>
+              <FormActions
+                onSave={handleSubmit}
+                onCancel={handleClose}
+                loading={saving}
+                saveText="Update Profile"
+                cancelText="Cancel"
+              />
               </Box>
             </Box>
           )}
