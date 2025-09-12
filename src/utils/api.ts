@@ -477,15 +477,57 @@ class ApiService {
         user: {
           id: id, // Fallback ID
           name: `${newOrder.customerInfo?.firstName || ''} ${newOrder.customerInfo?.lastName || ''}`.trim() || 
+                `${newOrder.customer?.firstName || ''} ${newOrder.customer?.lastName || ''}`.trim() ||
                 `${newOrder.customerInfo?.shippingAddress?.firstName || ''} ${newOrder.customerInfo?.shippingAddress?.lastName || ''}`.trim() || 
                 'Unknown Customer',
-          email: newOrder.customerInfo?.email || 'unknown@example.com',
-          phone: newOrder.customerInfo?.phone || newOrder.customerInfo?.shippingAddress?.phone || newOrder.customerInfo?.billingAddress?.phone || undefined,
+          email: newOrder.customerInfo?.email || newOrder.customer?.email || 'unknown@example.com',
+          phone: newOrder.customerInfo?.phone || 
+                 newOrder.customer?.phone || 
+                 newOrder.addresses?.[0]?.phone || 
+                 newOrder.customerInfo?.shippingAddress?.phone || 
+                 newOrder.customerInfo?.billingAddress?.phone || 
+                 undefined,
           customer_type: 'retail', // Default to retail if not specified
           company_name: newOrder.customerInfo?.shippingAddress?.company || undefined
         },
         // Add separate email for easier matching
-        customer_email: newOrder.customerInfo?.email,
+        customer_email: newOrder.customerInfo?.email || newOrder.customer?.email,
+        // Add separate customer object with full details
+        customer: {
+          id: newOrder.customer?.id || null,
+          firstName: newOrder.customerInfo?.firstName || newOrder.customer?.firstName || '',
+          lastName: newOrder.customerInfo?.lastName || newOrder.customer?.lastName || '',
+          email: newOrder.customerInfo?.email || newOrder.customer?.email || '',
+          phone: newOrder.customerInfo?.phone || 
+                 newOrder.customer?.phone || 
+                 newOrder.addresses?.[0]?.phone || 
+                 '',
+          company: newOrder.customer?.company || null
+        },
+        // Add customerInfo for compatibility
+        customerInfo: {
+          firstName: newOrder.customerInfo?.firstName || newOrder.customer?.firstName || '',
+          lastName: newOrder.customerInfo?.lastName || newOrder.customer?.lastName || '',
+          email: newOrder.customerInfo?.email || newOrder.customer?.email || '',
+          phone: newOrder.customerInfo?.phone || 
+                 newOrder.customer?.phone || 
+                 newOrder.addresses?.[0]?.phone || 
+                 '',
+          shippingAddress: newOrder.customerInfo?.shippingAddress || {
+            street: '',
+            city: '',
+            state: '',
+            postalCode: '',
+            country: 'US'
+          },
+          billingAddress: newOrder.customerInfo?.billingAddress || {
+            street: '',
+            city: '',
+            state: '',
+            postalCode: '',
+            country: 'US'
+          }
+        },
         
         // Transform cart items to order items
         items: (newOrder.cartItems || []).map((cartItem: any, index: number) => ({
@@ -496,6 +538,7 @@ class ApiService {
           unit_price: cartItem.unitPrice || 0,
           discount_amount: 0, // Not available per item in new format
           total: cartItem.totalPrice || 0,
+          variants: cartItem.variants || {}, // Preserve variants from new API
           product: {
             name: cartItem.name || 'Unknown Product',
             category: 'Unknown Category' // Not available in new format

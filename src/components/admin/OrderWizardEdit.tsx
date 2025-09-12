@@ -106,15 +106,22 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 
 	// Step 2: items
 	const [cartItems, setCartItems] = useState<CartItem[]>([]);
-// variants drawer state
-const [drawerOpen, setDrawerOpen] = useState(false);
-const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
+	
+	// Drawer state - simplified
+	const [drawerOpen, setDrawerOpen] = useState(false);
+	const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
+
 const getUnitPrice = (productId: number) => {
   const p: any = products.find(p => p.id === productId);
   const raw = p?.price ?? (p as any)?.unit_price ?? 0;
   const n = typeof raw === 'string' ? parseFloat(raw) : Number(raw || 0);
   return isNaN(n) ? 0 : n;
 };
+
+	const handleClose = () => {
+		setDrawerOpen(false);
+		setDrawerRowIndex(null);
+	};
 
 	// Step 3: addresses and contact
 	const [firstName, setFirstName] = useState('');
@@ -154,19 +161,34 @@ const getUnitPrice = (productId: number) => {
 				setProducts(Array.isArray(pData) ? pData : []);
 
 				// Prefill from order
-									if (order) {
-						const ord = (order as any)?.order || order;
-						// Customer
+				if (order) {
+					const ord = (order as any)?.order || order;
+					
+					// Customer
 					const custInfo = (ord as any)?.customerInfo || (ord as any)?.customer || null;
 					const custEmail = custInfo?.email || (ord as any)?.user?.email || '';
 					const matched = cArray.find((c: any) => c.email === custEmail);
 					if (matched) setSelectedCustomer(matched);
-					setFirstName(custInfo?.firstName || matched?.first_name || (order as any)?.user?.name?.split(' ')[0] || '');
-					setLastName(custInfo?.lastName || matched?.last_name || ((order as any)?.user?.name || '').split(' ').slice(1).join(' ') || '');
-					setEmail(custEmail || matched?.email || '');
-					// Phone
-					const inferredPhone = custInfo?.phone || (ord as any)?.shippingAddress?.phone || (ord as any)?.billingAddress?.phone || (ord as any)?.shipping_address?.phone || (ord as any)?.billing_address?.phone;
-					if (inferredPhone) setPhone(inferredPhone);
+					
+					// Extract customer data from multiple sources
+					const firstName = custInfo?.firstName || matched?.first_name || (ord as any)?.customer?.firstName || (order as any)?.user?.name?.split(' ')[0] || '';
+					const lastName = custInfo?.lastName || matched?.last_name || (ord as any)?.customer?.lastName || ((order as any)?.user?.name || '').split(' ').slice(1).join(' ') || '';
+					const email = custEmail || matched?.email || '';
+					
+					// Extract phone from multiple possible locations
+					const phone = custInfo?.phone || 
+								 (ord as any)?.customer?.phone || 
+								 matched?.phone || 
+								 (ord as any)?.addresses?.[0]?.phone || 
+								 (ord as any)?.shippingAddress?.phone || 
+								 (ord as any)?.billingAddress?.phone || 
+								 (ord as any)?.shipping_address?.phone || 
+								 (ord as any)?.billing_address?.phone || '';
+					
+					setFirstName(firstName);
+					setLastName(lastName);
+					setEmail(email);
+					setPhone(phone);
 
 					// Shipping method from order.shippingMethod or notes e.g. "... (Ship: Express)"
 					const extractShip = (src: any): string | null => {
@@ -194,13 +216,56 @@ const getUnitPrice = (productId: number) => {
 					setShippingAddress(parseAddress(shippingAddr));
 					setBillingAddress(parseAddress(billingAddr));
 
-					// Items -> cartItems
-					const items = Array.isArray(order.items) ? order.items : [];
-					const mapped: CartItem[] = items.map((it: any) => {
+					// Items -> cartItems (prefer new format cartItems/orderItems, fallback to legacy items)
+					const cartItemsNew = Array.isArray((ord as any)?.cartItems) ? (ord as any).cartItems : [];
+					const cartItemsFromNew: CartItem[] = cartItemsNew.map((ci: any) => {
+						const qty = Number(ci.quantity) || 0;
+						const price = Number(ci.unitPrice) || 0;
+						const disc = Number(ci.discountAmount) || 0;
+						const total = Math.max(0, (qty * price) - disc);
+						const vi = (ci as any).variants || {};
+						return {
+							itemId: String(ci.itemId || ci.productId),
+							productId: Number(ci.productId),
+							variationId: ci.variationId,
+							name: ci.name || '',
+							quantity: qty,
+							unitPrice: price,
+							discountAmount: disc,
+							total,
+							totalPrice: total,
+							variants: vi, // Use variants directly from API without coercing
+						};
+					});
+
+					const orderItemsNew = Array.isArray((ord as any)?.orderItems) ? (ord as any).orderItems : [];
+					const cartItemsFromOrderItems: CartItem[] = orderItemsNew.map((it: any) => {
+						const qty = Number(it.quantity) || 0;
+						const price = Number(it.unitPrice) || 0;
+						const disc = 0;
+						const total = Math.max(0, (qty * price) - disc);
+						const vi = (it as any).variants || {};
+						return {
+							itemId: String(it.itemId || it.productId || it.id),
+							productId: Number(it.productId || (it.product && it.product.id)),
+							variationId: it.variationId,
+							name: it.name || (it.product && it.product.name) || '',
+							quantity: qty,
+							unitPrice: price,
+							discountAmount: disc,
+							total,
+							totalPrice: total,
+							variants: vi, // Use variants directly
+						};
+					});
+
+					const legacyItems = Array.isArray((ord as any)?.items) ? (ord as any).items : [];
+					const cartItemsFromLegacy: CartItem[] = legacyItems.map((it: any) => {
 						const qty = Number(it.quantity) || 0;
 						const price = Number(it.unit_price) || 0;
 						const disc = Number(it.discount_amount) || 0;
 						const total = Math.max(0, (qty * price) - disc);
+						const vi = (it as any).variants || {};
 						return {
 							itemId: String(it.product_id),
 							productId: it.product_id,
@@ -211,8 +276,11 @@ const getUnitPrice = (productId: number) => {
 							discountAmount: disc,
 							total,
 							totalPrice: total,
+							variants: vi, // Use variants directly
 						};
 					});
+
+					const mapped: CartItem[] = cartItemsFromNew.length > 0 ? cartItemsFromNew : (cartItemsFromOrderItems.length > 0 ? cartItemsFromOrderItems : cartItemsFromLegacy);
 					setCartItems(mapped);
 
 					// Totals & notes
@@ -397,7 +465,18 @@ const getUnitPrice = (productId: number) => {
 												{cartItems.map((it, idx) => (
 													<TableRow key={idx} hover>
 														<TableCell sx={{ minWidth: 240 }}>{it.name || products.find(p => p.id === it.productId)?.name}</TableCell>
-														<TableCell align="center"><Button size="small" startIcon={<TuneIcon />} onClick={() => { setDrawerRowIndex(idx); setDrawerOpen(true); }}>Details</Button></TableCell>
+														<TableCell align="center">
+															<Button 
+																size="small" 
+																startIcon={<TuneIcon />} 
+																onClick={() => {
+																	setDrawerRowIndex(idx);
+																	setDrawerOpen(true);
+																}}
+															>
+																Details
+															</Button>
+														</TableCell>
 														<TableCell align="right">${it.unitPrice.toFixed(2)}</TableCell>
 														<TableCell align="center" sx={{ width: 120 }}>
 															<TextField type="number" size="small" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} inputProps={{ min: 1, style: { textAlign: 'center' } }} />
@@ -519,6 +598,9 @@ const getUnitPrice = (productId: number) => {
 		}
 	};
 
+	console.log("cartItems[drawerRowIndex!]?.variants",cartItems[0]?.variants)
+	console.log("drawerRowIndex",drawerRowIndex)
+	console.log("cartItems",cartItems)
 	return (
 		<Box sx={{ p: { xs: 1, sm: 2 } }}>
 			<Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main', mb: 2, fontSize: { xs: '1.5rem', md: '2.125rem' } }}>Edit Order</Typography>
@@ -543,36 +625,38 @@ const getUnitPrice = (productId: number) => {
 					<Button variant="contained" color="primary" onClick={submitUpdate} disabled={loading}>Update Order</Button>
 				)}
 			</Box>
-
-			<AdminVariantsDrawer
-				open={drawerOpen}
-				onClose={() => setDrawerOpen(false)}
-				productId={drawerRowIndex !== null ? cartItems[drawerRowIndex]?.productId || null : null}
-				basePrice={drawerRowIndex !== null ? getUnitPrice(cartItems[drawerRowIndex]!.productId) : 0}
-				initialSelections={drawerRowIndex !== null ? (cartItems[drawerRowIndex!]?.variants || null) : null}
-				onPreview={({ newUnitPrice }) => {
-					if (drawerRowIndex === null) return;
-					const row = drawerRowIndex;
-					setCartItems(prev => prev.map((ci, i) => i !== row ? ci : {
-						...ci,
-						unitPrice: newUnitPrice,
-						total: (ci.quantity || 1) * newUnitPrice,
-						totalPrice: (ci.quantity || 1) * newUnitPrice,
-					}));
-				}}
-				onApply={({ selections, newUnitPrice }) => {
-					if (drawerRowIndex === null) return;
-					const row = drawerRowIndex;
-					setCartItems(prev => prev.map((ci, i) => i !== row ? ci : {
-						...ci,
-						variants: selections,
-						unitPrice: newUnitPrice,
-						total: (ci.quantity || 1) * newUnitPrice,
-						totalPrice: (ci.quantity || 1) * newUnitPrice,
-					}));
-					setDrawerOpen(false);
-				}}
-			/>
+				{drawerOpen && drawerRowIndex !== null && cartItems[drawerRowIndex] && (
+					<AdminVariantsDrawer
+						key={drawerRowIndex}
+						open={drawerOpen}
+						onClose={handleClose}
+						productId={cartItems[drawerRowIndex].productId}
+						basePrice={getUnitPrice(cartItems[drawerRowIndex].productId)}
+						initialSelections={cartItems[drawerRowIndex].variants}
+						onPreview={({ newUnitPrice }) => {
+							if (drawerRowIndex === null) return;
+							const row = drawerRowIndex;
+							setCartItems(prev => prev.map((ci, i) => i !== row ? ci : {
+								...ci,
+								unitPrice: newUnitPrice,
+								total: (ci.quantity || 1) * newUnitPrice,
+								totalPrice: (ci.quantity || 1) * newUnitPrice,
+							}));
+						}}
+						onApply={({ selections, newUnitPrice }) => {
+							if (drawerRowIndex === null) return;
+							const row = drawerRowIndex;
+							setCartItems(prev => prev.map((ci, i) => i !== row ? ci : {
+								...ci,
+								variants: selections,
+								unitPrice: newUnitPrice,
+								total: (ci.quantity || 1) * newUnitPrice,
+								totalPrice: (ci.quantity || 1) * newUnitPrice,
+							}));
+							handleClose();
+						}}
+					/>
+				)}
 
 			<Dialog open={successOpen} onClose={() => router.push(`/admin/orders/${order.id}`)}>
 				<DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
