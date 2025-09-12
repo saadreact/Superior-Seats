@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -22,13 +22,13 @@ interface PaymentMethodProps {
   onBack: () => void;
   amount?: number;
   currency?: string;
+  formData: PaymentFormData;
+  onFormDataChange: (data: PaymentFormData) => void;
 }
 
-const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 0, currency = 'USD' }) => {
+const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 0, currency = 'USD', formData, onFormDataChange }) => {
   // Ensure amount is a valid number
   const validAmount = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
-  
-  const [formData, setFormData] = useState<PaymentFormData>(defaultPaymentData);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentOption, setPaymentOption] = useState<'cash' | 'card'>('card');
   const [snackbar, setSnackbar] = useState<{
@@ -44,10 +44,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
   const handleInputChange = (field: keyof PaymentFormData) => (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setFormData(prev => ({
-      ...prev,
+    onFormDataChange({
+      ...formData,
       [field]: event.target.type === 'checkbox' ? event.target.checked : event.target.value
-    }));
+    });
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -106,7 +106,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 
           });
           
           // Clear form
-          setFormData(defaultPaymentData);
+          onFormDataChange(defaultPaymentData);
           
           // Proceed to next step
           setTimeout(() => {
