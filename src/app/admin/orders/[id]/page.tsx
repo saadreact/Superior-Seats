@@ -293,6 +293,34 @@ const OrderViewPage = () => {
     return parts.join('\n');
   };
 
+  // Helpers for totals/variants
+  const computeLineTotal = (it: OrderItem) => {
+    const qty = Number(it.quantity || 0);
+    const up = Number(it.unit_price || 0);
+    const explicit = Number(it.total || 0);
+    return explicit || Math.max(0, qty * up);
+  };
+  const computeSubtotal = (items: OrderItem[] = []) => items.reduce((sum, it) => sum + computeLineTotal(it), 0);
+  const safePercent = (part: number, base: number) => base > 0 ? (part / base) * 100 : 0;
+  const orderedVariantList = (v: any) => {
+    if (!v) return [] as string[];
+    const map: [keyof any, string][] = [
+      ['material_type', 'Material Type'],
+      ['color', 'Color'],
+      ['seat_stitch_pattern', 'Stitch Pattern'],
+      ['recline_type', 'Recline'],
+      ['lumbar_type', 'Lumber'],
+      ['heat_option', 'Heating/Cooling'],
+      ['seat_type', 'Seat Type'],
+      ['item_type', 'Item Type'],
+      ['seat_style', 'Seat Style'],
+      ['arm_type', 'Included Arm'],
+    ];
+    return map
+      .map(([k, label]) => v?.[k] ? `${label}: ${String(v[k])}` : null)
+      .filter(Boolean) as string[];
+  };
+
   const statusOptions = [
     { value: 'pending', label: 'Pending' },
     { value: 'processing', label: 'Processing' },
@@ -564,60 +592,79 @@ const OrderViewPage = () => {
                       </TableCell>
                       <TableCell>
                         <Box>
-                          <Typography variant="body2">
-                            {item.variation?.name || 'Unknown Variation'}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {item.variation?.material_type || 'Unknown'} • {item.variation?.color || 'Unknown'}
-                          </Typography>
+                          {(() => {
+                            const v: any = (item as any).variants || item.variation || (item as any).options || null;
+                            const lines = orderedVariantList(v);
+                            if (lines.length === 0) {
+                              return (
+                                <Typography variant="caption" color="text.secondary">No variants</Typography>
+                              );
+                            }
+                            return (
+                              <Stack spacing={0.25}>
+                                {lines.map((ln, idx) => (
+                                  <Typography key={idx} variant="caption" color="text.secondary">{ln}</Typography>
+                                ))}
+                              </Stack>
+                            );
+                          })()}
                         </Box>
                       </TableCell>
                       <TableCell align="right">{item.quantity || 0}</TableCell>
                       <TableCell align="right">{formatCurrency(item.unit_price || 0)}</TableCell>
-                                              <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {formatCurrency(item.total || 0)}
-                        </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>
+                        {formatCurrency(computeLineTotal(item))}
+                      </TableCell>
                     </TableRow>
                   ))}
-                  <TableRow>
-                    <TableCell colSpan={3} />
-                    <TableCell align="right">
-                      <Typography variant="body1" fontWeight={600}>
-                        Subtotal:
-                      </Typography>
-                      {(order?.discount_amount || 0) > 0 && (
-                        <Typography variant="body2" color="error">
-                          Order Discount:
-                        </Typography>
-                      )}
-                      {(order?.tax_amount || 0) > 0 && (
-                        <Typography variant="body2">
-                          Tax:
-                        </Typography>
-                      )}
-                      <Typography variant="h6" fontWeight={600} color="primary">
-                        Total:
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Typography variant="body1" fontWeight={600}>
-                        {formatCurrency((order?.items || []).reduce((sum, item) => sum + (item.total || 0), 0))}
-                      </Typography>
-                      {(order?.discount_amount || 0) > 0 && (
-                        <Typography variant="body2" color="error">
-                          -{formatCurrency(order?.discount_amount || 0)}
-                        </Typography>
-                      )}
-                      {(order?.tax_amount || 0) > 0 && (
-                        <Typography variant="body2">
-                          +{formatCurrency(order?.tax_amount || 0)}
-                        </Typography>
-                      )}
-                      <Typography variant="h6" fontWeight={600} color="primary">
-                        {formatCurrency(order?.total_amount || 0)}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
+                  {(() => {
+                    const sub = computeSubtotal(order?.items || []);
+                    const disc = Number(order?.discount_amount || 0);
+                    const tax = Number(order?.tax_amount || 0);
+                    const discPct = safePercent(disc, sub);
+                    const taxPct = safePercent(tax, sub);
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={3} />
+                        <TableCell align="right">
+                          <Typography variant="body1" fontWeight={600}>
+                            Subtotal:
+                          </Typography>
+                          {disc > 0 && (
+                            <Typography variant="body2" color="error">
+                              Order Discount:
+                            </Typography>
+                          )}
+                          {tax > 0 && (
+                            <Typography variant="body2">
+                              Tax:
+                            </Typography>
+                          )}
+                          <Typography variant="h6" fontWeight={600} color="primary">
+                            Total:
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body1" fontWeight={600}>
+                            {formatCurrency(sub)}
+                          </Typography>
+                          {disc > 0 && (
+                            <Typography variant="body2" color="error">
+                              -{formatCurrency(disc)} {discPct ? `(${discPct.toFixed(2)}%)` : ''}
+                            </Typography>
+                          )}
+                          {tax > 0 && (
+                            <Typography variant="body2">
+                              +{formatCurrency(tax)} {taxPct ? `(${taxPct.toFixed(2)}%)` : ''}
+                            </Typography>
+                          )}
+                          <Typography variant="h6" fontWeight={600} color="primary">
+                            {formatCurrency(order?.total_amount || (sub - disc + tax))}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })()}
                 </TableBody>
               </Table>
             </TableContainer>

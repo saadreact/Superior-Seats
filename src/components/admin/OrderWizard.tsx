@@ -24,18 +24,28 @@ import {
 	Chip,
 	Autocomplete,
 	Alert,
+	InputAdornment,
+	Table,
+	TableHead,
+	TableRow,
+	TableCell,
+	TableBody,
 } from '@mui/material';
 import {
 	Add as AddIcon,
 	Delete as DeleteIcon,
 	CheckCircle as CheckCircleIcon,
+	Tune as TuneIcon,
 } from '@mui/icons-material';
 import { apiService } from '@/utils/api';
 import { useRouter } from 'next/navigation';
+import AdminVariantsDrawer, { VariantSelections } from './AdminVariantsDrawer';
 
 interface CustomerOption {
 	id: number;
-	name: string;
+	first_name: string;
+	last_name: string;
+	name?: string | null;
 	email: string;
 	phone?: string;
 }
@@ -43,7 +53,9 @@ interface CustomerOption {
 interface ProductOption {
 	id: number;
 	name: string;
-	price?: number;
+	price?: any;
+	sku?: string;
+	category?: string;
 }
 
 interface VariationOption {
@@ -62,6 +74,7 @@ interface CartItem {
 	discountAmount?: number;
 	total: number;
 	totalPrice: number;
+	variants?: VariantSelections;
 }
 
 interface Address {
@@ -100,6 +113,9 @@ const OrderWizard: React.FC = () => {
 
 	// Step 2: items
 	const [cartItems, setCartItems] = useState<CartItem[]>([]);
+	// variants drawer state
+const [drawerOpen, setDrawerOpen] = useState(false);
+const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
 
 	// Step 3: addresses and contact
 	const [firstName, setFirstName] = useState('');
@@ -114,8 +130,8 @@ const OrderWizard: React.FC = () => {
 	const [shippingMethod, setShippingMethod] = useState('Standard');
 
 	// Summary
-	const [discount, setDiscount] = useState<number>(0);
-	const [tax, setTax] = useState<number>(0);
+	const [discountPct, setDiscountPct] = useState<number>(0);
+	const [taxPct, setTaxPct] = useState<number>(0);
 
 	// Success dialog
 	const [successOpen, setSuccessOpen] = useState(false);
@@ -155,20 +171,24 @@ const OrderWizard: React.FC = () => {
 
 	// Derived totals
 	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
+	const discount = useMemo(() => (subTotal * (Number(discountPct) || 0)) / 100, [subTotal, discountPct]);
+	const tax = useMemo(() => (subTotal * (Number(taxPct) || 0)) / 100, [subTotal, taxPct]);
 	const grandTotal = useMemo(() => Math.max(0, subTotal - discount + tax), [subTotal, discount, tax]);
 
+	const getUnitPrice = (productId: number) => {
+		const p = products.find(p => p.id === productId) as any;
+		const priceRaw = p?.price ?? p?.unit_price ?? 0;
+		const priceNum = typeof priceRaw === 'string' ? parseFloat(priceRaw) : Number(priceRaw || 0);
+		return isNaN(priceNum) ? 0 : priceNum;
+	};
+
+	const basePriceFor = (productId: number) => getUnitPrice(productId);
+
 	const handleAddItem = () => {
+		// legacy add single empty row (still allowed)
 		setCartItems(prev => ([
 			...prev,
-			{
-				itemId: '',
-				productId: 0,
-				name: '',
-				quantity: 1,
-				unitPrice: 0,
-				total: 0,
-				totalPrice: 0,
-			}
+			{ itemId: '', productId: 0, name: '', quantity: 1, unitPrice: 0, total: 0, totalPrice: 0 }
 		]));
 	};
 
@@ -231,6 +251,7 @@ const OrderWizard: React.FC = () => {
 					unitPrice: Number(ci.unitPrice) || 0,
 					total: ci.total,
 					totalPrice: ci.totalPrice,
+					variants: ci.variants,
 				})),
 				customerInfo: {
 					firstName,
@@ -284,13 +305,13 @@ const OrderWizard: React.FC = () => {
 																								<Autocomplete<CustomerOption>
 										sx={{ width: '100%' }}
 										options={customers}
-										getOptionLabel={(o) => `${o.name} (${o.email})`}
+										getOptionLabel={(o) => `${o.first_name} ${o.last_name} (${o.email})`}
 										value={selectedCustomer}
 										onChange={(_, v) => {
 											setSelectedCustomer(v);
 											if (v) {
-												setFirstName(v.name?.split(' ')[0] || '');
-												setLastName(v.name?.split(' ').slice(1).join(' ') || '');
+												setFirstName(v.first_name || '');
+												setLastName(v.last_name || '');
 												setEmail(v.email || '');
 											}
 										}}
@@ -313,51 +334,74 @@ const OrderWizard: React.FC = () => {
 				return (
 					<Card>
 						<CardContent>
-							<Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-								<Typography variant="h6">Products</Typography>
-								<Button variant="outlined" startIcon={<AddIcon />} onClick={handleAddItem} size="small">Add Item</Button>
-							</Box>
-							{cartItems.length === 0 ? (
-								<Box textAlign="center" py={3} color="text.secondary">No items added yet.</Box>
-							) : (
-								<Box display="grid" gap={2}>
-									{cartItems.map((it, idx) => (
-										<Card key={idx} variant="outlined">
-											<CardContent>
-																												<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 120px 140px 160px auto', lg: '1fr 140px 160px 180px auto' }} gap={2} alignItems="center">
-																	<FormControl fullWidth>
-																		<InputLabel>Product</InputLabel>
-																		<Select
-																			label="Product"
-																			value={it.productId || ''}
-																			onChange={(e) => {
-																				const productId = Number(e.target.value);
-																				const name = products.find(p => p.id === productId)?.name || '';
-																				updateItem(idx, { productId, itemId: String(productId), name });
-																		}}
-																	>
-																		<MenuItem value=""><em>Select Product</em></MenuItem>
-																		{products.map(p => (
-																			<MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
-																		))}
-																	</Select>
-																	</FormControl>
-																	<TextField fullWidth type="number" label="Quantity" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} />
-																	<TextField fullWidth type="number" label="Unit Price" value={it.unitPrice} onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) })} />
-																											<Box display="flex" alignItems="center" justifyContent="space-between">
-											<Chip label={`$${((it.quantity * it.unitPrice)).toFixed(2)}`} color="primary" />
-																		<IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton>
-																	</Box>
-																</Box>
-											</CardContent>
-										</Card>
-									))}
+							<Box display="grid" gridTemplateColumns="1fr" gap={2}>
+								<Typography variant="h6">Choose Products</Typography>
+								<Autocomplete
+									multiple
+									options={products}
+									getOptionLabel={(o: any) => o.name}
+									value={products.filter(p => cartItems.some(ci => ci.productId === p.id))}
+									onChange={(_, values: any[]) => {
+										setCartItems(prev => {
+											const next: CartItem[] = [];
+											values.forEach(v => {
+												const existing = prev.find(ci => ci.productId === v.id);
+												const unitPrice = getUnitPrice(v.id);
+												next.push({
+													itemId: String(v.id),
+													productId: v.id,
+													name: v.name,
+													quantity: existing?.quantity || 1,
+													unitPrice,
+													total: (existing?.quantity || 1) * unitPrice,
+													totalPrice: (existing?.quantity || 1) * unitPrice,
+												});
+											});
+											return next;
+										});
+									}}
+									renderInput={(params) => <TextField {...params} placeholder="You can choose Single/Multiple Products" />} />
+
+								{cartItems.length > 0 ? (
+									<Box sx={{ overflowX: 'auto' }}>
+										<Table size="small">
+											<TableHead>
+												<TableRow>
+													<TableCell>Product</TableCell>
+													<TableCell align="center">Variants</TableCell>
+													<TableCell align="right">Unit Price</TableCell>
+													<TableCell align="center">Quantity</TableCell>
+													<TableCell align="right">Line Total</TableCell>
+													<TableCell align="center">Action</TableCell>
+												</TableRow>
+											</TableHead>
+											<TableBody>
+												{cartItems.map((it, idx) => (
+													<TableRow key={idx} hover>
+														<TableCell sx={{ minWidth: 240 }}>{it.name || products.find(p => p.id === it.productId)?.name}</TableCell>
+														<TableCell align="center">
+															<Button size="small" startIcon={<TuneIcon />} onClick={() => { setDrawerRowIndex(idx); setDrawerOpen(true); }}>Details</Button>
+														</TableCell>
+														<TableCell align="right">${it.unitPrice.toFixed(2)}</TableCell>
+														<TableCell align="center" sx={{ width: 120 }}>
+															<TextField type="number" size="small" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} inputProps={{ min: 1, style: { textAlign: 'center' } }} />
+														</TableCell>
+														<TableCell align="right">${(it.quantity * it.unitPrice).toFixed(2)}</TableCell>
+														<TableCell align="center"><IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton></TableCell>
+													</TableRow>
+												))}
+											</TableBody>
+										</Table>
+									</Box>
+								) : (
+									<Box textAlign="center" py={3} color="text.secondary">No items selected.</Box>
+								)}
+
+								<Divider sx={{ my: 2 }} />
+								<Box display="flex" gap={2} flexWrap="wrap" alignItems="center" justifyContent="flex-end">
+									<Chip label={`Items: ${cartItems.length}`} />
+									<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} color="primary" />
 								</Box>
-							)}
-							<Divider sx={{ my: 2 }} />
-							<Box display="flex" gap={2} flexWrap="wrap" alignItems="center" justifyContent="flex-end">
-								<Chip label={`Items: ${cartItems.length}`} />
-								<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} color="primary" />
 							</Box>
 						</CardContent>
 					</Card>
@@ -417,8 +461,8 @@ const OrderWizard: React.FC = () => {
 																			</Select>
 																		</FormControl>
 																		<Box mt={2} display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-																			<TextField type="number" label="Discount" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
-																			<TextField type="number" label="Tax" value={tax} onChange={(e) => setTax(Number(e.target.value))} />
+																			<TextField type="number" label="Discount" value={discountPct} onChange={(e) => setDiscountPct(Number(e.target.value))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+																			<TextField type="number" label="Tax" value={taxPct} onChange={(e) => setTaxPct(Number(e.target.value))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
 																		</Box>
 																	</Box>
 																</Box>
@@ -433,7 +477,7 @@ const OrderWizard: React.FC = () => {
 							<Box display="grid" gap={2}>
 								<Box>
 									<Typography variant="subtitle2">Customer</Typography>
-									<Typography>{selectedCustomer ? `${selectedCustomer.name} (${selectedCustomer.email})` : `${firstName} ${lastName}`}</Typography>
+									<Typography>{selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name} (${selectedCustomer.email})` : `${firstName} ${lastName}`}</Typography>
 								</Box>
 								<Box>
 									<Typography variant="subtitle2">Items</Typography>
@@ -446,8 +490,8 @@ const OrderWizard: React.FC = () => {
 									<Divider sx={{ my: 1 }} />
 																			<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
 											<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
-											<Chip label={`Order Discount: $${discount.toFixed(2)}`} />
-											<Chip label={`Tax: $${tax.toFixed(2)}`} />
+											<Chip label={`Order Discount: $${discount.toFixed(2)} (${discountPct}%)`} />
+											<Chip label={`Tax: $${tax.toFixed(2)} (${taxPct}%)`} />
 											<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
 										</Box>
 									</Box>
@@ -502,6 +546,35 @@ const OrderWizard: React.FC = () => {
 					)}
 				</DialogActions>
 			</Dialog>
+			<AdminVariantsDrawer
+				open={drawerOpen}
+				onClose={() => setDrawerOpen(false)}
+				productId={drawerRowIndex !== null ? cartItems[drawerRowIndex]?.productId || null : null}
+				basePrice={drawerRowIndex !== null ? basePriceFor(cartItems[drawerRowIndex]!.productId) : 0}
+				initialSelections={drawerRowIndex !== null ? (cartItems[drawerRowIndex!]?.variants || null) : null}
+				onPreview={({ newUnitPrice }) => {
+					if (drawerRowIndex === null) return;
+					const row = drawerRowIndex;
+					setCartItems(prev => prev.map((ci, i) => i !== row ? ci : {
+						...ci,
+						unitPrice: newUnitPrice,
+						total: (ci.quantity || 1) * newUnitPrice,
+						totalPrice: (ci.quantity || 1) * newUnitPrice,
+					}));
+				}}
+				onApply={({ selections, newUnitPrice }) => {
+					if (drawerRowIndex === null) return;
+					const row = drawerRowIndex;
+					setCartItems(prev => prev.map((ci, i) => i !== row ? ci : {
+						...ci,
+						variants: selections,
+						unitPrice: newUnitPrice,
+						total: (ci.quantity || 1) * newUnitPrice,
+						totalPrice: (ci.quantity || 1) * newUnitPrice,
+					}));
+					setDrawerOpen(false);
+				}}
+			/>
 		</Box>
 	);
 };

@@ -114,7 +114,7 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
             {/* Shipping Section */}
             <Box>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Shipping Information</Typography>
-              <Stack spacing={2}>
+          <Stack spacing={2}>
                 <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                   <TextField fullWidth label="First Name" value={shipping.firstName} onChange={handleShippingChange('firstName')} required variant="outlined" size="small" sx={commonTextFieldStyles} />
                   <TextField fullWidth label="Last Name" value={shipping.lastName} onChange={handleShippingChange('lastName')} required variant="outlined" size="small" sx={commonTextFieldStyles} />
@@ -142,7 +142,7 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 </Box>
               </Stack>
             </Box>
-
+            
             {/* Billing Section */}
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -163,17 +163,17 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                   <TextField fullWidth label="City" value={billing.city} onChange={handleBillingChange('city')} required variant="outlined" size="small" sx={commonTextFieldStyles} />
                   <TextField fullWidth label="State" value={billing.state} onChange={handleBillingChange('state')} required variant="outlined" size="small" sx={commonTextFieldStyles} />
-                </Box>
+            </Box>
                 <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                   <TextField fullWidth label="ZIP Code" value={billing.zipCode} onChange={handleBillingChange('zipCode')} required variant="outlined" size="small" sx={commonTextFieldStyles} />
-                  <FormControl fullWidth required size="small">
+              <FormControl fullWidth required size="small">
                     <InputLabel sx={{ fontSize: '0.875rem' }}>Country</InputLabel>
                     <Select value={billing.country} onChange={(event) => setBilling(prev => ({ ...prev, country: event.target.value as string }))} label="Country" sx={{ '& .MuiSelect-select': { fontSize: '0.875rem', padding: '8px 12px' } }}>
-                      {countries.map((country) => (
+                  {countries.map((country) => (
                         <MenuItem key={country.value} value={country.value} sx={{ fontSize: '0.875rem' }}>{country.label}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  ))}
+                </Select>
+              </FormControl>
                 </Box>
               </Stack>
             </Box>
@@ -200,7 +200,7 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 />
               </Stack>
             </Box>
-
+            
             {/* Navigation Buttons */}
             <Box sx={{ 
               display: 'flex', 
@@ -225,29 +225,29 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
               >
                 Back
               </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                size="medium"
-                sx={{ 
-                  py: { xs: 1, sm: 1.25 },
-                  px: { xs: 2, sm: 3 },
-                  fontSize: { xs: '0.8rem', sm: '0.8rem' ,md: '1rem', lg: '1rem', xl: '1rem'},
-                  height:  { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
-                 width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' },
-                  backgroundColor: 'primary.main',
-                  boxShadow: 'none',
-                 
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                    boxShadow: 'none',
-                  },
-                }}
-              >
-                Continue to Payment
-              </Button>
+                             <Button
+                 type="submit"
+                 variant="contained"
+                 size="medium"
+                 sx={{ 
+                   py: { xs: 1, sm: 1.25 },
+                   px: { xs: 2, sm: 3 },
+                   fontSize: { xs: '0.8rem', sm: '0.8rem' ,md: '1rem', lg: '1rem', xl: '1rem'},
+                   height:  { xs: '40px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
+                  width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' },
+                   backgroundColor: 'primary.main',
+                   boxShadow: 'none',
+                  
+                   whiteSpace: 'nowrap',
+                   textOverflow: 'ellipsis',
+                   '&:hover': {
+                     backgroundColor: 'primary.dark',
+                     boxShadow: 'none',
+                   },
+                 }}
+               >
+                 Continue to Payment
+               </Button>
             </Box>
           </Stack>
         </form>

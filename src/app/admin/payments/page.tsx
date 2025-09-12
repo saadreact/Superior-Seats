@@ -64,11 +64,11 @@ const AdminPayments = () => {
         <Card sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar sx={{ bgcolor: 'black', width: 56, height: 56 }}>■</Avatar>
-            <Box>
+      <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>Square</Typography>
               <Typography variant="body2" color="text.secondary">OrderCircle Payments - Square</Typography>
-            </Box>
-          </Box>
+                </Box>
+              </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button variant="contained" onClick={connectSquare} disabled={connected}>{connected ? 'Connected' : 'Connect'}</Button>
             <Link href="https://developer.squareup.com/docs/oauth-api/overview" target="_blank" rel="noopener noreferrer">

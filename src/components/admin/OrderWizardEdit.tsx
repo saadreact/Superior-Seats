@@ -24,18 +24,27 @@ import {
 	Chip,
 	Autocomplete,
 	Alert,
+	Table,
+	TableHead,
+	TableRow,
+	TableCell,
+	TableBody,
 } from '@mui/material';
 import {
 	Add as AddIcon,
 	Delete as DeleteIcon,
 	CheckCircle as CheckCircleIcon,
+	Tune as TuneIcon,
 } from '@mui/icons-material';
 import { apiService } from '@/utils/api';
 import { useRouter } from 'next/navigation';
+import AdminVariantsDrawer, { VariantSelections } from './AdminVariantsDrawer';
 
 interface CustomerOption {
 	id: number;
-	name: string;
+	first_name: string;
+	last_name: string;
+	name?: string | null;
 	email: string;
 	phone?: string;
 }
@@ -56,6 +65,7 @@ interface CartItem {
 	discountAmount?: number;
 	total: number;
 	totalPrice: number;
+	variants?: VariantSelections;
 }
 
 interface Address {
@@ -96,6 +106,15 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 
 	// Step 2: items
 	const [cartItems, setCartItems] = useState<CartItem[]>([]);
+// variants drawer state
+const [drawerOpen, setDrawerOpen] = useState(false);
+const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
+const getUnitPrice = (productId: number) => {
+  const p: any = products.find(p => p.id === productId);
+  const raw = p?.price ?? (p as any)?.unit_price ?? 0;
+  const n = typeof raw === 'string' ? parseFloat(raw) : Number(raw || 0);
+  return isNaN(n) ? 0 : n;
+};
 
 	// Step 3: addresses and contact
 	const [firstName, setFirstName] = useState('');
@@ -135,15 +154,18 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 				setProducts(Array.isArray(pData) ? pData : []);
 
 				// Prefill from order
-				if (order) {
-					// Customer
-					const matched = cArray.find((c: any) => c.email === order?.user?.email);
+									if (order) {
+						const ord = (order as any)?.order || order;
+						// Customer
+					const custInfo = (ord as any)?.customerInfo || (ord as any)?.customer || null;
+					const custEmail = custInfo?.email || (ord as any)?.user?.email || '';
+					const matched = cArray.find((c: any) => c.email === custEmail);
 					if (matched) setSelectedCustomer(matched);
-					setFirstName((order?.user?.name || '').split(' ')[0] || '');
-					setLastName((order?.user?.name || '').split(' ').slice(1).join(' ') || '');
-					setEmail(order?.user?.email || '');
+					setFirstName(custInfo?.firstName || matched?.first_name || (order as any)?.user?.name?.split(' ')[0] || '');
+					setLastName(custInfo?.lastName || matched?.last_name || ((order as any)?.user?.name || '').split(' ').slice(1).join(' ') || '');
+					setEmail(custEmail || matched?.email || '');
 					// Phone
-					const inferredPhone = (order as any)?.user?.phone || (order as any)?.shipping_address?.phone || (order as any)?.billing_address?.phone;
+					const inferredPhone = custInfo?.phone || (ord as any)?.shippingAddress?.phone || (ord as any)?.billingAddress?.phone || (ord as any)?.shipping_address?.phone || (ord as any)?.billing_address?.phone;
 					if (inferredPhone) setPhone(inferredPhone);
 
 					// Shipping method from order.shippingMethod or notes e.g. "... (Ship: Express)"
@@ -167,8 +189,10 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 							country: addr.country || 'US',
 						};
 					};
-					setShippingAddress(parseAddress(order.shipping_address));
-					setBillingAddress(parseAddress(order.billing_address));
+					const shippingAddr = (ord as any)?.customerInfo?.shippingAddress || (ord as any)?.shippingAddress || (ord as any)?.shipping_address;
+					const billingAddr = (ord as any)?.customerInfo?.billingAddress || (ord as any)?.billingAddress || (ord as any)?.billing_address;
+					setShippingAddress(parseAddress(shippingAddr));
+					setBillingAddress(parseAddress(billingAddr));
 
 					// Items -> cartItems
 					const items = Array.isArray(order.items) ? order.items : [];
@@ -192,9 +216,9 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 					setCartItems(mapped);
 
 					// Totals & notes
-					setDiscount(Number(order.discount_amount) || 0);
-					setTax(Number(order.tax_amount) || 0);
-					setNotes(order.notes || '');
+					setDiscount(Number((order as any)?.cartSummary?.discount ?? order.discount_amount) || 0);
+					setTax(Number((order as any)?.cartSummary?.tax ?? order.tax_amount) || 0);
+					setNotes((order as any)?.notes || (order as any)?.order?.notes || '');
 				}
 			} catch (e: any) {
 				console.error('Error loading edit wizard data', e);
@@ -262,6 +286,17 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 			setError(null);
 
 			// Build old-format payload for updateOrder (it will transform internally)
+			const fallbackCustomer = selectedCustomer || ({} as any);
+			const originalCustInfo = (order as any)?.customerInfo || (order as any)?.customer || {};
+			const normalizedCustomerInfo = {
+				firstName: firstName || originalCustInfo.firstName || (order as any)?.user?.name?.split(' ')[0] || fallbackCustomer.first_name || '',
+				lastName: lastName || originalCustInfo.lastName || ((order as any)?.user?.name || '').split(' ').slice(1).join(' ') || fallbackCustomer.last_name || '',
+				email: email || originalCustInfo.email || (order as any)?.user?.email || fallbackCustomer.email || '',
+				phone: phone || originalCustInfo.phone || fallbackCustomer.phone || '',
+				shippingAddress: { ...shippingAddress },
+				billingAddress: { ...billingAddress },
+			};
+
 			const payload = {
 				shipping_address: { ...shippingAddress },
 				billing_address: { ...billingAddress },
@@ -274,7 +309,22 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 					variation_id: ci.variationId,
 					quantity: ci.quantity,
 					unit_price: ci.unitPrice,
+					variants: ci.variants,
 				})),
+				// Also include a modern cartItems array for services expecting the new shape
+				cartItems: cartItems.map(ci => ({
+					itemId: String(ci.productId || ci.itemId || ''),
+					productId: ci.productId,
+					variationId: ci.variationId,
+					name: ci.name,
+					quantity: ci.quantity,
+					unitPrice: ci.unitPrice,
+					total: ci.total,
+					totalPrice: ci.totalPrice,
+					variants: ci.variants,
+				})),
+				// And include denormalized customerInfo block for services expecting it at top level
+				customerInfo: normalizedCustomerInfo,
 			};
 
 			await apiService.updateOrder(Number(order.id || order?.order_id || 0), payload as any);
@@ -299,9 +349,16 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 									<Autocomplete<CustomerOption>
 										sx={{ width: '100%' }}
 										options={customers}
-										getOptionLabel={(o) => `${o.name} (${o.email})`}
+										getOptionLabel={(o) => `${o.first_name} ${o.last_name} (${o.email})`}
 										value={selectedCustomer}
-										onChange={(_, v) => setSelectedCustomer(v)}
+										onChange={(_, v) => {
+											setSelectedCustomer(v);
+											if (v) {
+												setFirstName(v.first_name || '');
+												setLastName(v.last_name || '');
+												setEmail(v.email || '');
+											}
+										}}
 										renderInput={(params) => (
 											<TextField {...params} fullWidth label="Customer Account" placeholder="Search customers" />
 										)}
@@ -321,51 +378,45 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 				return (
 					<Card>
 						<CardContent>
-							<Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+							<Box display="grid" gridTemplateColumns="1fr" gap={2}>
 								<Typography variant="h6">Products</Typography>
-								<Button variant="outlined" startIcon={<AddIcon />} onClick={handleAddItem} size="small">Add Item</Button>
-							</Box>
-							{cartItems.length === 0 ? (
-								<Box textAlign="center" py={3} color="text.secondary">No items added yet.</Box>
-							) : (
-								<Box display="grid" gap={2}>
-									{cartItems.map((it, idx) => (
-										<Card key={idx} variant="outlined">
-											<CardContent>
-												<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 120px 140px 160px auto', lg: '1fr 140px 160px 180px auto' }} gap={2} alignItems="center">
-													<FormControl fullWidth>
-														<InputLabel>Product</InputLabel>
-														<Select
-															label="Product"
-															value={it.productId || ''}
-															onChange={(e) => {
-																const productId = Number(e.target.value);
-																const name = products.find(p => p.id === productId)?.name || '';
-																updateItem(idx, { productId, itemId: String(productId), name });
-															}}
-														>
-															<MenuItem value=""><em>Select Product</em></MenuItem>
-															{products.map(p => (
-																<MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
-															))}
-														</Select>
-													</FormControl>
-													<TextField fullWidth type="number" label="Quantity" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} />
-													<TextField fullWidth type="number" label="Unit Price" value={it.unitPrice} onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) })} />
-																									<Box display="flex" alignItems="center" justifyContent="space-between">
-													<Chip label={`$${((it.quantity * it.unitPrice)).toFixed(2)}`} color="primary" />
-														<IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton>
-													</Box>
-												</Box>
-											</CardContent>
-										</Card>
-									))}
+								{cartItems.length > 0 ? (
+									<Box sx={{ overflowX: 'auto' }}>
+										<Table size="small">
+											<TableHead>
+												<TableRow>
+													<TableCell>Product</TableCell>
+													<TableCell align="center">Variants</TableCell>
+													<TableCell align="right">Unit Price</TableCell>
+													<TableCell align="center">Quantity</TableCell>
+													<TableCell align="right">Line Total</TableCell>
+													<TableCell align="center">Action</TableCell>
+												</TableRow>
+											</TableHead>
+											<TableBody>
+												{cartItems.map((it, idx) => (
+													<TableRow key={idx} hover>
+														<TableCell sx={{ minWidth: 240 }}>{it.name || products.find(p => p.id === it.productId)?.name}</TableCell>
+														<TableCell align="center"><Button size="small" startIcon={<TuneIcon />} onClick={() => { setDrawerRowIndex(idx); setDrawerOpen(true); }}>Details</Button></TableCell>
+														<TableCell align="right">${it.unitPrice.toFixed(2)}</TableCell>
+														<TableCell align="center" sx={{ width: 120 }}>
+															<TextField type="number" size="small" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} inputProps={{ min: 1, style: { textAlign: 'center' } }} />
+														</TableCell>
+														<TableCell align="right">${(it.quantity * it.unitPrice).toFixed(2)}</TableCell>
+														<TableCell align="center"><IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton></TableCell>
+													</TableRow>
+												))}
+											</TableBody>
+										</Table>
+									</Box>
+								) : (
+									<Box textAlign="center" py={3} color="text.secondary">No items added yet.</Box>
+								)}
+								<Divider sx={{ my: 2 }} />
+								<Box display="flex" gap={2} flexWrap="wrap" alignItems="center" justifyContent="flex-end">
+									<Chip label={`Items: ${cartItems.length}`} />
+									<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} color="primary" />
 								</Box>
-							)}
-							<Divider sx={{ my: 2 }} />
-							<Box display="flex" gap={2} flexWrap="wrap" alignItems="center" justifyContent="flex-end">
-								<Chip label={`Items: ${cartItems.length}`} />
-								<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} color="primary" />
 							</Box>
 						</CardContent>
 					</Card>
@@ -441,7 +492,7 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 							<Box display="grid" gap={2}>
 								<Box>
 									<Typography variant="subtitle2">Customer</Typography>
-									<Typography>{selectedCustomer ? `${selectedCustomer.name} (${selectedCustomer.email})` : `${firstName} ${lastName}`}</Typography>
+									<Typography>{selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name} (${selectedCustomer.email})` : `${firstName} ${lastName}`}</Typography>
 								</Box>
 								<Box>
 									<Typography variant="subtitle2">Items</Typography>
@@ -492,6 +543,36 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 					<Button variant="contained" color="primary" onClick={submitUpdate} disabled={loading}>Update Order</Button>
 				)}
 			</Box>
+
+			<AdminVariantsDrawer
+				open={drawerOpen}
+				onClose={() => setDrawerOpen(false)}
+				productId={drawerRowIndex !== null ? cartItems[drawerRowIndex]?.productId || null : null}
+				basePrice={drawerRowIndex !== null ? getUnitPrice(cartItems[drawerRowIndex]!.productId) : 0}
+				initialSelections={drawerRowIndex !== null ? (cartItems[drawerRowIndex!]?.variants || null) : null}
+				onPreview={({ newUnitPrice }) => {
+					if (drawerRowIndex === null) return;
+					const row = drawerRowIndex;
+					setCartItems(prev => prev.map((ci, i) => i !== row ? ci : {
+						...ci,
+						unitPrice: newUnitPrice,
+						total: (ci.quantity || 1) * newUnitPrice,
+						totalPrice: (ci.quantity || 1) * newUnitPrice,
+					}));
+				}}
+				onApply={({ selections, newUnitPrice }) => {
+					if (drawerRowIndex === null) return;
+					const row = drawerRowIndex;
+					setCartItems(prev => prev.map((ci, i) => i !== row ? ci : {
+						...ci,
+						variants: selections,
+						unitPrice: newUnitPrice,
+						total: (ci.quantity || 1) * newUnitPrice,
+						totalPrice: (ci.quantity || 1) * newUnitPrice,
+					}));
+					setDrawerOpen(false);
+				}}
+			/>
 
 			<Dialog open={successOpen} onClose={() => router.push(`/admin/orders/${order.id}`)}>
 				<DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
