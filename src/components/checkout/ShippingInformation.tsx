@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
@@ -16,10 +16,11 @@ import { countries, defaultShippingData, ShippingFormData } from '@/data/checkou
 interface ShippingInformationProps {
   onNext: () => void;
   onBack: () => void;
+  formData: ShippingFormData;
+  onFormDataChange: (data: ShippingFormData) => void;
 }
 
-const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBack }) => {
-  const [formData, setFormData] = useState<ShippingFormData>(defaultShippingData);
+const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBack, formData, onFormDataChange }) => {
 
   // Common styles for text fields (same as ContactPage)
   const commonTextFieldStyles = {
@@ -54,10 +55,10 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
   const handleInputChange = (field: keyof ShippingFormData) => (
     event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
   ) => {
-    setFormData(prev => ({
-      ...prev,
+    onFormDataChange({
+      ...formData,
       [field]: event.target.value as string
-    }));
+    });
   };
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -226,7 +227,7 @@ const ShippingInformation: React.FC<ShippingInformationProps> = ({ onNext, onBac
                 </InputLabel>
                 <Select
                   value={formData.country}
-                  onChange={(event) => setFormData(prev => ({ ...prev, country: event.target.value as string }))}
+                  onChange={(event) => onFormDataChange({ ...formData, country: event.target.value as string })}
                   label="Country"
                   sx={{
                     '& .MuiSelect-select': {

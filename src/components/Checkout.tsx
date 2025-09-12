@@ -24,6 +24,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { clearCart } from '@/store/cartSlice';
 import { CartReview, ShippingInformation, PaymentMethod, OrderConfirmation } from './checkout/index';
+import { ShippingFormData, defaultShippingData, PaymentFormData, defaultPaymentData } from '@/data/checkoutData';
 
 // Steps array with proper spacing and comments
 const steps = [
@@ -43,6 +44,8 @@ const Checkout = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [orderComplete, setOrderComplete] = useState(false);
   const [paymentId, setPaymentId] = useState<string>('');
+  const [shippingData, setShippingData] = useState<ShippingFormData>(defaultShippingData);
+  const [paymentData, setPaymentData] = useState<PaymentFormData>(defaultPaymentData);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -108,9 +111,23 @@ const Checkout = () => {
       case 0:
         return <CartReview onNext={handleNext} />;
       case 1:
-        return <ShippingInformation onNext={handleNext} onBack={handleBack} />;
+        return (
+          <ShippingInformation 
+            onNext={handleNext} 
+            onBack={handleBack}
+            formData={shippingData}
+            onFormDataChange={setShippingData}
+          />
+        );
       case 2:
-        return <PaymentMethod onNext={handlePlaceOrder} onBack={handleBack} />;
+        return (
+          <PaymentMethod 
+            onNext={handlePlaceOrder} 
+            onBack={handleBack}
+            formData={paymentData}
+            onFormDataChange={setPaymentData}
+          />
+        );
       case 3:
         return <OrderConfirmation onBack={handleBack} paymentId={paymentId} />;
       default:

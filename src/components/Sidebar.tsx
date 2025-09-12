@@ -249,7 +249,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       {/* Header */}
       <Box
         sx={{
-          p: 1.5,
+          p: 1.8,
           borderBottom: 1,
           borderColor: 'divider',
           display: 'flex',
@@ -266,7 +266,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
               height={60}
               style={{
                 width: 'auto',
-                height: '48px',
+                height: '36px',
                 objectFit: 'contain',
               }}
               priority
