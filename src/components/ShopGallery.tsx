@@ -68,7 +68,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addItem } from '@/store/cartSlice';
 import { RootState } from '@/store/store';
 // API IMPORT
-import shopGalleryApi, { Product, User, PriceTier } from '@/services/ShopGalleryApi';
+import shopNowApis, { Product, User, PriceTier } from '@/services/ShopNowApis';
 
 const ShopGallery = () => {
   const theme = useTheme();
@@ -119,7 +119,7 @@ const ShopGallery = () => {
       setPriceTiersLoading(true);
       console.log('💰 ShopGallery - Fetching price tiers...');
       
-      const response = await shopGalleryApi.getPriceTiers();
+      const response = await shopNowApis.getPriceTiers();
       
       if (response.status === 'success' && response.data) {
         setPriceTiers(response.data);
@@ -150,12 +150,14 @@ const ShopGallery = () => {
       
       // Fetch special products only
       console.log('🚀 ShopGallery - Fetching special products from API...');
-      const productsResponse = await shopGalleryApi.getSpecialProducts();
+      const productsResponse = await shopNowApis.getProducts();
       console.log('✅ ShopGallery - Special Products API Response:', productsResponse);
       
       if (productsResponse.status === 'success' && productsResponse.data) {
-        setApiProducts(productsResponse.data);
-        console.log('📦 Special products loaded:', productsResponse.data.length);
+        // Filter only products with show_on_special_shop: true
+        const specialProducts = productsResponse.data.filter(product => product.show_on_special_shop === true);
+        setApiProducts(specialProducts);
+        console.log('📦 Special products loaded:', specialProducts.length, 'out of', productsResponse.data.length, 'total products');
       } else {
         setError('Failed to load special products');
         console.error('❌ Special Products API returned error status');
@@ -169,7 +171,7 @@ const ShopGallery = () => {
         console.log('✅ User is authenticated, fetching user data...');
         setUserLoading(true);
         try {
-          const userResponse = await shopGalleryApi.getCurrentUser();
+          const userResponse = await shopNowApis.getCurrentUser();
           console.log('👤 User data fetched:', userResponse);
           setUserData(userResponse);
         } catch (userError) {
@@ -214,17 +216,17 @@ const ShopGallery = () => {
 
   // Check if user is retail customer
   const isRetailCustomer = () => {
-    return shopGalleryApi.isRetailCustomer(userData);
+    return shopNowApis.isRetailCustomer(userData);
   };
 
   // Get wholesale discount percentage
   const getWholesaleDiscount = () => {
-    return shopGalleryApi.getWholesaleDiscount(priceTiers, userData);
+    return shopNowApis.getWholesaleDiscount(priceTiers, userData);
   };
 
   // Get display price based on customer type
   const getDisplayPrice = (price: string | number) => {
-    return shopGalleryApi.getDisplayPrice(price, isAuthenticated, userData, priceTiers);
+    return shopNowApis.getDisplayPrice(price, isAuthenticated, userData, priceTiers);
   };
 
   // Debug logging for user state
@@ -233,7 +235,7 @@ const ShopGallery = () => {
       console.log('🔄 ShopGallery - User state updated:', {
         userData,
         isRetail: isRetailCustomer(),
-        isAuthenticated: shopGalleryApi.isAuthenticated(),
+        isAuthenticated: shopNowApis.isAuthenticated(),
         reduxIsAuthenticated: isAuthenticated,
         currentPage: isOnShopGalleryPage,
         priceTiers: priceTiers
@@ -242,12 +244,13 @@ const ShopGallery = () => {
   }, [userData, isAuthenticated, isOnShopGalleryPage, priceTiers]);
 
   // Filter products based on selected categories (using API data)
+  // Note: apiProducts already contains only special products (show_on_special_shop: true)
   const filteredImages = apiProducts.filter(item => {
     if (selectedMainCategory === 'all') {
-      return true; // Show all products
+      return true; // Show all special products
     }
     
-    // For now, we'll show all products since category filtering needs to be implemented
+    // For now, we'll show all special products since category filtering needs to be implemented
     // based on your API structure
     return true;
   });
@@ -298,7 +301,7 @@ const ShopGallery = () => {
 
   // Get multiple images for the selected product from the images array
   const getProductImages = (product: Product) => {
-    return shopGalleryApi.processProductImages(product);
+    return shopNowApis.processProductImages(product);
   };
 
   // Touch/swipe functionality for mobile
@@ -357,7 +360,7 @@ const ShopGallery = () => {
       price: item.price.toString(),
       image: getProductImages(item)[0] || '/placeholder-image.jpg',
       description: item.description || '',
-      category: item.category || 'seat',
+      category: shopNowApis.getCategoryName(item.category) || 'seat',
     }));
   };
 
@@ -533,21 +536,48 @@ const ShopGallery = () => {
                   onClick={() => handleImageClick(item, startIndex + index)}
                 >
                   <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                    <CardMedia
-                      component="img"
-                      height="250"
-                      image={getProductImages(item)[0] || '/placeholder-image.jpg'}
-                      alt={item.name}
-                      className="card-media"
-                      sx={{
-                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        objectFit: 'contain',
-                        width: '100%',
-                        height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
-                        backgroundColor: '#f5f5f5',
-                        padding: { xs: '12px', sm: '8px', md: '6px' },
-                      }}
-                    />
+                    {getProductImages(item)[0] ? (
+                      <CardMedia
+                        component="img"
+                        height="250"
+                        image={getProductImages(item)[0]}
+                        alt={item.name}
+                        className="card-media"
+                        sx={{
+                          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          objectFit: 'contain',
+                          width: '100%',
+                          height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                          backgroundColor: '#f5f5f5',
+                          padding: { xs: '12px', sm: '8px', md: '6px' },
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                          backgroundColor: '#f5f5f5',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid #e0e0e0',
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: 'text.secondary',
+                            fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                            fontWeight: 'medium',
+                            textAlign: 'center',
+                          }}
+                        >
+                          No Image
+                        </Typography>
+                      </Box>
+                    )}
                     
                     {/* Zoom Icon */}
                     <Box
@@ -822,7 +852,7 @@ const ShopGallery = () => {
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}>
-                No products found for this category
+                No special products found
               </Typography>
                                                            <Button
                   variant="contained"
@@ -837,7 +867,7 @@ const ShopGallery = () => {
                     fontWeight: 'regular',
                   }}
                 >
-                  View All Products
+                  View All Specials
                 </Button>
             </Box>
           )}
@@ -1110,27 +1140,55 @@ const ShopGallery = () => {
                         minHeight: { xs: '45vh', md: '100%' }
                       }}
                     >
-                      <Image
-                        src={(() => {
-                          const images = getProductImages(selectedImage);
-                          if (images && images.length > 0 && modalImageIndex < images.length) {
-                            return images[modalImageIndex];
-                          }
-                          return '/placeholder-image.jpg';
-                        })()}
-                        alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
-                        width={800}
-                        height={600}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          maxWidth: '100%',
-                          maxHeight: '100%',
-                          objectFit: 'contain',
-                          objectPosition: 'center',
-                        }}
-                        priority
-                      />
+                      {(() => {
+                        const images = getProductImages(selectedImage);
+                        if (images && images.length > 0 && modalImageIndex < images.length) {
+                          return (
+                            <Image
+                              src={images[modalImageIndex]}
+                              alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
+                              width={800}
+                              height={600}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                objectFit: 'contain',
+                                objectPosition: 'center',
+                              }}
+                              priority
+                            />
+                          );
+                        } else {
+                          return (
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: '#f5f5f5',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: 1,
+                              }}
+                            >
+                              <Typography
+                                variant="h5"
+                                sx={{
+                                  color: 'text.secondary',
+                                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                                  fontWeight: 'medium',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                No Image
+                              </Typography>
+                            </Box>
+                          );
+                        }
+                      })()}
                     </Box>
                   
                                      {/* Image Navigation Dots */}

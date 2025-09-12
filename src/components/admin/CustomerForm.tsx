@@ -10,6 +10,7 @@ import {
   FormActions,
   AddressFields 
 } from '@/components/common/FormComponents';
+import { apiService } from '@/utils/api';
 
 interface CustomerFormProps {
   customer?: any;
@@ -43,6 +44,28 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [priceTiers, setPriceTiers] = useState<any[]>([]);
+  const [priceTiersLoading, setPriceTiersLoading] = useState(false);
+
+  // Load price tiers from API
+  const loadPriceTiers = async () => {
+    try {
+      setPriceTiersLoading(true);
+      const response = await apiService.getPriceTiers();
+      console.log('Price tiers loaded for customer form:', response);
+      setPriceTiers(response || []);
+    } catch (error) {
+      console.error('Error loading price tiers:', error);
+      setPriceTiers([]);
+    } finally {
+      setPriceTiersLoading(false);
+    }
+  };
+
+  // Load price tiers on component mount
+  useEffect(() => {
+    loadPriceTiers();
+  }, []);
 
   useEffect(() => {
     if (customer) {
@@ -128,10 +151,17 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     }
   };
 
-  const customerTypeOptions = [
-    { value: 'retail', label: 'Retail' },
-    { value: 'wholesale', label: 'Wholesale' },
-  ];
+  // Generate customer type options dynamically from price tiers
+  const customerTypeOptions = priceTiers.map(tier => ({
+    value: tier.name.toLowerCase().replace('_price', '').replace('_', ''),
+    label: tier.display_name || tier.name.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+  }));
+
+  // Generate price tier options for dropdown
+  const priceTierOptions = priceTiers.map(tier => ({
+    value: tier.id,
+    label: `${tier.display_name || tier.name} (${tier.discount_off_retail_price}% discount)`
+  }));
 
   const allErrors = getAllErrors();
 
@@ -275,14 +305,18 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isViewMode}
           />
 
-          <FormField
+          <SelectField
             name="price_tier_id"
-            label="Price Tier ID"
-            value={formData.price_tier_id}
+            label="Price Tier"
+            value={formData.price_tier_id.toString()}
             onChange={(value) => handleFieldChange('price_tier_id', parseInt(value))}
-            type="number"
+            options={priceTierOptions.map(option => ({
+              value: option.value.toString(),
+              label: option.label
+            }))}
+            required
             error={allErrors.price_tier_id}
-            disabled={isViewMode}
+            disabled={isViewMode || priceTiersLoading}
           />
         </Grid>
       </Box>

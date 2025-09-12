@@ -722,21 +722,48 @@ const ShopGallery = () => {
                   onClick={() => handleImageClick(item, startIndex + index)}
                 >
                   <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                    <CardMedia
-                      component="img"
-                      height="250"
-                      image={getProductImages(item)[0] || '/placeholder-image.jpg'}
-                      alt={item.name}
-                      className="card-media"
-                      sx={{
-                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        objectFit: 'contain',
-                        width: '100%',
-                        height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
-                        backgroundColor: '#f5f5f5',
-                        padding: { xs: '12px', sm: '8px', md: '6px' },
-                      }}
-                    />
+                    {getProductImages(item)[0] ? (
+                      <CardMedia
+                        component="img"
+                        height="250"
+                        image={getProductImages(item)[0]}
+                        alt={item.name}
+                        className="card-media"
+                        sx={{
+                          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          objectFit: 'contain',
+                          width: '100%',
+                          height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                          backgroundColor: '#f5f5f5',
+                          padding: { xs: '12px', sm: '8px', md: '6px' },
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                          backgroundColor: '#f5f5f5',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid #e0e0e0',
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: 'text.secondary',
+                            fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                            fontWeight: 'medium',
+                            textAlign: 'center',
+                          }}
+                        >
+                          No Image
+                        </Typography>
+                      </Box>
+                    )}
                     
                     {/* Zoom Icon */}
                     <Box
@@ -1311,27 +1338,55 @@ const ShopGallery = () => {
                         minHeight: { xs: '45vh', md: '100%' }
                       }}
                     >
-                      <Image
-                        src={(() => {
-                          const images = getProductImages(selectedImage);
-                          if (images && images.length > 0 && modalImageIndex < images.length) {
-                            return images[modalImageIndex];
-                          }
-                          return '/placeholder-image.jpg';
-                        })()}
-                        alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
-                        width={800}
-                        height={600}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          maxWidth: '100%',
-                          maxHeight: '100%',
-                          objectFit: 'contain',
-                          objectPosition: 'center',
-                        }}
-                        priority
-                      />
+                      {(() => {
+                        const images = getProductImages(selectedImage);
+                        if (images && images.length > 0 && modalImageIndex < images.length) {
+                          return (
+                            <Image
+                              src={images[modalImageIndex]}
+                              alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
+                              width={800}
+                              height={600}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                objectFit: 'contain',
+                                objectPosition: 'center',
+                              }}
+                              priority
+                            />
+                          );
+                        } else {
+                          return (
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: '#f5f5f5',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: 1,
+                              }}
+                            >
+                              <Typography
+                                variant="h5"
+                                sx={{
+                                  color: 'text.secondary',
+                                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                                  fontWeight: 'medium',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                No Image
+                              </Typography>
+                            </Box>
+                          );
+                        }
+                      })()}
                     </Box>
                   
                                      {/* Image Navigation Dots */}
