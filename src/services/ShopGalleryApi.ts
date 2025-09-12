@@ -72,9 +72,14 @@ export interface User {
 export interface PriceTier {
   id: number;
   name: string;
+  display_name?: string;
+  description?: string;
   discount_off_retail_price: string;
+  minimum_order_amount?: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
+  customers_count?: number;
 }
 
 export interface ApiResponse<T> {
@@ -338,22 +343,30 @@ class ShopGalleryApi {
   /**
    * Get wholesale discount percentage from price tiers
    */
-  getWholesaleDiscount(priceTiers: PriceTier[]): number {
+  getWholesaleDiscount(priceTiers: PriceTier[], userData: User | null): number {
     if (priceTiers.length === 0) {
       console.log('💰 ShopGalleryApi - No price tiers available, using default 0% discount');
       return 0;
     }
     
-    // Find the wholesale price tier
-    const wholesaleTier = priceTiers.find(tier => tier.name === 'wholesale_priced');
-    if (wholesaleTier) {
-      const discount = parseFloat(wholesaleTier.discount_off_retail_price);
-      console.log('💰 ShopGalleryApi - Wholesale discount found:', discount + '%');
-      return discount;
+    if (!userData || !userData.role?.price_tier_id) {
+      console.log('💰 ShopGalleryApi - No user price tier ID, using default 0% discount');
+      return 0;
     }
     
-    console.log('💰 ShopGalleryApi - Wholesale price tier not found, using default 0% discount');
-    return 0;
+    // Find the user's specific price tier
+    const userPriceTier = priceTiers.find(tier => 
+      tier.id === userData.role!.price_tier_id && tier.is_active
+    );
+    
+    if (!userPriceTier) {
+      console.warn('⚠️ ShopGalleryApi - User price tier not found or inactive:', userData.role!.price_tier_id);
+      return 0;
+    }
+    
+    const discount = parseFloat(userPriceTier.discount_off_retail_price);
+    console.log('💰 ShopGalleryApi - User discount found:', discount + '%');
+    return discount;
   }
 
   /**
@@ -368,7 +381,7 @@ class ShopGalleryApi {
       return numericPrice;
     } else {
       // For wholesale customers, apply discount
-      const discountPercentage = this.getWholesaleDiscount(priceTiers);
+      const discountPercentage = this.getWholesaleDiscount(priceTiers, userData);
       const discountAmount = (numericPrice * discountPercentage) / 100;
       const discountedPrice = numericPrice - discountAmount;
       
