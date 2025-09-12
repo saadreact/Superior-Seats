@@ -159,6 +159,7 @@ const MaterialTypesPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -188,11 +189,26 @@ const MaterialTypesPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'flex-end', 
+          justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-        
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search material types..."
+              value={searchTerm}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -206,25 +222,8 @@ const MaterialTypesPage = () => {
               }
             }}
           >
-            Add
+            Add Material Type
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search material types..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )}}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -238,7 +237,22 @@ const MaterialTypesPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadMaterialTypes();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
@@ -258,30 +272,29 @@ const MaterialTypesPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <>
-            <TableContainer component={Paper} sx={{ mb: 2 }}>
+          <Paper sx={{ overflow: 'hidden' }}>
+            <TableContainer>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                                     {paginatedData.map((materialtypes) => {
-                     console.log(`Material Type ${materialtypes.id}:`, {
-                       name: materialtypes.name,
-                       image: materialtypes.image,
-                       apiUrl: process.env.NEXT_PUBLIC_API_URL,
-                       imageUrl: materialtypes.image ? `${process.env.NEXT_PUBLIC_API_URL}/storage/${materialtypes.image}` : 'No image'
-                     });
-                     return (
-                    <TableRow key={materialtypes.id} hover>
+                  {paginatedData.map((materialtypes) => (
+                    <TableRow 
+                      key={materialtypes.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
                       <TableCell>
                         <Box sx={{ 
                           width: 60, 
@@ -374,8 +387,8 @@ const MaterialTypesPage = () => {
                           {new Date(materialtypes.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1}>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(materialtypes)}
@@ -392,15 +405,14 @@ const MaterialTypesPage = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </Stack>
+                        </Box>
                       </TableCell>
                     </TableRow>
-                  );
-                  })}
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
-
+            
             {/* Pagination */}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
@@ -410,8 +422,16 @@ const MaterialTypesPage = () => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
             />
-          </>
+          </Paper>
         )}
 
         {/* Delete Confirmation Dialog */}

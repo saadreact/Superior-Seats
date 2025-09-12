@@ -57,7 +57,7 @@ const VehicleMakesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(15); // Match API default
   const [totalCount, setTotalCount] = useState(0);
 
   // Debounce search term to avoid too many API calls
@@ -80,12 +80,19 @@ const VehicleMakesPage = () => {
       };
       if (debouncedSearchTerm) params.search = debouncedSearchTerm;
       
+      console.log('🚗 Vehicle Makes - API call params:', params);
       const response = await vehicleMakesApiService.getVehicleMakes(params);
-      console.log('Vehicle Makes API Response:', response);
+      console.log('🚗 Vehicle Makes - API Response:', response);
       
       if (response && response.data && Array.isArray(response.data)) {
         setVehicleMakes(response.data);
-        setTotalCount(response.meta?.total || response.data.length);
+        // Extract total count from meta object
+        const total = response.meta?.total || 
+                     response.meta?.pagination?.total || 
+                     response.meta?.last_page * rowsPerPage || 
+                     response.data.length;
+        setTotalCount(total);
+        console.log('📊 Setting total count:', total);
       } else if (Array.isArray(response)) {
         setVehicleMakes(response);
         setTotalCount(response.length);
@@ -101,7 +108,7 @@ const VehicleMakesPage = () => {
       } else {
         setError(err.message || 'Failed to load vehicle makes. Please try again later.');
       }
-      console.error('Error loading vehicle makes:', err);
+      console.error('❌ Error loading vehicle makes:', err);
     } finally {
       setLoading(false);
     }
@@ -152,8 +159,11 @@ const VehicleMakesPage = () => {
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page
+    // Clear debounced search to trigger immediate reload
+    setDebouncedSearchTerm(searchTerm);
   };
 
   // Remove client-side filtering since we're using server-side pagination
@@ -166,11 +176,26 @@ const VehicleMakesPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'flex-end', 
+          justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-        
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search vehicle makes..."
+              value={searchTerm}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -184,25 +209,8 @@ const VehicleMakesPage = () => {
               }
             }}
           >
-            Add
+            Add Vehicle Make
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search vehicle makes..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )}}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -216,7 +224,22 @@ const VehicleMakesPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadVehicleMakes();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
@@ -236,27 +259,42 @@ const VehicleMakesPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+          <Paper sx={{ overflow: 'hidden' }}>
             <TableContainer>
-              <Table stickyHeader>
+              <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredData.map((vehicleMake) => (
-                    <TableRow key={vehicleMake.id} hover>
+                    <TableRow 
+                      key={vehicleMake.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {vehicleMake.name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            maxWidth: 300,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
                           {vehicleMake.description || 'No description available'}
                         </Typography>
                       </TableCell>
@@ -265,8 +303,8 @@ const VehicleMakesPage = () => {
                           {new Date(vehicleMake.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1}>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(vehicleMake)}
@@ -283,7 +321,7 @@ const VehicleMakesPage = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </Stack>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -292,13 +330,21 @@ const VehicleMakesPage = () => {
             </TableContainer>
             
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={[10, 15, 25]}
               component="div"
               count={totalCount}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
             />
           </Paper>
         )}
