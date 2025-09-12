@@ -156,11 +156,26 @@ const SeatStylesPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'flex-end', 
+          justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-      
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search seat styles..."
+              value={searchTerm}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -174,25 +189,8 @@ const SeatStylesPage = () => {
               }
             }}
           >
-            Add
+            Add Seat Style
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search seat styles..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )}}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -206,7 +204,22 @@ const SeatStylesPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadSeatStyles();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
@@ -226,28 +239,43 @@ const SeatStylesPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+          <Paper sx={{ overflow: 'hidden' }}>
             <TableContainer>
-              <Table stickyHeader>
+              <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Seat Type ID</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {paginatedData.map((seatStyle) => (
-                    <TableRow key={seatStyle.id} hover>
+                    <TableRow 
+                      key={seatStyle.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {seatStyle.name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            maxWidth: 300,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
                           {seatStyle.description || 'No description available'}
                         </Typography>
                       </TableCell>
@@ -261,8 +289,8 @@ const SeatStylesPage = () => {
                           {new Date(seatStyle.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1}>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(seatStyle)}
@@ -279,7 +307,7 @@ const SeatStylesPage = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </Stack>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -295,6 +323,14 @@ const SeatStylesPage = () => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
             />
           </Paper>
         )}

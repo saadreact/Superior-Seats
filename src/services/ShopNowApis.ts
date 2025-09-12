@@ -102,6 +102,25 @@ export interface User {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  role?: {
+    id: number;
+    first_name?: string | null;
+    last_name?: string | null;
+    name: string;
+    email: string;
+    phone: string;
+    address?: string | null;
+    company_name?: string | null;
+    tax_id?: string | null;
+    customer_type?: string;
+    price_tier_id?: number | null;
+    credit_limit?: string;
+    outstanding_balance?: string;
+    is_active: boolean;
+    email_verified_at?: string | null;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
 export interface UserResponse {
@@ -114,11 +133,14 @@ export interface UserResponse {
 export interface PriceTier {
   id: number;
   name: string;
-  discount_percentage: number;
-  minimum_quantity: number;
+  display_name?: string;
+  description?: string;
+  discount_off_retail_price: string; // ✅ Correct field name to match admin API
+  minimum_order_amount?: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  customers_count?: number;
 }
 
 export interface PriceTiersResponse {
@@ -347,7 +369,8 @@ class ShopNowApis {
    */
   async getPriceTiers(): Promise<PriceTiersResponse> {
     try {
-      const response = await apiClient.get<PriceTiersResponse>('/shop/price-tiers');
+      const response = await apiClient.get<PriceTiersResponse>('/price-tiers');
+      console.log('✅ ShopNowApis - Price tiers response:', response.data);
       return response.data;
     } catch (error) {
       console.warn('⚠️ ShopNowApis - Price tiers endpoint not available, using fallback:', error);
@@ -361,22 +384,34 @@ class ShopNowApis {
   }
 
   /**
-   * Get wholesale discount percentage
+   * Get wholesale discount percentage for a specific user
    * @param priceTiers - Array of price tiers
+   * @param userData - User data containing price_tier_id
    * @returns number - Discount percentage
    */
-  getWholesaleDiscount(priceTiers: PriceTier[]): number {
+  getWholesaleDiscount(priceTiers: PriceTier[], userData: User | null): number {
     if (!priceTiers || priceTiers.length === 0) return 0;
+    if (!userData || !userData.role?.price_tier_id) return 0;
     
-    // Get the highest discount percentage from active tiers
-    const activeTiers = priceTiers.filter(tier => tier.is_active);
-    if (activeTiers.length === 0) return 0;
+    // Find the user's specific price tier
+    const userPriceTier = priceTiers.find(tier => 
+      tier.id === userData.role!.price_tier_id && tier.is_active
+    );
     
-    return Math.max(...activeTiers.map(tier => tier.discount_percentage));
+    if (!userPriceTier) {
+      console.warn('⚠️ ShopNowApis - User price tier not found or inactive:', userData.role!.price_tier_id);
+      return 0;
+    }
+    
+    // Parse the discount percentage from string
+    const discountPercentage = parseFloat(userPriceTier.discount_off_retail_price);
+    console.log('✅ ShopNowApis - User discount percentage:', discountPercentage, '%');
+    
+    return discountPercentage;
   }
 
   /**
-   * Get display price based on customer type
+   * Get display price based on customer type and user's specific price tier
    * @param price - Original price
    * @param isAuthenticated - Whether user is authenticated
    * @param userData - User data
@@ -390,8 +425,17 @@ class ShopNowApis {
       return originalPrice;
     }
     
-    const discountPercentage = this.getWholesaleDiscount(priceTiers);
-    return originalPrice * (1 - discountPercentage / 100);
+    const discountPercentage = this.getWholesaleDiscount(priceTiers, userData);
+    const discountedPrice = originalPrice * (1 - discountPercentage / 100);
+    
+    console.log('💰 ShopNowApis - Price calculation:', {
+      originalPrice,
+      discountPercentage,
+      discountedPrice,
+      userPriceTierId: userData?.role?.price_tier_id
+    });
+    
+    return discountedPrice;
   }
 
   // ============================================================================

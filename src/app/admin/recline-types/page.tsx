@@ -160,6 +160,7 @@ const ReclineTypesPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -189,11 +190,26 @@ const ReclineTypesPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'flex-end', 
+          justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-       
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search recline types..."
+              value={searchTerm}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -207,25 +223,8 @@ const ReclineTypesPage = () => {
               }
             }}
           >
-            Add
+            Add Recline Type
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search recline types..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )}}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -239,7 +238,22 @@ const ReclineTypesPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadReclineTypes();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
@@ -259,11 +273,11 @@ const ReclineTypesPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <>
-            <TableContainer component={Paper} sx={{ mb: 2 }}>
+          <Paper sx={{ overflow: 'hidden' }}>
+            <TableContainer>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
@@ -271,20 +285,19 @@ const ReclineTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedData.map((reclineType) => {
-                    console.log(`Recline Type ${reclineType.id}:`, {
-                      name: reclineType.name,
-                      image: reclineType.image,
-                      apiUrl: process.env.NEXT_PUBLIC_API_URL,
-                      imageUrl: reclineType.image ? `${process.env.NEXT_PUBLIC_API_URL}/storage/${reclineType.image}` : 'No image'
-                    });
-                    return (
-                    <TableRow key={reclineType.id} hover>
+                  {paginatedData.map((reclineType) => (
+                    <TableRow 
+                      key={reclineType.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
                       <TableCell>
                         <Box sx={{ 
                           width: 60, 
@@ -373,7 +386,7 @@ const ReclineTypesPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {reclineType.price_tiers?.length > 0 ? (
                             reclineType.price_tiers.map((tier) => (
                               <Chip
@@ -381,15 +394,15 @@ const ReclineTypesPage = () => {
                                 label={tier.display_name}
                                 size="small"
                                 variant="outlined"
-                                sx={{ fontSize: '0.75rem' }}
+                                sx={{ fontSize: '0.6rem', height: 20 }}
                               />
                             ))
                           ) : (
                             <Typography variant="body2" color="text.secondary">
-                              No price tiers
+                              None
                             </Typography>
                           )}
-                        </Stack>
+                        </Box>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
@@ -401,8 +414,8 @@ const ReclineTypesPage = () => {
                           {new Date(reclineType.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1}>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(reclineType)}
@@ -419,15 +432,14 @@ const ReclineTypesPage = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </Stack>
+                        </Box>
                       </TableCell>
                     </TableRow>
-                  );
-                  })}
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
-
+            
             {/* Pagination */}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
@@ -437,8 +449,16 @@ const ReclineTypesPage = () => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
             />
-          </>
+          </Paper>
         )}
 
         {/* Delete Confirmation Dialog */}

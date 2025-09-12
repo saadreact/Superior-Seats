@@ -124,6 +124,7 @@ const ItemTypesPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -153,10 +154,26 @@ const ItemTypesPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'flex-end', 
+          justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search item types..."
+              value={searchTerm}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -170,25 +187,8 @@ const ItemTypesPage = () => {
               }
             }}
           >
-            Add
+            Add Item Type
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search item types..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )}}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -202,7 +202,22 @@ const ItemTypesPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadItemTypes();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
@@ -222,27 +237,42 @@ const ItemTypesPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+          <Paper sx={{ overflow: 'hidden' }}>
             <TableContainer>
-              <Table stickyHeader>
+              <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {paginatedData.map((itemtypes) => (
-                    <TableRow key={itemtypes.id} hover>
+                    <TableRow 
+                      key={itemtypes.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {itemtypes.name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            maxWidth: 300,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
                           {itemtypes.description || 'No description available'}
                         </Typography>
                       </TableCell>
@@ -251,8 +281,8 @@ const ItemTypesPage = () => {
                           {new Date(itemtypes.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1}>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(itemtypes)}
@@ -269,7 +299,7 @@ const ItemTypesPage = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </Stack>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -277,6 +307,7 @@ const ItemTypesPage = () => {
               </Table>
             </TableContainer>
             
+            {/* Pagination */}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
@@ -285,6 +316,14 @@ const ItemTypesPage = () => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
             />
           </Paper>
         )}

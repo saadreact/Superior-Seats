@@ -630,9 +630,69 @@ const CreateProduct2Page = () => {
               
               {/* 🟢 First Half - Product Fields */}
               <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Product Information
-                </Typography>
+                {/* Header Row with Product Information and Switches */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 2,
+                  flexDirection: { xs: 'column', md: 'row' },
+                  gap: { xs: 2, md: 0 }
+                }}>
+                  <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
+                    Product Information
+                  </Typography>
+                  
+                  {/* Right Side - Status Switches in same row */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: 3, 
+                    alignItems: 'center',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    '& .MuiFormControlLabel-root': {
+                      margin: 0
+                    }
+                  }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.isActive}
+                          onChange={handleSwitchChange('isActive')}
+                          color="error"
+                        />
+                      }
+                      label="Active"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.showOnSpecialShop}
+                          onChange={handleSwitchChange('showOnSpecialShop')}
+                          color="error"
+                        />
+                      }
+                      label="Special Shop"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
+                
                 <Divider sx={{ mb: 3 }} />
                 
                 {/* Product Name */}
@@ -879,42 +939,6 @@ const CreateProduct2Page = () => {
                   </Box>
                 </Box>
 
-                {/* Special Shop Section */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
-                    Special Shop Settings
-                  </Typography>
-                  
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.showOnSpecialShop}
-                        onChange={handleSwitchChange('showOnSpecialShop')}
-                      />
-                    }
-                    label="Show on Special Shop"
-                  />
-                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-                    When enabled, this product will appear in the special shop section
-                  </Typography>
-                </Box>
-
-                {/* Product Status */}
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
-                    Product Status
-                  </Typography>
-                  
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isActive}
-                        onChange={handleSwitchChange('isActive')}
-                      />
-                    }
-                    label="Active"
-                  />
-                </Box>
               </Box>
 
               {/* Actions */}
