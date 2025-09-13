@@ -120,20 +120,40 @@ const Products2Page = () => {
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const params: Record<string, any> = {};
-      if (searchTerm) params.search = searchTerm;
+      // Build API parameters for server-side pagination
+      const params: Record<string, any> = {
+        page: page + 1, // API uses 1-based pagination, but MUI uses 0-based
+        limit: rowsPerPage
+      };
+      
+      // Add optional search parameter
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
+      
+      // Add special shop filter if enabled
+      if (showOnlySpecial) {
+        params.special_shop = true;
+      }
+      
+      console.log('🔍 Loading products with params:', params);
       
       const response = await apiService.getProducts(params);
       
-      // Handle the new response structure
+      // Handle the API response structure
       if (response && response.data) {
         setProducts(response.data);
+        // Update total count for pagination if available
+        if (response.total !== undefined) {
+          setTotalCount(response.total);
+        }
       } else if (Array.isArray(response)) {
         setProducts(response);
       } else {
@@ -160,7 +180,7 @@ const Products2Page = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, router]);
+  }, [page, rowsPerPage, searchTerm, showOnlySpecial, router]);
 
   useEffect(() => {
     loadProducts();
@@ -233,13 +253,8 @@ const Products2Page = () => {
     return '/TruckImages/01.jpg';
   };
 
-  // Filter products based on special shop status
-  const filteredProducts = products.filter(product => {
-    if (showOnlySpecial) {
-      return product.show_on_special_shop === true;
-    }
-    return true; // Show all products when filter is off
-  });
+  // No client-side filtering needed since we're using server-side pagination
+  const filteredProducts = products;
 
   return (
     <AdminLayout title="Products">
@@ -302,7 +317,7 @@ const Products2Page = () => {
               
               {/* Product count indicator */}
               <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                Showing {filteredProducts.length} of {products.length} products
+                Showing {filteredProducts.length} of {totalCount} products
                 {showOnlySpecial && ` (Special Shop only)`}
               </Typography>
             </Box>
@@ -363,7 +378,9 @@ const Products2Page = () => {
         ) : filteredProducts.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              {showOnlySpecial ? 'No special shop products found' : 'No products found'}
+              {showOnlySpecial ? 'No special shop products found' : 
+               searchTerm ? 'No products found matching your search' : 
+               'No products found'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {searchTerm ? 'Try adjusting your search terms.' : 
@@ -389,9 +406,7 @@ const Products2Page = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredProducts
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((product) => (
+                  {filteredProducts.map((product) => (
                     <TableRow 
                       key={product.id}
                       sx={{ 
@@ -544,7 +559,7 @@ const Products2Page = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={filteredProducts.length}
+              count={totalCount}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
