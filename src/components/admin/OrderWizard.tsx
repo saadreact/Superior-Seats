@@ -251,7 +251,12 @@ const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
 					unitPrice: Number(ci.unitPrice) || 0,
 					total: ci.total,
 					totalPrice: ci.totalPrice,
-					variants: ci.variants,
+					variants: ci.variants ? Object.fromEntries(
+						Object.entries(ci.variants).map(([key, value]) => [
+							key,
+							value !== undefined && value !== null && value !== '' ? String(value) : ''
+						])
+					) : {},
 				})),
 				customerInfo: {
 					firstName,
