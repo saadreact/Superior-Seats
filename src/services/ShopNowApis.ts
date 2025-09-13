@@ -74,6 +74,7 @@ export interface Product {
   price: string;
   stock: number;
   is_active: boolean;
+  show_on_special_shop?: boolean;
   created_at: string;
   updated_at: string;
   vehicle_trim_id: number;
@@ -101,6 +102,25 @@ export interface User {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  role?: {
+    id: number;
+    first_name?: string | null;
+    last_name?: string | null;
+    name: string;
+    email: string;
+    phone: string;
+    address?: string | null;
+    company_name?: string | null;
+    tax_id?: string | null;
+    customer_type?: string;
+    price_tier_id?: number | null;
+    credit_limit?: string;
+    outstanding_balance?: string;
+    is_active: boolean;
+    email_verified_at?: string | null;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
 export interface UserResponse {
@@ -110,14 +130,27 @@ export interface UserResponse {
 }
 
 // Price Tier Types
+export interface PriceTierPivot {
+  heat_option_id: number;
+  price_tier_id: number;
+  price_adjustment: string;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PriceTier {
   id: number;
   name: string;
-  discount_percentage: number;
-  minimum_quantity: number;
+  display_name?: string;
+  description?: string;
+  discount_off_retail_price: string; // ✅ Correct field name to match admin API
+  minimum_order_amount?: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  customers_count?: number;
+  pivot?: PriceTierPivot; // Include pivot data for price adjustments
 }
 
 export interface PriceTiersResponse {
@@ -333,7 +366,10 @@ class ShopNowApis {
    */
   isRetailCustomer(userData: User | null): boolean {
     if (!userData) return true; // Default to retail if no user data
-    return userData.customer_type === 'retail';
+    
+    // Check both user.customer_type and user.role.customer_type
+    const customerType = userData.customer_type || userData.role?.customer_type;
+    return customerType === 'retail';
   }
 
   // ============================================================================
@@ -341,15 +377,16 @@ class ShopNowApis {
   // ============================================================================
 
   /**
-   * Get price tiers
+   * Get price tiers options
    * @returns Promise<PriceTiersResponse>
    */
   async getPriceTiers(): Promise<PriceTiersResponse> {
     try {
-      const response = await apiClient.get<PriceTiersResponse>('/shop/price-tiers');
+      const response = await apiClient.get<PriceTiersResponse>('/price-tiers/options');
+      console.log('✅ ShopNowApis - Price tiers options response:', response.data);
       return response.data;
     } catch (error) {
-      console.warn('⚠️ ShopNowApis - Price tiers endpoint not available, using fallback:', error);
+      console.warn('⚠️ ShopNowApis - Price tiers options endpoint not available, using fallback:', error);
       // Return a fallback response instead of throwing
       return {
         status: 'success',
@@ -360,22 +397,84 @@ class ShopNowApis {
   }
 
   /**
-   * Get wholesale discount percentage
+   * Get wholesale discount percentage for a specific user
    * @param priceTiers - Array of price tiers
+   * @param userData - User data containing price_tier_id
    * @returns number - Discount percentage
    */
-  getWholesaleDiscount(priceTiers: PriceTier[]): number {
-    if (!priceTiers || priceTiers.length === 0) return 0;
+  getWholesaleDiscount(priceTiers: PriceTier[], userData: User | null): number {
+    if (!priceTiers || priceTiers.length === 0) {
+      console.warn('⚠️ ShopNowApis - No price tiers available');
+      return 0;
+    }
     
-    // Get the highest discount percentage from active tiers
-    const activeTiers = priceTiers.filter(tier => tier.is_active);
-    if (activeTiers.length === 0) return 0;
+    if (!userData) {
+      console.warn('⚠️ ShopNowApis - User data not available');
+      return 0;
+    }
     
-    return Math.max(...activeTiers.map(tier => tier.discount_percentage));
+    // Get customer type from user data
+    const customerType = userData.customer_type || userData.role?.customer_type;
+    
+    if (!customerType) {
+      console.warn('⚠️ ShopNowApis - No customer type found');
+      return 0;
+    }
+    
+    // Map customer types to price tier names
+    let targetTierName = '';
+    switch (customerType.toLowerCase()) {
+      case 'retail':
+        targetTierName = 'retail_price';
+        break;
+      case 'wholesale':
+        targetTierName = 'Wholesale_price';
+        break;
+      case 'special':
+        targetTierName = 'Special Customer';
+        break;
+      default:
+        console.warn('⚠️ ShopNowApis - Unknown customer type:', customerType);
+        return 0;
+    }
+    
+    // Find the matching price tier
+    const userPriceTier = priceTiers.find(tier => 
+      tier.name === targetTierName || tier.display_name === targetTierName
+    );
+    
+    if (!userPriceTier) {
+      console.warn('⚠️ ShopNowApis - Price tier not found for customer type:', {
+        customerType,
+        targetTierName,
+        availableTiers: priceTiers.map(t => ({ id: t.id, name: t.name, display_name: t.display_name }))
+      });
+      return 0;
+    }
+    
+    // Parse and return the discount percentage
+    const discountPercentage = parseFloat(userPriceTier.discount_off_retail_price);
+    
+    if (isNaN(discountPercentage)) {
+      console.warn('⚠️ ShopNowApis - Invalid discount percentage:', userPriceTier.discount_off_retail_price);
+      return 0;
+    }
+    
+    console.log('✅ ShopNowApis - Customer type discount applied:', {
+      customerType,
+      priceTierId: userPriceTier.id,
+      priceTierName: userPriceTier.name,
+      priceTierDisplayName: userPriceTier.display_name,
+      discountOffRetailPrice: userPriceTier.discount_off_retail_price,
+      calculatedDiscount: discountPercentage,
+      unit: '%'
+    });
+    
+    return discountPercentage;
   }
 
   /**
-   * Get display price based on customer type
+   * Get display price based on customer type and user's specific price tier
    * @param price - Original price
    * @param isAuthenticated - Whether user is authenticated
    * @param userData - User data
@@ -385,12 +484,40 @@ class ShopNowApis {
   getDisplayPrice(price: string | number, isAuthenticated: boolean, userData: User | null, priceTiers: PriceTier[]): number {
     const originalPrice = parseFloat(price.toString());
     
+    // If user is not authenticated or is a retail customer, return original price
     if (!isAuthenticated || this.isRetailCustomer(userData)) {
+      console.log('💰 ShopNowApis - Retail pricing:', {
+        originalPrice,
+        reason: !isAuthenticated ? 'Not authenticated' : 'Retail customer'
+      });
       return originalPrice;
     }
     
-    const discountPercentage = this.getWholesaleDiscount(priceTiers);
-    return originalPrice * (1 - discountPercentage / 100);
+    // Get discount percentage for wholesale customer
+    const discountPercentage = this.getWholesaleDiscount(priceTiers, userData);
+    
+    if (discountPercentage <= 0) {
+      console.log('💰 ShopNowApis - No discount applied:', {
+        originalPrice,
+        discountPercentage,
+        reason: 'No valid discount found'
+      });
+      return originalPrice;
+    }
+    
+    // Calculate discounted price: originalPrice * (1 - discountPercentage/100)
+    const discountedPrice = originalPrice * (1 - discountPercentage / 100);
+    
+    console.log('💰 ShopNowApis - Wholesale price calculation:', {
+      originalPrice,
+      discountPercentage: `${discountPercentage}%`,
+      discountAmount: originalPrice * (discountPercentage / 100),
+      discountedPrice,
+      userPriceTierId: userData?.role?.price_tier_id,
+      userCustomerType: userData?.customer_type
+    });
+    
+    return Math.round(discountedPrice * 100) / 100; // Round to 2 decimal places
   }
 
   // ============================================================================

@@ -41,7 +41,9 @@ interface Color {
   description: string;
   color_vendor_id: number;
   price_tier_ids: number[];
-  
+  cost: number | null;
+  price: number | null;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -277,6 +279,8 @@ const ColorsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Vendor</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
@@ -332,6 +336,16 @@ const ColorsPage = () => {
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
                           {colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${color.cost || 0}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${color.price || 0}
                         </Typography>
                       </TableCell>
                       <TableCell>

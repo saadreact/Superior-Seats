@@ -186,21 +186,23 @@ const ShopGallery = () => {
     setLoading(true);
     setError(null);
     
-    // Fetch products
-    console.log('🚀 ShopGallery - Fetching products from API...');
+    // Fetch all products (including special products)
+    console.log('🚀 ShopNow - Fetching all products from API (including special products)...');
     try {
       const productsResponse = await shopNowApis.getProducts();
-      console.log('✅ ShopGallery - Products API Response:', productsResponse);
+      console.log('✅ ShopNow - Products API Response:', productsResponse);
       
       if (productsResponse.status === 'success' && productsResponse.data) {
+        // Show all products (including special products)
         setApiProducts(productsResponse.data);
-        console.log('📦 Products loaded:', productsResponse.data.length);
+        console.log('📦 ShopNow - All products loaded:', productsResponse.data.length);
+        console.log('🌟 ShopNow - Special products included:', productsResponse.data.filter(p => p.show_on_special_shop).length);
       } else {
-        console.warn('⚠️ ShopGallery - Products API returned non-success status:', productsResponse);
+        console.warn('⚠️ ShopNow - Products API returned non-success status:', productsResponse);
         setApiProducts([]); // Set empty array as fallback
       }
     } catch (error) {
-      console.warn('⚠️ ShopGallery - Error fetching products, using fallback:', error);
+      console.warn('⚠️ ShopNow - Error fetching products, using fallback:', error);
       setApiProducts([]); // Set empty array as fallback
       setError('Failed to load products');
     }
@@ -212,10 +214,12 @@ const ShopGallery = () => {
       console.warn('⚠️ ShopGallery - Categories API call failed:', error);
     }
     
-    // Skip price tiers for now since the endpoint might not exist
-    // TODO: Re-enable when price tiers endpoint is available
-    console.log('💰 ShopGallery - Skipping price tiers fetch (endpoint not available)');
-    setPriceTiers([]); // Set empty array as fallback
+    // Fetch price tiers
+    try {
+      await fetchPriceTiers();
+    } catch (error) {
+      console.warn('⚠️ ShopNow - Price tiers API call failed:', error);
+    }
     
     // Fetch user data if authenticated
     if (isAuthenticated) {
@@ -238,7 +242,7 @@ const ShopGallery = () => {
     }
     
     setLoading(false);
-  }, [isAuthenticated, isOnShopGalleryPage, fetchCategories]);
+  }, [isAuthenticated, isOnShopGalleryPage, fetchCategories, fetchPriceTiers]);
 
   // Effect to refresh APIs when authentication state changes (only if on ShopGallery page)
   useEffect(() => {
@@ -267,7 +271,7 @@ const ShopGallery = () => {
 
   // Get wholesale discount percentage
   const getWholesaleDiscount = () => {
-    return shopNowApis.getWholesaleDiscount(priceTiers);
+    return shopNowApis.getWholesaleDiscount(priceTiers, userData);
   };
 
   // Get display price based on customer type
@@ -718,138 +722,207 @@ const ShopGallery = () => {
                   onClick={() => handleImageClick(item, startIndex + index)}
                 >
                   <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                    <CardMedia
-                      component="img"
-                      height="250"
-                      image={getProductImages(item)[0] || '/placeholder-image.jpg'}
-                      alt={item.name}
-                      className="card-media"
+                    {getProductImages(item)[0] ? (
+                      <CardMedia
+                        component="img"
+                        height="250"
+                        image={getProductImages(item)[0]}
+                        alt={item.name}
+                        className="card-media"
+                        sx={{
+                          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          objectFit: 'contain',
+                          width: '100%',
+                          height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                          backgroundColor: '#f5f5f5',
+                          padding: { xs: '12px', sm: '8px', md: '6px' },
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                          backgroundColor: '#f5f5f5',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid #e0e0e0',
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: 'text.secondary',
+                            fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                            fontWeight: 'medium',
+                            textAlign: 'center',
+                          }}
+                        >
+                          No Image
+                        </Typography>
+                      </Box>
+                    )}
+                    
+                    {/* Zoom Icon */}
+                    <Box
+                      className="zoom-icon"
                       sx={{
-                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        objectFit: 'contain',
-                        width: '100%',
-                        height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
-                        fontWeight: 'regular',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.1rem', lg: '1.1rem' , xl: '1.1rem'},
-
-                        backgroundColor: '#f5f5f5',
-                        padding: { xs: '12px', sm: '8px', md: '6px' },
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease',
+                        backgroundColor: `${theme.palette.primary.main}E6`,
+                        borderRadius: '50%',
+                        p: { xs: 0.5, sm: 1 },
+                        color: 'white',
+                        display: { xs: 'none', sm: 'flex' },
                       }}
-                    />
-                                         <Box
-                       className="zoom-icon"
-                       sx={{
-                         position: 'absolute',
-                         top: '50%',
-                         left: '50%',
-                         transform: 'translate(-50%, -50%)',
-                         opacity: 0,
-                         transition: 'opacity 0.3s ease',
-                         backgroundColor: `${theme.palette.primary.main}E6`,
-                         borderRadius: '50%',
-                         p: { xs: 0.5, sm: 1 },
-                         color: 'white',
-                         display: { xs: 'none', sm: 'flex' },
-                       }}
-                     >
+                    >
                       <ZoomIn sx={{ fontSize: { xs: 18, sm: 24 } }} />
                     </Box>
-                     {/* Wholesale Price Display */}
-                     {isAuthenticated && !isRetailCustomer() && (
-                       <Box
-                         sx={{
-                           position: 'absolute',
-                           top: { xs: 12, sm: 12, md: 16 },
-                           right: { xs: 12, sm: 12, md: 16 },
-                           display: 'flex',
-                           flexDirection: 'column',
-                           alignItems: 'flex-end',
-                           gap: 0.5,
-                         }}
-                       >
-                         {/* Discount Badge */}
-                         <Chip
-                           label={`${getWholesaleDiscount()}% OFF`}
-                           sx={{
-                             backgroundColor: 'success.main',
-                             color: 'white',
-                             fontWeight: 'bold',
-                             fontSize: { xs: '0.65rem', sm: '0.6rem', md: '0.7rem' },
-                             height: { xs: 20, sm: 18, md: 20 },
-                             '& .MuiChip-label': {
-                               px: { xs: 0.75, sm: 0.75 },
-                             },
-                           }}
-                         />
-                         {/* Original Price (Crossed Out) */}
-                         <Typography
-                           variant="caption"
-                           sx={{
-                             color: 'text.secondary',
-                             textDecoration: 'line-through',
-                             fontSize: { xs: '0.7rem', sm: '0.65rem', md: '0.75rem' },
-                             fontWeight: 400,
-                           }}
-                         >
-                           ${parseFloat(item.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                         </Typography>
-                         {/* Final Price */}
-                         <Typography
-                           variant="caption"
-                           sx={{
-                             color: 'success.main',
-                             fontWeight: 'bold',
-                             fontSize: { xs: '0.8rem', sm: '0.75rem', md: '0.875rem' },
-                           }}
-                         >
-                           ${getDisplayPrice(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                         </Typography>
-                       </Box>
-                     )}
+
+                    {/* Special Product Diagonal Ribbon */}
+                    {item.show_on_special_shop && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: { xs: '80px', sm: '90px', md: '100px' },
+                          height: { xs: '80px', sm: '90px', md: '100px' },
+                          overflow: 'hidden',
+                          zIndex: 3,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: { xs: '15px', sm: '18px', md: '20px' },
+                            left: { xs: '-25px', sm: '-28px', md: '-30px' },
+                            width: { xs: '100px', sm: '120px', md: '130px' },
+                            height: { xs: '25px', sm: '28px', md: '32px' },
+                            backgroundColor: 'error.main',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transform: 'rotate(-45deg)',
+                            fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background: 'linear-gradient(135deg, rgba(255,255,255,0.2), transparent)',
+                            },
+                            '&::after': {
+                              content: '""',
+                              position: 'absolute',
+                              bottom: '-2px',
+                              left: 0,
+                              right: 0,
+                              height: '2px',
+                              background: 'rgba(0,0,0,0.2)',
+                            }
+                          }}
+                        >
+                          Special
+                        </Box>
+                      </Box>
+                    )}
                      
-                     {/* Regular Price Display (for non-wholesale) */}
-                     {(!isAuthenticated || isRetailCustomer()) && (
-                       <Chip
-                         label={`$${getDisplayPrice(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                         sx={{
-                           position: 'absolute',
-                           top: { xs: 12, sm: 12, md: 16 },
-                           right: { xs: 12, sm: 12, md: 16 },
-                           backgroundColor: 'primary.main',
-                           color: 'white',
-                           fontWeight: 'bold',
-                           fontSize: { xs: '0.8rem', sm: '0.75rem', md: '0.875rem' },
-                           height: { xs: 28, sm: 24, md: 28, lg: 32 },
-                           '& .MuiChip-label': {
-                             px: { xs: 1.5, sm: 1.5 },
-                           },
-                         }}
-                       />
-                     )}
-                     
-                     {/* Stock Status Chip */}
-                     <Chip
-                       label={
-                         item.stock && item.stock > 0 
-                           ? (item.stock <= 5 ? 'Low Stock' : 'In Stock')
-                           : 'Out of Stock'
-                       }
-                       sx={{
-                         position: 'absolute',
-                         top: { xs: 12, sm: 12, md: 16 },
-                         left: { xs: 12, sm: 12, md: 16 },
-                         backgroundColor: item.stock && item.stock > 0 
-                           ? (item.stock <= 5 ? 'warning.main' : 'success.main')
-                           : 'error.main',
-                         color: 'white',
-                         fontWeight: 'bold',
-                         fontSize: { xs: '0.7rem', sm: '0.65rem', md: '0.75rem' },
-                         height: { xs: 24, sm: 20, md: 24, lg: 28 },
-                         '& .MuiChip-label': {
-                           px: { xs: 1, sm: 1 },
-                         },
-                       }}
-                     />
+                    {/* Enhanced Price Display for Wholesale Customers */}
+                    {isAuthenticated && !isRetailCustomer() ? (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: { xs: 12, sm: 12, md: 16 },
+                          right: { xs: 12, sm: 12, md: 16 },
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-end',
+                          gap: { xs: 0.5, sm: 0.75 },
+                          maxWidth: { xs: '140px', sm: '160px', md: '180px' },
+                        }}
+                      >
+                        {/* Discount Percentage Badge */}
+                        <Chip
+                          label={`${getWholesaleDiscount()}% OFF`}
+                          sx={{
+                            backgroundColor: 'primary.main',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: { xs: '0.65rem', sm: '0.7rem', md: '1rem', lg: '1rem' , xl: '1rem'},
+                            height: { xs: 20, sm: 22, md: 24 },
+                            '& .MuiChip-label': {
+                              px: { xs: 0.75, sm: 1 },
+                            },
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                          }}
+                        />
+                        
+                        {/* Original Price with Strikethrough */}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: 'text.primary',
+                            fontSize: { xs: '0.8rem', sm: '0.85rem', md: '1rem' },
+                            fontWeight: 'medium',
+                            textDecoration: 'line-through',
+                            textDecorationColor: 'text.primary',
+                            opacity: 0.7,
+                          }}
+                        >
+                          ${parseFloat(item.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </Typography>
+                        
+                        {/* Discounted Price */}
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: 'primary.main',
+                            fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
+                            fontWeight: 'bold',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ${getDisplayPrice(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      /* Regular Price Display for Retail Customers */
+                      <Chip
+                        label={`$${getDisplayPrice(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        sx={{
+                          position: 'absolute',
+                          top: { xs: 12, sm: 12, md: 16 },
+                          right: { xs: 12, sm: 12, md: 16 },
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                          height: { xs: 28, sm: 32, md: 36 },
+                          maxWidth: { xs: '120px', sm: '150px', md: '180px' },
+                          '& .MuiChip-label': {
+                            px: { xs: 1, sm: 1.5 },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          },
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}
+                      />
+                    )}
                   </Box>
                   <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2, md: 2.5, lg: 3 } }}>
                     <Typography
@@ -1162,151 +1235,95 @@ const ShopGallery = () => {
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                   >
-                     {/* Wholesale Price Display in Modal */}
-                     {isAuthenticated && !isRetailCustomer() && (
+                     {/* Enhanced Price Display in Modal for Wholesale Customers */}
+                     {isAuthenticated && !isRetailCustomer() ? (
                        <Box
                          sx={{
                            position: 'absolute',
                            top: { xs: 12, sm: 16, md: 20 },
-                           left: { xs: 12, sm: 'auto' },
-                           right: { xs: 'auto', sm: 16, md: 20 },
-                           zIndex: 3,
+                           right: { xs: 12, sm: 16, md: 20 },
                            display: 'flex',
                            flexDirection: 'column',
                            alignItems: 'flex-end',
-                           gap: 0.5,
+                           gap: { xs: 0.75, sm: 1 },
+                           maxWidth: { xs: '180px', sm: '220px', md: '260px' },
+                           zIndex: 3,
+                           backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                           padding: { xs: 1, sm: 1.5, md: 2 },
+                           borderRadius: '12px',
+                           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                           border: '2px solid rgba(255, 255, 255, 0.2)',
                          }}
                        >
-                         {/* Discount Badge */}
+                         {/* Discount Percentage Badge */}
                          <Chip
                            label={`${getWholesaleDiscount()}% OFF`}
                            sx={{
-                             backgroundColor: 'success.main',
+                             backgroundColor: 'primary.main',
                              color: 'white',
                              fontWeight: 'bold',
-                             fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                             fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.5rem' },
                              height: { xs: 24, sm: 28, md: 32 },
                              '& .MuiChip-label': {
                                px: { xs: 1, sm: 1.5 },
                              },
-                             boxShadow: '0 4px 12px rgba(76, 175, 80, 0.4)',
-                             border: '2px solid rgba(255, 255, 255, 0.2)',
+                             boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                            }}
                          />
-                         {/* Original Price (Crossed Out) */}
-                         <Box
-                           sx={{
-                             backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                             color: 'text.secondary',
-                             px: { xs: 1.5, sm: 2, md: 2.5 },
-                             py: { xs: 0.5, sm: 0.75, md: 1 },
-                             borderRadius: '15px',
-                             backdropFilter: 'blur(8px)',
-                             border: '1px solid rgba(255, 255, 255, 0.2)',
-                           }}
-                         >
-                           <Typography
-                             variant="caption"
-                             sx={{
-                               color: 'text.secondary',
-                               textDecoration: 'line-through',
-                               fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                               fontWeight: 400,
-                             }}
-                           >
-                             ${parseFloat(selectedImage.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                           </Typography>
-                         </Box>
-                         {/* Final Price */}
-                         <Box
-                           sx={{
-                             backgroundColor: 'success.main',
-                             color: 'white',
-                             px: { xs: 2, sm: 2.5, md: 3 },
-                             py: { xs: 0.5, sm: 0.75, md: 1 },
-                             boxShadow: '0 4px 12px rgba(76, 175, 80, 0.4)',
-                             border: '2px solid rgba(255, 255, 255, 0.2)',
-                           }}
-                         >
-                           <Typography
-                             component="span"
-                             sx={{
-                               fontWeight: 'bold',
-                               fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                               color: 'white',
-                               textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
-                             }}
-                           >
-                             ${getDisplayPrice(selectedImage.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                           </Typography>
-                         </Box>
-                       </Box>
-                     )}
-                     
-                     {/* Regular Price Display in Modal (for non-wholesale) */}
-                     {(!isAuthenticated || isRetailCustomer()) && (
-                                                <Box
-                           sx={{
-                             position: 'absolute',
-                             top: { xs: 12, sm: 16, md: 20 },
-                             left: { xs: 12, sm: 'auto' },
-                             right: { xs: 'auto', sm: 16, md: 20 },
-                             backgroundColor: theme.palette.primary.main,
-                             color: 'white',
-                             fontWeight: 'bold',
-                             fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                             height: { xs: 32, sm: 36, md: 40 },
-                             zIndex: 3,
-                             px: { xs: 2, sm: 2.5, md: 3 },
-                             py: { xs: 0.5, sm: 0.75, md: 1 },
-                             borderRadius: '20px',
-                             display: 'flex',
-                             alignItems: 'center',
-                             gap: { xs: 0.5, sm: 0.75 },
-                             boxShadow: `0 4px 12px ${theme.palette.primary.main}66`,
-                             border: '2px solid rgba(255, 255, 255, 0.2)',
-                             '&::before': {
-                               content: '""',
-                               position: 'absolute',
-                               top: '50%',
-                               left: { xs: '-8px', sm: 'auto' },
-                               right: { xs: 'auto', sm: '-8px' },
-                               transform: 'translateY(-50%)',
-                               width: 0,
-                               height: 0,
-                               borderTop: '8px solid transparent',
-                               borderBottom: '8px solid transparent',
-                               borderLeft: { xs: '8px solid', sm: 'none' },
-                               borderRight: { xs: 'none', sm: '8px solid' },
-                               borderLeftColor: { xs: theme.palette.primary.main, sm: 'transparent' },
-                               borderRightColor: { xs: 'transparent', sm: theme.palette.primary.main },
-                             },
-                             '&::after': {
-                               content: '""',
-                               position: 'absolute',
-                               top: '50%',
-                               left: { xs: '-6px', sm: 'auto' },
-                               right: { xs: 'auto', sm: '-6px' },
-                               transform: 'translateY(-50%)',
-                               width: '4px',
-                               height: '4px',
-                               borderRadius: '50%',
-                               backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                             }
-                           }}
-                         >
+                         
+                         {/* Original Price with Strikethrough */}
                          <Typography
-                           component="span"
+                           variant="body2"
                            sx={{
+                             color: 'text.primary',
+                             fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
+                             fontWeight: 'medium',
+                             textDecoration: 'line-through',
+                             textDecorationColor: 'text.primary',
+                             opacity: 0.7,
+                           }}
+                         >
+                           ${parseFloat(selectedImage.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                         </Typography>
+                         
+                         {/* Discounted Price */}
+                         <Typography
+                           variant="h5"
+                           sx={{
+                             color: 'primary.main',
+                             fontSize: { xs: '1.1rem', sm: '1.35rem', md: '1.7rem' },
                              fontWeight: 'bold',
-                             fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                             color: 'white',
-                             textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                             lineHeight: 1,
                            }}
                          >
                            ${getDisplayPrice(selectedImage.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                          </Typography>
                        </Box>
+                     ) : (
+                       /* Regular Price Display in Modal for Retail Customers */
+                       <Chip
+                         label={`$${getDisplayPrice(selectedImage.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                         sx={{
+                           position: 'absolute',
+                           top: { xs: 12, sm: 16, md: 20 },
+                           right: { xs: 12, sm: 16, md: 20 },
+                           backgroundColor: 'primary.main',
+                           color: 'white',
+                           fontWeight: 'bold',
+                           fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                           height: { xs: 36, sm: 40, md: 44 },
+                           maxWidth: { xs: '200px', sm: '250px', md: '300px' },
+                           zIndex: 3,
+                           '& .MuiChip-label': {
+                             px: { xs: 1.5, sm: 2, md: 2.5 },
+                             overflow: 'hidden',
+                             textOverflow: 'ellipsis',
+                             whiteSpace: 'nowrap',
+                           },
+                           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                           border: '2px solid rgba(255, 255, 255, 0.2)',
+                         }}
+                       />
                      )}
 
                     {/* Main Product Image */}
@@ -1321,27 +1338,55 @@ const ShopGallery = () => {
                         minHeight: { xs: '45vh', md: '100%' }
                       }}
                     >
-                      <Image
-                        src={(() => {
-                          const images = getProductImages(selectedImage);
-                          if (images && images.length > 0 && modalImageIndex < images.length) {
-                            return images[modalImageIndex];
-                          }
-                          return '/placeholder-image.jpg';
-                        })()}
-                        alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
-                        width={800}
-                        height={600}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          maxWidth: '100%',
-                          maxHeight: '100%',
-                          objectFit: 'contain',
-                          objectPosition: 'center',
-                        }}
-                        priority
-                      />
+                      {(() => {
+                        const images = getProductImages(selectedImage);
+                        if (images && images.length > 0 && modalImageIndex < images.length) {
+                          return (
+                            <Image
+                              src={images[modalImageIndex]}
+                              alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
+                              width={800}
+                              height={600}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                objectFit: 'contain',
+                                objectPosition: 'center',
+                              }}
+                              priority
+                            />
+                          );
+                        } else {
+                          return (
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: '#f5f5f5',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: 1,
+                              }}
+                            >
+                              <Typography
+                                variant="h5"
+                                sx={{
+                                  color: 'text.secondary',
+                                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                                  fontWeight: 'medium',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                No Image
+                              </Typography>
+                            </Box>
+                          );
+                        }
+                      })()}
                     </Box>
                   
                                      {/* Image Navigation Dots */}

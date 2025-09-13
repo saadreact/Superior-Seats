@@ -29,8 +29,7 @@ const EditItemTypePage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    is_active: true});
+    description: ''});
 
   useEffect(() => {
     loadItemType();
@@ -44,8 +43,7 @@ const EditItemTypePage = () => {
       const itemtypes = await apiService.getItemType(parseInt(id));
       setFormData({
         name: itemtypes.name || '',
-        description: itemtypes.description || '',
-        is_active: itemtypes.is_active ?? true});
+        description: itemtypes.description || ''});
     } catch (err: any) {
       setError(err.message || 'Failed to load item type');
       console.error('Error loading item type:', err);
@@ -158,24 +156,6 @@ const EditItemTypePage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
-                />
-
-
-
-                {/* Status */}
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', borderBottom: 1, borderColor: 'divider', pb: 1, pt: 2 }}>
-                  Status
-                </Typography>
-
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.is_active}
-                      onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Active"
                 />
 
                 {/* Action Buttons */}

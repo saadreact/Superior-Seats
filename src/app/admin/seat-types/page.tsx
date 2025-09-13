@@ -152,11 +152,26 @@ const SeatTypesPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'flex-end', 
+          justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-        
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search seat types..."
+              value={searchTerm}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -170,25 +185,8 @@ const SeatTypesPage = () => {
               }
             }}
           >
-            Add
+            Add Seat Type
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search seat types..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )}}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -202,7 +200,22 @@ const SeatTypesPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadSeatTypes();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
@@ -222,27 +235,42 @@ const SeatTypesPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+          <Paper sx={{ overflow: 'hidden' }}>
             <TableContainer>
-              <Table stickyHeader>
+              <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {paginatedData.map((seatType) => (
-                    <TableRow key={seatType.id} hover>
+                    <TableRow 
+                      key={seatType.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {seatType.name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            maxWidth: 300,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
                           {seatType.description || 'No description available'}
                         </Typography>
                       </TableCell>
@@ -251,8 +279,8 @@ const SeatTypesPage = () => {
                           {new Date(seatType.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1}>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(seatType)}
@@ -269,7 +297,7 @@ const SeatTypesPage = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </Stack>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -285,6 +313,14 @@ const SeatTypesPage = () => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
             />
           </Paper>
         )}

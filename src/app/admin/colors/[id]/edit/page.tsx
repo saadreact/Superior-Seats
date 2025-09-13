@@ -21,9 +21,11 @@ import {
   Paper,
   IconButton,
   Chip,
+  Divider,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
+  Save as SaveIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter, useParams } from 'next/navigation';
@@ -37,6 +39,8 @@ interface Color {
   color_vendor_id: number;
   is_active: boolean;
   price_tier_ids: number[];
+  cost: number | null;
+  price: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -66,22 +70,25 @@ const EditColorPage = () => {
   const [color, setColor] = useState<Color | null>(null);
   const [colorVendors, setColorVendors] = useState<ColorVendor[]>([]);
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     hex_code: '',
     description: '',
     color_vendor_id: 0,
-    is_active: 'true' as string,
+    cost: 0,
+    price: 0,
+    is_active: true,
     price_tier_ids: [] as number[],
   });
+  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
 
   const loadColor = useCallback(async () => {
     try {
-      setLoading(true);
+      setInitialLoading(true);
       setError(null);
       const response = await apiService.getColor(colorId);
       setColor(response);
@@ -92,9 +99,12 @@ const EditColorPage = () => {
         hex_code: response.hex_code,
         description: response.description,
         color_vendor_id: response.color_vendor_id,
-        is_active: response.is_active.toString(),
+        cost: response.cost || 0,
+        price: response.price || 0,
+        is_active: response.is_active,
         price_tier_ids: response.price_tier_ids || [],
       });
+      setEnablePriceTiers((response.price_tier_ids || []).length > 0);
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         setError('Please log in to access this page');
@@ -103,7 +113,7 @@ const EditColorPage = () => {
       }
       console.error('Error loading color:', err);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
   }, [colorId]);
 
@@ -135,19 +145,10 @@ const EditColorPage = () => {
     }
   }, [colorId, loadColor, loadColorVendors, loadPriceTiers]);
 
-  const handleFormChange = (field: string) => (event: any) => {
-    let value = event.target.value;
-    
-    // Handle hex code input - ensure it has # prefix
-    if (field === 'hex_code') {
-      if (!value.startsWith('#')) {
-        value = '#' + value;
-      }
-    }
-    
+  const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value,
+      [field]: value
     }));
   };
 
@@ -159,17 +160,21 @@ const EditColorPage = () => {
     }));
   };
 
+  const handleEnablePriceTiersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setEnablePriceTiers(checked);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation
     if (!formData.name.trim()) {
-      setAlert({ type: 'error', message: 'Color name is required' });
+      setError('Color name is required');
       return;
     }
     
     if (!formData.hex_code.trim()) {
-      setAlert({ type: 'error', message: 'Hex code is required' });
+      setError('Hex code is required');
       return;
     }
     
@@ -182,40 +187,47 @@ const EditColorPage = () => {
     // Validate hex code format
     const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
     if (!hexRegex.test(hexCode)) {
-      setAlert({ type: 'error', message: 'Please enter a valid hex color code (e.g., 000000 or #000000)' });
+      setError('Please enter a valid hex color code (e.g., 000000 or #000000)');
       return;
     }
     
     if (!formData.description.trim()) {
-      setAlert({ type: 'error', message: 'Description is required' });
+      setError('Description is required');
       return;
     }
     
     if (!formData.color_vendor_id) {
-      setAlert({ type: 'error', message: 'Color vendor is required' });
+      setError('Color vendor is required');
       return;
     }
     
-    if (!formData.price_tier_ids || formData.price_tier_ids.length === 0) {
-      setAlert({ type: 'error', message: 'At least one price tier is required' });
+    if (formData.cost <= 0) {
+      setError('Cost must be greater than 0');
+      return;
+    }
+
+    if (formData.price <= 0) {
+      setError('Price must be greater than 0');
       return;
     }
     
     try {
-      setSaving(true);
+      setLoading(true);
+      setError(null);
       
-      // Convert form data to match API schema exactly
       const submitData = {
         name: formData.name.trim(),
         hex_code: hexCode,
         description: formData.description.trim(),
         color_vendor_id: Number(formData.color_vendor_id),
-        is_active: formData.is_active === 'true',
-        price_tier_ids: (formData.price_tier_ids || []).map(id => Number(id)),
+        cost: formData.cost,
+        price: formData.price,
+        is_active: formData.is_active,
+        price_tier_ids: enablePriceTiers ? (formData.price_tier_ids || []).map(id => Number(id)) : [],
       };
       
-      const result = await apiService.updateColor(colorId, submitData);
-      setAlert({ type: 'success', message: 'Color updated successfully' });
+      await apiService.updateColor(colorId, submitData);
+      setSuccess('Color updated successfully!');
       
       // Redirect back to colors list after a short delay
       setTimeout(() => {
@@ -223,18 +235,18 @@ const EditColorPage = () => {
       }, 1500);
       
     } catch (err: any) {
+      setError(err.message || 'Failed to update color');
       console.error('Error updating color:', err);
-      setAlert({ type: 'error', message: err.message || 'Failed to update color' });
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
-  const handleBackToList = () => {
+  const handleBack = () => {
     router.push('/admin/colors');
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <AdminLayout title="Edit Color">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
@@ -244,165 +256,242 @@ const EditColorPage = () => {
     );
   }
 
-  if (error) {
-    return (
-      <AdminLayout title="Edit Color">
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-        <Button onClick={handleBackToList} variant="outlined">
-          Back to Colors
-        </Button>
-      </AdminLayout>
-    );
-  }
-
-  if (!color) {
-    return (
-      <AdminLayout title="Edit Color">
-        <Alert severity="error" sx={{ mb: 3 }}>
-          Color not found
-        </Alert>
-        <Button onClick={handleBackToList} variant="outlined">
-          Back to Colors
-        </Button>
-      </AdminLayout>
-    );
-  }
-
   return (
     <AdminLayout title="Edit Color">
       <Box>
-        <Box sx={{ mb: 3 }}>
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={handleBackToList}
-            sx={{ mb: 2 }}
+            onClick={handleBack}
+            sx={{ color: 'text.secondary' }}
           >
             Back to Colors
           </Button>
-      
         </Box>
 
-        {alert && (
-          <Alert 
-            severity={alert.type} 
-            sx={{ mb: 3 }}
-            onClose={() => setAlert(null)}
-          >
-            {alert.message}
+        {/* Alerts */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
           </Alert>
         )}
 
-        <Paper sx={{ p: 4, maxWidth: 800 }}>
+        {success && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            {success}
+          </Alert>
+        )}
+
+        {/* Form */}
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <form onSubmit={handleSubmit}>
-            <Stack spacing={3}>
-              <TextField
-                label="Color Name"
-                value={formData.name}
-                onChange={handleFormChange('name')}
-                fullWidth
-                required
-                placeholder="e.g. Midnight Black"
-              />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {/* Basic Information */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Basic Information
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
               
-              <TextField
-                label="Hex Code"
-                value={formData.hex_code.replace('#', '')}
-                onChange={handleFormChange('hex_code')}
-                fullWidth
-                required
-                placeholder="000000"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Typography variant="body2" color="text.secondary">#</Typography>
-                    </InputAdornment>
-                  )}}
-              />
-              
-              <TextField
-                label="Description"
-                value={formData.description}
-                onChange={handleFormChange('description')}
-                fullWidth
-                multiline
-                rows={3}
-                required
-                placeholder="e.g. Deep black color for luxury vehicles"
-              />
+                <TextField
+                  label="Color Name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  required
+                  fullWidth
+                  placeholder="Enter color name"
+                  sx={{ mb: 3 }}
+                />
 
-              <FormControl fullWidth required>
-                <InputLabel>Color Vendor</InputLabel>
-                <Select
-                  value={formData.color_vendor_id}
-                  onChange={handleFormChange('color_vendor_id')}
-                  label="Color Vendor"
-                >
-                  <MenuItem value={0} disabled>
-                    <em>Select a vendor</em>
-                  </MenuItem>
-                  {colorVendors.map((vendor) => (
-                    <MenuItem key={vendor.id} value={vendor.id}>
-                      {vendor.name}
+                <TextField
+                  label="Hex Code"
+                  value={formData.hex_code.replace('#', '')}
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    if (!value.startsWith('#')) {
+                      value = '#' + value;
+                    }
+                    handleInputChange('hex_code', value);
+                  }}
+                  required
+                  fullWidth
+                  placeholder="000000"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography variant="body2" color="text.secondary">#</Typography>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ mb: 3 }}
+                />
+
+                <TextField
+                  label="Description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  placeholder="Enter description (optional)"
+                />
+              </Box>
+
+              {/* Color Information */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Color Information
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <FormControl fullWidth required sx={{ mb: 3 }}>
+                  <InputLabel>Color Vendor</InputLabel>
+                  <Select
+                    value={formData.color_vendor_id}
+                    onChange={(e) => handleInputChange('color_vendor_id', e.target.value)}
+                    label="Color Vendor"
+                  >
+                    <MenuItem value={0} disabled>
+                      <em>Select a vendor</em>
                     </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                    {colorVendors.map((vendor) => (
+                      <MenuItem key={vendor.id} value={vendor.id}>
+                        {vendor.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-              <FormControl fullWidth required>
-                <InputLabel>Price Tiers</InputLabel>
-                <Select
-                  multiple
-                  value={formData.price_tier_ids}
-                  onChange={handleMultiSelectChange}
-                  input={<OutlinedInput label="Price Tiers" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {(selected as number[] || []).map((value) => {
-                        const tier = priceTiers.find(t => t.id === value);
-                        return (
-                          <Chip key={value} label={tier?.name || value} size="small" />
-                        );
-                      })}
-                    </Box>
-                  )}
-                >
-                  {priceTiers.map((tier) => (
-                    <MenuItem key={tier.id} value={tier.id}>
-                      <Checkbox checked={(formData.price_tier_ids || []).indexOf(tier.id) > -1} />
-                      <ListItemText
-                        primary={tier.name}
-                        secondary={`${tier.discount_off_retail_price}% off retail`}
-                      />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.is_active}
+                      onChange={(e) => handleInputChange('is_active', e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Active"
+                />
+              </Box>
 
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.is_active === 'true'}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      is_active: e.target.checked ? 'true' : 'false'
-                    }))}
-                    color="primary"
+              {/* Pricing Information */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Pricing Information
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter wholesale cost"
+                    inputProps={{ min: 0, step: 0.01 }}
                   />
-                }
-                label="Active"
-              />
+                  <TextField
+                    label="Price (Retail)"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                </Box>
+              </Box>
 
-              <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 4 }}>
-                <Button onClick={handleBackToList} variant="outlined" size="large">
+              {/* Price Tiers */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Price Tiers
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={enablePriceTiers}
+                      onChange={handleEnablePriceTiersChange}
+                      color="primary"
+                    />
+                  }
+                  label="Enable Price Tiers"
+                />
+
+                {enablePriceTiers && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                      Tier Pricing
+                    </Typography>
+                    <FormControl fullWidth>
+                      <InputLabel>Price Tiers</InputLabel>
+                      <Select
+                        multiple
+                        value={formData.price_tier_ids}
+                        onChange={handleMultiSelectChange}
+                        input={<OutlinedInput label="Price Tiers" />}
+                        renderValue={(selected) => (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {(selected as number[] || []).map((value) => {
+                              const tier = priceTiers.find(t => t.id === value);
+                              return (
+                                <Chip key={value} label={tier?.name || value} size="small" />
+                              );
+                            })}
+                          </Box>
+                        )}
+                      >
+                        {priceTiers.map((tier) => (
+                          <MenuItem key={tier.id} value={tier.id}>
+                            <Checkbox checked={(formData.price_tier_ids || []).indexOf(tier.id) > -1} />
+                            <ListItemText
+                              primary={tier.name}
+                              secondary={`${tier.discount_off_retail_price}% off retail`}
+                            />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Action Buttons */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 2, 
+                justifyContent: 'flex-end',
+                flexDirection: { xs: 'column', sm: 'row' }
+              }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleBack}
+                  disabled={loading}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" variant="contained" size="large" disabled={saving}>
-                  {saving ? <CircularProgress size={20} /> : 'Update Color'}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  startIcon={<SaveIcon />}
+                  disabled={loading}
+                  sx={{
+                    backgroundColor: '#DA291C',
+                    '&:hover': {
+                      backgroundColor: '#B71C1C',
+                    },
+                  }}
+                >
+                  {loading ? 'Updating...' : 'Update Color'}
                 </Button>
-              </Stack>
-            </Stack>
+              </Box>
+            </Box>
           </form>
         </Paper>
       </Box>

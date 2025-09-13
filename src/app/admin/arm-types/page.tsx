@@ -33,11 +33,19 @@ import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
 
+// Helper function to convert cost/price to number
+const parsePriceValue = (value: number | string | undefined): number => {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') return parseFloat(value) || 0;
+  return 0;
+};
+
 interface ArmType {
   id: number;
   name: string;
   description: string;
-  
+  cost?: number | string;
+  price?: number | string;
   created_at: string;
   updated_at: string;
 }
@@ -70,6 +78,8 @@ const ArmTypesPage = () => {
       
       const response = await apiService.getArmTypes(params);
       
+      console.log('Arm types API response:', response);
+      
       // Handle the response structure
       if (response && response.data) {
         setArmTypes(response.data);
@@ -92,6 +102,27 @@ const ArmTypesPage = () => {
 
   useEffect(() => {
     loadArmTypes();
+  }, [loadArmTypes]);
+
+  // Refresh data when page becomes visible (after navigation back from create/edit)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadArmTypes();
+      }
+    };
+
+    const handleFocus = () => {
+      loadArmTypes();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [loadArmTypes]);
 
   const handleAdd = () => {
@@ -222,6 +253,8 @@ const ArmTypesPage = () => {
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -254,6 +287,16 @@ const ArmTypesPage = () => {
                           }}
                         >
                           {armType.description || 'No description available'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${parsePriceValue(armType.cost).toFixed(2)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          ${parsePriceValue(armType.price).toFixed(2)}
                         </Typography>
                       </TableCell>
                       <TableCell>

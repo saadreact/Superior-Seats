@@ -14,6 +14,11 @@ const inter = Raleway({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Superior Seats - Responsive Next.js App',
   description: 'A modern, responsive Next.js application built with Material UI',
+  icons: {
+    icon: '/superiorlogo/logored.png',
+    shortcut: '/superiorlogo/logored.png',
+    apple: '/superiorlogo/logored.png',
+  },
 };
 
 export default function RootLayout({

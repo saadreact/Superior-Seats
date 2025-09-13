@@ -33,7 +33,6 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { productApi } from '@/services/productapi';
 import { apiService } from '@/utils/api';
-import { vehicleTrimsApiService } from '@/services/vehicleTrimsApi';
 
 interface ProductPage2Form {
   // First Half - Product Fields
@@ -56,8 +55,8 @@ interface ProductPage2Form {
   seatStyle: string[];
   color: string[];
   
-  // Vehicle Variation Fields
-  vehicleTrim: number[];
+  // Special Shop Field
+  showOnSpecialShop: boolean;
   
   isActive: boolean;
 }
@@ -79,6 +78,7 @@ interface ProductItem {
   stitchPattern: string[];
   seatItemType: string[];
   color: string[];
+  show_on_special_shop: boolean;
   isActive: boolean;
   createdAt: string;
 }
@@ -108,7 +108,7 @@ const EditProduct2Page = () => {
     seatItemType: [],
     seatStyle: [],
     color: [],
-    vehicleTrim: [],
+    showOnSpecialShop: false,
     isActive: true,
   });
 
@@ -130,9 +130,6 @@ const EditProduct2Page = () => {
   const [seatItemTypes, setSeatItemTypes] = useState<{ id: number; name: string; price: number }[]>([]);
   const [seatStyles, setSeatStyles] = useState<{ id: number; name: string; price: number }[]>([]);
   const [colors, setColors] = useState<{ id: number; name: string; price: number }[]>([]);
-  
-  // Vehicle variation data state
-  const [vehicleTrims, setVehicleTrims] = useState<{ id: number; name: string; price: number }[]>([]);
 
   useEffect(() => {
     loadInitialData();
@@ -157,7 +154,6 @@ const EditProduct2Page = () => {
         seatItemTypesRes,
         seatStylesRes,
         colorsRes,
-        vehicleTrimsRes,
         productRes,
       ] = await Promise.all([
         productApi.getCategories(),
@@ -171,7 +167,6 @@ const EditProduct2Page = () => {
         productApi.getItemTypes().catch(() => apiService.getItemTypes()),
         productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
         productApi.getColors(),
-        vehicleTrimsApiService.getVehicleTrims({ per_page: 100 }),
         productApi.getProduct(parseInt(id)),
       ]);
 
@@ -200,9 +195,6 @@ const EditProduct2Page = () => {
       setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
       setSeatStyles(convertToFormFormat(seatStylesRes, false)); // Seat styles don't have price
       setColors(convertToFormFormat(colorsRes));
-      
-      // Set vehicle variation data (vehicle variations don't have price)
-      setVehicleTrims(convertToFormFormat(vehicleTrimsRes?.data || [], false));
 
       // Helper function to extract variation names from API response
       const extractVariationNames = (variations: any[], fieldName: string): string[] => {
@@ -224,28 +216,6 @@ const EditProduct2Page = () => {
         return names;
       };
 
-      // Helper function to extract variation IDs from API response (for vehicle trim)
-      const extractVariationIds = (variations: any[], fieldName: string, availableOptions: { id: number; name: string; price: number }[]): number[] => {
-        if (!variations || !Array.isArray(variations)) {
-          console.log(`🔍 No variations array for ${fieldName}`);
-          return [];
-        }
-        console.log(`🔍 Processing ${fieldName} IDs from ${variations.length} variations:`, variations);
-        const ids = variations
-          .map((v, index) => {
-            console.log(`🔍 Variation ${index} for ${fieldName}:`, v);
-            const value = v[fieldName] || v[`${fieldName}_name`] || v[`${fieldName}_type`] || v.name;
-            console.log(`🔍 Extracted value for ${fieldName}:`, value);
-            
-            // Find the ID for this name
-            const option = availableOptions.find(opt => opt.name === value);
-            return option?.id;
-          })
-          .filter((id): id is number => id !== undefined)
-          .filter((id, index, arr) => arr.indexOf(id) === index);
-        console.log(`🔍 Final extracted ${fieldName} IDs:`, ids);
-        return ids;
-      };
 
       // Set form data from product
       if (productRes) {
@@ -288,7 +258,7 @@ const EditProduct2Page = () => {
           seatItemType: extractVariationNames(productRes.variations || [], 'seat_item_type'),
           seatStyle: extractVariationNames(productRes.variations || [], 'seat_style'),
           color: extractVariationNames(productRes.variations || [], 'color'),
-          vehicleTrim: extractVariationIds(productRes.variations || [], 'vehicle_trim', vehicleTrims),
+          showOnSpecialShop: (productRes as any).show_on_special_shop ?? false,
           isActive: productRes.is_active ?? true,
         });
         
@@ -341,42 +311,33 @@ const EditProduct2Page = () => {
   ) => {
     const value = event.target.value;
     
-    // Special handling for vehicle trim (store IDs instead of names)
-    if (field === 'vehicleTrim') {
-      const selectedValues: number[] = typeof value === 'string' ? value.split(',').map(Number) : value;
-      setFormData(prev => ({
-        ...prev,
-        [field]: selectedValues,
-      }));
+    // Regular handling for fields (store names)
+    const selectedValues: string[] = typeof value === 'string' ? value.split(',') : value;
+    
+    // Check if "None" is being selected
+    const isSelectingNone = selectedValues.includes('None');
+    const wasNoneSelected = (formData[field] as string[]).includes('None');
+    
+    let finalValues: string[];
+    
+    if (isSelectingNone && !wasNoneSelected) {
+      // If "None" is being selected and it wasn't selected before, clear all other selections
+      finalValues = ['None'];
+    } else if (isSelectingNone && wasNoneSelected) {
+      // If "None" is being deselected, keep other selections
+      finalValues = selectedValues.filter(val => val !== 'None');
+    } else if (!isSelectingNone && wasNoneSelected) {
+      // If selecting other options while "None" was selected, remove "None" and keep new selections
+      finalValues = selectedValues.filter(val => val !== 'None');
     } else {
-      // Regular handling for other fields (store names)
-      const selectedValues: string[] = typeof value === 'string' ? value.split(',') : value;
-      
-      // Check if "None" is being selected
-      const isSelectingNone = selectedValues.includes('None');
-      const wasNoneSelected = (formData[field] as string[]).includes('None');
-      
-      let finalValues: string[];
-      
-      if (isSelectingNone && !wasNoneSelected) {
-        // If "None" is being selected and it wasn't selected before, clear all other selections
-        finalValues = ['None'];
-      } else if (isSelectingNone && wasNoneSelected) {
-        // If "None" is being deselected, keep other selections
-        finalValues = selectedValues.filter(val => val !== 'None');
-      } else if (!isSelectingNone && wasNoneSelected) {
-        // If selecting other options while "None" was selected, remove "None" and keep new selections
-        finalValues = selectedValues.filter(val => val !== 'None');
-      } else {
-        // Normal selection without "None" involved
-        finalValues = selectedValues;
-      }
-      
-      setFormData(prev => ({
-        ...prev,
-        [field]: finalValues,
-      }));
+      // Normal selection without "None" involved
+      finalValues = selectedValues;
     }
+    
+    setFormData(prev => ({
+      ...prev,
+      [field]: finalValues,
+    }));
     
     if (errors[field]) {
       setErrors(prev => ({
@@ -544,10 +505,6 @@ const EditProduct2Page = () => {
       newErrors.color = 'Please select at least one color or "None"';
     }
 
-    if (!hasValidSelection(formData.vehicleTrim)) {
-      newErrors.vehicleTrim = 'Please select at least one vehicle trim or "None"';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -584,8 +541,8 @@ const EditProduct2Page = () => {
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
+        show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
-        vehicle_trim_id: 1, // Default value, you might want to make this configurable
         images: formData.images, // Simple File array like create page
         
         // Map variation names to IDs
@@ -599,9 +556,6 @@ const EditProduct2Page = () => {
         item_type_ids: mapNamesToIds(formData.seatItemType, seatItemTypes),
         seat_style_ids: mapNamesToIds(formData.seatStyle, seatStyles),
         color_ids: mapNamesToIds(formData.color, colors),
-        
-        // Map vehicle trim IDs (already stored as IDs)
-        vehicle_trim_ids: formData.vehicleTrim,
       };
 
       // Debug: Log the data being sent
@@ -659,9 +613,6 @@ const EditProduct2Page = () => {
     // Safety check to ensure options is an array
     const safeOptions = Array.isArray(options) ? options : [];
     
-    // Check if this is a vehicle field (no cost display)
-    const isVehicleField = field === 'vehicleTrim';
-    
     // Debug logging for seat styles specifically
     if (field === 'seatStyle') {
       console.log(`Rendering ${label} field:`, {
@@ -678,64 +629,41 @@ const EditProduct2Page = () => {
         <InputLabel>{label}</InputLabel>
         <Select
           multiple
-          value={isVehicleField ? (formData[field] as number[]) : (formData[field] as string[])}
+          value={formData[field] as string[]}
           onChange={handleMultiSelectChange(field)}
           input={<OutlinedInput label={label} />}
           renderValue={(selected) => (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {isVehicleField ? 
-                (selected as number[]).map((id) => {
-                  const option = safeOptions.find(opt => opt.id === id);
-                  return (
-                    <Box key={id} sx={{ 
-                      backgroundColor: 'primary.main', 
-                      color: 'white', 
-                      px: 1, 
-                      py: 0.5, 
-                      borderRadius: 1, 
-                      fontSize: '0.75rem' 
-                    }}>
-                      {option?.name || `ID: ${id}`}
-                    </Box>
-                  );
-                }) :
-                (selected as string[]).map((value) => (
-                  <Box key={value} sx={{ 
-                    backgroundColor: 'primary.main', 
-                    color: 'white', 
-                    px: 1, 
-                    py: 0.5, 
-                    borderRadius: 1, 
-                    fontSize: '0.75rem' 
-                  }}>
-                    {value}
-                  </Box>
-                ))
-              }
+              {(selected as string[]).map((value) => (
+                <Box key={value} sx={{ 
+                  backgroundColor: 'primary.main', 
+                  color: 'white', 
+                  px: 1, 
+                  py: 0.5, 
+                  borderRadius: 1, 
+                  fontSize: '0.75rem' 
+                }}>
+                  {value}
+                </Box>
+              ))}
             </Box>
           )}
         >
-          {/* None option - only for non-vehicle fields */}
-          {!isVehicleField && (
-            <MenuItem key="none" value="None">
-              <Checkbox checked={(formData[field] as string[]).indexOf('None') > -1} />
-              <ListItemText 
-                primary="None"
-                sx={{ fontStyle: 'italic', color: 'text.secondary' }}
-              />
-            </MenuItem>
-          )}
+          {/* None option */}
+          <MenuItem key="none" value="None">
+            <Checkbox checked={(formData[field] as string[]).indexOf('None') > -1} />
+            <ListItemText 
+              primary="None"
+              sx={{ fontStyle: 'italic', color: 'text.secondary' }}
+            />
+          </MenuItem>
           
           {/* Regular options */}
           {safeOptions.map((option) => (
-            <MenuItem key={option.id} value={isVehicleField ? option.id : option.name}>
-              <Checkbox checked={isVehicleField ? 
-                (formData[field] as number[]).indexOf(option.id) > -1 : 
-                (formData[field] as string[]).indexOf(option.name) > -1
-              } />
+            <MenuItem key={option.id} value={option.name}>
+              <Checkbox checked={(formData[field] as string[]).indexOf(option.name) > -1} />
               <ListItemText 
-                primary={isVehicleField ? option.name : `${option.name} (+$${option.price || 0})`}
-                secondary={isVehicleField ? undefined : undefined}
+                primary={`${option.name} (+$${option.price || 0})`}
               />
             </MenuItem>
           ))}
@@ -791,9 +719,69 @@ const EditProduct2Page = () => {
               
               {/* 🟢 First Half - Product Fields */}
               <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Product Information
-                </Typography>
+                {/* Header Row with Product Information and Switches */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 2,
+                  flexDirection: { xs: 'column', md: 'row' },
+                  gap: { xs: 2, md: 0 }
+                }}>
+                  <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
+                    Product Information
+                  </Typography>
+                  
+                  {/* Right Side - Status Switches in same row */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: 3, 
+                    alignItems: 'center',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    '& .MuiFormControlLabel-root': {
+                      margin: 0
+                    }
+                  }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.isActive}
+                          onChange={handleSwitchChange('isActive')}
+                          color="error"
+                        />
+                      }
+                      label="Active"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.showOnSpecialShop}
+                          onChange={handleSwitchChange('showOnSpecialShop')}
+                          color="error"
+                        />
+                      }
+                      label="Special Shop"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
+                
                 <Divider sx={{ mb: 3 }} />
                 
                 {/* Product Name */}
@@ -1095,33 +1083,6 @@ const EditProduct2Page = () => {
                   </Box>
                 </Box>
 
-                {/* Vehicle Information Section */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
-                    Vehicle Information
-                  </Typography>
-                  
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
-                    {renderMultiSelectField('vehicleTrim', 'Vehicle Trim', vehicleTrims)}
-                  </Box>
-                </Box>
-
-                {/* Product Status */}
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
-                    Product Status
-                  </Typography>
-                  
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isActive}
-                        onChange={handleSwitchChange('isActive')}
-                      />
-                    }
-                    label="Active"
-                  />
-                </Box>
               </Box>
 
               {/* Actions */}

@@ -40,9 +40,7 @@ import {
   LocalFireDepartment as HeatIcon,
   Pattern as PatternIcon,
   ColorLens as ColorIcon,
-  LocalOffer as PricingIcon,
   Style as StyleIcon,
-  Build as FeatureIcon,
   DirectionsCar as VehicleIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
@@ -127,11 +125,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/color-vendors',
     },
     {
-      text: 'Feature Options',
-      icon: <FeatureIcon />,
-      href: '/admin/feature-options',
-    },
-    {
       text: 'Heat Options',
       icon: <HeatIcon />,
       href: '/admin/heat-options',
@@ -155,11 +148,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Recline Types',
       icon: <ReplayIcon />,
       href: '/admin/recline-types',
-    },
-    {
-      text: 'Seat Pricing',
-      icon: <PricingIcon />,
-      href: '/admin/seat-pricing',
     },
     {
       text: 'Seat Stitch Patterns',
@@ -266,7 +254,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       {/* Header */}
       <Box
         sx={{
-          p: 1.5,
+          p: 1.8,
           borderBottom: 1,
           borderColor: 'divider',
           display: 'flex',
@@ -283,7 +271,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
               height={60}
               style={{
                 width: 'auto',
-                height: '48px',
+                height: '36px',
                 objectFit: 'contain',
               }}
               priority

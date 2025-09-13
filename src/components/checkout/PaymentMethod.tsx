@@ -20,6 +20,8 @@ interface PaymentMethodProps {
   onBack: () => void;
   amount?: number;
   currency?: string;
+  formData: PaymentFormData;
+  onFormDataChange: (data: PaymentFormData) => void;
 }
 
 const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 0, currency = 'USD' }) => {

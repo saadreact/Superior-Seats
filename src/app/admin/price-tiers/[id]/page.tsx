@@ -18,6 +18,7 @@ const ViewPriceTierPage = ({ params }: ViewPriceTierPageProps) => {
   const router = useRouter();
   const [priceTier, setPriceTier] = React.useState<PriceTier | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [customerCount, setCustomerCount] = React.useState<number>(0);
   const resolvedParams = React.use(params);
 
   React.useEffect(() => {
@@ -25,6 +26,9 @@ const ViewPriceTierPage = ({ params }: ViewPriceTierPageProps) => {
       try {
         const tierData = await apiService.getPriceTier(parseInt(resolvedParams.id));
         setPriceTier(tierData);
+        
+        // Load customer count for this price tier
+        await loadCustomerCount(parseInt(resolvedParams.id));
       } catch (error) {
         console.error('Error fetching price tier:', error);
         setPriceTier(null);
@@ -37,6 +41,50 @@ const ViewPriceTierPage = ({ params }: ViewPriceTierPageProps) => {
       fetchPriceTier();
     }
   }, [resolvedParams.id]);
+
+  const loadCustomerCount = async (priceTierId: number) => {
+    try {
+      // Fetch all customers and count those with this price_tier_id
+      const response = await apiService.getCustomers({ 
+        per_page: 1000,
+        page: 1,
+        sort_by: 'created_at',
+        sort_order: 'desc'
+      });
+      
+      console.log(`Loading customer count for price tier ${priceTierId}`);
+      console.log('API Response:', response);
+      
+      // Handle the correct response structure
+      let customersData: any[] = [];
+      if (response?.data?.data && Array.isArray(response.data.data)) {
+        customersData = response.data.data;
+        console.log('Using response.data.data structure');
+      } else if (response?.data && Array.isArray(response.data)) {
+        customersData = response.data;
+        console.log('Using response.data structure');
+      } else if (Array.isArray(response)) {
+        customersData = response;
+        console.log('Using direct response array');
+      } else {
+        console.log('No valid data structure found in response');
+        return;
+      }
+      
+      const tierCustomers = customersData.filter((customer: any) => 
+        customer.price_tier_id === priceTierId
+      );
+      
+      console.log(`Found ${tierCustomers.length} customers for price tier ${priceTierId}:`, 
+        tierCustomers.map(c => ({ id: c.id, name: c.name || `${c.first_name} ${c.last_name}` }))
+      );
+      
+      setCustomerCount(tierCustomers.length);
+    } catch (error: any) {
+      console.error('Error loading customer count:', error);
+      console.error('Error details:', error.response?.data || error.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -152,7 +200,7 @@ const ViewPriceTierPage = ({ params }: ViewPriceTierPageProps) => {
                  Customers Count
                </Typography>
                <Typography variant="body1">
-                 {priceTier.customers_count || 0}
+                 {customerCount}
                </Typography>
              </Box>
           </Box>

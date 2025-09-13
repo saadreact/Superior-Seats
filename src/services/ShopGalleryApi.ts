@@ -30,6 +30,8 @@ export interface Product {
   variations?: ProductVariation[];
   images?: string[] | any[];
   stock?: number;
+  is_active?: boolean;
+  show_on_special_shop?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -70,9 +72,14 @@ export interface User {
 export interface PriceTier {
   id: number;
   name: string;
+  display_name?: string;
+  description?: string;
   discount_off_retail_price: string;
+  minimum_order_amount?: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
+  customers_count?: number;
 }
 
 export interface ApiResponse<T> {
@@ -146,6 +153,86 @@ class ShopGalleryApi {
       return response.data;
     } catch (error) {
       console.error('❌ ShopGalleryApi - getProducts error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get special products (products with show_on_special_shop: true)
+   */
+  async getSpecialProducts(params: ShopGalleryApiParams = {}): Promise<ApiResponse<Product[]>> {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        search,
+        category,
+        vehicle_trim,
+        min_price,
+        max_price,
+        sort = 'created_at',
+        order = 'desc'
+      } = params;
+
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        sort: sort,
+        order: order,
+        show_on_special_shop: 'true' // Filter for special products only
+      });
+
+      // Add optional parameters if they exist
+      if (search) queryParams.append('search', search);
+      if (category) queryParams.append('category', category);
+      if (vehicle_trim) queryParams.append('vehicle_trim', vehicle_trim);
+      if (min_price) queryParams.append('min_price', min_price.toString());
+      if (max_price) queryParams.append('max_price', max_price.toString());
+
+      console.log('🛍️ ShopGalleryApi - getSpecialProducts called with params:', params);
+      console.log('🔗 Request URL:', `${this.baseUrl}/products?${queryParams.toString()}`);
+
+      const response = await api.get<ApiResponse<Product[]>>(
+        `${this.baseUrl}/products?${queryParams.toString()}`
+      );
+
+      console.log('✅ ShopGalleryApi - getSpecialProducts response:', response.data);
+      console.log('📊 Special products count:', response.data.data?.length || 0);
+
+      // If the API doesn't support server-side filtering, filter on client side
+      if (response.data.data && response.data.data.length > 0) {
+        const filteredProducts = response.data.data.filter(product => 
+          product.show_on_special_shop === true
+        );
+        
+        if (filteredProducts.length !== response.data.data.length) {
+          console.log('🔍 ShopGalleryApi - Client-side filtering applied. Original count:', response.data.data.length, 'Filtered count:', filteredProducts.length);
+          response.data.data = filteredProducts;
+        }
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('❌ ShopGalleryApi - getSpecialProducts error:', error);
+      
+      // Fallback: try to get all products and filter client-side
+      console.log('🔄 ShopGalleryApi - Attempting fallback with client-side filtering...');
+      try {
+        const fallbackResponse = await this.getProducts(params);
+        if (fallbackResponse.data && fallbackResponse.data.length > 0) {
+          const filteredProducts = fallbackResponse.data.filter(product => 
+            product.show_on_special_shop === true
+          );
+          console.log('✅ ShopGalleryApi - Fallback successful. Filtered products:', filteredProducts.length);
+          return {
+            ...fallbackResponse,
+            data: filteredProducts
+          };
+        }
+      } catch (fallbackError) {
+        console.error('❌ ShopGalleryApi - Fallback also failed:', fallbackError);
+      }
+      
       throw error;
     }
   }
@@ -256,22 +343,30 @@ class ShopGalleryApi {
   /**
    * Get wholesale discount percentage from price tiers
    */
-  getWholesaleDiscount(priceTiers: PriceTier[]): number {
+  getWholesaleDiscount(priceTiers: PriceTier[], userData: User | null): number {
     if (priceTiers.length === 0) {
       console.log('💰 ShopGalleryApi - No price tiers available, using default 0% discount');
       return 0;
     }
     
-    // Find the wholesale price tier
-    const wholesaleTier = priceTiers.find(tier => tier.name === 'wholesale_priced');
-    if (wholesaleTier) {
-      const discount = parseFloat(wholesaleTier.discount_off_retail_price);
-      console.log('💰 ShopGalleryApi - Wholesale discount found:', discount + '%');
-      return discount;
+    if (!userData || !userData.role?.price_tier_id) {
+      console.log('💰 ShopGalleryApi - No user price tier ID, using default 0% discount');
+      return 0;
     }
     
-    console.log('💰 ShopGalleryApi - Wholesale price tier not found, using default 0% discount');
-    return 0;
+    // Find the user's specific price tier
+    const userPriceTier = priceTiers.find(tier => 
+      tier.id === userData.role!.price_tier_id && tier.is_active
+    );
+    
+    if (!userPriceTier) {
+      console.warn('⚠️ ShopGalleryApi - User price tier not found or inactive:', userData.role!.price_tier_id);
+      return 0;
+    }
+    
+    const discount = parseFloat(userPriceTier.discount_off_retail_price);
+    console.log('💰 ShopGalleryApi - User discount found:', discount + '%');
+    return discount;
   }
 
   /**
@@ -286,7 +381,7 @@ class ShopGalleryApi {
       return numericPrice;
     } else {
       // For wholesale customers, apply discount
-      const discountPercentage = this.getWholesaleDiscount(priceTiers);
+      const discountPercentage = this.getWholesaleDiscount(priceTiers, userData);
       const discountAmount = (numericPrice * discountPercentage) / 100;
       const discountedPrice = numericPrice - discountAmount;
       

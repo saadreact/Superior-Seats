@@ -101,9 +101,9 @@ const Header = () => {
     { text: 'Customize Your Seat', href: '/custom-seats' },
     { text: 'Shop Now', href: '/shop-now' },
     { text: 'Shop Specials', href: '/ShopGallery' },
-    { text: 'Gallery', href: '/Gallery' },
-    { text: 'About', href: '/About' },
-    { text: 'Contact', href: '/Contact' },
+    { text: 'Gallery', href: '/gallery' },
+    { text: 'About', href: '/about' },
+    { text: 'Contact', href: '/contact' },
   ];
 
   const handleAuthClick = () => {
@@ -119,8 +119,10 @@ const Header = () => {
   };
 
   const handleEditProfile = () => {
-    console.log('Edit Profile clicked. User data:', user);
-    console.log('User ID:', user?.id, 'Customer ID:', user?.customer_id);
+    console.log('🔧 Edit Profile clicked. User data:', user);
+    console.log('🔧 User ID:', user?.id, 'Customer ID:', user?.customer_id);
+    console.log('🔧 User email:', user?.email);
+    console.log('🔧 User object keys:', Object.keys(user || {}));
     setEditProfileModalOpen(true);
     handleUserMenuClose();
   };
@@ -691,11 +693,11 @@ const Header = () => {
         onClose={() => setAuthModalOpen(false)} 
       />
 
-      {isAuthenticated && user && (user.id || user.customer_id) && (
+      {isAuthenticated && user && user.role && (
         <EditProfileModal 
           open={editProfileModalOpen} 
           onClose={() => setEditProfileModalOpen(false)}
-          customerId={user.id || user.customer_id}
+          user={user}
           onProfileUpdated={handleProfileUpdated}
         />
       )}

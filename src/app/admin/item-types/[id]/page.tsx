@@ -20,7 +20,6 @@ interface ItemType {
   id: number;
   name: string;
   description: string;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -148,17 +147,6 @@ const ItemTypeDetailPage = () => {
                   <Typography variant="body1" color="text.secondary">
                     {itemtypes.description || 'No description available'}
                   </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Status
-                  </Typography>
-                  <Chip
-                    label={itemtypes.is_active ? 'Active' : 'Inactive'}
-                    color={itemtypes.is_active ? 'success' : 'default'}
-                    size="small"
-                  />
                 </Box>
 
 

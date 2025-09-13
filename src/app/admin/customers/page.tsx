@@ -35,7 +35,6 @@ import {
   Visibility as ViewIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { Customer, CustomerType } from '@/data/types';
@@ -50,7 +49,6 @@ const CustomersPage = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1); // 1-based for API
@@ -63,16 +61,18 @@ const CustomersPage = () => {
     search: '',
     customer_type: '', // retail | wholesale
     is_active: '', // '' | 'true' | 'false'
-    city: '',
-    state: '',
     company_name: '',
-    sort_by: 'created_at' as 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state',
+    sort_by: 'created_at' as 'name' | 'email' | 'created_at' | 'customer_type',
     sort_order: 'desc' as 'asc' | 'desc',
   });
 
   const handleFilterChange = (key: keyof typeof filters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSearch = () => {
     setCurrentPage(1);
+    fetchCustomers(1, rowsPerPage);
   };
 
   const resetFilters = () => {
@@ -80,12 +80,12 @@ const CustomersPage = () => {
       search: '',
       customer_type: '',
       is_active: '',
-      city: '',
-      state: '',
       company_name: '',
       sort_by: 'created_at',
       sort_order: 'desc',
     });
+    setCurrentPage(1);
+    fetchCustomers(1, rowsPerPage);
   };
 
   const fetchCustomers = async (page: number, perPage: number) => {
@@ -97,8 +97,6 @@ const CustomersPage = () => {
         search: filters.search || undefined,
         customer_type: filters.customer_type || undefined,
         is_active: filters.is_active === '' ? undefined : filters.is_active === 'true',
-        city: filters.city || undefined,
-        state: filters.state || undefined,
         company_name: filters.company_name || undefined,
         sort_by: filters.sort_by,
         sort_order: filters.sort_order,
@@ -154,7 +152,7 @@ const CustomersPage = () => {
   useEffect(() => {
     fetchCustomers(currentPage, rowsPerPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, rowsPerPage, filters]);
+  }, [currentPage, rowsPerPage]);
 
   const getCustomerTypeName = (type: string) => {
     if (!type) return '-';
@@ -207,33 +205,134 @@ const CustomersPage = () => {
   return (
     <AdminLayout title="Customers">
       <Box>
-        {/* Header Row with Filters button (left) and Add Customer (right) */}
+        {/* Header Row with Direct Filters and Add Customer button */}
         <Box sx={{ 
-          mb: 1, 
+          mb: 2, 
           display: 'flex', 
-          flexDirection: { xs: 'column', md: 'row' },
+          flexDirection: { xs: 'column', lg: 'row' },
           justifyContent: 'space-between', 
-          alignItems: { xs: 'stretch', md: 'center' },
-          gap: { xs: 1, md: 0 }
+          alignItems: { xs: 'stretch', lg: 'center' },
+          gap: { xs: 2, lg: 1 }
         }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Filters Section */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: { xs: 'stretch', md: 'center' },
+            gap: { xs: 1, md: 1.5 },
+            flex: 1,
+            flexWrap: 'wrap'
+          }}>
+            <TextField
+              placeholder="Search (name, email, company)"
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
+              size="small"
+              sx={{ minWidth: { xs: '100%', md: '250px' } }}
+              InputProps={{ 
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ) 
+              }}
+            />
+            
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', md: '150px' } }}>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={filters.customer_type}
+                label="Type"
+                onChange={(e) => handleFilterChange('customer_type', e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="retail">Retail</MenuItem>
+                <MenuItem value="wholesale">Wholesale</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', md: '130px' } }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={filters.is_active}
+                label="Status"
+                onChange={(e) => handleFilterChange('is_active', e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="true">Active</MenuItem>
+                <MenuItem value="false">Inactive</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <TextField 
+              label="Company" 
+              value={filters.company_name} 
+              onChange={(e) => handleFilterChange('company_name', e.target.value)}
+              size="small"
+              sx={{ minWidth: { xs: '100%', md: '180px' } }}
+            />
+            
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', md: '150px' } }}>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={filters.sort_by}
+                label="Sort By"
+                onChange={(e) => handleFilterChange('sort_by', e.target.value)}
+              >
+                <MenuItem value="name">Name</MenuItem>
+                <MenuItem value="email">Email</MenuItem>
+                <MenuItem value="created_at">Created</MenuItem>
+                <MenuItem value="customer_type">Customer Type</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', md: '120px' } }}>
+              <InputLabel>Order</InputLabel>
+              <Select
+                value={filters.sort_order}
+                label="Order"
+                onChange={(e) => handleFilterChange('sort_order', e.target.value)}
+              >
+                <MenuItem value="asc">Asc</MenuItem>
+                <MenuItem value="desc">Desc</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleSearch}
+                startIcon={<SearchIcon />}
+                sx={{ minWidth: '90px' }}
+              >
+                Search
+              </Button>
             <Button
               variant="outlined"
-              startIcon={<FilterIcon />}
-              onClick={() => setFilterDialogOpen(true)}
-              sx={{ boxShadow: 'none' }}
-            >
-              Filters
+                size="small"
+                onClick={resetFilters}
+                sx={{ minWidth: '70px' }}
+              >
+                Clear
             </Button>
+            </Box>
           </Box>
+          
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
             className="gradient-style"
             sx={{ 
-              alignSelf: { xs: 'stretch', md: 'auto' },
+              alignSelf: { xs: 'stretch', lg: 'auto' },
               boxShadow: 'none',
+              minWidth: '140px',
               '&:hover': {
                 boxShadow: 'none',
               }
@@ -444,78 +543,6 @@ const CustomersPage = () => {
               </DialogActions>
             </Dialog>
 
-            {/* Filters Dialog */}
-            <Dialog open={filterDialogOpen} onClose={() => setFilterDialogOpen(false)} maxWidth="lg" fullWidth>
-              <DialogTitle>Filter Customers</DialogTitle>
-              <DialogContent dividers>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr 1fr' }, gap: 2 }}>
-                  <TextField
-                    placeholder="Search (name, email, company)"
-                    value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
-                    InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
-                  />
-                  <FormControl fullWidth>
-                    <InputLabel>Customer Type</InputLabel>
-                    <Select
-                      value={filters.customer_type}
-                      label="Customer Type"
-                      onChange={(e) => handleFilterChange('customer_type', e.target.value)}
-                    >
-                      <MenuItem value="">All</MenuItem>
-                      <MenuItem value="retail">Retail</MenuItem>
-                      <MenuItem value="wholesale">Wholesale</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <FormControl fullWidth>
-                    <InputLabel>Active</InputLabel>
-                    <Select
-                      value={filters.is_active}
-                      label="Active"
-                      onChange={(e) => handleFilterChange('is_active', e.target.value)}
-                    >
-                      <MenuItem value="">All</MenuItem>
-                      <MenuItem value="true">Active</MenuItem>
-                      <MenuItem value="false">Inactive</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-                <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr auto auto' }, gap: 2 }}>
-                  <TextField label="Company" value={filters.company_name} onChange={(e) => handleFilterChange('company_name', e.target.value)} />
-                  <TextField label="City" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)} />
-                  <TextField label="State" value={filters.state} onChange={(e) => handleFilterChange('state', e.target.value)} />
-                  <FormControl fullWidth sx={{ minWidth: { md: 160 }, maxWidth: { md: 220 } }}>
-                    <InputLabel>Sort By</InputLabel>
-                    <Select
-                      value={filters.sort_by}
-                      label="Sort By"
-                      onChange={(e) => handleFilterChange('sort_by', e.target.value)}
-                    >
-                      <MenuItem value="name">Name</MenuItem>
-                      <MenuItem value="email">Email</MenuItem>
-                      <MenuItem value="created_at">Created</MenuItem>
-                      <MenuItem value="customer_type">Customer Type</MenuItem>
-                      <MenuItem value="city">City</MenuItem>
-                      <MenuItem value="state">State</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <FormControl fullWidth sx={{ minWidth: { md: 140 }, maxWidth: { md: 180 } }}>
-                    <InputLabel>Sort Order</InputLabel>
-                    <Select
-                      value={filters.sort_order}
-                      label="Sort Order"
-                      onChange={(e) => handleFilterChange('sort_order', e.target.value)}
-                    >
-                      <MenuItem value="asc">Asc</MenuItem>
-                      <MenuItem value="desc">Desc</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={resetFilters}>Clear</Button>
-              </DialogActions>
-            </Dialog>
           </>
         )}
       </Box>

@@ -170,11 +170,26 @@ const SeatStitchPatternsPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'flex-end', 
+          justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-      
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search seat stitch patterns..."
+              value={searchQuery}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -188,26 +203,8 @@ const SeatStitchPatternsPage = () => {
               }
             }}
           >
-            Add
+            Add Seat Stitch Pattern
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search seat stitch patterns..."
-            value={searchQuery}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )
-            }}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -221,7 +218,22 @@ const SeatStitchPatternsPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadSeatStitchPatterns();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
@@ -241,24 +253,30 @@ const SeatStitchPatternsPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+          <Paper sx={{ overflow: 'hidden' }}>
             <TableContainer>
-              <Table stickyHeader>
+              <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {paginatedData.map((item) => (
-                    <TableRow key={item.id} hover>
+                    <TableRow 
+                      key={item.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
                       <TableCell>
                         <Box
                           sx={{
@@ -314,13 +332,22 @@ const SeatStitchPatternsPage = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {item.name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {item.description || 'No description'}
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            maxWidth: 300,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {item.description || 'No description available'}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -342,12 +369,12 @@ const SeatStitchPatternsPage = () => {
                                 label={tier.display_name || tier.name}
                                 size="small"
                                 variant="outlined"
-                                sx={{ fontSize: '0.75rem' }}
+                                sx={{ fontSize: '0.6rem', height: 20 }}
                               />
                             ))
                           ) : (
                             <Typography variant="body2" color="text.secondary">
-                              No price tiers
+                              None
                             </Typography>
                           )}
                         </Box>
@@ -357,8 +384,8 @@ const SeatStitchPatternsPage = () => {
                           {new Date(item.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(item)}
@@ -392,6 +419,14 @@ const SeatStitchPatternsPage = () => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
             />
           </Paper>
         )}
