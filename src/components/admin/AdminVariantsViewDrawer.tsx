@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Drawer, Box, Typography, IconButton, Divider, FormControl, Select, MenuItem, Button, CircularProgress, Chip, Tooltip } from '@mui/material';
+import { Drawer, Box, Typography, IconButton, Divider, Button, CircularProgress, Chip, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { CustomizedSeatApi } from '@/services/CustomizedSeatApi';
@@ -29,7 +29,7 @@ interface AdminVariantsDrawerProps {
 	readOnly?: boolean;
 }
 
-const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({ 
+const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({ 
 	open, 
 	onClose, 
 	productId, 
@@ -54,7 +54,6 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		seatStyle: initialSelections?.seatStyle || '',
 		armType: initialSelections?.armType || '',
 	});
-	console.log('initialSelections', initialSelections, "selections",selections);
 
 	// Load variations when drawer opens
 	useEffect(() => {
@@ -64,7 +63,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		setError(null);
 		
 		CustomizedSeatApi.getProductById(productId)
-			.then(product => {debugger
+			.then(product => {
 				setVariations({
 					colors: product.colors || [],
 					material_types: product.material_types || [],
@@ -108,9 +107,8 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		return parseFloat(item.price) || 0;
 	};
 
-	const getVariantPrice = (key: keyof VariantSelections): number => {
-		if (!variations || !selections[key]) return 0;
-		
+	const getSelectedItem = (key: keyof VariantSelections): any => {
+		if (!variations || !selections[key]) return null;
 		const maps = {
 			materialType: variations.material_types,
 			color: variations.colors,
@@ -123,10 +121,12 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 			seatStyle: variations.seat_styles,
 			armType: variations.arm_types,
 		};
-		
 		const list = maps[key] || [];
-		const item = list.find((i: any) => i.id == selections[key]);
-		return getItemPrice(item);
+		return list.find((i: any) => i.id == selections[key]) || null;
+	};
+
+	const getVariantPrice = (key: keyof VariantSelections): number => {
+		return getItemPrice(getSelectedItem(key));
 	};
 
 	const totalPrice = useMemo(() => {
@@ -141,110 +141,30 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		return Math.max(0, basePrice + variantPrices);
 	}, [variations, selections, basePrice]);
 
-	const updateSelection = (key: keyof VariantSelections, value: any) => {
-		if (readOnly) return;
-		setSelections(prev => ({ ...prev, [key]: value }));
-		
-		if (onPreview) {
-			const newSelections = { ...selections, [key]: value };
-			const newPrice = basePrice + Object.keys(newSelections).reduce((sum, k) => {
-				if (!variations || !newSelections[k as keyof VariantSelections]) return sum;
-				const maps = {
-					materialType: variations.material_types,
-					color: variations.colors,
-					seatStitchPattern: variations.seat_stitch_patterns,
-					reclineType: variations.recline_types,
-					lumbarType: variations.lumbar_types,
-					heatOption: variations.heat_options,
-					seatType: variations.seat_types,
-					itemType: variations.item_types,
-					seatStyle: variations.seat_styles,
-					armType: variations.arm_types,
-				};
-				const list = maps[k as keyof typeof maps] || [];
-				const item = list.find((i: any) => i.id == newSelections[k as keyof VariantSelections]);
-				return sum + (parseFloat(item?.price) || 0);
-			}, 0);
-			
-			onPreview({ selections: newSelections, newUnitPrice: Math.max(0, newPrice) });
-		}
-	};
-
-	const renderSelect = (key: keyof VariantSelections, label: string, options: any[]) => {
-		const price = getVariantPrice(key);
-		
-		return (
-			<Box>
-				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-					<Typography variant="body2">{label}:</Typography>
-					{price > 0 && (
-						<Typography variant="body2" sx={{ color: 'error.main', fontWeight: 700 }}>
-							+${price.toFixed(2)}
-						</Typography>
-					)}
-				</Box>
-				<FormControl fullWidth disabled={readOnly}>
-					<Select
-						value={selections[key] || ''}
-						displayEmpty
-						onChange={(e) => updateSelection(key, e.target.value)}
-					>
-						<MenuItem value=""><em>Select {label}</em></MenuItem>
-						{options.map((option: any) => (
-							<MenuItem key={option.id} value={option.id}>
-								{option.name}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-			</Box>
-		);
-	};
-
+	// Read-only visual sections (images/swatches), highlight only the selected
 	const renderMaterialGrid = () => {
 		const price = getVariantPrice('materialType');
-		
 		return (
 			<Box>
 				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
 					<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Choose Your Material</Typography>
 					{price > 0 && (
-						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main' }} />
+						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main', bgcolor: 'rgba(211,47,47,0.08)' }} />
 					)}
 				</Box>
 				<Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)', md: 'repeat(5, 1fr)' }, gap: 1 }}>
-					<Tooltip title="None">
-						<Box 
-							onClick={() => updateSelection('materialType', '')}
-							sx={{ 
-								position: 'relative', 
-								height: 64, 
-								borderRadius: 1, 
-								border: '1px dashed #bbb', 
-								display: 'flex', 
-								alignItems: 'center', 
-								justifyContent: 'center', 
-								cursor: readOnly ? 'not-allowed' : 'pointer', 
-								bgcolor: '#fafafa' 
-							}}
-						>
-							<Typography variant="caption" color="text.secondary">None</Typography>
-							{!selections.materialType && <CheckCircle sx={{ position: 'absolute', top: 6, right: 6, color: '#d32f2f' }} />}
-						</Box>
-					</Tooltip>
 					{(variations?.material_types || []).map((material: any) => {
 						const selected = material.id == selections.materialType;
 						return (
 							<Tooltip key={material.id} title={material.name}>
 								<Box 
-									onClick={() => updateSelection('materialType', material.id)}
 									sx={{ 
 										position: 'relative', 
 										height: 64, 
 										borderRadius: 1, 
 										border: selected ? '2px solid #d32f2f' : '1px solid #ddd', 
 										overflow: 'hidden', 
-										cursor: readOnly ? 'not-allowed' : 'pointer' 
+										cursor: 'default' 
 									}}
 								>
 									{material.image_url ? (
@@ -266,47 +186,26 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 
 	const renderColorGrid = () => {
 		const price = getVariantPrice('color');
-		
 		return (
 			<Box>
 				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
 					<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Choose Your Color</Typography>
 					{price > 0 && (
-						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main' }} />
+						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main', bgcolor: 'rgba(211,47,47,0.08)' }} />
 					)}
 				</Box>
 				<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-					<Tooltip title="None">
-						<Box 
-							onClick={() => updateSelection('color', '')}
-							sx={{ 
-								width: 36, 
-								height: 36, 
-								borderRadius: '50%', 
-								border: '1px dashed #bbb', 
-								display: 'flex', 
-								alignItems: 'center', 
-								justifyContent: 'center', 
-								cursor: readOnly ? 'not-allowed' : 'pointer', 
-								bgcolor: '#fafafa' 
-							}}
-						>
-							<Typography variant="caption" color="text.secondary">—</Typography>
-						</Box>
-					</Tooltip>
 					{(variations?.colors || []).map((color: any) => {
 						const selected = color.id == selections.color;
 						return (
 							<Tooltip key={color.id} title={color.name}>
 								<Box 
-									onClick={() => updateSelection('color', color.id)}
 									sx={{ 
-										position: 'relative', 
+										position: 'relative',
 										width: 36, 
 										height: 36, 
 										borderRadius: '50%', 
 										border: selected ? '2px solid #d32f2f' : '1px solid #ddd', 
-										cursor: readOnly ? 'not-allowed' : 'pointer', 
 										bgcolor: color.hex_code || '#ccc' 
 									}} 
 								/>
@@ -320,47 +219,27 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 
 	const renderStitchingGrid = () => {
 		const price = getVariantPrice('seatStitchPattern');
-		
 		return (
 			<Box>
 				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
 					<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Choose Your Stitching Pattern</Typography>
 					{price > 0 && (
-						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main' }} />
+						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main', bgcolor: 'rgba(211,47,47,0.08)' }} />
 					)}
 				</Box>
 				<Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)' }, gap: 1 }}>
-					<Tooltip title="None">
-						<Box 
-							onClick={() => updateSelection('seatStitchPattern', '')}
-							sx={{ 
-								position: 'relative', 
-								height: 64, 
-								borderRadius: 1, 
-								border: '1px dashed #bbb', 
-								display: 'flex', 
-								alignItems: 'center', 
-								justifyContent: 'center', 
-								cursor: readOnly ? 'not-allowed' : 'pointer', 
-								bgcolor: '#fafafa' 
-							}}
-						>
-							<Typography variant="caption" color="text.secondary">None</Typography>
-						</Box>
-					</Tooltip>
 					{(variations?.seat_stitch_patterns || []).map((pattern: any) => {
 						const selected = pattern.id == selections.seatStitchPattern;
 						return (
 							<Tooltip key={pattern.id} title={pattern.name}>
 								<Box 
-									onClick={() => updateSelection('seatStitchPattern', pattern.id)}
 									sx={{ 
 										position: 'relative', 
 										height: 64, 
 										borderRadius: 1, 
 										border: selected ? '2px solid #d32f2f' : '1px solid #ddd', 
 										overflow: 'hidden', 
-										cursor: readOnly ? 'not-allowed' : 'pointer' 
+										cursor: 'default' 
 									}}
 								>
 									{pattern.image_url ? (
@@ -379,11 +258,45 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		);
 	};
 
+	const renderDisplayRow = (key: keyof VariantSelections, label: string) => {
+		const item = getSelectedItem(key);
+		const price = getItemPrice(item);
+		return (
+			<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+				<Typography variant="body2">{label}:</Typography>
+				<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+					<Typography variant="body2" fontWeight={600}>{item?.name || '—'}</Typography>
+					{price > 0 && (
+						<Typography variant="body2" sx={{ color: 'error.main', fontWeight: 700 }}>
+							+${price.toFixed(2)}
+						</Typography>
+					)}
+				</Box>
+			</Box>
+		);
+	};
+
+	const renderInfoCard = (key: keyof VariantSelections, label: string) => {
+		const item = getSelectedItem(key);
+		const price = getItemPrice(item);
+		return (
+			<Box sx={{ p: 1.25, border: '1px solid #eee', borderRadius: 1, bgcolor: 'background.paper' }}>
+				<Typography variant="caption" color="text.secondary">{label}</Typography>
+				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
+					<Typography variant="body2" fontWeight={600}>{item?.name || '—'}</Typography>
+					{price > 0 && (
+						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main', bgcolor: 'rgba(211,47,47,0.08)' }} />
+					)}
+				</Box>
+			</Box>
+		);
+	};
+
 	return (
 		<Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: { xs: '100%', sm: 560, md: 780, lg: 900 } } }}>
 			<Box sx={{ p: 2, display: 'grid', gap: 2 }}>
 				<Box display="flex" alignItems="center" justifyContent="space-between">
-					<Typography variant="h6">Configure Variants</Typography>
+					<Typography variant="h6">Variants</Typography>
 					<IconButton onClick={onClose}><CloseIcon /></IconButton>
 				</Box>
 				<Divider />
@@ -402,24 +315,26 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 
 						<Divider />
 
+						{/* Variation group */}
 						<Box>
 							<Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Variation</Typography>
 							<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 1.5 }}>
-								{renderSelect('reclineType', 'Recline', variations?.recline_types || [])}
-								{renderSelect('lumbarType', 'Lumbar', variations?.lumbar_types || [])}
-								{renderSelect('heatOption', 'Heat Option', variations?.heat_options || [])}
+								{renderInfoCard('reclineType', 'Recline')}
+								{renderInfoCard('lumbarType', 'Lumbar')}
+								{renderInfoCard('heatOption', 'Heat Option')}
 							</Box>
 						</Box>
 
 						<Divider />
 
+						{/* Seat group */}
 						<Box>
 							<Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Seat</Typography>
 							<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
-								{renderSelect('seatType', 'Seat Type', variations?.seat_types || [])}
-								{renderSelect('itemType', 'Item Type', variations?.item_types || [])}
-								{renderSelect('seatStyle', 'Seat Style', variations?.seat_styles || [])}
-								{renderSelect('armType', 'Arm Type', variations?.arm_types || [])}
+								{renderInfoCard('seatType', 'Seat Type')}
+								{renderInfoCard('itemType', 'Item Type')}
+								{renderInfoCard('seatStyle', 'Seat Style')}
+								{renderInfoCard('armType', 'Arm Type')}
 							</Box>
 						</Box>
 
@@ -452,4 +367,4 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	);
 };
 
-export default AdminVariantsDrawer; 
+export default AdminVariantsViewDrawer; 

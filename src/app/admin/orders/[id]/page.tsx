@@ -44,10 +44,12 @@ import {
   LocationOn as LocationIcon,
   Notes as NotesIcon,
   Update as UpdateIcon,
+  Tune as TuneIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 import { useRouter, useParams } from 'next/navigation';
+import AdminVariantsViewDrawer from '@/components/admin/AdminVariantsViewDrawer';
 
 interface OrderItem {
   id: number;
@@ -57,6 +59,18 @@ interface OrderItem {
   unit_price?: number;
   discount_amount?: number;
   total?: number;
+  variants?: {
+    materialType?: string | number;
+    color?: string | number;
+    seatStitchPattern?: string | number;
+    reclineType?: string | number;
+    lumbarType?: string | number;
+    heatOption?: string | number;
+    seatType?: string | number;
+    itemType?: string | number;
+    seatStyle?: string | number;
+    armType?: string | number;
+  };
   product?: {
     name?: string;
     category?: {
@@ -99,7 +113,15 @@ interface Order {
     email?: string;
     customer_type?: string;
     company_name?: string;
+    phone?: string;
   };
+  customer?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+  };
+  customer_email?: string;
   vehicle_configuration?: {
     id: number;
     name: string;
@@ -130,6 +152,49 @@ const OrderViewPage = () => {
     }
     return num;
   };
+
+  // Helper function to format variant information
+  const orderedVariantList = (variants: any): string[] => {
+    if (!variants || typeof variants !== 'object') return [];
+    
+    const variantLabels: Record<string, string> = {
+      materialType: 'Material',
+      color: 'Color',
+      seatStitchPattern: 'Stitch Pattern',
+      reclineType: 'Recline',
+      lumbarType: 'Lumbar',
+      heatOption: 'Heat Option',
+      seatType: 'Seat Type',
+      itemType: 'Item Type',
+      seatStyle: 'Seat Style',
+      armType: 'Arm Type',
+    };
+
+    const lines: string[] = [];
+    Object.entries(variants).forEach(([key, value]) => {
+      if (value && variantLabels[key]) {
+        lines.push(`${variantLabels[key]}: ${value}`);
+      }
+    });
+    
+    return lines;
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount || 0);
+  };
+
+  // Helper function to compute line total
+  const computeLineTotal = (item: OrderItem): number => {
+    const quantity = item.quantity || 0;
+    const unitPrice = item.unit_price || 0;
+    const discount = item.discount_amount || 0;
+    return Math.max(0, (quantity * unitPrice) - discount);
+  };
   
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -138,6 +203,8 @@ const OrderViewPage = () => {
   const [statusUpdateDialogOpen, setStatusUpdateDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [statusNotes, setStatusNotes] = useState('');
+  const [variantsDrawerOpen, setVariantsDrawerOpen] = useState(false);
+  const [selectedOrderItem, setSelectedOrderItem] = useState<OrderItem | null>(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -145,9 +212,29 @@ const OrderViewPage = () => {
         setLoading(true);
         
         const response = await apiService.getOrder(getOrderIdNum());
-        console.log('Order view API response:', response);
-        const orderData = response.data || response;
-        console.log('Order data to be displayed:', orderData);
+        const rawOrderData = response.data || response;
+        debugger
+        // Transform the API response to match expected structure
+        const orderData = {
+          ...rawOrderData,
+          // Map orderItems to items with proper structure
+          items: (rawOrderData?.items || []).map((item: any) => ({
+            id: item.id,
+            product_id: item.product_id,
+            variation_id: item.variation_id || 0,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            discount_amount: item.discount_amount || 0,
+            total: item.total,
+            variants: item.variants || {}, // This contains the variant IDs we need
+            product: {
+              name: item.product?.name || item.name,
+              category: item.product?.category
+            },
+            variation: item.variation
+          }))
+        };
+        
         setOrder(orderData);
       } catch (error: any) {
         console.error('Error fetching order:', error);
@@ -247,13 +334,6 @@ const OrderViewPage = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -294,32 +374,8 @@ const OrderViewPage = () => {
   };
 
   // Helpers for totals/variants
-  const computeLineTotal = (it: OrderItem) => {
-    const qty = Number(it.quantity || 0);
-    const up = Number(it.unit_price || 0);
-    const explicit = Number(it.total || 0);
-    return explicit || Math.max(0, qty * up);
-  };
   const computeSubtotal = (items: OrderItem[] = []) => items.reduce((sum, it) => sum + computeLineTotal(it), 0);
   const safePercent = (part: number, base: number) => base > 0 ? (part / base) * 100 : 0;
-  const orderedVariantList = (v: any) => {
-    if (!v) return [] as string[];
-    const map: [keyof any, string][] = [
-      ['material_type', 'Material Type'],
-      ['color', 'Color'],
-      ['seat_stitch_pattern', 'Stitch Pattern'],
-      ['recline_type', 'Recline'],
-      ['lumbar_type', 'Lumber'],
-      ['heat_option', 'Heating/Cooling'],
-      ['seat_type', 'Seat Type'],
-      ['item_type', 'Item Type'],
-      ['seat_style', 'Seat Style'],
-      ['arm_type', 'Included Arm'],
-    ];
-    return map
-      .map(([k, label]) => v?.[k] ? `${label}: ${String(v[k])}` : null)
-      .filter(Boolean) as string[];
-  };
 
   const statusOptions = [
     { value: 'pending', label: 'Pending' },
@@ -511,14 +567,21 @@ const OrderViewPage = () => {
               </Typography>
               <Stack spacing={1}>
                 <Typography variant="body1" fontWeight={500}>
-                  {order?.user?.name || 'Unknown Customer'}
+                  {order?.user?.name || order?.customer?.firstName && order?.customer?.lastName 
+                    ? `${order?.customer?.firstName} ${order?.customer?.lastName}` 
+                    : 'Unknown Customer'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {order?.user?.email || 'No email'}
+                  {order?.user?.email || order?.customer?.email || order?.customer_email || 'No email'}
                 </Typography>
+                {(order?.user?.phone || order?.customer?.phone) && (
+                  <Typography variant="body2" color="text.secondary">
+                    📞 {order?.user?.phone || order?.customer?.phone}
+                  </Typography>
+                )}
                 {order?.user?.company_name && (
                   <Typography variant="body2" color="text.secondary">
-                    {order?.user?.company_name}
+                    🏢 {order?.user?.company_name}
                   </Typography>
                 )}
                 <Chip
@@ -571,7 +634,7 @@ const OrderViewPage = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Product</TableCell>
-                    <TableCell>Variation</TableCell>
+                    <TableCell align="center">Variants</TableCell>
                     <TableCell align="right">Quantity</TableCell>
                     <TableCell align="right">Unit Price</TableCell>
                     <TableCell align="right">Total</TableCell>
@@ -593,19 +656,18 @@ const OrderViewPage = () => {
                       <TableCell>
                         <Box>
                           {(() => {
-                            const v: any = (item as any).variants || item.variation || (item as any).options || null;
-                            const lines = orderedVariantList(v);
-                            if (lines.length === 0) {
-                              return (
-                                <Typography variant="caption" color="text.secondary">No variants</Typography>
-                              );
-                            }
                             return (
-                              <Stack spacing={0.25}>
-                                {lines.map((ln, idx) => (
-                                  <Typography key={idx} variant="caption" color="text.secondary">{ln}</Typography>
-                                ))}
-                              </Stack>
+                              <Button 
+                                size="small" 
+                                startIcon={<TuneIcon />} 
+                                color="error"
+                                onClick={() => {
+                                  setSelectedOrderItem(item);
+                                  setVariantsDrawerOpen(true);
+                                }}
+                              >
+                                Details
+                              </Button>
                             );
                           })()}
                         </Box>
@@ -774,6 +836,17 @@ const OrderViewPage = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Variants Drawer */}
+        <AdminVariantsViewDrawer
+          open={variantsDrawerOpen}
+          onClose={() => setVariantsDrawerOpen(false)}
+          productId={selectedOrderItem?.product_id || null}
+          initialSelections={selectedOrderItem?.variants || {}}
+          basePrice={selectedOrderItem?.unit_price || 0}
+          readOnly={true}
+          onApply={() => {}} // No-op for read-only mode
+        />
       </Box>
     </AdminLayout>
   );

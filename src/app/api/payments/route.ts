@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
-import { Client, Environment } from 'square';
+import { Client, Environment, Money } from 'square';
 
 export async function POST(request: Request) {
 	try {
@@ -28,10 +28,10 @@ export async function POST(request: Request) {
 		});
 
 		const idempotencyKey = randomUUID();
-		const amountMoney = {
-			amount: Math.round(amount * 100),
+		const amountMoney: Money = {
+			amount: BigInt(Math.round(amount * 100)),
 			currency: currency || 'USD',
-		} as const;
+		};
 
 		const result = await client.paymentsApi.createPayment({
 			sourceId,

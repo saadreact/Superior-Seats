@@ -377,7 +377,12 @@ const getUnitPrice = (productId: number) => {
 					variation_id: ci.variationId,
 					quantity: ci.quantity,
 					unit_price: ci.unitPrice,
-					variants: ci.variants,
+					variants: ci.variants ? Object.fromEntries(
+						Object.entries(ci.variants).map(([key, value]) => [
+							key, 
+							value !== undefined && value !== null && value !== '' ? String(value) : ''
+						])
+					) : {},
 				})),
 				// Also include a modern cartItems array for services expecting the new shape
 				cartItems: cartItems.map(ci => ({
@@ -389,7 +394,12 @@ const getUnitPrice = (productId: number) => {
 					unitPrice: ci.unitPrice,
 					total: ci.total,
 					totalPrice: ci.totalPrice,
-					variants: ci.variants,
+					variants: ci.variants ? Object.fromEntries(
+						Object.entries(ci.variants).map(([key, value]) => [
+							key, 
+							value !== undefined && value !== null && value !== '' ? String(value) : ''
+						])
+					) : {},
 				})),
 				// And include denormalized customerInfo block for services expecting it at top level
 				customerInfo: normalizedCustomerInfo,
@@ -447,7 +457,54 @@ const getUnitPrice = (productId: number) => {
 					<Card>
 						<CardContent>
 							<Box display="grid" gridTemplateColumns="1fr" gap={2}>
-								<Typography variant="h6">Products</Typography>
+								<Typography variant="h6">Choose Products</Typography>
+								<Autocomplete
+									multiple
+									options={products}
+									getOptionLabel={(o: any) => o.name}
+									value={products.filter(p => cartItems.some(ci => ci.productId === p.id))}
+									onChange={(_, values: any[]) => {
+										setCartItems(prev => {
+											const next: CartItem[] = [];
+											values.forEach(v => {
+												const existing = prev.find(ci => ci.productId === v.id);
+												const unitPrice = getUnitPrice(v.id);
+												next.push({
+													itemId: String(v.id),
+													productId: v.id,
+													variationId: 0,
+													name: v.name,
+													quantity: existing?.quantity || 1,
+													unitPrice: existing?.unitPrice || unitPrice,
+													discountAmount: existing?.discountAmount || 0,
+													total: (existing?.quantity || 1) * (existing?.unitPrice || unitPrice),
+													totalPrice: (existing?.quantity || 1) * (existing?.unitPrice || unitPrice),
+													variants: existing?.variants || {},
+												});
+											});
+											return next;
+										});
+									}}
+									renderInput={(params) => (
+										<TextField {...params} fullWidth label="Products" placeholder="Search and select products" />
+									)}
+									renderTags={(value, getTagProps) =>
+										value.map((option, index) => (
+											<Chip
+												{...getTagProps({ index })}
+												key={option.id}
+												label={`${option.name} - $${(Number(option.price) || 0).toFixed(2)}`}
+												size="small"
+											/>
+										))
+									}
+									ListboxProps={{ style: { maxHeight: 320 } }}
+									isOptionEqualToValue={(o, v) => o.id === v?.id}
+									slotProps={{
+										popper: { sx: { minWidth: { xs: '100%', sm: 520, md: 680 } } },
+										paper: { sx: { width: '100%' } },
+									}}
+								/>
 								{cartItems.length > 0 ? (
 									<Box sx={{ overflowX: 'auto' }}>
 										<Table size="small">
@@ -598,9 +655,6 @@ const getUnitPrice = (productId: number) => {
 		}
 	};
 
-	console.log("cartItems[drawerRowIndex!]?.variants",cartItems[0]?.variants)
-	console.log("drawerRowIndex",drawerRowIndex)
-	console.log("cartItems",cartItems)
 	return (
 		<Box sx={{ p: { xs: 1, sm: 2 } }}>
 			<Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main', mb: 2, fontSize: { xs: '1.5rem', md: '2.125rem' } }}>Edit Order</Typography>
