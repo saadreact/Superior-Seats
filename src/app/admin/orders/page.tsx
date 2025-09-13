@@ -660,7 +660,6 @@ const OrdersPage = () => {
                     <TableCell>Status</TableCell>
                     <TableCell>Payment</TableCell>
                     <TableCell>Total</TableCell>
-                    <TableCell>Items</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell align="center">Actions</TableCell>
                   </TableRow>
@@ -735,13 +734,6 @@ const OrdersPage = () => {
                           <Typography variant="body2" fontWeight={600}>
                             {formatCurrency(order.total_amount || 0)}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Tooltip title={`${order.items?.length || 0} items`}>
-                            <Badge badgeContent={order.items?.length || 0} color="primary">
-                              <CartIcon color="action" />
-                            </Badge>
-                          </Tooltip>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
