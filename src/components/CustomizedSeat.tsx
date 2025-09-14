@@ -15,6 +15,8 @@ import { useDispatch } from 'react-redux';
 import { addItem } from '@/store/cartSlice';
 // NEW IMPORT: Added to fetch product data via API
 import { CustomizedSeatApi, Product } from '@/services/CustomizedSeatApi';
+// NEW IMPORT: Added to fetch vehicle trim data
+import { apiService } from '@/utils/api';
 import HeroSectionCommon from './common/HeroSectionaCommon';
 import Breadcrumbs from './Breadcrumbs';
 import Footer from './Footer';
@@ -186,11 +188,55 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     fetchProductData();
   }, [selectedItem]);
+
+  // Fetch vehicle trim data when product loads
+  useEffect(() => {
+    const fetchVehicleTrimData = async () => {
+      if (productData && productData.vehicle_trim_id) {
+        try {
+          setVehicleTrimLoading(true);
+          console.log('🚗 CustomizedSeat - Fetching vehicle trim data for ID:', productData.vehicle_trim_id);
+          
+          const trimData = await apiService.getVehicleTrimById(productData.vehicle_trim_id);
+          setVehicleTrimData(trimData);
+          
+          // Set the selected values from the API response
+          if (trimData) {
+            setSelectedMake(trimData.model?.make?.id?.toString() || '');
+            setSelectedModel(trimData.model?.id?.toString() || '');
+            setSelectedTrim(trimData.id?.toString() || '');
+            
+            console.log('✅ CustomizedSeat - Vehicle trim data loaded:', {
+              make: trimData.model?.make?.name,
+              model: trimData.model?.name,
+              trim: trimData.name
+            });
+          }
+        } catch (error) {
+          console.error('❌ CustomizedSeat - Error fetching vehicle trim data:', error);
+        } finally {
+          setVehicleTrimLoading(false);
+        }
+      } else {
+        // Reset vehicle data when no product or no vehicle_trim_id
+        setVehicleTrimData(null);
+        setSelectedMake('');
+        setSelectedModel('');
+        setSelectedTrim('');
+      }
+    };
+
+    fetchVehicleTrimData();
+  }, [productData]);
   
   // State for vehicle information
   const [selectedMake, setSelectedMake] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedTrim, setSelectedTrim] = useState('');
+  
+  // State for vehicle trim data from API
+  const [vehicleTrimData, setVehicleTrimData] = useState<any>(null);
+  const [vehicleTrimLoading, setVehicleTrimLoading] = useState(false);
   
   // State for variation options
   const [selectedRecline, setSelectedRecline] = useState('');
@@ -951,81 +997,78 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          Vehicle Information
                        </Typography>
                      
-                                           <Box className={styles.formRow}>
-                                                 {/* Vehicle Make */}
-                         <Box className={styles.formField}>
-                           <Typography variant="body2" className={styles.fieldLabel}>
-                             Vehicle Make:
+                       {vehicleTrimLoading ? (
+                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
+                           <Typography variant="body2" color="text.secondary">
+                             Loading vehicle information...
                            </Typography>
-                                                       <FormControl className={styles.formControl}>
-                              <Select
-                                value={selectedMake}
-                                onChange={(e) => setSelectedMake(e.target.value)}
-                                displayEmpty
-                                className={styles.selectField}
-                              >
-                               <MenuItem value="" disabled>
-                                 Make
-                               </MenuItem>
-                               {vehicleMakes.map((make) => (
-                                 <MenuItem key={make.id} value={make.id}>
-                                   {make.name}
-                                 </MenuItem>
-                               ))}
-                             </Select>
-                           </FormControl>
                          </Box>
+                       ) : vehicleTrimData ? (
+                         <Box className={styles.formRow}>
+                           {/* Vehicle Make - Read Only */}
+                           <Box className={styles.formField}>
+                             <Typography variant="body2" className={styles.fieldLabel}>
+                               Vehicle Make:
+                             </Typography>
+                             <FormControl className={styles.formControl}>
+                               <Select
+                                 value={selectedMake}
+                                 disabled
+                                 displayEmpty
+                                 className={styles.selectField}
+                               >
+                                 <MenuItem value={selectedMake}>
+                                   {vehicleTrimData.model?.make?.name || 'Unknown Make'}
+                                 </MenuItem>
+                               </Select>
+                             </FormControl>
+                           </Box>
 
-                 {/* Vehicle Model */}
-                          <Box className={styles.formField}>
-                            <Typography variant="body2" className={styles.fieldLabel}>
-                              Vehicle Model:
-                            </Typography>
-                                                        <FormControl className={styles.formControl}>
-                                 <Select
+                           {/* Vehicle Model - Read Only */}
+                           <Box className={styles.formField}>
+                             <Typography variant="body2" className={styles.fieldLabel}>
+                               Vehicle Model:
+                             </Typography>
+                             <FormControl className={styles.formControl}>
+                               <Select
                                  value={selectedModel}
-                                 onChange={(e) => setSelectedModel(e.target.value)}
+                                 disabled
                                  displayEmpty
                                  className={styles.selectField}
                                >
-                                <MenuItem value="" disabled>
-                                  Model
-                                </MenuItem>
-                                <MenuItem value="none" disabled>
-                                  No models available
-                                </MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Box>
+                                 <MenuItem value={selectedModel}>
+                                   {vehicleTrimData.model?.name || 'Unknown Model'}
+                                 </MenuItem>
+                               </Select>
+                             </FormControl>
+                           </Box>
 
-                                                                                                   {/* Vehicle Trim */}
-                          <Box className={styles.formField}>
-                            <Typography variant="body2" className={styles.fieldLabel}>
-                              Vehicle Trim:
-                            </Typography>
-                                                        <FormControl className={styles.formControl}>
-                                 <Select
+                           {/* Vehicle Trim - Read Only */}
+                           <Box className={styles.formField}>
+                             <Typography variant="body2" className={styles.fieldLabel}>
+                               Vehicle Trim:
+                             </Typography>
+                             <FormControl className={styles.formControl}>
+                               <Select
                                  value={selectedTrim}
-                                 onChange={(e) => setSelectedTrim(e.target.value)}
+                                 disabled
                                  displayEmpty
                                  className={styles.selectField}
                                >
-                                <MenuItem value="" disabled>
-                                  Select Trim
-                                </MenuItem>
-                                {variations?.vehicle_trim?.map((trim: any) => (
-                                  <MenuItem key={trim.id} value={trim.id.toString()}>
-                                    {trim.name}
-                                  </MenuItem>
-                                )) || (
-                                  <MenuItem value="none" disabled>
-                                    No trims available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Box>
-                      </Box>
+                                 <MenuItem value={selectedTrim}>
+                                   {vehicleTrimData.name || 'Unknown Trim'}
+                                 </MenuItem>
+                               </Select>
+                             </FormControl>
+                           </Box>
+                         </Box>
+                       ) : (
+                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
+                           <Typography variant="body2" color="text.secondary">
+                             No vehicle information available
+                           </Typography>
+                         </Box>
+                       )}
                    </Box>
 
                                        {/* Divider */}
