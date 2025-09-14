@@ -362,7 +362,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                 size="large"
                 onClick={() => {
                   onClose();
-                  router.push('/checkout');
+                  router.push('/shop/orders/create');
                 }}
                 sx={{
                   py: { xs: 1.5, sm: 1.75, md: 2 },
@@ -380,7 +380,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   },
                 }}
               >
-                Proceed to Checkout
+                Create Order
               </Button>
             </Box>
           </>
