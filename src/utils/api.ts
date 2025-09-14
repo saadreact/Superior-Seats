@@ -953,6 +953,26 @@ class ApiService {
     }
   }
 
+  // Get specific vehicle trim by ID
+  async getVehicleTrimById(trimId: number) {
+    try {
+      const response = await api.get(`/vehicle-trims/${trimId}`);
+      
+      // Handle the API response structure
+      if (response.data && response.data.data && response.data.data.vehicle_trim) {
+        return response.data.data.vehicle_trim;
+      } else if (response.data && response.data.vehicle_trim) {
+        return response.data.vehicle_trim;
+      } else if (response.data) {
+        return response.data;
+      }
+      return null;
+    } catch (error: any) {
+      console.error('Error fetching vehicle trim:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch vehicle trim');
+    }
+  }
+
   // Get all vehicle configurations
   async getVehicleConfigurations(params: {
     make_id?: number;
