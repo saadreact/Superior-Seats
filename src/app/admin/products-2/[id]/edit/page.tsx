@@ -43,6 +43,11 @@ interface ProductPage2Form {
   stock: number;
   images: File[];
   
+  // Vehicle Information Fields
+  vehicleMake: string;
+  vehicleModel: string;
+  vehicleTrim: string;
+  
   // Second Half - Variation Fields
   seatType: string[];
   armType: string[];
@@ -57,6 +62,11 @@ interface ProductPage2Form {
   
   // Special Shop Field
   showOnSpecialShop: boolean;
+  
+  // Price Tiers Fields
+  enablePriceTiers: boolean;
+  wholesalePrice: number;
+  retailPrice: number;
   
   isActive: boolean;
 }
@@ -98,6 +108,9 @@ const EditProduct2Page = () => {
     basePrice: 0,
     stock: 0,
     images: [],
+    vehicleMake: '',
+    vehicleModel: '',
+    vehicleTrim: '',
     seatType: [],
     armType: [],
     lumbarType: [],
@@ -109,6 +122,9 @@ const EditProduct2Page = () => {
     seatStyle: [],
     color: [],
     showOnSpecialShop: false,
+    enablePriceTiers: false,
+    wholesalePrice: 0,
+    retailPrice: 0,
     isActive: true,
   });
 
@@ -130,6 +146,12 @@ const EditProduct2Page = () => {
   const [seatItemTypes, setSeatItemTypes] = useState<{ id: number; name: string; price: number }[]>([]);
   const [seatStyles, setSeatStyles] = useState<{ id: number; name: string; price: number }[]>([]);
   const [colors, setColors] = useState<{ id: number; name: string; price: number }[]>([]);
+  
+  // Vehicle data state
+  const [vehicleMakes, setVehicleMakes] = useState<{ id: number; name: string }[]>([]);
+  const [vehicleModels, setVehicleModels] = useState<{ id: number; name: string; vehicle_make_id: number }[]>([]);
+  const [vehicleTrims, setVehicleTrims] = useState<{ id: number; name: string; vehicle_model_id: number }[]>([]);
+  
 
   useEffect(() => {
     loadInitialData();
@@ -154,6 +176,7 @@ const EditProduct2Page = () => {
         seatItemTypesRes,
         seatStylesRes,
         colorsRes,
+        vehicleMakesRes,
         productRes,
       ] = await Promise.all([
         productApi.getCategories(),
@@ -167,6 +190,7 @@ const EditProduct2Page = () => {
         productApi.getItemTypes().catch(() => apiService.getItemTypes()),
         productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
         productApi.getColors(),
+        apiService.getVehicleMakes(),
         productApi.getProduct(parseInt(id)),
       ]);
 
@@ -195,6 +219,14 @@ const EditProduct2Page = () => {
       setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
       setSeatStyles(convertToFormFormat(seatStylesRes, false)); // Seat styles don't have price
       setColors(convertToFormFormat(colorsRes));
+      
+      // Set vehicle makes data
+      const vehicleMakesData = Array.isArray(vehicleMakesRes?.data) ? vehicleMakesRes.data : 
+                              Array.isArray(vehicleMakesRes) ? vehicleMakesRes : [];
+      setVehicleMakes(vehicleMakesData.map((make: any) => ({
+        id: make.id,
+        name: make.name
+      })));
 
       // Helper function to extract variation names from API response
       const extractVariationNames = (variations: any[], fieldName: string): string[] => {
@@ -248,6 +280,9 @@ const EditProduct2Page = () => {
           basePrice: parseFloat(productRes.price) || 0,
           stock: productRes.stock || 0,
           images: [], // Start with empty array for new file uploads
+          vehicleMake: (productRes as any).vehicle_make?.id?.toString() || '',
+          vehicleModel: (productRes as any).vehicle_model?.id?.toString() || '',
+          vehicleTrim: (productRes as any).vehicle_trim?.id?.toString() || '',
           seatType: extractVariationNames(productRes.variations || [], 'seat_type'),
           armType: extractVariationNames(productRes.variations || [], 'arm_type'),
           lumbarType: extractVariationNames(productRes.variations || [], 'lumbar'),
@@ -259,6 +294,9 @@ const EditProduct2Page = () => {
           seatStyle: extractVariationNames(productRes.variations || [], 'seat_style'),
           color: extractVariationNames(productRes.variations || [], 'color'),
           showOnSpecialShop: (productRes as any).show_on_special_shop ?? false,
+          enablePriceTiers: false, // Default to false like lumbar type
+          wholesalePrice: 0, // Default values
+          retailPrice: 0, // Default values
           isActive: productRes.is_active ?? true,
         });
         
@@ -348,7 +386,7 @@ const EditProduct2Page = () => {
   };
 
   const handleNumberChange = (field: keyof ProductPage2Form) => (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const value = parseFloat(event.target.value) || 0;
     setFormData(prev => ({
@@ -370,6 +408,83 @@ const EditProduct2Page = () => {
     setFormData(prev => ({
       ...prev,
       [field]: event.target.checked,
+    }));
+  };
+
+  // Vehicle change handlers
+  const handleVehicleMakeChange = async (event: any) => {
+    const makeId = event.target.value;
+    setFormData(prev => ({
+      ...prev,
+      vehicleMake: makeId,
+      vehicleModel: '', // Reset model when make changes
+      vehicleTrim: '', // Reset trim when make changes
+    }));
+    
+    // Load models for selected make
+    if (makeId) {
+      try {
+        const modelsResponse = await apiService.getVehicleModels(Number(makeId));
+        const modelsData = Array.isArray(modelsResponse?.data) ? modelsResponse.data : 
+                          Array.isArray(modelsResponse) ? modelsResponse : [];
+        setVehicleModels(modelsData.map((model: any) => ({
+          id: model.id,
+          name: model.name,
+          vehicle_make_id: model.vehicle_make_id
+        })));
+        setVehicleTrims([]); // Clear trims when make changes
+      } catch (error) {
+        console.error('Error loading vehicle models:', error);
+        setVehicleModels([]);
+        setVehicleTrims([]);
+      }
+    } else {
+      setVehicleModels([]);
+      setVehicleTrims([]);
+    }
+  };
+
+  const handleVehicleModelChange = async (event: any) => {
+    const modelId = event.target.value;
+    setFormData(prev => ({
+      ...prev,
+      vehicleModel: modelId,
+      vehicleTrim: '', // Reset trim when model changes
+    }));
+    
+    // Load trims for selected model
+    if (modelId) {
+      try {
+        const trimsResponse = await apiService.getVehicleTrims(Number(modelId));
+        const trimsData = Array.isArray(trimsResponse?.data) ? trimsResponse.data : 
+                         Array.isArray(trimsResponse) ? trimsResponse : [];
+        setVehicleTrims(trimsData.map((trim: any) => ({
+          id: trim.id,
+          name: trim.name,
+          vehicle_model_id: trim.vehicle_model_id
+        })));
+      } catch (error) {
+        console.error('Error loading vehicle trims:', error);
+        setVehicleTrims([]);
+      }
+    } else {
+      setVehicleTrims([]);
+    }
+  };
+
+  const handleVehicleTrimChange = (event: any) => {
+    setFormData(prev => ({
+      ...prev,
+      vehicleTrim: event.target.value,
+    }));
+  };
+
+  // Price tiers handlers
+  const handlePriceTiersToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const enabled = event.target.checked;
+    setFormData(prev => ({
+      ...prev,
+      enablePriceTiers: enabled,
     }));
   };
 
@@ -545,6 +660,9 @@ const EditProduct2Page = () => {
         category_id: categoryId,
         images: formData.images, // Simple File array like create page
         
+        // Vehicle information - only pass trim ID
+        vehicle_trim_id: formData.vehicleTrim ? Number(formData.vehicleTrim) : undefined,
+        
         // Map variation names to IDs
         seat_type_ids: mapNamesToIds(formData.seatType, seatTypes),
         arm_type_ids: mapNamesToIds(formData.armType, armTypes),
@@ -556,6 +674,10 @@ const EditProduct2Page = () => {
         item_type_ids: mapNamesToIds(formData.seatItemType, seatItemTypes),
         seat_style_ids: mapNamesToIds(formData.seatStyle, seatStyles),
         color_ids: mapNamesToIds(formData.color, colors),
+        
+        // Price tiers - like lumbar type implementation
+        price_tier_ids: [],
+        price_adjustments: undefined,
       };
 
       // Debug: Log the data being sent
@@ -839,7 +961,10 @@ const EditProduct2Page = () => {
                     label="Base Price"
                     type="number"
                     value={formData.basePrice}
-                    onChange={handleNumberChange('basePrice')}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || 0;
+                      setFormData(prev => ({ ...prev, basePrice: value }));
+                    }}
                     required
                     placeholder="Enter base price"
                     InputProps={{
@@ -854,7 +979,10 @@ const EditProduct2Page = () => {
                     label="Stock"
                     type="number"
                     value={formData.stock}
-                    onChange={handleNumberChange('stock')}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || 0;
+                      setFormData(prev => ({ ...prev, stock: value }));
+                    }}
                     required
                     placeholder="Enter stock quantity"
                     error={!!errors.stock}
@@ -1083,6 +1211,125 @@ const EditProduct2Page = () => {
                   </Box>
                 </Box>
 
+              </Box>
+
+              {/* 🚗 Vehicle Information Section */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Vehicle Information
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Vehicle Make</InputLabel>
+                    <Select
+                      value={formData.vehicleMake}
+                      onChange={handleVehicleMakeChange}
+                      label="Vehicle Make"
+                    >
+                      <MenuItem value="">
+                        <em>Select Make</em>
+                      </MenuItem>
+                      {vehicleMakes.map((make) => (
+                        <MenuItem key={make.id} value={make.id}>
+                          {make.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  
+                  <FormControl fullWidth disabled={!formData.vehicleMake}>
+                    <InputLabel>Vehicle Model</InputLabel>
+                    <Select
+                      value={formData.vehicleModel}
+                      onChange={handleVehicleModelChange}
+                      label="Vehicle Model"
+                    >
+                      <MenuItem value="">
+                        <em>Select Model</em>
+                      </MenuItem>
+                      {vehicleModels.map((model) => (
+                        <MenuItem key={model.id} value={model.id}>
+                          {model.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  
+                  <FormControl fullWidth disabled={!formData.vehicleModel}>
+                    <InputLabel>Vehicle Trim</InputLabel>
+                    <Select
+                      value={formData.vehicleTrim}
+                      onChange={handleVehicleTrimChange}
+                      label="Vehicle Trim"
+                    >
+                      <MenuItem value="">
+                        <em>Select Trim</em>
+                      </MenuItem>
+                      {vehicleTrims.map((trim) => (
+                        <MenuItem key={trim.id} value={trim.id}>
+                          {trim.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Box>
+
+              {/* 💰 Price Tiers Section */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Price Tiers
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.enablePriceTiers}
+                      onChange={handlePriceTiersToggle}
+                      color="primary"
+                    />
+                  }
+                  label="Enable Price Tiers"
+                />
+
+                {formData.enablePriceTiers && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                      Tier Pricing
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <TextField
+                        label="Retail Price"
+                        type="number"
+                        value={formData.retailPrice}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          setFormData(prev => ({ ...prev, retailPrice: value }));
+                        }}
+                        required
+                        fullWidth
+                        placeholder="Enter retail price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                      <TextField
+                        label="Wholesale Price"
+                        type="number"
+                        value={formData.wholesalePrice}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          setFormData(prev => ({ ...prev, wholesalePrice: value }));
+                        }}
+                        required
+                        fullWidth
+                        placeholder="Enter wholesale price"
+                        inputProps={{ min: 0, step: 0.01 }}
+                      />
+                    </Box>
+                  </Box>
+                )}
               </Box>
 
               {/* Actions */}
