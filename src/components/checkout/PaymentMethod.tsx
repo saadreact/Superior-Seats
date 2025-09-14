@@ -14,6 +14,7 @@ import {
   FormControlLabel
 } from '@mui/material';
 import SquareCard, { SquareCardHandle } from './SquareCard';
+import type { PaymentFormData } from '@/data/checkoutData';
 
 interface PaymentMethodProps {
   onNext: (paymentId?: string, extra?: { sourceToken?: string; status?: string }) => void;
