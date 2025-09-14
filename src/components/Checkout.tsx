@@ -24,16 +24,17 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { clearCart } from '@/store/cartSlice';
 import { CartReview, ShippingInformation, PaymentMethod, OrderConfirmation } from './checkout/index';
+import type { PaymentFormData } from '@/data/checkoutData';
 import { ShippingFormData } from '@/data/checkoutData';
 import { apiService } from '@/utils/api';
 import squareApi from '@/services/SquareApi';
 
 // Steps array with proper spacing and comments
 const steps = [
-  'Cart Review',           // Step 1: Review cart items
-  'Shipping Information',  // Step 2: Enter shipping details
-  'Payment Method',        // Step 3: Choose payment method
-  'Order Confirmation'     // Step 4: Confirm order
+  'Cart Review',
+  'Shipping Information',
+  // 'Payment Method', // disabled for now
+  'Order Confirmation'
 ];
 
 const Checkout = () => {
@@ -54,6 +55,7 @@ const Checkout = () => {
   const [billing, setBilling] = useState<ShippingFormData | null>(null);
   const [shippingMethod, setShippingMethod] = useState<string>('Standard');
   const [notes, setNotes] = useState<string>('');
+  // const [paymentForm, setPaymentForm] = useState<PaymentFormData>({ cardNumber: '', cardHolderName: '', expiryDate: '', cvv: '', saveCard: false });
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -125,7 +127,8 @@ const Checkout = () => {
     setBilling(data.billing);
     setShippingMethod(data.shippingMethod || 'Standard');
     setNotes(data.notes || '');
-    handleNext();
+    // Skip payment for now; place a cash order immediately
+    handlePlaceOrder(undefined, undefined);
   };
 
   const handlePlaceOrder = async (paidId?: string, extra?: { sourceToken?: string; status?: string }) => {
@@ -223,9 +226,8 @@ const Checkout = () => {
         return <CartReview onNext={handleNext} />;
       case 1:
         return <ShippingInformation onNext={handleShippingNext as any} onBack={handleBack} initialData={shipping && billing ? { shipping, billing, shippingMethod, notes } : undefined} />;
+      // case 2: return (<PaymentMethod onNext={handlePlaceOrder} onBack={handleBack} amount={totalPrice} currency={'USD'} formData={paymentForm} onFormDataChange={setPaymentForm} />);
       case 2:
-        return <PaymentMethod onNext={handlePlaceOrder} onBack={handleBack} amount={totalPrice} currency={'USD'} />;
-      case 3:
         return <OrderConfirmation onBack={handleBack} paymentId={paymentId} order={orderData} errors={postPayErrors} notices={postPayNotices} />;
       default:
         return null;
