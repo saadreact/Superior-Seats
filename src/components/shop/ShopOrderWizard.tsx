@@ -33,6 +33,9 @@ import {
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon, Tune as TuneIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useAppSelector } from '@/store/hooks';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
+import type { CartItem as ReduxCartItem } from '@/store/cartSlice';
 import { apiService } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 import AdminVariantsDrawer, { VariantSelections } from '@/components/admin/AdminVariantsDrawer';
@@ -54,6 +57,7 @@ const defaultAddress: Address = { street: '', city: '', state: '', postalCode: '
 export default function ShopOrderWizard() {
   const router = useRouter();
   const { user } = useAppSelector((s: any) => s.auth);
+  const reduxCart = useSelector((s: RootState) => s.cart.items) as ReduxCartItem[];
 
   // Start at Select Products (skip Select Customer visually and logically)
   const [activeStep, setActiveStep] = useState(0);
@@ -96,6 +100,27 @@ export default function ShopOrderWizard() {
         setProducts(Array.isArray(pData) ? pData : []);
         const vData = variationsRes?.data || variationsRes || [];
         setVariations(Array.isArray(vData) ? vData : []);
+
+        // Prefill items from cart
+        if (reduxCart && reduxCart.length > 0) {
+          setCartItems(() => reduxCart.map((ci) => {
+            const productId = Number(ci.id);
+            const product = (Array.isArray(pData) ? pData : []).find((p: any) => Number(p.id) === productId);
+            const unitPrice = product ? (typeof product.price === 'string' ? parseFloat(product.price) : Number(product.price || 0)) : parseFloat(String(ci.price).replace(/[$,]/g, '')) || 0;
+            const quantity = Number(ci.quantity) || 1;
+            return {
+              itemId: String(productId),
+              productId,
+              name: product?.name || ci.title || 'Item',
+              quantity,
+              unitPrice,
+              total: quantity * unitPrice,
+              totalPrice: quantity * unitPrice,
+              // If cart item already tracks variants, preserve them
+              variants: (ci as any).variants || undefined,
+            } as CartItem;
+          }));
+        }
       } catch (e: any) {
         setError('Failed to load initial data');
       } finally {
@@ -103,7 +128,7 @@ export default function ShopOrderWizard() {
       }
     };
     load();
-  }, []);
+  }, [reduxCart]);
 
   // Prefill customer info using same logic as EditProfileModal.loadCustomerFromAPI
   useEffect(() => {
