@@ -1410,10 +1410,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                 color: selectedColor && selectedColor !== 'none' ? selectedColor : '',
                                 seatStitchPattern: selectedStitching && selectedStitching !== 'none' ? selectedStitching : '',
                                 reclineType: selectedRecline || '',
+                                lumbarType: selectedLumber || '',
                                 heatOption: selectedHeatingCooling || '',
                                 seatType: selectedSeatType || '',
                                 itemType: selectedItemType || '',
                                 seatStyle: selectedSeatStyle || '',
+                                armType: selectedIncludedArm || '',
                                 // if you later add armType/lumbar in UI, wire them here too
                               },
                             }));
