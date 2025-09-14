@@ -24,7 +24,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { clearCart } from '@/store/cartSlice';
 import { CartReview, ShippingInformation, PaymentMethod, OrderConfirmation } from './checkout/index';
-import { ShippingFormData, defaultShippingData, PaymentFormData, defaultPaymentData } from '@/data/checkoutData';
+import { ShippingFormData } from '@/data/checkoutData';
+import { apiService } from '@/utils/api';
+import squareApi from '@/services/SquareApi';
 
 // Steps array with proper spacing and comments
 const steps = [
@@ -44,8 +46,14 @@ const Checkout = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [orderComplete, setOrderComplete] = useState(false);
   const [paymentId, setPaymentId] = useState<string>('');
-  const [shippingData, setShippingData] = useState<ShippingFormData>(defaultShippingData);
-  const [paymentData, setPaymentData] = useState<PaymentFormData>(defaultPaymentData);
+  const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
+  const [orderData, setOrderData] = useState<any>(null);
+  const [postPayErrors, setPostPayErrors] = useState<string[]>([]);
+  const [postPayNotices, setPostPayNotices] = useState<string[]>([]);
+  const [shipping, setShipping] = useState<ShippingFormData | null>(null);
+  const [billing, setBilling] = useState<ShippingFormData | null>(null);
+  const [shippingMethod, setShippingMethod] = useState<string>('Standard');
+  const [notes, setNotes] = useState<string>('');
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -55,18 +63,121 @@ const Checkout = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handlePlaceOrder = (paymentId?: string) => {
+  const createOrderFromCart = async (method: 'cash' | 'card', paidRef?: string) => {
+    const subTotal = totalPrice;
+    const shippingCost = totalPrice > 500 ? 0 : 29.99;
+    const tax = totalPrice * 0.08;
+    const grandTotal = subTotal + shippingCost + tax;
+
+    const payload = {
+      cartItems: items.map(ci => ({
+        itemId: String(ci.id),
+        productId: ci.id,
+        variationId: undefined,
+        name: ci.title,
+        quantity: ci.quantity,
+        unitPrice: parseFloat(ci.price.replace(/[$,]/g, '')),
+        total: parseFloat(ci.price.replace(/[$,]/g, '')) * ci.quantity,
+        totalPrice: parseFloat(ci.price.replace(/[$,]/g, '')) * ci.quantity,
+      })),
+      customerInfo: {
+        firstName: shipping?.firstName || 'Customer',
+        lastName: shipping?.lastName || 'Name',
+        email: shipping?.email || '',
+        phone: shipping?.phone || '',
+        shippingAddress: {
+          street: shipping?.streetAddress || '',
+          city: shipping?.city || '',
+          state: shipping?.state || '',
+          postalCode: shipping?.zipCode || '',
+          country: shipping?.country || 'US',
+        },
+        billingAddress: {
+          street: billing?.streetAddress || shipping?.streetAddress || '',
+          city: billing?.city || shipping?.city || '',
+          state: billing?.state || shipping?.state || '',
+          postalCode: billing?.zipCode || shipping?.zipCode || '',
+          country: billing?.country || shipping?.country || 'US',
+        },
+      },
+      paymentInfo: {
+        method: method === 'cash' ? 'cash' : 'square',
+        amountPaid: grandTotal,
+        currency: 'USD',
+      },
+      cartSummary: {
+        subTotal,
+        tax,
+        discount: 0,
+        grandTotal,
+      },
+      notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : '', paidRef ? `(Payment: ${paidRef})` : '']
+        .filter(Boolean)
+        .join(' '),
+    };
+
+    const response = await apiService.createOrder(payload as any);
+    return response;
+  };
+
+  const handleShippingNext = (data: { shipping: ShippingFormData; billing: ShippingFormData; shippingMethod: string; notes: string }) => {
+    setShipping(data.shipping);
+    setBilling(data.billing);
+    setShippingMethod(data.shippingMethod || 'Standard');
+    setNotes(data.notes || '');
+    handleNext();
+  };
+
+  const handlePlaceOrder = async (paidId?: string, extra?: { sourceToken?: string; status?: string }) => {
     // Store payment ID and process order
-    if (paymentId) {
-      setPaymentId(paymentId);
-    }
-    
-    // Simulate order processing
-    setTimeout(() => {
+    if (paidId) setPaymentId(paidId);
+
+    try {
+      const orderRes = await createOrderFromCart(paidId ? 'card' : 'cash', paidId);
+      const orderPayload = (orderRes?.data?.order) || orderRes?.order || orderRes?.data || orderRes;
+      const newOrderId = Number(orderPayload?.id || orderPayload?.order_id || 0) || null;
+      setCreatedOrderId(newOrderId);
+      setOrderData(orderPayload);
+
+      // If we paid by card and have a paymentId, report it to backend and save card
+      if (paidId && newOrderId) {
+        try {
+          const proc = await squareApi.processPayment({ order_id: newOrderId, amount: Number((orderPayload?.total_amount || totalPrice).toString()), currency: 'USD', payment_id: paidId, status: extra?.status || 'COMPLETED' });
+          if (proc?.success === false && proc?.errors) {
+            const errs = Object.values(proc.errors as any).flat().map(String);
+            setPostPayErrors(prev => [...prev, ...errs]);
+          }
+        } catch (e: any) {
+          const msg = e?.response?.data?.message || e?.message || 'Failed to report payment to server';
+          const errs = e?.response?.data?.errors;
+          const flatted = errs ? (Object.values(errs).flat() as any[]).map(String) : [];
+          setPostPayErrors(prev => [...prev, msg, ...flatted]);
+        }
+        if (extra?.sourceToken) {
+          try {
+            const save = await squareApi.addCustomerCard({ token: extra.sourceToken, set_as_default: false, card_data: { brand: (extra as any).cardBrand, last4: (extra as any).last4, expMonth: (extra as any).expMonth, expYear: (extra as any).expYear } });
+            if (save?.success === false && save?.errors) {
+              const errs = Object.values(save.errors as any).flat().map(String);
+              setPostPayErrors(prev => [...prev, ...errs]);
+            } else {
+              setPostPayNotices(prev => [...prev, 'Card saved for future use']);
+            }
+          } catch (e: any) {
+            const msg = e?.response?.data?.message || e?.message || 'Failed to save card';
+            const errs = e?.response?.data?.errors;
+            const flatted = errs ? (Object.values(errs).flat() as any[]).map(String) : [];
+            setPostPayErrors(prev => [...prev, msg, ...flatted]);
+          }
+        }
+      }
       setOrderComplete(true);
       dispatch(clearCart());
       handleNext();
-    }, 2000);
+    } catch (e) {
+      // If order creation fails, keep the user on payment step or show error
+      console.error('Order creation failed', e);
+      setOrderComplete(false);
+    }
   };
 
   // Empty cart state
@@ -111,25 +222,11 @@ const Checkout = () => {
       case 0:
         return <CartReview onNext={handleNext} />;
       case 1:
-        return (
-          <ShippingInformation 
-            onNext={handleNext} 
-            onBack={handleBack}
-            formData={shippingData}
-            onFormDataChange={setShippingData}
-          />
-        );
+        return <ShippingInformation onNext={handleShippingNext as any} onBack={handleBack} initialData={shipping && billing ? { shipping, billing, shippingMethod, notes } : undefined} />;
       case 2:
-        return (
-          <PaymentMethod 
-            onNext={handlePlaceOrder} 
-            onBack={handleBack}
-            formData={paymentData}
-            onFormDataChange={setPaymentData}
-          />
-        );
+        return <PaymentMethod onNext={handlePlaceOrder} onBack={handleBack} amount={totalPrice} currency={'USD'} />;
       case 3:
-        return <OrderConfirmation onBack={handleBack} paymentId={paymentId} />;
+        return <OrderConfirmation onBack={handleBack} paymentId={paymentId} order={orderData} errors={postPayErrors} notices={postPayNotices} />;
       default:
         return null;
     }
@@ -241,10 +338,10 @@ const Checkout = () => {
             }}>
               {renderStepContent(activeStep)}
             </Card>
-                     </Box>
-         </Box>
-       </Box>
-    </Box>
+                    </Box>
+        </Box>
+      </Box>
+   </Box>
   );
 };
 

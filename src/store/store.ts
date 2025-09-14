@@ -4,6 +4,7 @@ import storage from 'redux-persist/lib/storage';
 import authReducer from './authSlice';
 import cartReducer from './cartSlice';
 import { CartItem } from './cartSlice';
+import squareReducer from './squareSlice';
 
 // Persist configuration for auth
 const authPersistConfig = {
@@ -19,14 +20,23 @@ const cartPersistConfig = {
   whitelist: ['items', 'totalItems', 'totalPrice'], // Persist all cart fields
 };
 
+// Persist configuration for square
+const squarePersistConfig = {
+  key: 'square',
+  storage,
+  whitelist: ['connected', 'merchantId', 'locationId', 'environment'],
+};
+
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedCartReducer = persistReducer(cartPersistConfig, cartReducer);
+const persistedSquareReducer = persistReducer(squarePersistConfig, squareReducer);
 
 // Store configuration
 export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,
     cart: persistedCartReducer,
+    square: persistedSquareReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

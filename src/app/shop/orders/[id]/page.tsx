@@ -1,0 +1,461 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Header from '@/components/Header';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  Chip,
+  Divider,
+  Alert,
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+} from '@mui/material';
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Download as DownloadIcon,
+  ArrowBack as ArrowBackIcon,
+  Receipt as ReceiptIcon,
+  LocalShipping as ShippingIcon,
+  Person as PersonIcon,
+  DirectionsCar as CarIcon,
+  ShoppingCart as CartIcon,
+  LocationOn as LocationIcon,
+  Notes as NotesIcon,
+  Update as UpdateIcon,
+  Tune as TuneIcon,
+} from '@mui/icons-material';
+import { apiService } from '@/utils/api';
+import { useRouter, useParams } from 'next/navigation';
+import AdminVariantsViewDrawer from '@/components/admin/AdminVariantsViewDrawer';
+
+interface OrderItem {
+  id: number;
+  product_id: number;
+  variation_id: number;
+  quantity?: number;
+  unit_price?: number;
+  discount_amount?: number;
+  total?: number;
+  variants?: any;
+  product?: { name?: string; category?: any };
+  variation?: { name?: string; material_type?: string; color?: string };
+}
+
+interface Order {
+  id: number;
+  order_number?: string;
+  status?: string;
+  payment_status?: string;
+  payment_method?: string;
+  total_amount?: number;
+  discount_amount?: number;
+  tax_amount?: number;
+  shipping_address?: any;
+  billing_address?: any;
+  notes?: string;
+  invoice_number?: string;
+  created_at?: string;
+  updated_at?: string;
+  user?: { id: number; name?: string; email?: string; customer_type?: string; company_name?: string; phone?: string };
+  customer?: { firstName?: string; lastName?: string; email?: string; phone?: string };
+  customer_email?: string;
+  vehicle_configuration?: any;
+  items?: OrderItem[];
+}
+
+export default function ShopOrderViewPage() {
+  const router = useRouter();
+  const params = useParams();
+  const orderId = params.id as string;
+
+  const getOrderIdNum = () => {
+    const num = parseInt(orderId);
+    if (isNaN(num)) throw new Error(`Invalid order ID: ${orderId}`);
+    return num;
+  };
+
+  const orderedVariantList = (variants: any): string[] => {
+    if (!variants || typeof variants !== 'object') return [];
+    const variantLabels: Record<string, string> = {
+      materialType: 'Material',
+      color: 'Color',
+      seatStitchPattern: 'Stitch Pattern',
+      reclineType: 'Recline',
+      lumbarType: 'Lumbar',
+      heatOption: 'Heat Option',
+      seatType: 'Seat Type',
+      itemType: 'Item Type',
+      seatStyle: 'Seat Style',
+      armType: 'Arm Type',
+    };
+    const lines: string[] = [];
+    Object.entries(variants).forEach(([key, value]) => {
+      if (value && variantLabels[key]) lines.push(`${variantLabels[key]}: ${value}`);
+    });
+    return lines;
+  };
+
+  const formatCurrency = (amount: number): string => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+  const computeLineTotal = (item: OrderItem): number => Math.max(0, ((item.quantity || 0) * (item.unit_price || 0)) - (item.discount_amount || 0));
+
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [statusUpdateDialogOpen, setStatusUpdateDialogOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState('');
+  const [statusNotes, setStatusNotes] = useState('');
+  const [variantsDrawerOpen, setVariantsDrawerOpen] = useState(false);
+  const [selectedOrderItem, setSelectedOrderItem] = useState<OrderItem | null>(null);
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        setLoading(true);
+        const response = await apiService.getOrder(getOrderIdNum());
+        const rawOrderData = response.data || response;
+        const orderData = {
+          ...rawOrderData,
+          items: (rawOrderData?.items || []).map((item: any) => ({
+            id: item.id,
+            product_id: item.product_id,
+            variation_id: item.variation_id || 0,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            discount_amount: item.discount_amount || 0,
+            total: item.total,
+            variants: item.variants || {},
+            product: { name: item.product?.name || item.name, category: item.product?.category },
+            variation: item.variation,
+          }))
+        } as Order;
+        setOrder(orderData);
+      } catch (error: any) {
+        console.error('Error fetching order:', error);
+        if (error.response?.status === 404) setAlert({ type: 'error', message: `Order #${orderId} not found.` });
+        else setAlert({ type: 'error', message: 'Failed to load order data' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (orderId) fetchOrder();
+  }, [orderId]);
+
+  const handleEdit = () => router.push(`/shop/orders/${orderId}/edit`); // placeholder if ever needed
+  const handleDelete = async () => {
+    try {
+      await apiService.deleteOrder(getOrderIdNum());
+      setAlert({ type: 'success', message: 'Order deleted successfully!' });
+      setTimeout(() => { router.push('/shop/orders'); }, 1500);
+    } catch (error: any) {
+      console.error('Error deleting order:', error);
+      setAlert({ type: 'error', message: 'Failed to delete order' });
+    }
+    setDeleteDialogOpen(false);
+  };
+
+  const handleStatusUpdate = async () => {
+    try {
+      await apiService.updateOrderStatus(getOrderIdNum(), { status: newStatus, notes: statusNotes });
+      setAlert({ type: 'success', message: 'Order status updated successfully!' });
+      const refreshed = await apiService.getOrder(getOrderIdNum());
+      setOrder(refreshed.data || refreshed);
+    } catch (error: any) {
+      console.error('Error updating status:', error);
+      setAlert({ type: 'error', message: 'Failed to update order status' });
+    }
+    setStatusUpdateDialogOpen(false);
+    setNewStatus('');
+    setStatusNotes('');
+  };
+
+  const getStatusColor = (status: string | undefined | null) => {
+    if (!status) return 'default';
+    switch (status.toLowerCase()) {
+      case 'pending': return 'warning';
+      case 'processing': return 'info';
+      case 'confirmed': return 'success';
+      case 'shipped': return 'primary';
+      case 'delivered': return 'success';
+      case 'cancelled': return 'error';
+      default: return 'default';
+    }
+  };
+  const getPaymentStatusColor = (status: string | undefined | null) => {
+    if (!status) return 'default';
+    switch (status.toLowerCase()) {
+      case 'pending': return 'warning';
+      case 'partial': return 'info';
+      case 'paid': return 'success';
+      case 'refunded': return 'secondary';
+      case 'failed': return 'error';
+      default: return 'default';
+    }
+  };
+  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const formatAddressFromObject = (address: any): string => {
+    if (!address || typeof address === 'string') return address || '';
+    const parts: string[] = [];
+    const name = `${address.firstName || ''} ${address.lastName || ''}`.trim();
+    if (name) parts.push(name);
+    if (address.company) parts.push(address.company);
+    if (address.street) parts.push(address.street);
+    const cityStateLine = [address.city, address.state, address.postalCode].filter(Boolean).join(', ');
+    if (cityStateLine) parts.push(cityStateLine);
+    if (address.country && address.country !== 'US') parts.push(address.country);
+    return parts.join('\n');
+  };
+  const computeSubtotal = (items: OrderItem[] = []) => items.reduce((sum, it) => sum + computeLineTotal(it), 0);
+  const safePercent = (part: number, base: number) => base > 0 ? (part / base) * 100 : 0;
+  const statusOptions = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'processing', label: 'Processing' },
+    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'shipped', label: 'Shipped' },
+    { value: 'delivered', label: 'Delivered' },
+    { value: 'cancelled', label: 'Cancelled' },
+  ];
+
+  return (
+    <>
+      <Header />
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: { xs: 2, md: 3 } }}>
+          <CircularProgress />
+        </Box>
+      ) : !order ? (
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
+          <Alert severity="error" sx={{ mb: 2 }}>Order #{orderId} not found or failed to load.</Alert>
+          <Button variant="contained" onClick={() => router.push('/shop/orders')} sx={{ mt: 2 }}>Back to Orders</Button>
+        </Box>
+      ) : (
+        <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 'lg', mx: 'auto', px: { xs: 2, sm: 3, md: 6 }, pt: { md: 10 } }}>
+          {alert && (
+            <Alert severity={alert.type} sx={{ mb: 2 }} onClose={() => setAlert(null)}>{alert.message}</Alert>
+          )}
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: 3, gap: 2 }}>
+            <Box>
+              <Button startIcon={<ArrowBackIcon />} onClick={() => router.push('/shop/orders')} sx={{ mb: 1 }}>Back to Orders</Button>
+              <Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main' }}>Order #{order?.order_number || 'Unknown'}</Typography>
+              <Typography variant="body2" color="text.secondary">Created on {order?.created_at ? formatDate(order.created_at) : 'Unknown date'}</Typography>
+            </Box>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+              {order?.invoice_number && (
+                <Button
+                  variant="outlined"
+                  startIcon={<DownloadIcon />}
+                  onClick={() => {
+                    (async () => {
+                      try {
+                        const blob = await apiService.downloadInvoice(getOrderIdNum());
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `invoice-${order?.order_number}.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                      } catch (e) {
+                        setAlert({ type: 'error', message: 'Failed to download invoice' });
+                      }
+                    })();
+                  }}
+                  size="small"
+                >
+                  Download Invoice
+                </Button>
+              )}
+            </Stack>
+          </Box>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: order?.vehicle_configuration ? '1fr 1fr 1fr' : '1fr 1fr' }, gap: 3 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <ReceiptIcon sx={{ mr: 1 }} /> Order Summary
+                </Typography>
+                <Stack spacing={2}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2">Status:</Typography>
+                    <Chip label={order?.status || 'Unknown'} color={getStatusColor(order?.status) as any} size="small" sx={{ textTransform: 'capitalize' }} />
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2">Payment Status:</Typography>
+                    <Chip label={order?.payment_status || 'Unknown'} color={getPaymentStatusColor(order?.payment_status) as any} size="small" sx={{ textTransform: 'capitalize' }} />
+                  </Box>
+                  {order?.payment_method && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="body2">Payment Method:</Typography>
+                      <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{order?.payment_method?.replace('_', ' ')}</Typography>
+                    </Box>
+                  )}
+                  {order?.invoice_number && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="body2">Invoice #:</Typography>
+                      <Typography variant="body2" fontWeight={500}>{order?.invoice_number}</Typography>
+                    </Box>
+                  )}
+                  <Divider />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body1" fontWeight={600}>Total Amount:</Typography>
+                    <Typography variant="body1" fontWeight={600} color="primary">{formatCurrency(order?.total_amount || 0)}</Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <PersonIcon sx={{ mr: 1 }} /> Customer Information
+                </Typography>
+                <Stack spacing={1}>
+                  <Typography variant="body1" fontWeight={500}>{order?.user?.name || (order?.customer?.firstName && order?.customer?.lastName ? `${order?.customer?.firstName} ${order?.customer?.lastName}` : 'Unknown Customer')}</Typography>
+                  <Typography variant="body2" color="text.secondary">{order?.user?.email || order?.customer?.email || order?.customer_email || 'No email'}</Typography>
+                  {(order?.user?.phone || order?.customer?.phone) && (<Typography variant="body2" color="text.secondary">📞 {order?.user?.phone || order?.customer?.phone}</Typography>)}
+                  {order?.user?.company_name && (<Typography variant="body2" color="text.secondary">🏢 {order?.user?.company_name}</Typography>)}
+                  <Chip label={order?.user?.customer_type || 'Unknown'} size="small" variant="outlined" sx={{ alignSelf: 'flex-start', textTransform: 'capitalize' }} />
+                </Stack>
+              </CardContent>
+            </Card>
+
+            {order?.vehicle_configuration && (
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <CarIcon sx={{ mr: 1 }} /> Vehicle Configuration
+                  </Typography>
+                  <Stack spacing={1}>
+                    <Typography variant="body1" fontWeight={500}>{order?.vehicle_configuration?.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">{order?.vehicle_configuration?.vehicle_trim?.model?.make?.name} {order?.vehicle_configuration?.vehicle_trim?.model?.name} {order?.vehicle_configuration?.vehicle_trim?.name}</Typography>
+                    {order?.vehicle_configuration?.description && (<Typography variant="body2" color="text.secondary">{order?.vehicle_configuration?.description}</Typography>)}
+                  </Stack>
+                </CardContent>
+              </Card>
+            )}
+          </Box>
+
+          <Card sx={{ mt: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}><CartIcon sx={{ mr: 1 }} /> Order Items ({order?.items?.length || 0})</Typography>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Product</TableCell>
+                      <TableCell align="center">Variants</TableCell>
+                      <TableCell align="right">Quantity</TableCell>
+                      <TableCell align="right">Unit Price</TableCell>
+                      <TableCell align="right">Total</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(order?.items || []).map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <Box>
+                            <Typography variant="body2" fontWeight={500}>{item.product?.name || 'Unknown Product'}</Typography>
+                            <Typography variant="caption" color="text.secondary">{typeof item.product?.category === 'string' ? item.product.category : ((item.product?.category as any)?.name || 'Unknown Category')}</Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Box>
+                            <Button size="small" startIcon={<TuneIcon />} color="error" onClick={() => { setSelectedOrderItem(item); setVariantsDrawerOpen(true); }}>Details</Button>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="right">{item.quantity || 0}</TableCell>
+                        <TableCell align="right">{formatCurrency(item.unit_price || 0)}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>{formatCurrency(computeLineTotal(item))}</TableCell>
+                      </TableRow>
+                    ))}
+                    {(() => {
+                      const sub = computeSubtotal(order?.items || []);
+                      const disc = Number(order?.discount_amount || 0);
+                      const tax = Number(order?.tax_amount || 0);
+                      const discPct = safePercent(disc, sub);
+                      const taxPct = safePercent(tax, sub);
+                      return (
+                        <TableRow>
+                          <TableCell colSpan={3} />
+                          <TableCell align="right">
+                            <Typography variant="body1" fontWeight={600}>Subtotal:</Typography>
+                            {disc > 0 && (<Typography variant="body2" color="error">Order Discount:</Typography>)}
+                            {tax > 0 && (<Typography variant="body2">Tax:</Typography>)}
+                            <Typography variant="h6" fontWeight={600} color="primary">Total:</Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1" fontWeight={600}>{formatCurrency(sub)}</Typography>
+                            {disc > 0 && (<Typography variant="body2" color="error">-{formatCurrency(disc)} {discPct ? `(${discPct.toFixed(2)}%)` : ''}</Typography>)}
+                            {tax > 0 && (<Typography variant="body2">+{formatCurrency(tax)} {taxPct ? `(${taxPct.toFixed(2)}%)` : ''}</Typography>)}
+                            <Typography variant="h6" fontWeight={600} color="primary">{formatCurrency(order?.total_amount || (sub - disc + tax))}</Typography>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })()}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mt: 3 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}><ShippingIcon sx={{ mr: 1 }} /> Shipping Address</Typography>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>{formatAddressFromObject(order.shipping_address) || 'No shipping address'}</Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}><LocationIcon sx={{ mr: 1 }} /> Billing Address</Typography>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>{formatAddressFromObject(order.billing_address) || 'No billing address'}</Typography>
+              </CardContent>
+            </Card>
+          </Box>
+
+          {order.notes && (
+            <Card sx={{ mt: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}><NotesIcon sx={{ mr: 1 }} /> Order Notes</Typography>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>{order.notes}</Typography>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Customer view: no status updates or deletion */}
+
+          <AdminVariantsViewDrawer
+            open={variantsDrawerOpen}
+            onClose={() => setVariantsDrawerOpen(false)}
+            productId={selectedOrderItem?.product_id || null}
+            initialSelections={selectedOrderItem?.variants || {}}
+            basePrice={selectedOrderItem?.unit_price || 0}
+            readOnly={true}
+            onApply={() => {}}
+          />
+        </Box>
+      )}
+    </>
+  );
+} 

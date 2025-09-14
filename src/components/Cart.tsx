@@ -27,6 +27,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { removeItem, updateQuantity } from '@/store/cartSlice';
 import { CartItem } from '@/store/cartSlice';
+import { useAppSelector } from '@/store/hooks';
 
 interface CartProps {
   open: boolean;
@@ -37,6 +38,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { items, totalItems, totalPrice } = useSelector((state: RootState) => state.cart) as { items: CartItem[]; totalItems: number; totalPrice: number };
+  const { isAuthenticated } = useAppSelector((s: any) => s.auth);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -355,14 +357,19 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
-              
+              {!isAuthenticated && (
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+                  Sign in to create order.
+                </Typography>
+              )}
               <Button
                 variant="contained"
                 fullWidth
                 size="large"
+                disabled={!isAuthenticated}
                 onClick={() => {
                   onClose();
-                  router.push('/checkout');
+                  router.push('/shop/orders/create');
                 }}
                 sx={{
                   py: { xs: 1.5, sm: 1.75, md: 2 },
@@ -371,16 +378,16 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   fontWeight: 'medium',
                   borderRadius: { xs: 1.5, sm: 2 },
                   textTransform: 'none',
-                  backgroundColor: 'primary.main',
+                  backgroundColor: !isAuthenticated ? 'grey.400' : 'primary.main',
                   boxShadow: 'none',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'primary.dark',
+                    backgroundColor: !isAuthenticated ? 'grey.400' : 'primary.dark',
                     boxShadow: 'none',
                   },
                 }}
               >
-                Proceed to Checkout
+                Create Order
               </Button>
             </Box>
           </>
