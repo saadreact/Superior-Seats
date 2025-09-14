@@ -10,6 +10,8 @@ export interface CartItem {
   subCategory?: string;
   mainCategory?: string;
   quantity: number;
+  // Optional: preserve variant selections from customization
+  variants?: any;
 }
 
 interface CartState {
