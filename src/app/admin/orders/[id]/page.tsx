@@ -546,11 +546,11 @@ console.log("order",order)
                   </Box>
                 )}
                 {/* Change Payment Method link - visible when not paid */}
-                {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
+                {/* {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button size="small" variant="text" onClick={() => setPayDialogOpen(true)}>Change Payment Method</Button>
                   </Box>
-                )}
+                )} */}
                 {order?.invoice_number && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="body2">Invoice #:</Typography>
