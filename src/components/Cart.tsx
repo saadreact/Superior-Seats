@@ -28,6 +28,7 @@ import { RootState } from '@/store/store';
 import { removeItem, updateQuantity } from '@/store/cartSlice';
 import { CartItem } from '@/store/cartSlice';
 import { useAppSelector } from '@/store/hooks';
+import AuthModal from './AuthModal';
 
 interface CartProps {
   open: boolean;
@@ -41,6 +42,9 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
   const { isAuthenticated } = useAppSelector((s: any) => s.auth);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Auth modal state
+  const [authModalOpen, setAuthModalOpen] = React.useState(false);
 
   const handleQuantityChange = (id: number, currentQuantity: number, change: number) => {
     const newQuantity = currentQuantity + change;
@@ -357,42 +361,70 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
-              {!isAuthenticated && (
-                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
-                  Sign in to create order.
-                </Typography>
-              )}
-              <Button
-                variant="contained"
-                fullWidth
-                size="large"
-                disabled={!isAuthenticated}
-                onClick={() => {
-                  onClose();
-                  router.push('/shop/orders/create');
-                }}
-                sx={{
-                  py: { xs: 1.5, sm: 1.75, md: 2 },
-                  height: { xs: '30px', sm: '30px', md: '40px', lg: '40px', xl: '40px' },
-                  fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
-                  fontWeight: 'medium',
-                  borderRadius: { xs: 1.5, sm: 2 },
-                  textTransform: 'none',
-                  backgroundColor: !isAuthenticated ? 'grey.400' : 'primary.main',
-                  boxShadow: 'none',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: !isAuthenticated ? 'grey.400' : 'primary.dark',
+              {!isAuthenticated ? (
+                <Button
+                  variant="contained"
+                  fullWidth
+                  size="large"
+                  onClick={() => {
+                    setAuthModalOpen(true);
+                  }}
+                  sx={{
+                    py: { xs: 1.5, sm: 1.75, md: 2 },
+                    height: { xs: '30px', sm: '30px', md: '40px', lg: '40px', xl: '40px' },
+                    fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
+                    fontWeight: 'medium',
+                    borderRadius: { xs: 1.5, sm: 2 },
+                    textTransform: 'none',
+                    backgroundColor: 'primary.main',
                     boxShadow: 'none',
-                  },
-                }}
-              >
-                Create Order
-              </Button>
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                      boxShadow: 'none',
+                    },
+                  }}
+                >
+                  Sign In to Create Order
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  fullWidth
+                  size="large"
+                  onClick={() => {
+                    onClose();
+                    router.push('/shop/orders/create');
+                  }}
+                  sx={{
+                    py: { xs: 1.5, sm: 1.75, md: 2 },
+                    height: { xs: '30px', sm: '30px', md: '40px', lg: '40px', xl: '40px' },
+                    fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
+                    fontWeight: 'medium',
+                    borderRadius: { xs: 1.5, sm: 2 },
+                    textTransform: 'none',
+                    backgroundColor: 'primary.main',
+                    boxShadow: 'none',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                      boxShadow: 'none',
+                    },
+                  }}
+                >
+                  Create Order
+                </Button>
+              )}
             </Box>
           </>
         )}
       </Box>
+      
+      {/* Auth Modal */}
+      <AuthModal 
+        open={authModalOpen} 
+        onClose={() => setAuthModalOpen(false)} 
+      />
     </Drawer>
   );
 };

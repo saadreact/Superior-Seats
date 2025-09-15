@@ -1288,7 +1288,7 @@ const EditProduct2Page = () => {
               {/* 🚗 Vehicle Information Section */}
               <Box>
                 <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Vehicle Information
+                  Vehicle Figments
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
                 

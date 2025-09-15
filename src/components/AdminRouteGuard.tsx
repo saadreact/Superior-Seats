@@ -47,8 +47,8 @@ const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({ children }) => {
     );
   }
 
-  // Show access denied if user is not authenticated or not super admin
-  if (!isAuthenticated || !userIsSuperAdmin) {
+  // Show loading during logout process, or access denied if user is not authenticated or not super admin
+  if (loading || (!isAuthenticated || !userIsSuperAdmin)) {
     return (
       <Box 
         sx={{ 
@@ -61,59 +61,80 @@ const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({ children }) => {
         }}
       >
         <Paper elevation={3} sx={{ p: 5, textAlign: 'center', borderRadius: 2, maxWidth: 500 }}>
-          <AdminIcon 
-            sx={{ 
-              fontSize: 80, 
-              color: 'error.main', 
-              mb: 2,
-              opacity: 0.7 
-            }} 
-          />
-          <Typography variant="h4" color="error.main" gutterBottom fontWeight="bold">
-            Access Denied
-          </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-            Super Admin Access Required
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6 }}>
-            {!isAuthenticated 
-              ? "You must be logged in with super admin privileges to access the admin panel."
-              : "Your account does not have the required super admin permissions to access this area."
-            }
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button
-              variant="contained"
-              startIcon={<HomeIcon />}
-              onClick={() => router.push('/')}
-              sx={{ 
-                px: 4, 
-                py: 1.5,
-                fontWeight: 600,
-              }}
-            >
-              Return Home
-            </Button>
-            {!isAuthenticated && (
-              <Button
-                variant="outlined"
-                onClick={() => router.push('/')}
-                sx={{ 
-                  px: 4, 
-                  py: 1.5,
-                  fontWeight: 600,
-                }}
-              >
-                Login
-              </Button>
-            )}
-          </Box>
-          {isAuthenticated && (
-            <Box sx={{ mt: 3, p: 2, backgroundColor: 'grey.100', borderRadius: 1 }}>
-              <Typography variant="caption" color="text.secondary">
-                Logged in as: {user?.username || user?.name || user?.email}
+          {loading ? (
+            <>
+              <CircularProgress size={60} color="primary" sx={{ mb: 2 }} />
+              <Typography variant="h4" color="primary.main" gutterBottom fontWeight="bold">
+                Logging Out
               </Typography>
-            </Box>
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+                Please wait...
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6 }}>
+                You are being logged out and redirected to the home page.
+              </Typography>
+            </>
+          ) : (
+            <>
+              <AdminIcon 
+                sx={{ 
+                  fontSize: 80, 
+                  color: 'error.main', 
+                  mb: 2,
+                  opacity: 0.7 
+                }} 
+              />
+              <Typography variant="h4" color="error.main" gutterBottom fontWeight="bold">
+                Access Denied
+              </Typography>
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+                Super Admin Access Required
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6 }}>
+                {!isAuthenticated 
+                  ? "You must be logged in with super admin privileges to access the admin panel."
+                  : "Your account does not have the required super admin permissions to access this area."
+                }
+              </Typography>
+            </>
+          )}
+          {!loading && (
+            <>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Button
+                  variant="contained"
+                  startIcon={<HomeIcon />}
+                  onClick={() => router.push('/')}
+                  sx={{ 
+                    px: 4, 
+                    py: 1.5,
+                    fontWeight: 600,
+                  }}
+                >
+                  Return Home
+                </Button>
+                {!isAuthenticated && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => router.push('/')}
+                    sx={{ 
+                      px: 4, 
+                      py: 1.5,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Login
+                  </Button>
+                )}
+              </Box>
+              {isAuthenticated && (
+                <Box sx={{ mt: 3, p: 2, backgroundColor: 'grey.100', borderRadius: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Logged in as: {user?.username || user?.name || user?.email}
+                  </Typography>
+                </Box>
+              )}
+            </>
           )}
         </Paper>
       </Box>

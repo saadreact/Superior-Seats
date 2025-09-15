@@ -152,8 +152,8 @@ const Warranty = () => {
                   textAlign: 'center', 
                   fontWeight: 'medium', 
                   mb: { xs: 2, sm: 2.5, md: 3 },
-                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem', lg: '2.2rem' ,xl: '2.5rem'},
-                  color: 'black',
+                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem',lg: '2.2rem' ,xl: '2.5rem'},
+                  color: 'text.primary',
                 }}
               >
                 Our Mission Statement
@@ -235,7 +235,7 @@ const Warranty = () => {
                           variant="h4"
                           sx={{
                             fontWeight: 'medium',
-                            color: 'black',
+                            color: 'text.primary',
                             fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
                             textAlign: 'center',
                             letterSpacing: '-0.01em',
@@ -313,10 +313,10 @@ const Warranty = () => {
                  variant="h4" 
                  sx={{ 
                    textAlign: 'center', 
-                   fontWeight: 'bold', 
+                   fontWeight: 'medium', 
                    mb: { xs: 2, sm: 2.5, md: 3 },
                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem',lg: '2.2rem' ,xl: '2.5rem'},
-                   color: 'black',
+                   color: 'text.primary',
                  }}
                >
                  Warranty Covers
@@ -381,7 +381,7 @@ const Warranty = () => {
                     variant="h4"
                     sx={{
                       lineHeight: 1.8,
-                      color: 'black',
+                      color: 'text.primary',
                       fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
                       fontWeight: 'bold',
                       textAlign: 'center',
@@ -467,10 +467,10 @@ const Warranty = () => {
                 variant="h4" 
                 sx={{ 
                   textAlign: 'center', 
-                  fontWeight: 'bold', 
+                  fontWeight: 'medium', 
                   mb: { xs: 2, sm: 2.5, md: 3 },
-                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                  color: 'black',
+                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem',lg: '2.2rem' ,xl: '2.5rem'},
+                  color: 'text.primary',
                 }}
               >
                 Warranty Process
@@ -507,7 +507,7 @@ const Warranty = () => {
                          fontWeight: 'bold',
                          fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
                          mb: { xs: 0.5, sm: 1 },
-                         color: 'black',
+                         color: 'text.primary',
                        }}
                      >
                        {step.title}
@@ -533,10 +533,10 @@ const Warranty = () => {
                   variant="h4" 
                   sx={{ 
                     textAlign: 'center', 
-                    fontWeight: 'bold', 
+                    fontWeight: 'medium', 
                     mb: { xs: 2, sm: 2.5, md: 3 },
-                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                    color: 'black',
+                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem',lg: '2.2rem' ,xl: '2.5rem'},
+                    color: 'text.primary',
                   }}
                 >
                   Please Note
@@ -578,7 +578,7 @@ const Warranty = () => {
                     variant="body1"
                     sx={{
                       lineHeight: 1.6,
-                      color: 'black',
+                      color: 'text.primary',
                       fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem' },
                       fontWeight: 'bold',
                       textAlign: 'center',
@@ -604,10 +604,10 @@ const Warranty = () => {
                   variant="h4" 
                   sx={{ 
                     textAlign: 'center', 
-                    fontWeight: 'bold', 
+                    fontWeight: 'medium', 
                     mb: { xs: 2, sm: 2.5, md: 3 },
-                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                    color: 'black',
+                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem',lg: '2.2rem' ,xl: '2.5rem'},
+                    color: 'text.primary',
                   }}
                 >
                   Installation
@@ -675,10 +675,10 @@ const Warranty = () => {
                   variant="h4" 
                   sx={{ 
                     textAlign: 'center', 
-                    fontWeight: 'bold', 
+                    fontWeight: 'medium', 
                     mb: { xs: 2, sm: 2.5, md: 3 },
-                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                    color: 'black',
+                    fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem',lg: '2.2rem' ,xl: '2.5rem'},
+                    color: 'text.primary',
                   }}
                 >
                   Returns

@@ -140,13 +140,17 @@ class ApiService {
   }
 
   async register(userData: {
-    name: string;
-    username: string;
+    first_name: string;
+    last_name: string;
     email: string;
     phone: string;
     password: string;
     password_confirmation: string;
     customer_type: string;
+    address: string;
+    city: string;
+    state: string;
+    company_name: string;
   }) {
     const response = await api.post('/register', userData);
     const { data } = response.data;
@@ -163,8 +167,8 @@ class ApiService {
     // Ensure the user object has the name field from the registration data
     const userWithName = {
       ...data.user,
-      name: userData.name, // Ensure name is included from registration data
-      username: userData.username // Ensure username is included from registration data
+      name: `${userData.first_name} ${userData.last_name}`, // Combine first and last name
+      username: userData.email // Use email as username
     };
     
     // Return the same structure as login for consistency
