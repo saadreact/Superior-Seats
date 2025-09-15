@@ -64,7 +64,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		setError(null);
 		
 		CustomizedSeatApi.getProductById(productId)
-			.then(product => {debugger
+			.then(product => {
 				setVariations({
 					colors: product.colors || [],
 					material_types: product.material_types || [],

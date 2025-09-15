@@ -484,15 +484,13 @@ class ApiService {
     // Check if this is the new API format with nested 'order' object
     if (rawData.order) {
       const newOrder = rawData.order;
-      console.log('Raw new order data:', newOrder);
-      
       // Transform new API format to old frontend format
       const transformedOrder = {
         id: id, // Use the ID from the request since it's not in response
         order_number: newOrder.orderId || `ORDER-${id}`,
         status: newOrder.status || 'unknown',
         payment_status: this.mapPaymentStatus(newOrder.paymentInfo?.status) || 'pending',
-        payment_method: newOrder.paymentInfo?.method || 'unknown',
+        payment_method: newOrder.paymentInfo?.method || 'Cash',
         total_amount: newOrder.cartSummary?.grandTotal || 0,
         discount_amount: newOrder.cartSummary?.discount || 0,
         tax_amount: newOrder.cartSummary?.tax || 0,
@@ -522,7 +520,7 @@ class ApiService {
         // Transform customer info - we'll need to find the customer by email later
         user_id: null, // Will be set by matching customer email
         user: {
-          id: id, // Fallback ID
+          id: newOrder.user?.id || null, // Fallback ID
           name: `${newOrder.customerInfo?.firstName || ''} ${newOrder.customerInfo?.lastName || ''}`.trim() || 
                 `${newOrder.customer?.firstName || ''} ${newOrder.customer?.lastName || ''}`.trim() ||
                 `${newOrder.customerInfo?.shippingAddress?.firstName || ''} ${newOrder.customerInfo?.shippingAddress?.lastName || ''}`.trim() || 
