@@ -39,6 +39,8 @@ import {
   FormControl,
   InputLabel,
   TextField,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { 
   Chair, 
@@ -238,6 +240,17 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [vehicleTrimData, setVehicleTrimData] = useState<any>(null);
   const [vehicleTrimLoading, setVehicleTrimLoading] = useState(false);
   
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+  
   // State for variation options
   const [selectedRecline, setSelectedRecline] = useState('');
   const [selectedLumber, setSelectedLumber] = useState('');
@@ -350,6 +363,13 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   };
 
   const totalPrice = calculateTotalPrice();
+
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
 
   return (
     <Box className={styles.mainContainer}>
@@ -613,7 +633,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                           }
                         }}
                       >
-                        Browse Shop
+                         Shop Now
                       </Button>
                     </Box>
                   ) : (
@@ -1462,6 +1482,13 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                 // if you later add armType/lumbar in UI, wire them here too
                               },
                             }));
+
+                            // Show success snackbar
+                            setSnackbar({
+                              open: true,
+                              message: 'Successfully added to cart!',
+                              severity: 'success',
+                            });
                          }}
                                                    className={styles.addToCartButton}
                        >
@@ -1478,6 +1505,21 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
       <Footer />
 
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
