@@ -13,6 +13,10 @@ import {
   Chip,
   useTheme,
   useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -61,6 +65,7 @@ const ViewCustomerPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     const loadCustomer = async () => {
@@ -90,15 +95,19 @@ const ViewCustomerPage = () => {
     router.push(`/admin/customers/${params.id}/edit`);
   };
 
-  const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this customer?')) {
-      try {
-        await apiService.deleteCustomer(Number(params.id));
-        router.push('/admin/customers');
-      } catch (error) {
-        console.error('Failed to delete customer:', error);
-        setError('Failed to delete customer');
-      }
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await apiService.deleteCustomer(Number(params.id));
+      router.push('/admin/customers');
+    } catch (error) {
+      console.error('Failed to delete customer:', error);
+      setError('Failed to delete customer');
+    } finally {
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -315,6 +324,27 @@ const ViewCustomerPage = () => {
           </Box>
         </Paper>
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete &quot;{customer?.name}&quot;? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleteDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AdminLayout>
   );
 };

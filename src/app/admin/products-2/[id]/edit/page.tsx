@@ -248,30 +248,45 @@ const EditProduct2Page = () => {
         return names;
       };
 
+      // Helper function to extract names from direct arrays (new API structure)
+      const extractNamesFromArray = (items: any[]): string[] => {
+        if (!items || !Array.isArray(items)) {
+          return [];
+        }
+        return items.map(item => item.name).filter(Boolean);
+      };
+
 
       // Set form data from product
       if (productRes) {
         console.log('🔍 Setting form data from product response');
+        console.log('🔍 Full product response:', productRes);
         
-        // Handle existing images
+        // Handle existing images - use product_images array from API response
         const existingImageUrls: string[] = [];
-        if (productRes.images && Array.isArray(productRes.images)) {
-          console.log('🔍 Processing existing images:', productRes.images);
-          existingImageUrls.push(...productRes.images.map((img: any) => 
-            typeof img === 'string' ? img : img.image_path || img.image_url || ''
+        const productWithImages = productRes as any;
+        if (productWithImages.product_images && Array.isArray(productWithImages.product_images)) {
+          console.log('🔍 Processing existing images from product_images:', productWithImages.product_images);
+          // Sort by sort_order to maintain proper order
+          const sortedImages = productWithImages.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order);
+          existingImageUrls.push(...sortedImages.map((img: any) => 
+            img.image_path || img.image_url || ''
           ).filter(Boolean));
         }
         
-        // Also check for primary_image
-        if (productRes.primary_image?.image_path) {
-          const primaryImageUrl = productRes.primary_image.image_path;
-          if (!existingImageUrls.includes(primaryImageUrl)) {
-            existingImageUrls.unshift(primaryImageUrl); // Add primary image first
-          }
+        // Also check for primary_image as fallback
+        if (productRes.primary_image?.image_path && !existingImageUrls.includes(productRes.primary_image.image_path)) {
+          existingImageUrls.unshift(productRes.primary_image.image_path);
         }
         
         console.log('🔍 Existing image URLs:', existingImageUrls);
         setExistingImages(existingImageUrls);
+
+        // Load price tiers data from API response if available
+        const priceTiersData = (productRes as any).price_tiers;
+        const hasPriceTiers = priceTiersData && Array.isArray(priceTiersData) && priceTiersData.length > 0;
+        const wholesalePrice = hasPriceTiers ? (priceTiersData.find((tier: any) => tier.name === 'wholesale')?.price || 0) : 0;
+        const retailPrice = hasPriceTiers ? (priceTiersData.find((tier: any) => tier.name === 'retail')?.price || 0) : 0;
 
         setFormData({
           name: productRes.name || '',
@@ -280,27 +295,84 @@ const EditProduct2Page = () => {
           basePrice: parseFloat(productRes.price) || 0,
           stock: productRes.stock || 0,
           images: [], // Start with empty array for new file uploads
-          vehicleMake: (productRes as any).vehicle_make?.id?.toString() || '',
-          vehicleModel: (productRes as any).vehicle_model?.id?.toString() || '',
-          vehicleTrim: (productRes as any).vehicle_trim?.id?.toString() || '',
-          seatType: extractVariationNames(productRes.variations || [], 'seat_type'),
-          armType: extractVariationNames(productRes.variations || [], 'arm_type'),
-          lumbarType: extractVariationNames(productRes.variations || [], 'lumbar'),
-          reclineType: extractVariationNames(productRes.variations || [], 'recline_type'),
-          heatOption: extractVariationNames(productRes.variations || [], 'heat_option'),
-          materialType: extractVariationNames(productRes.variations || [], 'material_type'),
-          stitchPattern: extractVariationNames(productRes.variations || [], 'stitch_pattern'),
-          seatItemType: extractVariationNames(productRes.variations || [], 'seat_item_type'),
-          seatStyle: extractVariationNames(productRes.variations || [], 'seat_style'),
-          color: extractVariationNames(productRes.variations || [], 'color'),
-          showOnSpecialShop: (productRes as any).show_on_special_shop ?? false,
-          enablePriceTiers: false, // Default to false like lumbar type
-          wholesalePrice: 0, // Default values
-          retailPrice: 0, // Default values
+          vehicleMake: '', // Will be set after loading vehicle data
+          vehicleModel: '', // Will be set after loading vehicle data  
+          vehicleTrim: productRes.vehicle_trim?.id?.toString() || '',
+          // Use direct arrays from API response instead of variations array
+          seatType: extractNamesFromArray(productWithImages.seat_types || []),
+          armType: extractNamesFromArray(productWithImages.arm_types || []),
+          lumbarType: extractNamesFromArray(productWithImages.lumbar_types || []),
+          reclineType: extractNamesFromArray(productWithImages.recline_types || []),
+          heatOption: extractNamesFromArray(productWithImages.heat_options || []),
+          materialType: extractNamesFromArray(productWithImages.material_types || []),
+          stitchPattern: extractNamesFromArray(productWithImages.seat_stitch_patterns || []),
+          seatItemType: extractNamesFromArray(productWithImages.item_types || []),
+          seatStyle: extractNamesFromArray(productWithImages.seat_styles || []),
+          color: extractNamesFromArray(productWithImages.colors || []),
+          showOnSpecialShop: productRes.show_on_special_shop ?? false,
+          enablePriceTiers: hasPriceTiers, // Enable if price tiers exist in API response
+          wholesalePrice: wholesalePrice, // Load from API response
+          retailPrice: retailPrice, // Load from API response
           isActive: productRes.is_active ?? true,
         });
         
         console.log('🔍 Form data set successfully');
+        console.log('🔍 Price tiers data:', { hasPriceTiers, wholesalePrice, retailPrice });
+        console.log('🔍 Mapped variation data:', {
+          seatType: productWithImages.seat_types?.length || 0,
+          armType: productWithImages.arm_types?.length || 0,
+          lumbarType: productWithImages.lumbar_types?.length || 0,
+          reclineType: productWithImages.recline_types?.length || 0,
+          heatOption: productWithImages.heat_options?.length || 0,
+          materialType: productWithImages.material_types?.length || 0,
+          stitchPattern: productWithImages.seat_stitch_patterns?.length || 0,
+          seatItemType: productWithImages.item_types?.length || 0,
+          seatStyle: productWithImages.seat_styles?.length || 0,
+          color: productWithImages.colors?.length || 0,
+        });
+        
+        // Load vehicle models and trims if vehicle data exists
+        // Use the vehicle_trim data to get the full vehicle hierarchy
+        if (productRes.vehicle_trim?.id) {
+          console.log('🔍 Loading vehicle data from vehicle_trim:', productRes.vehicle_trim);
+          try {
+            // Get the full vehicle trim data with make and model information
+            const trimResponse = await apiService.getVehicleTrimById(productRes.vehicle_trim.id);
+            const trimData = trimResponse?.data || trimResponse;
+            
+            if (trimData?.model?.vehicle_make_id) {
+              console.log('🔍 Loading vehicle models for make:', trimData.model.vehicle_make_id);
+              const modelsResponse = await apiService.getVehicleModels(trimData.model.vehicle_make_id);
+              const modelsData = Array.isArray(modelsResponse?.data) ? modelsResponse.data : 
+                                Array.isArray(modelsResponse) ? modelsResponse : [];
+              setVehicleModels(modelsData.map((model: any) => ({
+                id: model.id,
+                name: model.name,
+                vehicle_make_id: model.vehicle_make_id
+              })));
+              
+              // Load vehicle trims for the model
+              console.log('🔍 Loading vehicle trims for model:', trimData.model.id);
+              const trimsResponse = await apiService.getVehicleTrims(trimData.model.id);
+              const trimsData = Array.isArray(trimsResponse?.data) ? trimsResponse.data : 
+                               Array.isArray(trimsResponse) ? trimsResponse : [];
+              setVehicleTrims(trimsData.map((trim: any) => ({
+                id: trim.id,
+                name: trim.name,
+                vehicle_model_id: trim.vehicle_model_id
+              })));
+              
+              // Update form data with the correct vehicle make and model IDs
+              setFormData(prev => ({
+                ...prev,
+                vehicleMake: trimData.model.vehicle_make_id.toString(),
+                vehicleModel: trimData.model.id.toString(),
+              }));
+            }
+          } catch (error) {
+            console.error('Error loading vehicle data:', error);
+          }
+        }
       }
     } catch (error: any) {
       console.error('Error loading initial data:', error);

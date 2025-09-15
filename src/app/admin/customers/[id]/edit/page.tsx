@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Typography, Button, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Alert, FormControlLabel, Switch } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import CustomerForm from '@/components/admin/CustomerForm';
@@ -20,6 +20,7 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
   const [customer, setCustomer] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [alert, setAlert] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isActive, setIsActive] = React.useState<boolean>(true);
   const resolvedParams = React.use(params);
 
   React.useEffect(() => {
@@ -32,6 +33,7 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
         const customerData = response.data?.data || response.data;
 
         setCustomer(customerData);
+        setIsActive(customerData.is_active !== undefined ? customerData.is_active : true);
       } catch (error) {
         console.error('Error fetching data:', error);
         setAlert({ type: 'error', message: 'Failed to load customer data' });
@@ -45,7 +47,8 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
 
   const handleSubmit = async (updatedCustomer: any) => {
     try {
-      await apiService.updateCustomer(parseInt(resolvedParams.id), updatedCustomer);
+      const customerData = { ...updatedCustomer, is_active: isActive };
+      await apiService.updateCustomer(parseInt(resolvedParams.id), customerData);
       router.push('/admin/customers');
     } catch (error) {
       console.error('Error updating customer:', error);
@@ -57,7 +60,23 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
     router.push('/admin/customers');
   };
 
-
+  const statusToggle = (
+    <FormControlLabel
+      control={
+        <Switch
+          checked={isActive}
+          onChange={(e) => setIsActive(e.target.checked)}
+          color="primary"
+        />
+      }
+      label={
+        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+          {isActive ? 'Active' : 'Inactive'}
+        </Typography>
+      }
+      labelPlacement="start"
+    />
+  );
 
   return (
     <AdminLayout title="Edit Customer">
@@ -89,6 +108,7 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
           customer={customer}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
+          statusToggle={statusToggle}
         />
       ) : (
         <Box sx={{ textAlign: 'center', py: 4 }}>

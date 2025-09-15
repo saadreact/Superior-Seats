@@ -63,6 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   const router = useRouter();
   const pathname = usePathname();
   const [variationsExpanded, setVariationsExpanded] = useState(false);
+  const [vehicleInfoExpanded, setVehicleInfoExpanded] = useState(false);
   
 
 
@@ -160,6 +161,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/seat-types',
     },
     {
+      text: 'Variations',
+      icon: <SettingsIcon />,
+      href: '/admin/variations',
+    },
+  ];
+
+  const vehicleInfoSubItems = [
+    {
       text: 'Vehicle Makes',
       icon: <VehicleIcon />,
       href: '/admin/vehicle-makes',
@@ -173,11 +182,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Vehicle Trims',
       icon: <VehicleIcon />,
       href: '/admin/vehicle-trims',
-    },
-    {
-      text: 'Variations',
-      icon: <SettingsIcon />,
-      href: '/admin/variations',
     },
   ];
 
@@ -227,6 +231,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     setVariationsExpanded(!variationsExpanded);
   };
 
+  const handleVehicleInfoToggle = () => {
+    setVehicleInfoExpanded(!vehicleInfoExpanded);
+  };
+
   const isVariationsActive = () => {
     return pathname.startsWith('/admin/variations') || 
            pathname.startsWith('/admin/colors') ||
@@ -242,6 +250,12 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
            pathname.startsWith('/admin/seat-pricing') ||
            pathname.startsWith('/admin/recline-types') ||
            pathname.startsWith('/admin/seat-styles');
+  };
+
+  const isVehicleInfoActive = () => {
+    return pathname.startsWith('/admin/vehicle-makes') ||
+           pathname.startsWith('/admin/vehicle-models') ||
+           pathname.startsWith('/admin/vehicle-trims');
   };
 
   const drawerContent = (
@@ -439,6 +453,105 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
           </>
         )}
 
+        {/* Vehicle Information Section with Sub-items */}
+        {!collapsed && (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={handleVehicleInfoToggle}
+                selected={isVehicleInfoActive()}
+                sx={{
+                  mx: 0.5,
+                  borderRadius: 1,
+                  mb: 0.25,
+                  minHeight: 36,
+                  py: 0.75,
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: 'white',
+                    },
+                  },
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: isVehicleInfoActive() ? 'white' : 'inherit',
+                  }}
+                >
+                  <VehicleIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Vehicle Fitments"
+                  primaryTypographyProps={{
+                    fontWeight: isVehicleInfoActive() ? 600 : 400,
+                    fontSize: '0.875rem',
+                  }}
+                />
+                {vehicleInfoExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </ListItemButton>
+            </ListItem>
+            
+            <Collapse in={vehicleInfoExpanded} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {vehicleInfoSubItems.map((item) => (
+                  <ListItem key={item.text} disablePadding>
+                    <ListItemButton
+                      onClick={() => handleNavigation(item.href)}
+                      selected={isActive(item.href)}
+                      sx={{
+                        mx: 0.5,
+                        ml: 3,
+                        borderRadius: 1,
+                        mb: 0.25,
+                        minHeight: 32,
+                        py: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark',
+                          },
+                          '& .MuiListItemIcon-root': {
+                            color: 'white',
+                          },
+                        },
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 32,
+                          color: isActive(item.href) ? 'white' : 'inherit',
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{
+                          fontWeight: isActive(item.href) ? 600 : 400,
+                          fontSize: '0.8rem',
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+          </>
+        )}
+
         {/* Collapsed Variations - Show as single item */}
         {collapsed && (
           <ListItem disablePadding>
@@ -473,6 +586,45 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
                 }}
               >
                 <SettingsIcon />
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Collapsed Vehicle Information - Show as single item */}
+        {collapsed && (
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigation('/admin/vehicle-makes')}
+              selected={isVehicleInfoActive()}
+              sx={{
+                mx: 0.5,
+                borderRadius: 1,
+                mb: 0.25,
+                minHeight: 40,
+                py: 0.75,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                },
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 36,
+                  color: isVehicleInfoActive() ? 'white' : 'inherit',
+                }}
+              >
+                <VehicleIcon />
               </ListItemIcon>
             </ListItemButton>
           </ListItem>

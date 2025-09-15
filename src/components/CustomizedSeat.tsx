@@ -598,7 +598,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                           // Clear localStorage and navigate to shop
                           localStorage.removeItem('selectedProductId');
                           clearSelectedItem();
-                          router.push('/specials');
+                          router.push('/shop');
                         }}
                         startIcon={<ArrowForward />}
                         sx={{ 
@@ -663,7 +663,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                            // Clear localStorage and navigate to shop
                            localStorage.removeItem('selectedProductId');
                            clearSelectedItem();
-                           router.push('/specials');
+                           router.push('/shop');
                          }}
                          startIcon={<ArrowForward />}
                          sx={{ 
@@ -741,7 +741,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          const selectedMaterial = variations?.material_types?.find((m: any) => m.id.toString() === selectedTexture);
                          const price = Number(selectedMaterial?.price);
                          return selectedMaterial?.price && price > 0 ? (
-                           <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                           <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold', fontSize: '0.95rem', marginRight: '10px' }}>
                              +${price.toFixed(2)}
                            </Typography>
                          ) : null;
@@ -832,7 +832,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          const selectedColorItem = variations?.colors?.find((c: any) => c.id.toString() === selectedColor);
                          const price = Number(selectedColorItem?.price);
                          return selectedColorItem?.price && price > 0 ? (
-                           <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                           <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold', fontSize: '0.95rem', marginRight: '10px' }}>
                              +${price.toFixed(2)}
                            </Typography>
                          ) : null;
