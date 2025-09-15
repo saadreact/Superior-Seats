@@ -150,14 +150,23 @@ const ShopGallery = () => {
       
       // Fetch special products only
       console.log('🚀 ShopGallery - Fetching special products from API...');
-      const productsResponse = await shopNowApis.getProducts();
+      const productsResponse = await shopNowApis.getSpecialProducts();
       console.log('✅ ShopGallery - Special Products API Response:', productsResponse);
+      console.log('🔍 ShopGallery - Products with show_on_special_shop=true:', productsResponse.data?.filter(p => p.show_on_special_shop === true).length || 0);
       
       if (productsResponse.status === 'success' && productsResponse.data) {
-        // Filter only products with show_on_special_shop: true
+        // Double-check: Filter to ensure only products with show_on_special_shop: true
         const specialProducts = productsResponse.data.filter(product => product.show_on_special_shop === true);
         setApiProducts(specialProducts);
-        console.log('📦 Special products loaded:', specialProducts.length, 'out of', productsResponse.data.length, 'total products');
+        console.log('📦 Special products loaded:', specialProducts.length);
+        console.log('🔍 Total products from API:', productsResponse.data.length);
+        console.log('🔍 Filtered special products:', specialProducts.length);
+        
+        // Log any products that were filtered out
+        const filteredOut = productsResponse.data.filter(product => product.show_on_special_shop !== true);
+        if (filteredOut.length > 0) {
+          console.warn('⚠️ Filtered out non-special products:', filteredOut.map(p => ({ id: p.id, name: p.name, show_on_special_shop: p.show_on_special_shop })));
+        }
       } else {
         setError('Failed to load special products');
         console.error('❌ Special Products API returned error status');
@@ -246,6 +255,12 @@ const ShopGallery = () => {
   // Filter products based on selected categories (using API data)
   // Note: apiProducts already contains only special products (show_on_special_shop: true)
   const filteredImages = apiProducts.filter(item => {
+    // Double-check: Ensure only special products are shown
+    if (item.show_on_special_shop !== true) {
+      console.warn('⚠️ Non-special product found in filtered list:', { id: item.id, name: item.name, show_on_special_shop: item.show_on_special_shop });
+      return false;
+    }
+    
     if (selectedMainCategory === 'all') {
       return true; // Show all special products
     }

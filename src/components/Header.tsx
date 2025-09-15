@@ -605,29 +605,29 @@ const Header = () => {
                           }
                         }}
                       >
-                        {(user && user.role && user.role.id) && (
-                          <>
-                            <MenuItem 
-                              onClick={() => {
-                                handleUserMenuClose();
-                                router.push('/shop/orders');
-                              }}
-                              sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(218, 41, 28, 0.05)' } }}
-                            >
-                              My Orders
-                            </MenuItem>
-                            <MenuItem 
-                              onClick={() => {
-                                handleUserMenuClose();
-                                router.push('/shop/orders/create');
-                              }}
-                              sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(218, 41, 28, 0.05)' } }}
-                            >
-                              Create Order
-                            </MenuItem>
-                            <Divider sx={{ my: 0.5 }} />
-                          </>
-                        )}
+                        {(user && user.role && user.role.id) && [
+                          <MenuItem 
+                            key="my-orders"
+                            onClick={() => {
+                              handleUserMenuClose();
+                              router.push('/shop/orders');
+                            }}
+                            sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(218, 41, 28, 0.05)' } }}
+                          >
+                            My Orders
+                          </MenuItem>,
+                          <MenuItem 
+                            key="create-order"
+                            onClick={() => {
+                              handleUserMenuClose();
+                              router.push('/shop/orders/create');
+                            }}
+                            sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(218, 41, 28, 0.05)' } }}
+                          >
+                            Create Order
+                          </MenuItem>,
+                          <Divider key="divider" sx={{ my: 0.5 }} />
+                        ]}
                         {(user.id || user.customer_id) && (
                           <MenuItem 
                             onClick={handleEditProfile}

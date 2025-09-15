@@ -1047,6 +1047,7 @@ class ApiService {
     price_max?: number;
     page?: number;
     per_page?: number;
+    show_on_special_shop?: boolean;
   } = {}) {
     try {
       const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();

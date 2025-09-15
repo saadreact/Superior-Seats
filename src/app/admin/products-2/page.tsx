@@ -146,14 +146,16 @@ const Products2Page = () => {
         params.search = searchTerm.trim();
       }
       
-      // Add special shop filter if enabled
-      if (showOnlySpecial) {
-        params.special_shop = true;
-      }
+       // Add special shop filter if enabled
+       if (showOnlySpecial) {
+         params.show_on_special_shop = true;
+       }
       
-      console.log('🔍 Loading products with params:', params);
-      
-      const response = await apiService.getProducts(params);
+       console.log('🔍 Loading products with params:', params);
+       console.log('🔍 Special shop filter enabled:', showOnlySpecial);
+       
+       const response = await apiService.getProducts(params);
+       console.log('🔍 API Response:', response);
       
       // Handle the API response structure
       if (response && response.data) {
