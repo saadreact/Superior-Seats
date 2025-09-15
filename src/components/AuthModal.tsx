@@ -730,8 +730,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                <Box sx={{ display: 'flex', gap: 1, mb: 2 ,borderRadius: '2px',
-                          height: '35px',}}>
+                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                   <FormControl sx={{ minWidth: 120 }}>
                     <InputLabel size="small">Country</InputLabel>
                     <Select
@@ -741,15 +740,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                       label="Country"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
+                          borderRadius: '8px !important',
                           height: '35px',
                           backgroundColor: 'rgba(255,255,255,0.8)',
+                          '& fieldset': {
+                            borderRadius: '8px !important',
+                            border: '2px solid #e0e0e0',
+                          },
                           '&:hover fieldset': {
                             borderColor: 'primary.main',
+                            borderRadius: '8px !important',
                           },
                           '&.Mui-focused fieldset': {
                             borderColor: 'primary.main',
                             borderWidth: 2,
+                            borderRadius: '8px !important',
                           },
                           '&.Mui-focused': {
                             backgroundColor: 'white',
