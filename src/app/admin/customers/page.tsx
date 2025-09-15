@@ -35,6 +35,8 @@ import {
   Visibility as ViewIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
+  ArrowUpward as ArrowUpwardIcon,
+  ArrowDownward as ArrowDownwardIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { Customer, CustomerType } from '@/data/types';
@@ -62,7 +64,7 @@ const CustomersPage = () => {
     customer_type: '', // retail | wholesale
     is_active: '', // '' | 'true' | 'false'
     company_name: '',
-    sort_by: 'created_at' as 'name' | 'email' | 'created_at' | 'customer_type',
+    sort_by: 'created_at' as 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state',
     sort_order: 'desc' as 'asc' | 'desc',
   });
 
@@ -86,6 +88,20 @@ const CustomersPage = () => {
     });
     setCurrentPage(1);
     fetchCustomers(1, rowsPerPage);
+  };
+
+  const handleSort = (column: 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state') => {
+    const newOrder = filters.sort_by === column && filters.sort_order === 'asc' ? 'desc' : 'asc';
+    setFilters(prev => ({
+      ...prev,
+      sort_by: column as 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state',
+      sort_order: newOrder,
+    }));
+    setCurrentPage(1);
+    // Trigger fetch with new sort parameters
+    setTimeout(() => {
+      fetchCustomers(1, rowsPerPage);
+    }, 0);
   };
 
   const fetchCustomers = async (page: number, perPage: number) => {
@@ -200,6 +216,49 @@ const CustomersPage = () => {
     setCurrentPage(newPageZeroBased + 1);
   };
 
+  const SortableHeader = ({ 
+    column, 
+    children, 
+    sortKey 
+  }: { 
+    column: 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state';
+    children: React.ReactNode;
+    sortKey: string;
+  }) => {
+    const isActive = filters.sort_by === sortKey;
+    const isAsc = filters.sort_order === 'asc';
+    
+    return (
+      <TableCell 
+        sx={{ 
+          fontWeight: 600, 
+          cursor: 'pointer',
+          userSelect: 'none',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          },
+          position: 'relative',
+          padding: '16px',
+        }}
+        onClick={() => handleSort(column)}
+      >
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 0.5,
+          width: '100%'
+        }}>
+          {children}
+          {isActive && (
+            <Box sx={{ ml: 0.5 }}>
+              {isAsc ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />}
+            </Box>
+          )}
+        </Box>
+      </TableCell>
+    );
+  };
+
 
 
   return (
@@ -277,32 +336,6 @@ const CustomersPage = () => {
               sx={{ minWidth: { xs: '100%', md: '180px' } }}
             />
             
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', md: '150px' } }}>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={filters.sort_by}
-                label="Sort By"
-                onChange={(e) => handleFilterChange('sort_by', e.target.value)}
-              >
-                <MenuItem value="name">Name</MenuItem>
-                <MenuItem value="email">Email</MenuItem>
-                <MenuItem value="created_at">Created</MenuItem>
-                <MenuItem value="customer_type">Customer Type</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', md: '120px' } }}>
-              <InputLabel>Order</InputLabel>
-              <Select
-                value={filters.sort_order}
-                label="Order"
-                onChange={(e) => handleFilterChange('sort_order', e.target.value)}
-              >
-                <MenuItem value="asc">Asc</MenuItem>
-                <MenuItem value="desc">Desc</MenuItem>
-              </Select>
-            </FormControl>
-            
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Button
                 variant="contained"
@@ -371,13 +404,13 @@ const CustomersPage = () => {
                 <Table>
                   <TableHead>
                     <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                      <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+                      <SortableHeader column="name" sortKey="name">Name</SortableHeader>
+                      <SortableHeader column="email" sortKey="email">Email</SortableHeader>
                       <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Company</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Customer Type</TableCell>
+                      <SortableHeader column="customer_type" sortKey="customer_type">Customer Type</SortableHeader>
                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                      <SortableHeader column="created_at" sortKey="created_at">Created</SortableHeader>
                       <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>

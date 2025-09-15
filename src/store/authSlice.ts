@@ -88,13 +88,17 @@ export const loginUser = createAsyncThunk(
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData: {
-    name: string;
-    username: string;
+    first_name: string;
+    last_name: string;
     email: string;
     phone: string;
     password: string;
     password_confirmation: string;
     customer_type: string;
+    address: string;
+    city: string;
+    state: string;
+    company_name: string;
   }, { rejectWithValue }) => {
     try {
       const result = await apiService.register(userData);

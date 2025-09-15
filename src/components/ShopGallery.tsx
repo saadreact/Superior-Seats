@@ -454,7 +454,7 @@ const ShopGallery = () => {
               }}
             >
               {selectedMainCategory === 'all' 
-                ? 'All Products' 
+                ? 'Special Products' 
                 : selectedSubCategory === 'all' || selectedSubCategory.startsWith('all-')
                   ? mainCategories.find(cat => cat.value === selectedMainCategory)?.label
                   : availableSubCategories.find(cat => cat.value === selectedSubCategory)?.label || 'Products'

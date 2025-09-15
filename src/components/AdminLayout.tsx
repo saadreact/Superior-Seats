@@ -64,9 +64,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
   };
 
   const handleLogout = async () => {
-    await dispatch(logoutUser());
-    handleUserMenuClose();
-    router.push('/');
+    try {
+      handleUserMenuClose();
+      await dispatch(logoutUser());
+      // Redirect to home page after logout is complete
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, redirect to home
+      router.push('/');
+    }
   };
 
   return (

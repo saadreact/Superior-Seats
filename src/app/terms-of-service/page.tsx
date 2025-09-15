@@ -154,14 +154,14 @@ const TermsOfService = () => {
                   >
                     <Typography
                       variant="h4"
-                      sx={{
-                        fontWeight: 'bold',
-                        color: '#DA291C',
-                        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                        textAlign: 'center',
-                        letterSpacing: '-0.01em',
-                        lineHeight: 1.3,
-                      }}
+                        sx={{
+                          fontWeight: 'medium',
+                          color: 'text.primary',
+                          fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                          textAlign: 'center',
+                          letterSpacing: '-0.01em',
+                          lineHeight: 1.3,
+                        }}
                     >
                       {section.title}
                     </Typography>

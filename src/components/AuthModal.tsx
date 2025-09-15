@@ -19,6 +19,10 @@ import {
   useMediaQuery,
   Tabs,
   Tab,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   Visibility,
@@ -39,14 +43,16 @@ const signInSchema = z.object({
 });
 
 const signUpSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
+  first_name: z.string().min(2, 'First name must be at least 2 characters'),
+  last_name: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
-  phone: z.string()
-    .min(10, 'Phone number must be at least 10 digits')
-    .regex(/^\d+$/, 'Numbers only'),
+  phone: z.string().min(1, 'Phone number is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
+  address: z.string().min(5, 'Address must be at least 5 characters'),
+  city: z.string().min(2, 'City must be at least 2 characters'),
+  state: z.string().min(2, 'State must be at least 2 characters'),
+  company_name: z.string().min(2, 'Company name must be at least 2 characters'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -115,13 +121,38 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   });
 
   const [signUpForm, setSignUpForm] = useState({
-    name: '',
-    username: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     password: '',
     confirmPassword: '',
+    address: '',
+    city: '',
+    state: '',
+    company_name: '',
   });
+
+  const [countryCode, setCountryCode] = useState('+92');
+
+  // Country codes data
+  const countryCodes = [
+    { code: '+92', country: 'PAK' },
+    { code: '+1', country: 'USA' },
+    { code: '+44', country: 'GBR' },
+    { code: '+91', country: 'IND' },
+    { code: '+86', country: 'CHN' },
+    { code: '+49', country: 'DEU' },
+    { code: '+33', country: 'FRA' },
+    { code: '+39', country: 'ITA' },
+    { code: '+34', country: 'ESP' },
+    { code: '+61', country: 'AUS' },
+    { code: '+81', country: 'JPN' },
+    { code: '+82', country: 'KOR' },
+    { code: '+55', country: 'BRA' },
+    { code: '+52', country: 'MEX' },
+    { code: '+7', country: 'RUS' },
+  ];
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -143,7 +174,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         setJustAuthenticated(false);
       }
       // Clear signup form after successful registration
-      setSignUpForm({ name: '', username: '', email: '', phone: '', password: '', confirmPassword: '' });
+      setSignUpForm({ 
+        first_name: '', 
+        last_name: '', 
+        email: '', 
+        phone: '', 
+        password: '', 
+        confirmPassword: '',
+        address: '',
+        city: '',
+        state: '',
+        company_name: '',
+      });
     }
   }, [isAuthenticated, onClose, justAuthenticated, tabValue]);
 
@@ -177,29 +219,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   const handleSignUpChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement> | any) => {
     let value = event.target.value;
     
-    // For phone field, only allow digits
-    if (field === 'phone') {
-      const originalValue = value;
-      value = value.replace(/\D/g, '');
-      
-      // If non-digits were removed, show error message
-      if (originalValue !== value && originalValue.length > 0) {
-        setErrors(prev => ({ ...prev, phone: 'Numbers only' }));
-      } else {
-        setErrors(prev => ({ ...prev, phone: '' }));
-      }
-    }
-    
     setSignUpForm({
       ...signUpForm,
       [field]: value,
     });
     dispatch(clearError());
-    
-    // Only clear errors for non-phone fields
-    if (field !== 'phone') {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   const validateSignIn = () => {
@@ -264,13 +289,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     if (!validateSignUp()) return;
 
     const result = await dispatch(registerUser({
-      name: signUpForm.name,
-      username: signUpForm.username,
+      first_name: signUpForm.first_name,
+      last_name: signUpForm.last_name,
       email: signUpForm.email,
-      phone: signUpForm.phone,
+      phone: `${countryCode}${signUpForm.phone}`,
       password: signUpForm.password,
       password_confirmation: signUpForm.confirmPassword,
       customer_type: 'retail',
+      address: signUpForm.address,
+      city: signUpForm.city,
+      state: signUpForm.state,
+      company_name: signUpForm.company_name,
     }));
 
     // Check if registration failed
@@ -290,11 +319,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     dispatch(clearError());
     setErrors({});
     setSignInForm({ email: '', password: '' });
-    setSignUpForm({ name: '', username: '', email: '', phone: '', password: '', confirmPassword: '' });
+    setSignUpForm({ 
+      first_name: '', 
+      last_name: '', 
+      email: '', 
+      phone: '', 
+      password: '', 
+      confirmPassword: '',
+      address: '',
+      city: '',
+      state: '',
+      company_name: '',
+    });
     setTabValue(0);
     setJustAuthenticated(false);
     setShowForgotPassword(false);
     setForgotPasswordEmail('');
+    setCountryCode('+92');
   };
 
   const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -641,17 +682,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
                 <TextField
                   fullWidth
-                  label="Full Name"
+                  label="First Name"
                   type="text"
-                  value={signUpForm.name}
-                  onChange={handleSignUpChange('name')}
+                  value={signUpForm.first_name}
+                  onChange={handleSignUpChange('first_name')}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       handleSignUp();
                     }
                   }}
-                  error={!!errors.name}
-                  helperText={errors.name}
+                  error={!!errors.first_name}
+                  helperText={errors.first_name}
                   variant="outlined"
                   size="small"
                   sx={{ 
@@ -666,17 +707,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
                 <TextField
                   fullWidth
-                  label="Username"
+                  label="Last Name"
                   type="text"
-                  value={signUpForm.username}
-                  onChange={handleSignUpChange('username')}
+                  value={signUpForm.last_name}
+                  onChange={handleSignUpChange('last_name')}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       handleSignUp();
                     }
                   }}
-                  error={!!errors.username}
-                  helperText={errors.username}
+                  error={!!errors.last_name}
+                  helperText={errors.last_name}
                   variant="outlined"
                   size="small"
                   sx={{ 
@@ -689,35 +730,86 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  type="tel"
-                  value={signUpForm.phone}
-                  onChange={handleSignUpChange('phone')}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignUp();
-                    }
-                  }}
-                  error={!!errors.phone}
-                  helperText={errors.phone}
-                  variant="outlined"
-                  size="small"
-                  inputProps={{
-                    inputMode: 'numeric',
-                    pattern: '[0-9]*',
-                    maxLength: 15
-                  }}
-                  sx={{ 
-                    mb: 2,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                  }}
-                />
+                <Box sx={{ display: 'flex', gap: 1, mb: 2 ,borderRadius: '2px',
+                          height: '35px',}}>
+                  <FormControl sx={{ minWidth: 120 }}>
+                    <InputLabel size="small">Country</InputLabel>
+                    <Select
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      size="small"
+                      label="Country"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                          height: '35px',
+                          backgroundColor: 'rgba(255,255,255,0.8)',
+                          '&:hover fieldset': {
+                            borderColor: 'primary.main',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'primary.main',
+                            borderWidth: 2,
+                          },
+                          '&.Mui-focused': {
+                            backgroundColor: 'white',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'text.secondary',
+                          transform: 'translate(14px, 8px) scale(1)',
+                          '&.Mui-focused': {
+                            color: 'primary.main',
+                            transform: 'translate(14px, -9px) scale(0.75)',
+                          },
+                          '&.MuiFormLabel-filled': {
+                            transform: 'translate(14px, -9px) scale(0.75)',
+                          },
+                        },
+                      }}
+                    >
+                      {countryCodes.map((country) => (
+                        <MenuItem key={country.code} value={country.code}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <span>{country.code}</span>
+                            <span style={{ fontSize: '0.75rem', color: '#666' }}>
+                              {country.country}
+                            </span>
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    fullWidth
+                    label="Phone Number"
+                    type="tel"
+                    value={signUpForm.phone}
+                    onChange={handleSignUpChange('phone')}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSignUp();
+                      }
+                    }}
+                    error={!!errors.phone}
+                    helperText={errors.phone }
+                    variant="outlined"
+                    size="small"
+                    inputProps={{
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*',
+                      maxLength: 15,
+                      placeholder: 'xxxxxxxxx'
+                    }}
+                    sx={{ 
+                      ...commonTextFieldStyles,
+                      '& .MuiFormHelperText-root': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        marginLeft: 0,
+                      },
+                    }}
+                  />
+                </Box>
 
                 <TextField
                   fullWidth
@@ -732,6 +824,106 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                   error={!!errors.email}
                   helperText={errors.email}
+                  variant="outlined"
+                  size="small"
+                  sx={{ 
+                    mb: 2,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
+                    },
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Address"
+                  type="text"
+                  value={signUpForm.address}
+                  onChange={handleSignUpChange('address')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
+                  error={!!errors.address}
+                  helperText={errors.address}
+                  variant="outlined"
+                  size="small"
+                  sx={{ 
+                    mb: 2,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
+                    },
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="City"
+                  type="text"
+                  value={signUpForm.city}
+                  onChange={handleSignUpChange('city')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
+                  error={!!errors.city}
+                  helperText={errors.city}
+                  variant="outlined"
+                  size="small"
+                  sx={{ 
+                    mb: 2,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
+                    },
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="State"
+                  type="text"
+                  value={signUpForm.state}
+                  onChange={handleSignUpChange('state')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
+                  error={!!errors.state}
+                  helperText={errors.state}
+                  variant="outlined"
+                  size="small"
+                  sx={{ 
+                    mb: 2,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
+                    },
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Company Name"
+                  type="text"
+                  value={signUpForm.company_name}
+                  onChange={handleSignUpChange('company_name')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
+                  error={!!errors.company_name}
+                  helperText={errors.company_name}
                   variant="outlined"
                   size="small"
                   sx={{ 
