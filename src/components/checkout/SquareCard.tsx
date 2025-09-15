@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import Script from 'next/script';
 
 export interface SquareCardHandle {
 	tokenize: () => Promise<{ token: string; details?: any }>;
@@ -9,11 +8,12 @@ export interface SquareCardHandle {
 
 interface SquareCardProps {
 	amount: number;
+	applicationId?: string;
+	locationId?: string;
 }
 
-const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount }, ref) => {
+const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount, applicationId, locationId: locationIdProp }, ref) => {
 	const [isReady, setIsReady] = useState(false);
-	const [sdkLoaded, setSdkLoaded] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const paymentsRef = useRef<any>(null);
 	const cardRef = useRef<any>(null);
@@ -21,8 +21,8 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 	// Unique container per mount to avoid duplicate ID collisions on rerenders
 	const containerId = useMemo(() => `sq-card-container-${Math.random().toString(36).slice(2, 8)}`, []);
 
-	const appId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID as string | undefined;
-	const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string | undefined;
+	const appId = applicationId || (process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID as string | undefined);
+	const locationId = locationIdProp || (process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string | undefined);
 	const env = (process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT || 'sandbox').toLowerCase();
 	const sdkSrc = env === 'production'
 		? 'https://web.squarecdn.com/v1/square.js'
@@ -40,6 +40,47 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 	useEffect(() => {
 		let pollTimer: any;
 		let timeoutTimer: any;
+
+		const addPreconnect = () => {
+			// @ts-ignore
+			if ((window as any).__square_preconnected__) return;
+			// @ts-ignore
+			(window as any).__square_preconnected__ = true;
+			const hosts = ['https://sandbox.web.squarecdn.com', 'https://web.squarecdn.com'];
+			hosts.forEach((href) => {
+				const link1 = document.createElement('link');
+				link1.rel = 'preconnect';
+				link1.href = href;
+				link1.crossOrigin = '';
+				document.head.appendChild(link1);
+				const link2 = document.createElement('link');
+				link2.rel = 'dns-prefetch';
+				link2.href = href;
+				document.head.appendChild(link2);
+			});
+		};
+
+		const ensureScript = () => {
+			// If SDK already on window, proceed
+			// @ts-ignore
+			if ((window as any).Square) return true;
+			// Only inject script once globally
+			// @ts-ignore
+			if (!(window as any).__square_sdk_loading__) {
+				// @ts-ignore
+				(window as any).__square_sdk_loading__ = true;
+				const s = document.createElement('script');
+				s.src = sdkSrc;
+				s.async = true;
+				s.onload = () => {
+					// @ts-ignore
+					window.__square_sdk_loaded__ = true;
+				};
+				s.onerror = () => setError('Failed to load Square SDK script. Check network and Allowed domains.');
+				document.head.appendChild(s);
+			}
+			return false;
+		};
 
 		const init = async () => {
 			if (!appId || !locationId) {
@@ -61,25 +102,25 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 			}
 		};
 
-		if (sdkLoaded) {
-			// Poll for window.Square up to ~10s
-			let attempts = 0;
-			pollTimer = setInterval(() => {
-				// @ts-ignore
-				if ((window as any).Square) {
-					clearInterval(pollTimer);
-					clearTimeout(timeoutTimer);
-					init();
-				} else if (++attempts > 50) {
-					clearInterval(pollTimer);
-				}
-			}, 200);
+		addPreconnect();
+		// Try to use preloaded SDK first; otherwise inject
+		const hasSdk = ensureScript();
+		let attempts = 0;
+		pollTimer = setInterval(() => {
+			// @ts-ignore
+			if ((window as any).Square) {
+				clearInterval(pollTimer);
+				clearTimeout(timeoutTimer);
+				init();
+			} else if (++attempts > 200) {
+				clearInterval(pollTimer);
+			}
+		}, 100);
 
-			// Fallback timeout error after 12s
-			timeoutTimer = setTimeout(() => {
-				if (!isReady) setError('Square SDK timed out loading. Check network and Allowed domains.');
-			}, 12000);
-		}
+		// Fallback timeout error after 30s
+		timeoutTimer = setTimeout(() => {
+			if (!isReady) setError('Web Payments SDK was unable to be initialized in time. Please check network and Allowed domains, and try again.');
+		}, 30000);
 
 		return () => {
 			clearInterval(pollTimer);
@@ -89,16 +130,10 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 			} catch { /* noop */ }
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [sdkLoaded, appId, locationId]);
+	}, [appId, locationId]);
 
 	return (
 		<>
-			<Script
-				src={sdkSrc}
-				strategy="afterInteractive"
-				onLoad={() => setSdkLoaded(true)}
-				onError={() => setError('Failed to load Square SDK script. Check network and Allowed domains.')}
-			/>
 			<div id={containerId} style={{ minHeight: 46, border: '1px solid #ccc', borderRadius: 8, padding: 12 }} />
 			{!isReady && !error && (
 				<p style={{ fontSize: 12, color: '#777', marginTop: 6 }}>Loading secure card form…</p>

@@ -5,9 +5,6 @@ import {
   Box,
   Typography,
   Button,
-  Card,
-  CardContent,
-  CardActions,
   IconButton,
   Chip,
   Dialog,
@@ -18,12 +15,19 @@ import {
   InputAdornment,
   Stack,
   useTheme,
-  useMediaQuery} from '@mui/material';
+  useMediaQuery,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination
+} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
   Search as SearchIcon,
   Close as CloseIcon} from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -55,6 +59,8 @@ const CategoriesPage = () => {
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadCategories = useCallback(async () => {
     try {
@@ -98,9 +104,6 @@ const CategoriesPage = () => {
     router.push(`/admin/categories/${category.slug}/edit`);
   };
 
-  const handleView = (category: Category) => {
-    router.push(`/admin/categories/${category.slug}`);
-  };
 
   const handleDelete = (category: Category) => {
     setCategoryToDelete(category);
@@ -127,7 +130,28 @@ const CategoriesPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
   };
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // Filter and paginate data
+  const filteredData = categories.filter(category =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    category.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const paginatedData = filteredData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
     <AdminLayout title="Categories">
@@ -140,9 +164,22 @@ const CategoriesPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-            Categories
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search categories..."
+              value={searchTerm}
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -158,23 +195,6 @@ const CategoriesPage = () => {
           >
             Add Category
           </Button>
-        </Box>
-
-        {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            placeholder="Search categories..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )}}
-            sx={{ maxWidth: 400 }}
-          />
         </Box>
 
         {alert && (
@@ -193,7 +213,7 @@ const CategoriesPage = () => {
           </Alert>
         )}
 
-        {/* Categories Grid */}
+        {/* Categories Table */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
@@ -208,108 +228,109 @@ const CategoriesPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { 
-              xs: '1fr', 
-              sm: 'repeat(2, 1fr)', 
-              md: 'repeat(3, 1fr)', 
-              lg: 'repeat(4, 1fr)' 
-            }, 
-            gap: 3 
-          }}>
-            {categories.map((category) => (
-              <Card 
-                key={category.id}
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  '&:hover': {
-                    boxShadow: 6,
-                    transform: 'translateY(-4px)'},
-                  transition: 'all 0.3s ease-in-out'}}
-              >
-                <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                  <Typography 
-                    variant="h6" 
-                    component="h2" 
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      mb: 1,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      minHeight: '2.5rem'}}
-                  >
-                    {category.name}
-                  </Typography>
-                  
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
-                    sx={{
-                      mb: 2,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      minHeight: '3rem'}}
-                  >
-                    {category.description || 'No description available'}
-                  </Typography>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Chip
-                      label={category.is_active ? 'Active' : 'Inactive'}
-                      size="small"
-                      color={category.is_active ? 'success' : 'default'}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      
-                    </Typography>
-                  </Box>
-
-                  {category.slug && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      Slug: {category.slug}
-                    </Typography>
-                  )}
-                </CardContent>
-
-                <CardActions sx={{ justifyContent: 'center', pb: 2, gap: 1 }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleView(category)}
-                    title="View Details"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <ViewIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEdit(category)}
-                    title="Edit"
-                    sx={{ color: 'primary.main' }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(category)}
-                    title="Delete"
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            ))}
-          </Box>
+          <Paper sx={{ overflow: 'hidden' }}>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                    <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Slug</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedData.map((category) => (
+                    <TableRow 
+                      key={category.id}
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
+                      <TableCell>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {category.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            maxWidth: 300,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {category.description || 'No description available'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={category.is_active ? 'Active' : 'Inactive'}
+                          size="small"
+                          color={category.is_active ? 'success' : 'default'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+                          {category.slug || 'No slug set'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(category.created_at).toLocaleDateString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(category)}
+                            title="Edit"
+                            sx={{ color: 'primary.main' }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(category)}
+                            title="Delete"
+                            color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            {/* Pagination */}
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredData.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                borderTop: 1,
+                borderColor: 'divider',
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }
+              }}
+            />
+          </Paper>
         )}
 
         {/* Delete Confirmation Dialog */}

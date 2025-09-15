@@ -303,6 +303,25 @@ class ShopNowApis {
   }
 
   /**
+   * Get special products (show_on_special_shop: true)
+   * @returns Promise<ProductsResponse>
+   */
+  async getSpecialProducts(): Promise<ProductsResponse> {
+    try {
+      const response = await apiClient.get<ProductsResponse>('/shop/products?show_on_special_shop=true');
+      return response.data;
+    } catch (error) {
+      console.warn('⚠️ ShopNowApis - Special products endpoint not available, using fallback:', error);
+      // Return a fallback response instead of throwing
+      return {
+        status: 'success',
+        message: 'Special products not available',
+        data: []
+      };
+    }
+  }
+
+  /**
    * Get products by category
    * @param categoryId - Category ID
    * @returns Promise<ProductsResponse>

@@ -6,7 +6,7 @@ import AdminLayout from '@/components/AdminLayout';
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
-import { setConnected } from '@/store/squareSlice';
+import { setConnected, clearSquare } from '@/store/squareSlice';
 
 const AdminPayments = () => {
   const dispatch = useDispatch();
@@ -19,6 +19,13 @@ const AdminPayments = () => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const state = params.get('state');
+    const justConnected = params.get('connected');
+    if (justConnected === '1') {
+      setMsg('Square connected.');
+      const clean = window.location.pathname;
+      window.history.replaceState({}, '', clean);
+      return;
+    }
     if (!code) return;
     // Optimistically mark connected so the button disables immediately
     dispatch(setConnected({ connected: true }));
@@ -47,15 +54,13 @@ const AdminPayments = () => {
   }, [dispatch]);
 
   const connectSquare = async () => {
-    const appId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || process.env.REACT_APP_SQUARE_APP_ID;
-    const redirectUri = process.env.NEXT_PUBLIC_SQUARE_REDIRECT_URI || process.env.REACT_APP_SQUARE_REDIRECT_URI || (typeof window !== 'undefined' ? `${window.location.origin}/api/square/admin/callback` : '');
-    const scope = 'CUSTOMERS_READ,CUSTOMERS_WRITE,PAYMENTS_READ,PAYMENTS_WRITE';
-    const state = Math.random().toString(36);
-    const base = (process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT || 'sandbox').toLowerCase() === 'production'
-      ? 'https://connect.squareup.com/oauth2/authorize'
-      : 'https://connect.squareupsandbox.com/oauth2/authorize';
-    const url = `${base}?client_id=${encodeURIComponent(String(appId || ''))}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}`;
+    const url = 'https://app.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-5-Fq9kX2vcQTojh9kXpx8g&scope=MERCHANT_PROFILE_READ%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE&redirect_uri=https%3A//superiorseats.ali-khalid.com/square/admin/callback&state=connect_square';
     window.location.href = url;
+  };
+
+  const disconnectSquare = () => {
+    dispatch(clearSquare());
+    setMsg('Disconnected from Square.');
   };
 
   return (
@@ -70,7 +75,8 @@ const AdminPayments = () => {
                 </Box>
               </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="contained" onClick={connectSquare} disabled={connected}>{connected ? 'Connected' : 'Connect'}</Button>
+            <Button variant="contained" onClick={connectSquare} disabled={false}>{connected ? 'Connected' : 'Connect'}</Button>
+            <Button variant="outlined" color="error" onClick={disconnectSquare} disabled={!connected}>Disconnect</Button>
             <Link href="https://developer.squareup.com/docs/oauth-api/overview" target="_blank" rel="noopener noreferrer">
               <Button variant="outlined">Help</Button>
             </Link>

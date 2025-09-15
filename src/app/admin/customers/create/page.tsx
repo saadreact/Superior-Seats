@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Typography, Button, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, FormControlLabel, Switch } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import CustomerForm from '@/components/admin/CustomerForm';
@@ -17,12 +17,14 @@ const CreateCustomerPage = () => {
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorDialogTitle, setErrorDialogTitle] = useState<string>('');
   const [errorDialogMessage, setErrorDialogMessage] = useState<string>('');
+  const [isActive, setIsActive] = useState<boolean>(true);
 
   const handleSubmit = async (customer: any) => {
     setAlert(null);
     setServerErrors({});
     try {
-      await apiService.createCustomer(customer);
+      const customerData = { ...customer, is_active: isActive };
+      await apiService.createCustomer(customerData);
       setAlert({ type: 'success', message: 'Customer created successfully' });
       router.push('/admin/customers');
     } catch (error: any) {
@@ -66,6 +68,24 @@ const CreateCustomerPage = () => {
     setErrorDialogOpen(false);
   };
 
+  const statusToggle = (
+    <FormControlLabel
+      control={
+        <Switch
+          checked={isActive}
+          onChange={(e) => setIsActive(e.target.checked)}
+          color="primary"
+        />
+      }
+      label={
+        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+          {isActive ? 'Active' : 'Inactive'}
+        </Typography>
+      }
+      labelPlacement="start"
+    />
+  );
+
   return (
     <AdminLayout title="Create New Customer">
       <Box sx={{ mb: 3 }}>
@@ -76,7 +96,6 @@ const CreateCustomerPage = () => {
         >
           Back to Customers
         </Button>
-    
       </Box>
 
       {alert && (
@@ -99,6 +118,7 @@ const CreateCustomerPage = () => {
           onCancel={handleCancel}
           serverErrors={serverErrors}
           onClearServerError={clearServerError}
+          statusToggle={statusToggle}
         />
       )}
 
