@@ -23,6 +23,11 @@ import {
   Dialog,
   FormControlLabel,
   Checkbox,
+  Card,
+  CardContent,
+  CardMedia,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -106,6 +111,9 @@ interface ProductsResponse {
 
 const Products2Page = () => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,14 +146,16 @@ const Products2Page = () => {
         params.search = searchTerm.trim();
       }
       
-      // Add special shop filter if enabled
-      if (showOnlySpecial) {
-        params.special_shop = true;
-      }
+       // Add special shop filter if enabled
+       if (showOnlySpecial) {
+         params.show_on_special_shop = true;
+       }
       
-      console.log('🔍 Loading products with params:', params);
-      
-      const response = await apiService.getProducts(params);
+       console.log('🔍 Loading products with params:', params);
+       console.log('🔍 Special shop filter enabled:', showOnlySpecial);
+       
+       const response = await apiService.getProducts(params);
+       console.log('🔍 API Response:', response);
       
       // Handle the API response structure
       if (response && response.data) {
@@ -262,10 +272,10 @@ const Products2Page = () => {
         <Box sx={{ 
           mb: 3, 
           display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
+          flexDirection: { xs: 'column', md: 'row' },
           justifyContent: 'space-between', 
-          alignItems: { xs: 'stretch', sm: 'center' },
-          gap: { xs: 2, sm: 0 }
+          alignItems: { xs: 'stretch', md: 'flex-start' },
+          gap: { xs: 2, md: 0 }
         }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
            
@@ -280,12 +290,20 @@ const Products2Page = () => {
                     <SearchIcon />
                   </InputAdornment>
                 )}}
-              sx={{ maxWidth: 400 }}
+              sx={{ 
+                maxWidth: { xs: '100%', sm: 400 },
+                width: '100%'
+              }}
               size="small"
             />
 
             {/* Special Products Filter */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'flex-start', sm: 'center' }, 
+              gap: { xs: 1, sm: 2 }
+            }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -316,7 +334,15 @@ const Products2Page = () => {
               />
               
               {/* Product count indicator */}
-              <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+              <Typography 
+                variant="caption" 
+                color="text.secondary" 
+                sx={{ 
+                  ml: { xs: 0, sm: 2 },
+                  mt: { xs: 1, sm: 0 },
+                  alignSelf: { xs: 'flex-start', sm: 'center' }
+                }}
+              >
                 Showing {filteredProducts.length} of {totalCount} products
                 {showOnlySpecial && ` (Special Shop only)`}
               </Typography>
@@ -328,7 +354,8 @@ const Products2Page = () => {
             onClick={handleAdd}
             className="gradient-style"
             sx={{ 
-              alignSelf: { xs: 'stretch', sm: 'auto' },
+              alignSelf: { xs: 'stretch', md: 'auto' },
+              minWidth: { xs: 'auto', md: '140px' },
               boxShadow: 'none',
               '&:hover': {
                 boxShadow: 'none',
@@ -370,7 +397,7 @@ const Products2Page = () => {
           </Alert>
         )}
 
-        {/* Products Table */}
+        {/* Products Display */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
@@ -388,7 +415,236 @@ const Products2Page = () => {
                'Click "Add Product" to create your first product.'}
             </Typography>
           </Paper>
+        ) : isMobile ? (
+          /* Mobile Card Layout */
+          <Box>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+              gap: 2 
+            }}>
+              {filteredProducts.map((product) => (
+                <Card 
+                  key={product.id}
+                  sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.3s ease',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: 3
+                    }
+                  }}
+                >
+                  <Box sx={{ 
+                    position: 'relative',
+                    width: '100%',
+                    height: { xs: 180, sm: 200 },
+                    overflow: 'hidden',
+                    borderRadius: '8px 8px 0 0',
+                    backgroundColor: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Box
+                      component="img"
+                      src={getProductImage(product)}
+                      alt={product.name}
+                      sx={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        width: 'auto',
+                        height: 'auto',
+                        objectFit: 'contain',
+                        objectPosition: 'center',
+                        transition: 'transform 0.3s ease',
+                        borderRadius: '4px',
+                        '&:hover': {
+                          transform: 'scale(1.02)'
+                        }
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/TruckImages/01.jpg';
+                      }}
+                    />
+                    
+                    {/* Subtle border for better definition */}
+                    <Box sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      borderRadius: '8px 8px 0 0',
+                      pointerEvents: 'none'
+                    }} />
+                  </Box>
+                  <CardContent sx={{ 
+                    flexGrow: 1, 
+                    p: { xs: 1.5, sm: 2 },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}>
+                    {/* Top Section - Title and Description */}
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="h6" component="h2" sx={{ 
+                        fontWeight: 600, 
+                        mb: 1,
+                        fontSize: { xs: '0.95rem', sm: '1rem' },
+                        lineHeight: 1.3,
+                        color: 'text.primary'
+                      }}>
+                        {product.name}
+                      </Typography>
+                      
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          minHeight: '2.5em',
+                          fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                        }}
+                      >
+                        {product.description || 'No description available'}
+                      </Typography>
+                    </Box>
+                    
+                    {/* Middle Section - Chips */}
+                    <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      <Chip
+                        label={typeof product.category === 'string' ? product.category : ((product.category as any)?.name || 'No Category')}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                      <Chip
+                        label={product.is_active ? 'Active' : 'Inactive'}
+                        size="small"
+                        color={product.is_active ? 'success' : 'default'}
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                      <Chip
+                        label={(product as any).show_on_special_shop ? 'Special' : 'Regular'}
+                        size="small"
+                        color={(product as any).show_on_special_shop ? 'warning' : 'default'}
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                    </Box>
+                    
+                    {/* Bottom Section - Price, Stock, and Actions */}
+                    <Box sx={{ mt: 'auto' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6" sx={{ 
+                          fontWeight: 700, 
+                          color: 'primary.main',
+                          fontSize: { xs: '1rem', sm: '1.1rem' }
+                        }}>
+                          ${product.price}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                          {product.stock} units
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleView(product)}
+                          title="View"
+                          sx={{ 
+                            color: 'primary.main',
+                            bgcolor: 'rgba(25, 118, 210, 0.1)',
+                            '&:hover': { 
+                              bgcolor: 'primary.main', 
+                              color: 'white',
+                              transform: 'scale(1.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <ViewIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEdit(product)}
+                          title="Edit"
+                          sx={{ 
+                            color: 'primary.main',
+                            bgcolor: 'rgba(25, 118, 210, 0.1)',
+                            '&:hover': { 
+                              bgcolor: 'primary.main', 
+                              color: 'white',
+                              transform: 'scale(1.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDelete(product)}
+                          title="Delete"
+                          sx={{ 
+                            color: 'error.main',
+                            bgcolor: 'rgba(211, 47, 47, 0.1)',
+                            '&:hover': { 
+                              bgcolor: 'error.main', 
+                              color: 'white',
+                              transform: 'scale(1.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+            
+            {/* Mobile Pagination */}
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={totalCount}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                sx={{
+                  '& .MuiTablePagination-toolbar': {
+                    paddingLeft: 0,
+                    paddingRight: 0,
+                    flexWrap: 'wrap',
+                    gap: 1
+                  },
+                  '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                    color: 'text.secondary',
+                    fontSize: '0.875rem'
+                  }
+                }}
+              />
+            </Box>
+          </Box>
         ) : (
+          /* Desktop Table Layout */
           <Paper sx={{ overflow: 'hidden' }}>
             <TableContainer>
               <Table>
@@ -421,20 +677,23 @@ const Products2Page = () => {
                           position: 'relative',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
+                          backgroundColor: '#f5f5f5',
+                          borderRadius: 1,
+                          border: '1px solid #e0e0e0'
                         }}>
                           <Box
                             component="img"
                             src={getProductImage(product)}
                             alt={product.name}
                             sx={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                              borderRadius: 1,
-                              border: '1px solid #e0e0e0',
-                              maxWidth: 60,
-                              maxHeight: 60
+                              maxWidth: '100%',
+                              maxHeight: '100%',
+                              width: 'auto',
+                              height: 'auto',
+                              objectFit: 'contain',
+                              objectPosition: 'center',
+                              borderRadius: 1
                             }}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
@@ -555,7 +814,7 @@ const Products2Page = () => {
               </Table>
             </TableContainer>
             
-            {/* Pagination */}
+            {/* Desktop Pagination */}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"

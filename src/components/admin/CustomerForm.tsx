@@ -19,6 +19,7 @@ interface CustomerFormProps {
   onCancel: () => void;
   serverErrors?: Record<string, string>;
   onClearServerError?: (field: string) => void;
+  statusToggle?: React.ReactNode;
 }
 
 const CustomerForm: React.FC<CustomerFormProps> = ({
@@ -28,6 +29,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   onCancel,
   serverErrors = {},
   onClearServerError,
+  statusToggle,
 }) => {
   const [formData, setFormData] = useState({
     first_name: '',
@@ -41,6 +43,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     state: '',
     company_name: '',
     price_tier_id: 1,
+    is_active: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -85,6 +88,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         state: customer.state || '',
         company_name: customer.company_name || '',
         price_tier_id: customer.price_tier_id || 1,
+        is_active: customer.is_active !== undefined ? customer.is_active : true,
       });
     }
   }, [customer]);
@@ -169,9 +173,21 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     <Box sx={{ pt: 2 }}>
       {/* Basic Information */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-          Basic Information
-        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 2 
+        }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+            Basic Information
+          </Typography>
+          {statusToggle && (
+            <Box sx={{ marginRight: 2 }}>
+              {statusToggle}
+            </Box>
+          )}
+        </Box>
         <Grid
           display="grid"
           gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}

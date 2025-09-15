@@ -50,6 +50,8 @@ import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 import { useRouter, useParams } from 'next/navigation';
 import AdminVariantsViewDrawer from '@/components/admin/AdminVariantsViewDrawer';
+import SquareCard, { SquareCardHandle } from '@/components/checkout/SquareCard';
+import { useAppSelector } from '@/store/hooks';
 
 interface OrderItem {
   id: number;
@@ -205,6 +207,11 @@ const OrderViewPage = () => {
   const [statusNotes, setStatusNotes] = useState('');
   const [variantsDrawerOpen, setVariantsDrawerOpen] = useState(false);
   const [selectedOrderItem, setSelectedOrderItem] = useState<OrderItem | null>(null);
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const squareRef = React.useRef<SquareCardHandle | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const auth = useAppSelector((s: any) => s.auth);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -213,7 +220,6 @@ const OrderViewPage = () => {
         
         const response = await apiService.getOrder(getOrderIdNum());
         const rawOrderData = response.data || response;
-        debugger
         // Transform the API response to match expected structure
         const orderData = {
           ...rawOrderData,
@@ -423,7 +429,7 @@ const OrderViewPage = () => {
 
   // At this point, order is guaranteed to exist
   const orderData = order!;
-
+console.log("order",order)
   return (
     <AdminLayout>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -537,6 +543,12 @@ const OrderViewPage = () => {
                     <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
                       {order?.payment_method?.replace('_', ' ')}
                     </Typography>
+                  </Box>
+                )}
+                {/* Change Payment Method link - visible when not paid */}
+                {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button size="small" variant="text" onClick={() => setPayDialogOpen(true)}>Change Payment Method</Button>
                   </Box>
                 )}
                 {order?.invoice_number && (
@@ -847,6 +859,65 @@ const OrderViewPage = () => {
           readOnly={true}
           onApply={() => {}} // No-op for read-only mode
         />
+
+        {/* Payment Dialog */}
+        <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Change Payment Method</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" sx={{ mb: 1 }}>Enter new payment method to charge ${formatCurrency(order?.total_amount || 0).replace('$','')}.</Typography>
+            <SquareCard
+              ref={squareRef}
+              amount={Number(order?.total_amount || 0)}
+              applicationId={process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID as string}
+              locationId={process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string}
+            />
+            {payError && (<Alert severity="error" sx={{ mt: 1 }}>{payError}</Alert>)}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setPayDialogOpen(false)} disabled={isPaying}>Cancel</Button>
+            <Button variant="contained" disabled={isPaying} onClick={async () => {
+              try {
+                setIsPaying(true);
+                setPayError(null);
+                if (!squareRef.current) throw new Error('Payment form not ready');
+                const { token } = await squareRef.current.tokenize();
+                const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string | undefined;
+                // Optional: If you have an endpoint to save the card and return card_id, call it here and include the id.
+                // For now, try to extract card_id from result if API responds with it on charge; otherwise set null.
+                const body = {
+                  customer_id: (order as any)?.user?.id || (order as any)?.customer?.id || null,
+                  order_id: getOrderIdNum(),
+                  payment_method: 'square',
+                  amount: Number(order?.total_amount || 0),
+                  // card_id: null,
+                  token,
+                  location_id: locationId,
+                  notes: `Payment for order #${order?.order_number}`,
+                };
+                const response = await fetch('https://superiorseats.ali-khalid.com/api/payments/charge', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...(auth?.token ? { 'Authorization': `Bearer ${auth.token}` } : {}),
+                  },
+                  body: JSON.stringify(body),
+                });
+                const result = await response.json();
+                if (!response.ok || result?.success === false) throw new Error(result?.error || result?.message || 'Payment failed');
+                // If backend returns a card_id, we could persist it if needed
+                // Update local state to reflect paid status and method
+                setOrder(prev => prev ? ({ ...prev, payment_status: 'paid', payment_method: 'square' }) : prev);
+                setPayDialogOpen(false);
+              } catch (e: any) {
+                setPayError(e?.message || 'Payment processing failed');
+              } finally {
+                setIsPaying(false);
+              }
+            }}>Charge</Button>
+          </DialogActions>
+        </Dialog>
+
       </Box>
     </AdminLayout>
   );
