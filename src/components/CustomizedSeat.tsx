@@ -1446,7 +1446,21 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               price: `$${totalPrice}`,
                               image: productData.primary_image?.image_url || '/placeholder-image.jpg',
                               description: `${productData.description} with ${materialName} material, ${colorName} color, and ${stitchingName} stitching`,
-                              category: productData.category?.name || 'seat'
+                              category: productData.category?.name || 'seat',
+                              // Persist variant selections for prefill in order wizard
+                              variants: {
+                                materialType: selectedTexture && selectedTexture !== 'none' ? selectedTexture : '',
+                                color: selectedColor && selectedColor !== 'none' ? selectedColor : '',
+                                seatStitchPattern: selectedStitching && selectedStitching !== 'none' ? selectedStitching : '',
+                                reclineType: selectedRecline || '',
+                                lumbarType: selectedLumber || '',
+                                heatOption: selectedHeatingCooling || '',
+                                seatType: selectedSeatType || '',
+                                itemType: selectedItemType || '',
+                                seatStyle: selectedSeatStyle || '',
+                                armType: selectedIncludedArm || '',
+                                // if you later add armType/lumbar in UI, wire them here too
+                              },
                             }));
                          }}
                                                    className={styles.addToCartButton}

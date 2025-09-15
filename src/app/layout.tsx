@@ -3,6 +3,7 @@ import { Raleway } from 'next/font/google';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import { SelectedItemProvider } from '@/contexts/SelectedItemContext';
 import ReduxProvider from '@/components/ReduxProvider';
+import Script from 'next/script';
 import AutoRefreshInitializer from '@/components/AutoRefreshInitializer';
 
 // import FloatingButtonWrapper from '@/components/FloatingButtonWrapper';
@@ -25,8 +26,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const env = (process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT || 'sandbox').toLowerCase();
+  const sdkSrc = env === 'production'
+    ? 'https://web.squarecdn.com/v1/square.js'
+    : 'https://sandbox.web.squarecdn.com/v1/square.js';
+
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://web.squarecdn.com" />
+        <link rel="dns-prefetch" href="https://web.squarecdn.com" />
+        <link rel="preconnect" href="https://sandbox.web.squarecdn.com" />
+        <link rel="dns-prefetch" href="https://sandbox.web.squarecdn.com" />
+      </head>
       <body className={inter.className}>
         <ReduxProvider>
           <ThemeRegistry>
@@ -37,6 +49,8 @@ export default function RootLayout({
             </SelectedItemProvider>
           </ThemeRegistry>
         </ReduxProvider>
+        {/* Preload Square SDK globally so checkout sees it instantly */}
+        <Script src={sdkSrc} strategy="beforeInteractive" />
       </body>
     </html>
   );

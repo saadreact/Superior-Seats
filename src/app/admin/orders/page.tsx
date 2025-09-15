@@ -63,7 +63,7 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Order {
   id: number;
@@ -123,6 +123,7 @@ interface OrderStatistics {
 
 const OrdersPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   	const [orders, setOrders] = useState<Order[]>([]);
 	const [statistics, setStatistics] = useState<OrderStatistics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -257,7 +258,13 @@ const OrdersPage = () => {
 	}, [page, rowsPerPage, filters]);
 
   useEffect(() => {
+    // Initialize filters from URL params on first load
+    const cid = searchParams?.get('customer_id') || '';
+    if (cid) {
+      setFilters((prev) => ({ ...prev, customer_id: cid }));
+    }
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchOrders]);
 
   const handleFilterChange = (field: string, value: string) => {
@@ -660,7 +667,6 @@ const OrdersPage = () => {
                     <TableCell>Status</TableCell>
                     <TableCell>Payment</TableCell>
                     <TableCell>Total</TableCell>
-                    <TableCell>Items</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell align="center">Actions</TableCell>
                   </TableRow>
@@ -735,13 +741,6 @@ const OrdersPage = () => {
                           <Typography variant="body2" fontWeight={600}>
                             {formatCurrency(order.total_amount || 0)}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Tooltip title={`${order.items?.length || 0} items`}>
-                            <Badge badgeContent={order.items?.length || 0} color="primary">
-                              <CartIcon color="action" />
-                            </Badge>
-                          </Tooltip>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">

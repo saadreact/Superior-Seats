@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Typography,
   Card,
-  TextField,
-  FormControlLabel,
-  Checkbox,
   Button,
   Stack,
   Alert,
@@ -13,12 +10,14 @@ import {
   Snackbar,
   Radio,
   RadioGroup,
-  Divider
+  Divider,
+  FormControlLabel
 } from '@mui/material';
-import { paymentMethods, defaultPaymentData, PaymentFormData } from '@/data/checkoutData';
+import SquareCard, { SquareCardHandle } from './SquareCard';
+import type { PaymentFormData } from '@/data/checkoutData';
 
 interface PaymentMethodProps {
-  onNext: () => void;
+  onNext: (paymentId?: string, extra?: { sourceToken?: string; status?: string }) => void;
   onBack: () => void;
   amount?: number;
   currency?: string;
@@ -26,385 +25,127 @@ interface PaymentMethodProps {
   onFormDataChange: (data: PaymentFormData) => void;
 }
 
-const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 0, currency = 'USD', formData, onFormDataChange }) => {
-  // Ensure amount is a valid number
+const PaymentMethod: React.FC<PaymentMethodProps> = ({ onNext, onBack, amount = 0, currency = 'USD' }) => {
   const validAmount = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentOption, setPaymentOption] = useState<'cash' | 'card'>('card');
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
     severity: 'success' | 'error';
-  }>({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  }>({ open: false, message: '', severity: 'success' });
 
-  const handleInputChange = (field: keyof PaymentFormData) => (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    onFormDataChange({
-      ...formData,
-      [field]: event.target.type === 'checkbox' ? event.target.checked : event.target.value
-    });
-  };
+  const squareRef = useRef<SquareCardHandle | null>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsProcessing(true);
 
     try {
-      // Simulate payment processing
-      // In a real implementation, you would integrate with your payment gateway
-      // For now, we'll simulate the payment process
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
       if (paymentOption === 'cash') {
-        // Handle cash on delivery
-        setSnackbar({
-          open: true,
-          message: 'Cash on delivery order placed successfully!',
-          severity: 'success'
-        });
-        
-        // Proceed to next step
-        setTimeout(() => {
-          onNext();
-        }, 2000);
-      } else {
-        // Handle card payment (replace with actual payment gateway integration)
-        const response = await fetch('/api/payments', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount: validAmount,
-            currency: currency,
-            email: formData.email || undefined,
-            billingAddress: {
-              address: formData.billingAddress?.addressLine1,
-              address2: formData.billingAddress?.addressLine2,
-              city: formData.billingAddress?.city,
-              state: formData.billingAddress?.state,
-              zipCode: formData.billingAddress?.postalCode,
-              country: formData.billingAddress?.country,
-            }
-          }),
-        });
-
-        const paymentResult = await response.json();
-
-        if (paymentResult.success) {
-          setSnackbar({
-            open: true,
-            message: 'Payment processed successfully!',
-            severity: 'success'
-          });
-          
-          // Clear form
-          onFormDataChange(defaultPaymentData);
-          
-          // Proceed to next step
-          setTimeout(() => {
-            onNext();
-          }, 2000);
-        } else {
-          throw new Error(paymentResult.error || 'Payment failed');
-        }
+        setSnackbar({ open: true, message: 'Cash on delivery order placed successfully!', severity: 'success' });
+        setTimeout(() => { onNext(); }, 500);
+        return;
       }
+
+      if (!squareRef.current) throw new Error('Payment form not ready');
+      const { token, details } = await squareRef.current.tokenize();
+
+      const response = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: validAmount, currency, sourceId: token }),
+      });
+      const paymentResult = await response.json();
+      if (!response.ok || !paymentResult.success) {
+        throw new Error(paymentResult.error || 'Payment failed');
+      }
+
+      setSnackbar({ open: true, message: 'Payment processed successfully!', severity: 'success' });
+      const cardBrand = details?.card?.brand || details?.cardBrand || undefined;
+      const last4 = details?.card?.last4 || details?.last4 || undefined;
+      const expMonth = details?.expMonth || details?.card?.expMonth || undefined;
+      const expYear = details?.expYear || details?.card?.expYear || undefined;
+      setTimeout(() => { onNext(paymentResult.paymentId, { sourceToken: token, status: paymentResult.status, ...(cardBrand ? { cardBrand } : {}), ...(last4 ? { last4 } : {}), ...(expMonth ? { expMonth } : {}), ...(expYear ? { expYear } : {}) }); }, 400);
     } catch (error: any) {
       console.error('Payment error:', error);
-      setSnackbar({
-        open: true,
-        message: error.message || 'Payment processing failed. Please try again.',
-        severity: 'error'
-      });
+      setSnackbar({ open: true, message: error.message || 'Payment processing failed. Please try again.', severity: 'error' });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
-  };
+  const handleCloseSnackbar = () => setSnackbar(prev => ({ ...prev, open: false }));
 
   return (
-    <Box sx={{ 
-      maxWidth: { xs: '100%', sm: 500, md: 600 }, 
-      mx: 'auto', 
-      p: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 } 
-    }}>
-      <Typography variant="h4" sx={{ 
-        mb: { xs: 2, sm: 3 }, 
-        textAlign: 'center', 
-        fontWeight: 'medium',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2rem', lg: '2rem', xl: '2rem' }
-      }}>
+    <Box sx={{ maxWidth: { xs: '100%', sm: 500, md: 600 }, mx: 'auto', p: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 } }}>
+      <Typography variant="h4" sx={{ mb: { xs: 2, sm: 3 }, textAlign: 'center', fontWeight: 'medium', fontSize: { xs: '1.5rem', sm: '2rem', md: '2rem', lg: '2rem', xl: '2rem' } }}>
         Payment Information
       </Typography>
-      
-      <Card sx={{ 
-        p: { xs: 2, sm: 3, md: 4 }, 
-        borderRadius: { xs: 2, sm: 3 } 
-      }}>
+
+      <Card sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: { xs: 2, sm: 3 } }}>
         <form onSubmit={handleSubmit}>
           <Stack spacing={{ xs: 2, sm: 2, md: 2, lg: 2, xl: 2 }}>
-            {/* Payment Info */}
-            <Alert severity="info" sx={{ 
-              mb: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 },
-              fontSize: { xs: '0.875rem', sm: '1rem' }
-            }}>
+            <Alert severity="info" sx={{ mb: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
               💳 Choose your payment method
             </Alert>
 
-            {/* Payment Options */}
             <Box>
-              <Typography variant="h6" sx={{ 
-                mb: { xs: 2, sm: 3, md: 3, lg: 1.5, xl: 1.5 }, 
-                fontWeight: 'bold',
-                fontSize: { xs: '1rem', sm: '1.25rem' }
-              }}>
+              <Typography variant="h6" sx={{ mb: { xs: 2, sm: 3, md: 3, lg: 1.5, xl: 1.5 }, fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 Payment Method
               </Typography>
-              
-              <RadioGroup
-                value={paymentOption}
-                onChange={(e) => setPaymentOption(e.target.value as 'cash' | 'card')}
-                sx={{ mb: 1 }}
-              >
+
+              <RadioGroup value={paymentOption} onChange={(e) => setPaymentOption(e.target.value as 'cash' | 'card')} sx={{ mb: 1 }}>
                 <FormControlLabel
                   value="cash"
                   control={<Radio />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        💵 Cash on Delivery
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        Pay when you receive your order
-                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>💵 Cash on Delivery</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>Pay when you receive your order</Typography>
                     </Box>
                   }
-                  sx={{
-                    mb: 1.5,
-                    p: 1.5,
-                    border: '1px solid',
-                    borderColor: paymentOption === 'cash' ? 'primary.main' : 'grey.300',
-                    borderRadius: 2,
-                    backgroundColor: paymentOption === 'cash' ? 'primary.50' : 'transparent',
-                    '&:hover': {
-                      backgroundColor: paymentOption === 'cash' ? 'primary.100' : 'grey.50'
-                    }
-                  }}
+                  sx={{ mb: 1.5, p: 1.5, border: '1px solid', borderColor: paymentOption === 'cash' ? 'primary.main' : 'grey.300', borderRadius: 2, backgroundColor: paymentOption === 'cash' ? 'primary.50' : 'transparent', '&:hover': { backgroundColor: paymentOption === 'cash' ? 'primary.100' : 'grey.50' } }}
                 />
-                
+
                 <FormControlLabel
                   value="card"
                   control={<Radio />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        💳 Credit/Debit Card
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        Secure online payment
-                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>💳 Credit/Debit Card</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>Secure online payment</Typography>
                     </Box>
                   }
-                  sx={{
-                    p: 1.5,
-                    border: '1px solid',
-                    borderColor: paymentOption === 'card' ? 'primary.main' : 'grey.300',
-                    borderRadius: 2,
-                    backgroundColor: paymentOption === 'card' ? 'primary.50' : 'transparent',
-                    '&:hover': {
-                      backgroundColor: paymentOption === 'card' ? 'primary.100' : 'grey.50'
-                    }
-                  }}
+                  sx={{ p: 1.5, border: '1px solid', borderColor: paymentOption === 'card' ? 'primary.main' : 'grey.300', borderRadius: 2, backgroundColor: paymentOption === 'card' ? 'primary.50' : 'transparent', '&:hover': { backgroundColor: paymentOption === 'card' ? 'primary.100' : 'grey.50' } }}
                 />
               </RadioGroup>
             </Box>
 
-            {/* Card Details - Only show when card option is selected */}
-            {paymentOption === 'card' && (
-              <Box>
-                <Divider sx={{ my: 1.5 }} />
-                <Typography variant="h6" sx={{ 
-                  mb: { xs: 2, sm: 3, md: 1.5, lg: 1.5, xl: 1.5 }, 
-                  fontWeight: 'bold',
-                  fontSize: { xs: '1rem', sm: '1.25rem' }
-                }}>
-                  Card Details
-                </Typography>
-                
-                {/* Credit Card Input Fields */}
-                <TextField
-                  fullWidth
-                  label="Card Number"
-                  value={formData.cardNumber}
-                  onChange={handleInputChange('cardNumber')}
-                  placeholder="1234 5678 9012 3456"
-                  required={paymentOption === 'card'}
-                  sx={{
-                    mb: 2,
-                    '& .MuiInputLabel-root': {
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    },
-                    '& .MuiInputBase-input': {
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    }
-                  }}
-                />
-                
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                  <TextField
-                    fullWidth
-                    label="Expiry Date"
-                    value={formData.expiryDate}
-                    onChange={handleInputChange('expiryDate')}
-                    placeholder="MM/YY"
-                    required={paymentOption === 'card'}
-                    sx={{
-                      '& .MuiInputLabel-root': {
-                        fontSize: { xs: '0.875rem', sm: '1rem' }
-                      },
-                      '& .MuiInputBase-input': {
-                        fontSize: { xs: '0.875rem', sm: '1rem' }
-                      }
-                    }}
-                  />
-                  <TextField
-                    fullWidth
-                    label="CVV"
-                    value={formData.cvv}
-                    onChange={handleInputChange('cvv')}
-                    placeholder="123"
-                    required={paymentOption === 'card'}
-                    sx={{
-                      '& .MuiInputLabel-root': {
-                        fontSize: { xs: '0.875rem', sm: '1rem' }
-                      },
-                      '& .MuiInputBase-input': {
-                        fontSize: { xs: '0.875rem', sm: '1rem' }
-                      }
-                    }}
-                  />
-                </Box>
-                
-                <TextField
-                  fullWidth
-                  label="Cardholder Name"
-                  value={formData.cardHolderName}
-                  onChange={handleInputChange('cardHolderName')}
-                  placeholder="John Doe"
-                  required={paymentOption === 'card'}
-                  sx={{
-                    mb: 2,
-                    '& .MuiInputLabel-root': {
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    },
-                    '& .MuiInputBase-input': {
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    }
-                  }}
-                />
-                
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.saveCard}
-                      onChange={handleInputChange('saveCard')}
-                    />
-                  }
-                  label="Save this card for future purchases"
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    }
-                  }}
-                />
-              </Box>
-            )}
+            {/* Keep card mounted always; hide when not selected for instant toggle */}
+            <Box sx={{ display: paymentOption === 'card' ? 'block' : 'none' }}>
+              <Divider sx={{ my: 1.5 }} />
+              <Typography variant="h6" sx={{ mb: { xs: 2, sm: 3, md: 1.5, lg: 1.5, xl: 1.5 }, fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                Card Details
+              </Typography>
+              <SquareCard ref={squareRef} amount={validAmount} />
+            </Box>
 
-                         {/* Navigation Buttons */}
-             <Box sx={{ 
-               display: 'flex', 
-               gap: { xs: 2, sm: 2 }, 
-               mt: { xs: 2, sm: 2 },
-               flexDirection: { xs: 'column', sm: 'row' },
-               justifyContent: 'center',
-               alignItems: 'center'
-             }}>
-               <Button
-                 variant="outlined"
-                 onClick={onBack}
-                 disabled={isProcessing}
-                 sx={{ 
-                   py: { xs: 1, sm: 1.25 },
-                   px: { xs: 2, sm: 3 },
-                   fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
-                   minWidth: { xs: '120px', sm: '140px' },
-                   height: { xs: '45px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
-                   width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }
-                 }}
-               >
-                 Back
-               </Button>
-               <Button
-                 type="submit"
-                 variant="contained"
-                 disabled={isProcessing}
-                 sx={{ 
-                   py: { xs: 1, sm: 1.25 },
-                   px: { xs: 2, sm: 3 },
-                   fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
-                   minWidth: { xs: '120px', sm: '140px' },
-                   height: { xs: '45px', sm: '40px', md: '40px', lg: '40px', xl: '40px' },
-                   width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' },
-                   backgroundColor: 'primary.main',
-                   boxShadow: 'none',
-                   '&:hover': {
-                     backgroundColor: 'primary.dark',
-                     boxShadow: 'none',
-                   },
-                   '&:disabled': {
-                     backgroundColor: 'grey.400',
-                     boxShadow: 'none',
-                   }
-                 }}
-               >
-                {isProcessing ? (
-                  <>
-                    <CircularProgress size={20} sx={{ mr: 1, color: 'white' }} />
-                    Processing...
-                  </>
-                ) : paymentOption === 'cash' ? (
-                  `Place Order - $ ${validAmount.toFixed(2)}`
-                ) : (
-                  `Pay $ ${validAmount.toFixed(2)}`
-                )}
+            <Box sx={{ display: 'flex', gap: { xs: 2, sm: 2 }, mt: { xs: 2, sm: 2 }, flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'center', alignItems: 'center' }}>
+              <Button variant="outlined" onClick={onBack} disabled={isProcessing} sx={{ py: { xs: 1, sm: 1.25 }, px: { xs: 2, sm: 3 }, fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' }, minWidth: { xs: '120px', sm: '140px' }, height: { xs: '45px', sm: '40px', md: '40px', lg: '40px', xl: '40px' }, width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' } }}>
+                Back
+              </Button>
+              <Button type="submit" variant="contained" disabled={isProcessing} sx={{ py: { xs: 1, sm: 1.25 }, px: { xs: 2, sm: 3 }, fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' }, minWidth: { xs: '120px', sm: '140px' }, height: { xs: '45px', sm: '40px', md: '40px', lg: '40px', xl: '40px' }, width: { xs: '100%', sm: '100%', md: '100%', lg: '50%', xl: '50%' }, backgroundColor: 'primary.main', boxShadow: 'none', '&:hover': { backgroundColor: 'primary.dark', boxShadow: 'none' }, '&:disabled': { backgroundColor: 'grey.400', boxShadow: 'none' } }}>
+                {isProcessing ? (<><CircularProgress size={20} sx={{ mr: 1, color: 'white' }} /> Processing...</>) : (paymentOption === 'cash' ? `Place Order - $ ${validAmount.toFixed(2)}` : `Pay $ ${validAmount.toFixed(2)}`)}
               </Button>
             </Box>
           </Stack>
         </form>
       </Card>
-      
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
