@@ -138,8 +138,8 @@ export default function ShopOrdersGrid() {
                   {orders.map((o) => (
                     <TableRow key={o.id} hover>
                       <TableCell>{o.order_number}</TableCell>
-                      <TableCell><Chip size="small" label={o.status} /></TableCell>
-                      <TableCell><Chip size="small" label={o.payment_status} /></TableCell>
+                      <TableCell><Chip size="small" label={o.status.charAt(0).toUpperCase() + o.status.slice(1)} sx={{ textTransform: 'capitalize' }} /></TableCell>
+                      <TableCell><Chip size="small" label={o.payment_status.charAt(0).toUpperCase() + o.payment_status.slice(1)} sx={{ textTransform: 'capitalize' }} /></TableCell>
                       <TableCell align="right">${o.total_amount.toFixed(2)}</TableCell>
                       <TableCell>{new Date(o.created_at).toLocaleDateString()}</TableCell>
                       <TableCell align="center">

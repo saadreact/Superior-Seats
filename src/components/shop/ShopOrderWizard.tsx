@@ -39,6 +39,8 @@ import type { CartItem as ReduxCartItem } from '@/store/cartSlice';
 import { apiService } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 import AdminVariantsDrawer, { VariantSelections } from '@/components/admin/AdminVariantsDrawer';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '@/store/cartSlice';
 
 interface ProductOption { id: number; name: string; price?: any; sku?: string }
 interface VariationOption { id: number; name: string; price?: number }
@@ -58,6 +60,7 @@ export default function ShopOrderWizard() {
   const router = useRouter();
   const { user } = useAppSelector((s: any) => s.auth);
   const reduxCart = useSelector((s: RootState) => s.cart.items) as ReduxCartItem[];
+  const dispatch = useDispatch();
 
   // Start at Select Products (skip Select Customer visually and logically)
   const [activeStep, setActiveStep] = useState(0);
@@ -120,6 +123,8 @@ export default function ShopOrderWizard() {
               variants: (ci as any).variants || undefined,
             } as CartItem;
           }));
+          // Immediately clear cart after importing items into the wizard
+          try { dispatch(clearCart()); } catch {}
         }
       } catch (e: any) {
         setError('Failed to load initial data');
@@ -246,6 +251,12 @@ export default function ShopOrderWizard() {
       else if (response?.data?.data?.id) orderId = response.data.data.id;
       setCreatedOrderId(orderId);
       setSuccessOpen(true);
+      try {
+        // Clear Redux cart if present to avoid duplicate ordering
+        const evt = new CustomEvent('clear-cart');
+        window.dispatchEvent(evt);
+      } catch {}
+
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to create order. Please try again.');
     } finally {
@@ -386,7 +397,7 @@ export default function ShopOrderWizard() {
                     </Select>
                   </FormControl>
                   <Box mt={2} display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-                    <TextField type="number" label="Discount" value={discountPct} onChange={(e) => setDiscountPct(Number(e.target.value))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+                    <TextField type="number" label="Discount" value={discountPct} onChange={(e) => setDiscountPct(Math.max(0, Math.min(100, Number(e.target.value))))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} helperText="0-100%" />
                     <TextField type="number" label="Tax" value={taxPct} onChange={(e) => setTaxPct(Number(e.target.value))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
                   </Box>
                 </Box>

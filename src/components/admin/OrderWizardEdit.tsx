@@ -612,7 +612,7 @@ const getUnitPrice = (productId: number) => {
 										</Select>
 									</FormControl>
 									<Box mt={2} display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-										<TextField type="number" label="Discount" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
+										<TextField type="number" label="Discount" value={discount} onChange={(e) => setDiscount(Math.max(0, Math.min(100, Number(e.target.value))))} helperText="0-100%" />
 										<TextField type="number" label="Tax" value={tax} onChange={(e) => setTax(Number(e.target.value))} />
 									</Box>
 								</Box>

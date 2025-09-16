@@ -486,14 +486,16 @@ console.log("order",order)
                 Download Invoice
               </Button>
             )}
-            <Button
-              variant="outlined"
-              startIcon={<EditIcon />}
-              onClick={handleEdit}
-              size="small"
-            >
-              Edit
-            </Button>
+            {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
+              <Button
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={handleEdit}
+                size="small"
+              >
+                Edit
+              </Button>
+            )}
             <Button
               variant="outlined"
               color="error"
