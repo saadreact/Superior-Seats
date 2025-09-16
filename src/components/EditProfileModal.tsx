@@ -561,7 +561,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     }
                   }}
                   error={!!errors.phone}
-                  helperText={errors.phone || "Enter phone number without country code"}
+                  helperText={errors.phone}
                   variant="outlined"
                   size="small"
                   inputProps={{

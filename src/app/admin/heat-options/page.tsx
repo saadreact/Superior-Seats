@@ -274,7 +274,6 @@ const HeatOptionsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Cost</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
@@ -377,25 +376,6 @@ const HeatOptionsPage = () => {
                         <Typography variant="body2" sx={{ fontWeight: 500, color: 'primary.main' }}>
                           ${formatPrice(heatOption.price)}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {heatOption.price_tiers && heatOption.price_tiers.length > 0 ? (
-                            heatOption.price_tiers.map((tier) => (
-                              <Chip
-                                key={tier.id}
-                                label={tier.display_name}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: '0.6rem', height: 20 }}
-                              />
-                            ))
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              None
-                            </Typography>
-                          )}
-                        </Box>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

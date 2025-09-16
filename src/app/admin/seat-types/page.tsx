@@ -6,6 +6,7 @@ import {
   Typography,
   Button,
   IconButton,
+  Chip,
   Dialog,
   Alert,
   CircularProgress,
@@ -123,7 +124,7 @@ const SeatTypesPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0);
+    setPage(0); // Reset to first page when searching
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -134,16 +135,6 @@ const SeatTypesPage = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  const filteredData = seatTypes.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const paginatedData = filteredData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
 
   return (
     <AdminLayout title="Seat Types">
@@ -247,7 +238,9 @@ const SeatTypesPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedData.map((seatType) => (
+                  {seatTypes
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((seatType) => (
                     <TableRow 
                       key={seatType.id}
                       sx={{ 
@@ -305,10 +298,11 @@ const SeatTypesPage = () => {
               </Table>
             </TableContainer>
             
+            {/* Pagination */}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={filteredData.length}
+              count={seatTypes.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}

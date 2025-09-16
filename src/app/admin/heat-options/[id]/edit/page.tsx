@@ -20,6 +20,7 @@ import {
   ListItemText,
   Chip,
   Divider,
+  FormControlLabel,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -48,6 +49,7 @@ const EditHeatOptionPage = () => {
   const [priceTiers, setPriceTiers] = useState<Array<{id: number, name: string, display_name: string}>>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
 
   useEffect(() => {
     loadHeatOption();
@@ -69,14 +71,24 @@ const EditHeatOptionPage = () => {
       setError(null);
       
       const heatOption = await heatOptionsService.getHeatOption(parseInt(id));
+      console.log('Loaded heat option:', heatOption);
+      
+      // Extract price tier IDs and adjustments
+      const priceTierIds = heatOption.price_tiers?.map((tier: any) => tier.id) || [];
+      const priceAdjustments = heatOption.price_adjustments || {};
+      
+      // Enable price tiers if there are any price tiers or adjustments
+      const hasPriceTiers = priceTierIds.length > 0 || Object.keys(priceAdjustments).length > 0;
+      setEnablePriceTiers(hasPriceTiers);
+      
       setFormData({
         name: heatOption.name || '',
         description: heatOption.description || '',
         image: null,
         cost: heatOption.cost || 0,
         price: heatOption.price || 0,
-        price_tier_ids: heatOption.price_tiers?.map((tier: any) => tier.id) || [],
-        price_adjustments: heatOption.price_adjustments || {}
+        price_tier_ids: priceTierIds,
+        price_adjustments: priceAdjustments
       });
       setCurrentImage(heatOption.image || null);
     } catch (err: any) {
@@ -120,6 +132,20 @@ const EditHeatOptionPage = () => {
     }));
   };
 
+  const handleEnablePriceTiersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setEnablePriceTiers(checked);
+    
+    // Clear price tiers and adjustments when disabled
+    if (!checked) {
+      setFormData(prev => ({
+        ...prev,
+        price_tier_ids: [],
+        price_adjustments: {}
+      }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -149,8 +175,8 @@ const EditHeatOptionPage = () => {
         image: formData.image,
         cost: formData.cost,
         price: formData.price,
-        price_tier_ids: formData.price_tier_ids.length > 0 ? formData.price_tier_ids : undefined,
-        price_adjustments: Object.keys(formData.price_adjustments).length > 0 ? formData.price_adjustments : undefined
+        price_tier_ids: enablePriceTiers && formData.price_tier_ids.length > 0 ? formData.price_tier_ids : [],
+        price_adjustments: enablePriceTiers && Object.keys(formData.price_adjustments).length > 0 ? formData.price_adjustments : undefined
       };
       
       console.log('Updating heat option data:', submissionData);
@@ -278,16 +304,6 @@ const EditHeatOptionPage = () => {
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="Cost (Wholesale)"
-                    type="number"
-                    value={formData.cost}
-                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
-                    required
-                    fullWidth
-                    placeholder="Enter wholesale cost"
-                    inputProps={{ min: 0, step: 0.01 }}
-                  />
-                  <TextField
                     label="Price (Retail)"
                     type="number"
                     value={formData.price}
@@ -295,6 +311,16 @@ const EditHeatOptionPage = () => {
                     required
                     fullWidth
                     placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter wholesale cost"
                     inputProps={{ min: 0, step: 0.01 }}
                   />
                 </Box>
@@ -375,35 +401,46 @@ const EditHeatOptionPage = () => {
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                {formData.price_tier_ids.length > 0 && (
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
-                      Tier Pricing
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <TextField
-                        label="Retail Price"
-                        type="number"
-                        value={formData.price}
-                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
-                        required
-                        fullWidth
-                        placeholder="Enter retail price"
-                        inputProps={{ min: 0, step: 0.01 }}
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={enablePriceTiers}
+                        onChange={handleEnablePriceTiersChange}
+                        color="primary"
                       />
-                      <TextField
-                        label="Wholesale Price"
-                        type="number"
-                        value={formData.cost}
-                        onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
-                        required
-                        fullWidth
-                        placeholder="Enter wholesale price"
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
+                    }
+                    label="Enable Price Tiers"
+                  />
+
+                  {enablePriceTiers && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                        Tier Pricing
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <TextField
+                          label="Retail Price"
+                          type="number"
+                          value={formData.price}
+                          onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                          required
+                          fullWidth
+                          placeholder="Enter retail price"
+                          inputProps={{ min: 0, step: 0.01 }}
+                        />
+                        <TextField
+                          label="Wholesale Price"
+                          type="number"
+                          value={formData.cost}
+                          onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                          required
+                          fullWidth
+                          placeholder="Enter wholesale price"
+                          inputProps={{ min: 0, step: 0.01 }}
+                        />
+                      </Box>
                     </Box>
-                  </Box>
-                )}
+                  )}
                 </Box>
 
                 {/* Action Buttons */}

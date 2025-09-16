@@ -394,7 +394,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
-          { label: 'Shop', href: '/shop' },
+          { label: 'Shop', href: '/shop-now' },
           { label: 'Customize Your Seat' }
         ]}
       />
@@ -615,10 +615,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         variant="contained"
                         size="large"
                         onClick={() => {
-                          // Clear localStorage and navigate to shop
+                          // Clear localStorage and navigate to shop now
+                          console.log('🔄 CustomizedSeat - Shop Now button clicked (error state)');
                           localStorage.removeItem('selectedProductId');
                           clearSelectedItem();
-                          router.push('/shop');
+                          console.log('🔄 CustomizedSeat - Navigating to /shop-now');
+                          router.push('/shop-now');
                         }}
                         startIcon={<ArrowForward />}
                         sx={{ 
@@ -680,10 +682,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          variant="contained"
                          size="large"
                          onClick={() => {
-                           // Clear localStorage and navigate to shop
+                           // Clear localStorage and navigate to shop now
+                           console.log('🔄 CustomizedSeat - Browse Shop button clicked');
                            localStorage.removeItem('selectedProductId');
                            clearSelectedItem();
-                           router.push('/shop');
+                           console.log('🔄 CustomizedSeat - Navigating to /shop-now');
+                           router.push('/shop-now');
                          }}
                          startIcon={<ArrowForward />}
                          sx={{ 
@@ -826,12 +830,24 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         </Tooltip>
                       )) || (
                         // Fallback when no variation data is available
-                        <Box className={styles.materialOption}>
-                          <Box className={styles.noneOption}>
-                            <Typography variant="caption" className={styles.noneText}>
-                              No materials available
-                            </Typography>
-                          </Box>
+                        <Box sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          minHeight: '60px',
+                          padding: 2,
+                          backgroundColor: '#f5f5f5',
+                          borderRadius: 1,
+                          border: '1px dashed #ccc'
+                        }}>
+                          <Typography variant="body2" sx={{ 
+                            color: 'text.secondary',
+                            textAlign: 'center',
+                            fontWeight: 'medium'
+                          }}>
+                            No materials available
+                          </Typography>
                         </Box>
                       )}
                     </Box>
@@ -912,8 +928,22 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          </Tooltip>
                        )) || (
                          // Fallback when no variation data is available
-                         <Box className={styles.colorOption} style={{ backgroundColor: '#ccc' }}>
-                           <Typography variant="caption" style={{ color: '#666' }}>
+                         <Box sx={{
+                           display: 'flex',
+                           justifyContent: 'center',
+                           alignItems: 'center',
+                           width: '100%',
+                           minHeight: '60px',
+                           padding: 2,
+                           backgroundColor: '#f5f5f5',
+                           borderRadius: 1,
+                           border: '1px dashed #ccc'
+                         }}>
+                           <Typography variant="body2" sx={{ 
+                             color: 'text.secondary',
+                             textAlign: 'center',
+                             fontWeight: 'medium'
+                           }}>
                              No colors available
                            </Typography>
                          </Box>
@@ -997,12 +1027,24 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                          </Tooltip>
                        )) || (
                          // Fallback when no variation data is available
-                         <Box className={styles.stitchingOption}>
-                           <Box className={styles.noneOption}>
-                             <Typography variant="caption" className={styles.noneText}>
-                               No stitching patterns available
-                             </Typography>
-                           </Box>
+                         <Box sx={{
+                           display: 'flex',
+                           justifyContent: 'center',
+                           alignItems: 'center',
+                           width: '100%',
+                           minHeight: '60px',
+                           padding: 2,
+                           backgroundColor: '#f5f5f5',
+                           borderRadius: 1,
+                           border: '1px dashed #ccc'
+                         }}>
+                           <Typography variant="body2" sx={{ 
+                             color: 'text.secondary',
+                             textAlign: 'center',
+                             fontWeight: 'medium'
+                           }}>
+                             No stitching patterns available
+                           </Typography>
                          </Box>
                        )}
                      </Box>

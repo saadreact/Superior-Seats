@@ -257,16 +257,6 @@ const CreateHeatOptionPage = () => {
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="Cost (Wholesale)"
-                    type="number"
-                    value={formData.cost}
-                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
-                    required
-                    fullWidth
-                    placeholder="Enter wholesale cost"
-                    inputProps={{ min: 0, step: 0.01 }}
-                  />
-                  <TextField
                     label="Price (Retail)"
                     type="number"
                     value={formData.price}
@@ -274,6 +264,16 @@ const CreateHeatOptionPage = () => {
                     required
                     fullWidth
                     placeholder="Enter retail price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <TextField
+                    label="Cost (Wholesale)"
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
+                    required
+                    fullWidth
+                    placeholder="Enter wholesale cost"
                     inputProps={{ min: 0, step: 0.01 }}
                   />
                 </Box>
