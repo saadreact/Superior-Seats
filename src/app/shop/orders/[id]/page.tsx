@@ -47,6 +47,8 @@ import {
 import { apiService } from '@/utils/api';
 import { useRouter, useParams } from 'next/navigation';
 import AdminVariantsViewDrawer from '@/components/admin/AdminVariantsViewDrawer';
+import SquareCard, { SquareCardHandle } from '@/components/checkout/SquareCard';
+import { useAppSelector } from '@/store/hooks';
 
 interface OrderItem {
   id: number;
@@ -127,6 +129,11 @@ export default function ShopOrderViewPage() {
   const [statusNotes, setStatusNotes] = useState('');
   const [variantsDrawerOpen, setVariantsDrawerOpen] = useState(false);
   const [selectedOrderItem, setSelectedOrderItem] = useState<OrderItem | null>(null);
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const squareRef = React.useRef<SquareCardHandle | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const auth = useAppSelector((s: any) => s.auth);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -310,6 +317,11 @@ export default function ShopOrderViewPage() {
                       <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{order?.payment_method?.replace('_', ' ')}</Typography>
                     </Box>
                   )}
+                  {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button size="small" variant="text" onClick={() => setPayDialogOpen(true)}>Pay Now</Button>
+                    </Box>
+                  )}
                   {order?.invoice_number && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2">Invoice #:</Typography>
@@ -454,6 +466,81 @@ export default function ShopOrderViewPage() {
             readOnly={true}
             onApply={() => {}}
           />
+
+          {/* Payment Dialog */}
+          <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle>Pay Order</DialogTitle>
+            <DialogContent>
+              <Typography variant="body2" sx={{ mb: 1 }}>Enter payment to charge ${formatCurrency(order?.total_amount || 0).replace('$','')}.</Typography>
+              <SquareCard
+                ref={squareRef}
+                amount={Number(order?.total_amount || 0)}
+                applicationId={process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID as string}
+                locationId={process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string}
+              />
+              {payError && (<Alert severity="error" sx={{ mt: 1 }}>{payError}</Alert>)}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setPayDialogOpen(false)} disabled={isPaying}>Cancel</Button>
+              <Button variant="contained" disabled={isPaying} onClick={async () => {
+                try {
+                  setIsPaying(true);
+                  setPayError(null);
+                  if (!squareRef.current) throw new Error('Payment form not ready');
+                  const { token } = await squareRef.current.tokenize();
+                  const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string | undefined;
+                  const body = {
+                    customer_id: (order as any)?.customer?.id || null,
+                    order_id: getOrderIdNum(),
+                    payment_method: 'square',
+                    amount: Number(order?.total_amount || 0),
+                    token,
+                    location_id: locationId,
+                    notes: `Payment for order #${order?.order_number}`,
+                  };
+                  const response = await fetch('https://superiorseats.ali-khalid.com/api/payments/charge', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      ...(auth?.token ? { 'Authorization': `Bearer ${auth.token}` } : {}),
+                    },
+                    body: JSON.stringify(body),
+                  });
+                  const result = await response.json();
+                  if (!response.ok || result?.success === false) throw new Error(result?.error || result?.message || 'Payment failed');
+                  setPayDialogOpen(false);
+                  try {
+                    const refreshed = await apiService.getOrder(getOrderIdNum());
+                    const raw = (refreshed as any).data || refreshed;
+                    const mapped = {
+                      ...raw,
+                      items: (raw?.items || []).map((item: any) => ({
+                        id: item.id,
+                        product_id: item.product_id,
+                        variation_id: item.variation_id || 0,
+                        quantity: item.quantity,
+                        unit_price: item.unit_price,
+                        discount_amount: item.discount_amount || 0,
+                        total: item.total,
+                        variants: item.variants || {},
+                        product: { name: item.product?.name || item.name, category: item.product?.category },
+                        variation: item.variation,
+                      })),
+                    } as any;
+                    setOrder(mapped);
+                    try { (router as any).refresh?.(); } catch { /* noop */ }
+                  } catch {
+                    try { (router as any).refresh?.(); } catch { window.location.reload(); }
+                  }
+                } catch (e: any) {
+                  setPayError(e?.message || 'Payment processing failed');
+                } finally {
+                  setIsPaying(false);
+                }
+              }}>Pay</Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       )}
     </>

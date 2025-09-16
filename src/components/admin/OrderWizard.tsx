@@ -318,6 +318,7 @@ const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
 												setFirstName(v.first_name || '');
 												setLastName(v.last_name || '');
 												setEmail(v.email || '');
+												setPhone(v.phone || '');
 											}
 										}}
 										renderInput={(params) => (
