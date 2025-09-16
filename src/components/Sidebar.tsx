@@ -16,6 +16,7 @@ import {
   useMediaQuery,
   Toolbar,
   Collapse,
+  Tooltip,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -319,33 +320,25 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
                   '&.Mui-selected': {
                     backgroundColor: 'primary.main',
                     color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: 'white',
-                    },
+                    '&:hover': { backgroundColor: 'primary.dark' },
+                    '& .MuiListItemIcon-root': { color: 'white' },
                   },
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
+                  '&:hover': { backgroundColor: 'action.hover' },
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: collapsed ? 36 : 36,
-                    color: isActive(item.href) ? 'white' : 'inherit',
-                  }}
-                >
-                  {item.icon}
+                <ListItemIcon sx={{ minWidth: collapsed ? 36 : 36, color: isActive(item.href) ? 'white' : 'inherit' }}>
+                  {collapsed ? (
+                    <Tooltip title={item.text} placement="right">
+                      <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>{item.icon}</Box>
+                    </Tooltip>
+                  ) : (
+                    item.icon
+                  )}
                 </ListItemIcon>
                 {!collapsed && (
                   <ListItemText
                     primary={item.text}
-                    primaryTypographyProps={{
-                      fontWeight: isActive(item.href) ? 600 : 400,
-                      fontSize: '0.875rem',
-                    }}
+                    primaryTypographyProps={{ fontWeight: isActive(item.href) ? 600 : 400, fontSize: '0.875rem' }}
                   />
                 )}
               </ListItemButton>

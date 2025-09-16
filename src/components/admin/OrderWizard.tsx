@@ -467,7 +467,7 @@ const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
 																			</Select>
 																		</FormControl>
 																		<Box mt={2} display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-																			<TextField type="number" label="Discount" value={discountPct} onChange={(e) => setDiscountPct(Number(e.target.value))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+																			<TextField type="number" label="Discount" value={discountPct} onChange={(e) => setDiscountPct(Math.max(0, Math.min(100, Number(e.target.value))))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} helperText="0-100%" />
 																			<TextField type="number" label="Tax" value={taxPct} onChange={(e) => setTaxPct(Number(e.target.value))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
 																		</Box>
 																	</Box>

@@ -133,6 +133,7 @@ const OrdersPage = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [canEditSelected, setCanEditSelected] = useState<boolean>(false);
 
   // Pagination states
   const [page, setPage] = useState(0);
@@ -291,6 +292,9 @@ const OrdersPage = () => {
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, orderId: number) => {
     setAnchorEl(event.currentTarget);
     setSelectedOrderId(orderId);
+    const o = orders.find(o => o.id === orderId);
+    const isPaid = String(o?.payment_status || '').toLowerCase() === 'paid';
+    setCanEditSelected(!isPaid);
   };
 
   const handleMenuClose = () => {
@@ -861,12 +865,14 @@ const OrdersPage = () => {
             </ListItemIcon>
             <ListItemText>View Details</ListItemText>
           </MenuItem>
-          <MenuItem onClick={() => selectedOrderId && handleEdit(selectedOrderId)}>
-            <ListItemIcon>
-              <EditIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Edit Order</ListItemText>
-          </MenuItem>
+          {canEditSelected && (
+            <MenuItem onClick={() => selectedOrderId && handleEdit(selectedOrderId)}>
+              <ListItemIcon>
+                <EditIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Edit Order</ListItemText>
+            </MenuItem>
+          )}
           <Divider />
           <MenuItem 
             onClick={() => {
