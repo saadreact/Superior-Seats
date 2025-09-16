@@ -19,8 +19,18 @@ const AdminPayments = () => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const state = params.get('state');
+    // Treat either explicit success flag or square=success route as connected
+    const squareStatus = params.get('square');
+    if (squareStatus === 'success') {
+      dispatch(setConnected({ connected: true }));
+      setMsg('Square connected.');
+      const clean = window.location.pathname;
+      window.history.replaceState({}, '', clean);
+      return;
+    }
     const justConnected = params.get('connected');
     if (justConnected === '1') {
+      dispatch(setConnected({ connected: true }));
       setMsg('Square connected.');
       const clean = window.location.pathname;
       window.history.replaceState({}, '', clean);
@@ -75,7 +85,7 @@ const AdminPayments = () => {
                 </Box>
               </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="contained" onClick={connectSquare} disabled={false}>{connected ? 'Connected' : 'Connect'}</Button>
+            <Button variant="contained" onClick={connectSquare} disabled={connected}>{connected ? 'Connected' : 'Connect'}</Button>
             <Button variant="outlined" color="error" onClick={disconnectSquare} disabled={!connected}>Disconnect</Button>
             <Link href="https://developer.squareup.com/docs/oauth-api/overview" target="_blank" rel="noopener noreferrer">
               <Button variant="outlined">Help</Button>
