@@ -33,7 +33,6 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
   Search as SearchIcon,
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
@@ -204,9 +203,6 @@ const Products2Page = () => {
     router.push(`/admin/products-2/${product.id}/edit`);
   };
 
-  const handleView = (product: Product) => {
-    router.push(`/admin/products-2/${product.id}`);
-  };
 
   const handleDelete = (product: Product) => {
     setProductToDelete(product);
@@ -562,23 +558,6 @@ const Products2Page = () => {
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         <IconButton
                           size="small"
-                          onClick={() => handleView(product)}
-                          title="View"
-                          sx={{ 
-                            color: 'primary.main',
-                            bgcolor: 'rgba(25, 118, 210, 0.1)',
-                            '&:hover': { 
-                              bgcolor: 'primary.main', 
-                              color: 'white',
-                              transform: 'scale(1.1)'
-                            },
-                            transition: 'all 0.2s ease'
-                          }}
-                        >
-                          <ViewIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
                           onClick={() => handleEdit(product)}
                           title="Edit"
                           sx={{ 
@@ -782,14 +761,6 @@ const Products2Page = () => {
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleView(product)}
-                            title="View"
-                            sx={{ color: 'primary.main' }}
-                          >
-                            <ViewIcon />
-                          </IconButton>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(product)}
