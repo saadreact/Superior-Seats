@@ -413,6 +413,8 @@ class ApiService {
       case 'captured':
       case 'completed':
         return 'paid';
+      case 'paid':
+        return 'paid';
       case 'pending':
       case 'processing':
         return 'pending';
