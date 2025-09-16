@@ -179,7 +179,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
           alignItems: 'center', 
           mb: 2 
         }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
             Basic Information
           </Typography>
           {statusToggle && (
@@ -243,7 +243,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
       {/* Contact Information */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
           Contact Information
         </Typography>
         <Grid
@@ -293,7 +293,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
       {/* Business Information */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
           Business Information
         </Typography>
         <Grid

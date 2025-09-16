@@ -125,7 +125,7 @@ const EditVehicleTrimPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Vehicle Trims
+            Back
           </Button>
         </Box>
 

@@ -235,7 +235,7 @@ const ColorsPage = () => {
               }
             }}
           >
-            Add Color
+            Add
           </Button>
         </Box>
 

@@ -1056,13 +1056,13 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                                                                                {/* ===== VEHICLE INFORMATION SECTION ===== */}
                      <Box className={styles.vehicleInfoSection}>
                        <Typography variant="h6" className={styles.sectionTitle}>
-                         Vehicle Information
+                         Vehicle Fitments
                        </Typography>
                      
                        {vehicleTrimLoading ? (
                          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
                            <Typography variant="body2" color="text.secondary">
-                             Loading vehicle information...
+                             Loading vehicle Fitments...
                            </Typography>
                          </Box>
                        ) : vehicleTrimData ? (
@@ -1127,7 +1127,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                        ) : (
                          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
                            <Typography variant="body2" color="text.secondary">
-                             No vehicle information available
+                             No vehicle Fitments available
                            </Typography>
                          </Box>
                        )}

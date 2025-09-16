@@ -22,6 +22,7 @@ import {
   IconButton,
   Chip,
   Divider,
+  Switch,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -266,7 +267,7 @@ const EditColorPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Colors
+            Back
           </Button>
         </Box>
 
@@ -289,9 +290,36 @@ const EditColorPage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Basic Information */}
               <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Basic Information
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
+                    Basic Information
+                  </Typography>
+                  
+                  {/* Status Toggle */}
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.is_active}
+                        onChange={(e) => handleInputChange('is_active', e.target.checked)}
+                        color="primary"
+                      />
+                    }
+                    label={
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formData.is_active ? 'Active' : 'Inactive'}
+                      </Typography>
+                    }
+                    labelPlacement="start"
+                    sx={{ 
+                      gap: 1,
+                      margin: 0,
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: '0.875rem',
+                        fontWeight: 500
+                      }
+                    }}
+                  />
+                </Box>
                 <Divider sx={{ mb: 3 }} />
               
                 <TextField
@@ -363,16 +391,6 @@ const EditColorPage = () => {
                   </Select>
                 </FormControl>
 
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.is_active}
-                      onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Active"
-                />
               </Box>
 
               {/* Pricing Information */}

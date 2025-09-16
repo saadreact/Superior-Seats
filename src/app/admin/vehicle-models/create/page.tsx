@@ -76,7 +76,7 @@ const CreateVehicleModelPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Vehicle Models
+            Back
           </Button>
         </Box>
 

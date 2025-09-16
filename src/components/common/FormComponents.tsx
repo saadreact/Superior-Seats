@@ -252,8 +252,6 @@ export const FormActions: React.FC<FormActionsProps> = ({
     justifyContent: 'flex-end', 
     mt: 3,
     pt: 2,
-    borderTop: 1,
-    borderColor: 'divider',
   }}>
     {showDelete && onDelete && (
       <Button
