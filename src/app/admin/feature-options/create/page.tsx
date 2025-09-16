@@ -76,7 +76,7 @@ const CreateFeatureOptionPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Feature Options
+            Back
           </Button>
         </Box>
 

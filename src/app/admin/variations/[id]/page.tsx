@@ -243,7 +243,6 @@ const ViewVariationPage = () => {
                 {renderField('Material Type', variation.material_type)}
                 {renderField('Heat Option', variation.heat_option)}
                 {renderField('Stitch Pattern', variation.stitch_pattern)}
-                {renderField('Seat Item Type', variation.seat_item_type)}
                 {renderField('Color', variation.color)}
               </Box>
             </Box>

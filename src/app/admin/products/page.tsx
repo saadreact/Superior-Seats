@@ -268,7 +268,7 @@ const ProductsPage = () => {
               }
             }}
           >
-            Add Product
+            Add
           </Button>
         </Box>
 

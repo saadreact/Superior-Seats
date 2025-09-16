@@ -87,36 +87,31 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 
-        {/* Main Content */}
-        <Box
-          component="main"
+        {/* Top App Bar - Fixed Position */}
+        <AppBar
+          position="fixed"
+          elevation={1}
           sx={{
-            flexGrow: 1,
+            backgroundColor: 'white',
+            color: 'text.primary',
+            borderBottom: 1,
+            borderColor: 'divider',
+            zIndex: (theme) => theme.zIndex.appBar + 1,
+            top: 0,
+            left: { 
+              md: sidebarCollapsed 
+                ? `${collapsedDrawerWidth}px` 
+                : `${drawerWidth}px`
+            },
             width: { 
               md: sidebarCollapsed 
                 ? `calc(100% - ${collapsedDrawerWidth}px)` 
                 : `calc(100% - ${drawerWidth}px)`
             },
-            ml: { 
-              md: sidebarCollapsed 
-                ? `${collapsedDrawerWidth}px` 
-                : `${drawerWidth}px`
-            },
-            transition: 'margin-left 0.2s ease-in-out, width 0.2s ease-in-out',
+            transition: 'left 0.2s ease-in-out, width 0.2s ease-in-out',
           }}
         >
-          {/* Top App Bar */}
-          <AppBar
-            position="sticky"
-            elevation={1}
-            sx={{
-              backgroundColor: 'white',
-              color: 'text.primary',
-              borderBottom: 1,
-              borderColor: 'divider',
-            }}
-          >
-                    <Toolbar>
+          <Toolbar>
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -217,11 +212,35 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
               </IconButton>
             )}
           </Toolbar>
-          </AppBar>
+        </AppBar>
 
+        {/* Main Content */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            width: { 
+              md: sidebarCollapsed 
+                ? `calc(100% - ${collapsedDrawerWidth}px)` 
+                : `calc(100% - ${drawerWidth}px)`
+            },
+            ml: { 
+              md: sidebarCollapsed 
+                ? `${collapsedDrawerWidth}px` 
+                : `${drawerWidth}px`
+            },
+            transition: 'margin-left 0.2s ease-in-out, width 0.2s ease-in-out',
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: '100vh',
+            pt: '64px', // Add top padding to account for fixed header
+          }}
+        >
           {/* Page Content */}
           <Box sx={{ 
             p: { xs: 2, sm: 3 },
+            flexGrow: 1,
+            overflow: 'auto',
             minHeight: 'calc(100vh - 64px)',
           }}>
             {children}

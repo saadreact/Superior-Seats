@@ -169,7 +169,7 @@ const EditArmTypePage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Arm Types
+            Back
           </Button>
         </Box>
 

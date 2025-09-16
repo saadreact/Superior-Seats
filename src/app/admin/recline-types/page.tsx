@@ -223,7 +223,7 @@ const ReclineTypesPage = () => {
               }
             }}
           >
-            Add Recline Type
+            Add
           </Button>
         </Box>
 
@@ -285,7 +285,7 @@ const ReclineTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>

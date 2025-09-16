@@ -109,7 +109,7 @@ const EditSeatTypePage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Seat Types
+            Back
           </Button>
         </Box>
 

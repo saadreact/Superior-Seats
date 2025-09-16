@@ -84,7 +84,7 @@ const CreateSeatPricingPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Seat Pricing
+            Back
           </Button>
         </Box>
 

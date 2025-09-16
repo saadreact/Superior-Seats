@@ -208,7 +208,7 @@ const EditReclineTypePage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Recline Types
+            Back
           </Button>
         </Box>
 

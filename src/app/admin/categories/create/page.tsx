@@ -11,7 +11,9 @@ import {
   Button,
   FormControlLabel,
   Switch,
-  Stack} from '@mui/material';
+  Stack,
+  Divider} from '@mui/material';
+import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
@@ -79,7 +81,16 @@ const CreateCategoryPage = () => {
   return (
     <AdminLayout title="Create Category">
       <Box>
-    
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => router.push('/admin/categories')}
+            sx={{ color: 'text.secondary' }}
+          >
+            Back
+          </Button>
+        </Box>
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -93,71 +104,125 @@ const CreateCategoryPage = () => {
           </Alert>
         )}
 
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Box component="form" onSubmit={handleSubmit}>
-            <Stack spacing={3}>
-              <TextField
-                fullWidth
-                label="Category Name"
-                value={formData.name}
-                onChange={handleChange('name')}
-                required
-                placeholder="Enter category name"
-                error={!!error && !formData.name.trim()}
-                helperText={!formData.name.trim() && error ? 'Category name is required' : ''}
-              />
-
-              <TextField
-                fullWidth
-                label="Description"
-                value={formData.description}
-                onChange={handleChange('description')}
-                placeholder="Enter category description"
-                multiline
-                rows={3}
-              />
-
-              <TextField
-                fullWidth
-                label="Slug"
-                value={formData.slug}
-                onChange={handleChange('slug')}
-                placeholder="Enter category slug (e.g., truck-seats)"
-                helperText="URL-friendly version of the name (lowercase, hyphens instead of spaces)"
-              />
-
-              <TextField
-                fullWidth
-                label="Image URL"
-                value={formData.image_url}
-                onChange={handleChange('image_url')}
-                placeholder="Enter image URL"
-                helperText="Optional: URL to category image"
-              />
-
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.is_active}
-                    onChange={handleChange('is_active')}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              
+              {/* Basic Information */}
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
+                    Basic Information
+                  </Typography>
+                  
+                  {/* Status Toggle */}
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.is_active}
+                        onChange={handleChange('is_active')}
+                        color="primary"
+                      />
+                    }
+                    label={
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formData.is_active ? 'Active' : 'Inactive'}
+                      </Typography>
+                    }
+                    labelPlacement="start"
+                    sx={{ 
+                      gap: 1,
+                      margin: 0,
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: '0.875rem',
+                        fontWeight: 500
+                      }
+                    }}
                   />
-                }
-                label="Active"
-              />
+                </Box>
+                <Divider sx={{ mb: 3 }} />
+                
+                <Stack spacing={3}>
+                  <TextField
+                    fullWidth
+                    label="Category Name"
+                    value={formData.name}
+                    onChange={handleChange('name')}
+                    required
+                    placeholder="Enter category name"
+                    error={!!error && !formData.name.trim()}
+                    helperText={!formData.name.trim() && error ? 'Category name is required' : ''}
+                  />
 
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <Button onClick={handleCancel} disabled={loading}>
+                  <TextField
+                    fullWidth
+                    label="Description"
+                    value={formData.description}
+                    onChange={handleChange('description')}
+                    placeholder="Enter category description"
+                    multiline
+                    rows={4}
+                  />
+                </Stack>
+              </Box>
+
+              {/* Additional Information */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Additional Information
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                
+                <Stack spacing={3}>
+                  <TextField
+                    fullWidth
+                    label="Slug"
+                    value={formData.slug}
+                    onChange={handleChange('slug')}
+                    placeholder="Enter category slug (e.g., truck-seats)"
+                    helperText="URL-friendly version of the name (lowercase, hyphens instead of spaces)"
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="Image URL"
+                    value={formData.image_url}
+                    onChange={handleChange('image_url')}
+                    placeholder="Enter image URL"
+                    helperText="Optional: URL to category image"
+                  />
+                </Stack>
+              </Box>
+
+              {/* Actions */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 2, 
+                justifyContent: 'flex-end',
+                flexDirection: { xs: 'column', sm: 'row' }
+              }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleCancel}
+                  disabled={loading}
+                >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   variant="contained" 
                   disabled={loading || !formData.name.trim()}
+                  sx={{
+                    backgroundColor: '#DA291C',
+                    '&:hover': {
+                      backgroundColor: '#B71C1C',
+                    },
+                  }}
                 >
                   {loading ? 'Creating...' : 'Create Category'}
                 </Button>
-              </Stack>
-            </Stack>
+              </Box>
+            </Box>
           </Box>
         </Paper>
       </Box>

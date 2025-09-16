@@ -211,7 +211,7 @@ const ArmTypesPage = () => {
               }
             }}
           >
-            Add Arm Type
+            Add
           </Button>
         </Box>
 
