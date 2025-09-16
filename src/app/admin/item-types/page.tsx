@@ -136,16 +136,6 @@ const ItemTypesPage = () => {
     setPage(0);
   };
 
-  // Filter and paginate data
-  const filteredData = itemtypess.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const paginatedData = filteredData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
 
   return (
     <AdminLayout title="Item Types">
@@ -249,7 +239,9 @@ const ItemTypesPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedData.map((itemtypes) => (
+                  {itemtypess
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((itemtypes) => (
                     <TableRow 
                       key={itemtypes.id}
                       sx={{ 
@@ -311,7 +303,7 @@ const ItemTypesPage = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={filteredData.length}
+              count={itemtypess.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}

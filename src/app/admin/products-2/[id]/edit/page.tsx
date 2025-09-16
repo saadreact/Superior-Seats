@@ -256,6 +256,14 @@ const EditProduct2Page = () => {
         return items.map(item => item.name).filter(Boolean);
       };
 
+      // Helper function to check if a field should show "None" based on API response
+      const shouldShowNone = (items: any[]): boolean => {
+        if (!items || !Array.isArray(items) || items.length === 0) {
+          return true; // Show "None" if no items
+        }
+        return false;
+      };
+
 
       // Set form data from product
       if (productRes) {
@@ -285,8 +293,32 @@ const EditProduct2Page = () => {
         // Load price tiers data from API response if available
         const priceTiersData = (productRes as any).price_tiers;
         const hasPriceTiers = priceTiersData && Array.isArray(priceTiersData) && priceTiersData.length > 0;
-        const wholesalePrice = hasPriceTiers ? (priceTiersData.find((tier: any) => tier.name === 'wholesale')?.price || 0) : 0;
-        const retailPrice = hasPriceTiers ? (priceTiersData.find((tier: any) => tier.name === 'retail')?.price || 0) : 0;
+        
+        // Extract wholesale and retail prices from price tiers or use base price as fallback
+        let wholesalePrice = 0;
+        let retailPrice = 0;
+        
+        if (hasPriceTiers) {
+          // Look for wholesale and retail tiers
+          const wholesaleTier = priceTiersData.find((tier: any) => 
+            tier.name?.toLowerCase().includes('wholesale') || 
+            tier.name?.toLowerCase().includes('cost')
+          );
+          const retailTier = priceTiersData.find((tier: any) => 
+            tier.name?.toLowerCase().includes('retail') || 
+            tier.name?.toLowerCase().includes('price')
+          );
+          
+          wholesalePrice = wholesaleTier?.price || wholesaleTier?.cost || 0;
+          retailPrice = retailTier?.price || retailTier?.cost || 0;
+        } else {
+          // If no price tiers but we have a base price, use it for both
+          const basePrice = parseFloat(productRes.price) || 0;
+          if (basePrice > 0) {
+            wholesalePrice = basePrice * 0.8; // Assume wholesale is 80% of retail
+            retailPrice = basePrice;
+          }
+        }
 
         setFormData({
           name: productRes.name || '',
@@ -298,26 +330,32 @@ const EditProduct2Page = () => {
           vehicleMake: '', // Will be set after loading vehicle data
           vehicleModel: '', // Will be set after loading vehicle data  
           vehicleTrim: productRes.vehicle_trim?.id?.toString() || '',
-          // Use direct arrays from API response instead of variations array
-          seatType: extractNamesFromArray(productWithImages.seat_types || []),
-          armType: extractNamesFromArray(productWithImages.arm_types || []),
-          lumbarType: extractNamesFromArray(productWithImages.lumbar_types || []),
-          reclineType: extractNamesFromArray(productWithImages.recline_types || []),
-          heatOption: extractNamesFromArray(productWithImages.heat_options || []),
-          materialType: extractNamesFromArray(productWithImages.material_types || []),
-          stitchPattern: extractNamesFromArray(productWithImages.seat_stitch_patterns || []),
-          seatItemType: extractNamesFromArray(productWithImages.item_types || []),
-          seatStyle: extractNamesFromArray(productWithImages.seat_styles || []),
-          color: extractNamesFromArray(productWithImages.colors || []),
+          // Use direct arrays from API response and add "None" if no items
+          seatType: shouldShowNone(productWithImages.seat_types) ? ['None'] : extractNamesFromArray(productWithImages.seat_types || []),
+          armType: shouldShowNone(productWithImages.arm_types) ? ['None'] : extractNamesFromArray(productWithImages.arm_types || []),
+          lumbarType: shouldShowNone(productWithImages.lumbar_types) ? ['None'] : extractNamesFromArray(productWithImages.lumbar_types || []),
+          reclineType: shouldShowNone(productWithImages.recline_types) ? ['None'] : extractNamesFromArray(productWithImages.recline_types || []),
+          heatOption: shouldShowNone(productWithImages.heat_options) ? ['None'] : extractNamesFromArray(productWithImages.heat_options || []),
+          materialType: shouldShowNone(productWithImages.material_types) ? ['None'] : extractNamesFromArray(productWithImages.material_types || []),
+          stitchPattern: shouldShowNone(productWithImages.seat_stitch_patterns) ? ['None'] : extractNamesFromArray(productWithImages.seat_stitch_patterns || []),
+          seatItemType: shouldShowNone(productWithImages.item_types) ? ['None'] : extractNamesFromArray(productWithImages.item_types || []),
+          seatStyle: shouldShowNone(productWithImages.seat_styles) ? ['None'] : extractNamesFromArray(productWithImages.seat_styles || []),
+          color: shouldShowNone(productWithImages.colors) ? ['None'] : extractNamesFromArray(productWithImages.colors || []),
           showOnSpecialShop: productRes.show_on_special_shop ?? false,
-          enablePriceTiers: hasPriceTiers, // Enable if price tiers exist in API response
+          enablePriceTiers: hasPriceTiers || (wholesalePrice > 0 || retailPrice > 0), // Enable if price tiers exist or we have price data
           wholesalePrice: wholesalePrice, // Load from API response
           retailPrice: retailPrice, // Load from API response
           isActive: productRes.is_active ?? true,
         });
         
         console.log('🔍 Form data set successfully');
-        console.log('🔍 Price tiers data:', { hasPriceTiers, wholesalePrice, retailPrice });
+        console.log('🔍 Price tiers data:', { 
+          hasPriceTiers, 
+          wholesalePrice, 
+          retailPrice, 
+          priceTiersData,
+          enablePriceTiers: hasPriceTiers || (wholesalePrice > 0 || retailPrice > 0)
+        });
         console.log('🔍 Mapped variation data:', {
           seatType: productWithImages.seat_types?.length || 0,
           armType: productWithImages.arm_types?.length || 0,
@@ -329,6 +367,19 @@ const EditProduct2Page = () => {
           seatItemType: productWithImages.item_types?.length || 0,
           seatStyle: productWithImages.seat_styles?.length || 0,
           color: productWithImages.colors?.length || 0,
+        });
+        
+        console.log('🔍 "None" mapping results:', {
+          seatType: shouldShowNone(productWithImages.seat_types),
+          armType: shouldShowNone(productWithImages.arm_types),
+          lumbarType: shouldShowNone(productWithImages.lumbar_types),
+          reclineType: shouldShowNone(productWithImages.recline_types),
+          heatOption: shouldShowNone(productWithImages.heat_options),
+          materialType: shouldShowNone(productWithImages.material_types),
+          stitchPattern: shouldShowNone(productWithImages.seat_stitch_patterns),
+          seatItemType: shouldShowNone(productWithImages.item_types),
+          seatStyle: shouldShowNone(productWithImages.seat_styles),
+          color: shouldShowNone(productWithImages.colors),
         });
         
         // Load vehicle models and trims if vehicle data exists
@@ -807,6 +858,10 @@ const EditProduct2Page = () => {
     // Safety check to ensure options is an array
     const safeOptions = Array.isArray(options) ? options : [];
     
+    // Fields that don't have prices
+    const fieldsWithoutPrices = ['seatType', 'seatItemType', 'seatStyle'];
+    const showPrice = !fieldsWithoutPrices.includes(field);
+    
     // Debug logging for seat styles specifically
     if (field === 'seatStyle') {
       console.log(`Rendering ${label} field:`, {
@@ -857,7 +912,7 @@ const EditProduct2Page = () => {
             <MenuItem key={option.id} value={option.name}>
               <Checkbox checked={(formData[field] as string[]).indexOf(option.name) > -1} />
               <ListItemText 
-                primary={`${option.name} (+$${option.price || 0})`}
+                primary={showPrice ? `${option.name} (+$${option.price || 0})` : option.name}
               />
             </MenuItem>
           ))}

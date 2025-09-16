@@ -640,6 +640,10 @@ const CreateProduct2Page = () => {
     // Safety check to ensure options is an array
     const safeOptions = Array.isArray(options) ? options : [];
     
+    // Fields that don't have prices
+    const fieldsWithoutPrices = ['seatType', 'seatItemType', 'seatStyle'];
+    const showPrice = !fieldsWithoutPrices.includes(field);
+    
     // Debug logging for seat styles specifically
     if (field === 'seatStyle') {
       console.log(`Rendering ${label} field:`, {
@@ -690,7 +694,7 @@ const CreateProduct2Page = () => {
             <MenuItem key={option.id} value={option.name}>
               <Checkbox checked={(formData[field] as string[]).indexOf(option.name) > -1} />
               <ListItemText 
-                primary={`${option.name} (+$${option.price || 0})`}
+                primary={showPrice ? `${option.name} (+$${option.price || 0})` : option.name}
               />
             </MenuItem>
           ))}

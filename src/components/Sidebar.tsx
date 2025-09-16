@@ -165,11 +165,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <ChairIcon />,
       href: '/admin/seat-types',
     },
-    {
-      text: 'Variations',
-      icon: <SettingsIcon />,
-      href: '/admin/variations',
-    },
   ];
 
   const vehicleInfoSubItems = [

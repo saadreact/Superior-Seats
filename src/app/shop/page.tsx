@@ -6,7 +6,7 @@ import LazyComponent from '@/components/common/LazyComponent';
 const ShopPage = () => {
   return (
     <LazyComponent
-      component={() => import('@/components/CustomizedSeat')}
+      component={() => import('@/components/ShopGallery')}
       loadingText="Loading Shop..."
     />
   );

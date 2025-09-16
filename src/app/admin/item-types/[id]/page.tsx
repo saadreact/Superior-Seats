@@ -115,8 +115,7 @@ const ItemTypeDetailPage = () => {
           </Button>
         </Box>
 
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button
             variant="contained"
             startIcon={<EditIcon />}

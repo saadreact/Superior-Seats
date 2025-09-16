@@ -6,6 +6,7 @@ import {
   Typography,
   Button,
   IconButton,
+  Chip,
   Dialog,
   Alert,
   CircularProgress,
@@ -21,8 +22,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
-  Chip
+  TablePagination
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -37,7 +37,6 @@ import { apiService } from '@/utils/api';
 interface SeatStyle {
   id: number;
   name: string;
-  seat_type_id: number;
   description: string;
   created_at: string;
   updated_at: string;
@@ -69,9 +68,7 @@ const SeatStylesPage = () => {
       
       const response = await apiService.getSeatStyles(params);
       
-      if (response && response.data && response.data.data) {
-        setSeatStyles(response.data.data);
-      } else if (response && response.data && Array.isArray(response.data)) {
+      if (response && response.data) {
         setSeatStyles(response.data);
       } else if (Array.isArray(response)) {
         setSeatStyles(response);
@@ -127,7 +124,7 @@ const SeatStylesPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0);
+    setPage(0); // Reset to first page when searching
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -138,16 +135,6 @@ const SeatStylesPage = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  const filteredData = seatStyles.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const paginatedData = filteredData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
 
   return (
     <AdminLayout title="Seat Styles">
@@ -246,13 +233,14 @@ const SeatStylesPage = () => {
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Seat Type ID</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedData.map((seatStyle) => (
+                  {seatStyles
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((seatStyle) => (
                     <TableRow 
                       key={seatStyle.id}
                       sx={{ 
@@ -277,11 +265,6 @@ const SeatStylesPage = () => {
                           }}
                         >
                           {seatStyle.description || 'No description available'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {seatStyle.seat_type_id}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -315,10 +298,11 @@ const SeatStylesPage = () => {
               </Table>
             </TableContainer>
             
+            {/* Pagination */}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={filteredData.length}
+              count={seatStyles.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
