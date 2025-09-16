@@ -420,7 +420,7 @@ const OrderViewPage = () => {
             onClick={() => router.push('/admin/orders')}
             sx={{ mt: 2 }}
           >
-            Back to Orders
+            Back
           </Button>
         </Box>
       </AdminLayout>
@@ -458,7 +458,7 @@ console.log("order",order)
               onClick={() => router.push('/admin/orders')}
               sx={{ mb: 1 }}
             >
-              Back to Orders
+              Back
             </Button>
             <Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main' }}>
               Order #{order?.order_number || 'Unknown'}

@@ -92,7 +92,7 @@ const LumbarTypeDetailPage = () => {
               onClick={handleBack}
               sx={{ color: 'text.secondary' }}
             >
-              Back to Lumbar Types
+              Back
             </Button>
           </Box>
 
@@ -114,7 +114,7 @@ const LumbarTypeDetailPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Lumbar Types
+            Back
           </Button>
        
           <Button

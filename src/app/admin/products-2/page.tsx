@@ -348,17 +348,15 @@ const Products2Page = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
-            className="gradient-style"
             sx={{ 
-              alignSelf: { xs: 'stretch', md: 'auto' },
-              minWidth: { xs: 'auto', md: '140px' },
+              alignSelf: { xs: 'stretch', sm: 'auto' },
               boxShadow: 'none',
               '&:hover': {
                 boxShadow: 'none',
               }
             }}
           >
-            Add Product
+            Add
           </Button>
         </Box>
 

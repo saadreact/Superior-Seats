@@ -227,7 +227,7 @@ const VehicleTrimsPage = () => {
               }
             }}
           >
-            Add Vehicle Trim
+            Add
           </Button>
         </Box>
 
@@ -286,7 +286,7 @@ const VehicleTrimsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Model</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Make</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>

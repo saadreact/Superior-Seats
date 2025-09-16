@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Stack,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -163,7 +164,7 @@ const ViewCustomerPage = () => {
             onClick={() => router.push('/admin/customers')}
             startIcon={<ArrowBackIcon />}
           >
-            Back to Customers
+            Back
           </Button>
         </Box>
       </AdminLayout>
@@ -178,46 +179,22 @@ const ViewCustomerPage = () => {
     <AdminLayout title="View Customer">
       <Box>
         {/* Header */}
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between', 
-          alignItems: { xs: 'stretch', sm: 'center' },
-          gap: { xs: 2, sm: 0 }
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button
-              startIcon={<ArrowBackIcon />}
-              onClick={() => router.push('/admin/customers')}
-              sx={{ color: 'text.secondary' }}
-            >
-              Back
-            </Button>
-          </Box>
-          
-          <Box sx={{ 
-            display: 'flex', 
-            gap: 1,
-            flexDirection: { xs: 'column', sm: 'row' }
-          }}>
-            <Button
-              variant="outlined"
-              startIcon={<EditIcon />}
-              onClick={handleEdit}
-              fullWidth={isMobile}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<DeleteIcon />}
-              onClick={handleDelete}
-              fullWidth={isMobile}
-            >
-              Delete
-            </Button>
-          </Box>
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => router.push('/admin/customers')}
+            sx={{ color: 'text.secondary' }}
+          >
+            Back
+          </Button>
+       
+          <Button
+            variant="contained"
+            startIcon={<EditIcon />}
+            onClick={handleEdit}
+          >
+            Edit Customer
+          </Button>
         </Box>
 
         {/* Content */}
@@ -226,100 +203,132 @@ const ViewCustomerPage = () => {
             {error}
           </Alert>
         )}
-        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Header Info */}
-            <Box>
-              <Typography variant="h5" gutterBottom sx={{ 
-                color: 'primary.main', 
-                fontWeight: 600,
-                fontSize: { xs: '1.5rem', md: '1.75rem' }
-              }}>
-                {customer.name}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Chip
-                  label={customer.is_active ? 'Active' : 'Inactive'}
-                  color={customer.is_active ? 'success' : 'default'}
-                  size="small"
-                />
-                <Chip
-                  label={getCustomerTypeName(customer.customer_type)}
-                  color="primary"
-                  size="small"
-                />
-              </Box>
+        <Paper sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+            <Box sx={{ flex: 1 }}>
+              <Stack spacing={3}>
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Name
+                  </Typography>
+                  <Typography variant="body1">
+                    {customer.name}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Email
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {customer.email}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Phone
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {customer.phone}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Address
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {customer.address}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Company Name
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {customer.company_name || 'N/A'}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Customer Type
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {getCustomerTypeName(customer.customer_type)}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Price Tier
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {customer.price_tier?.display_name || 'N/A'}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Status
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {customer.is_active ? 'Active' : 'Inactive'}
+                  </Typography>
+                </Box>
+              </Stack>
             </Box>
 
-            <Divider />
+            <Box sx={{ width: { xs: '100%', md: 300 } }}>
+              <Paper variant="outlined" sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Information
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                
+                <Stack spacing={2}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      ID
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {customer.id}
+                    </Typography>
+                  </Box>
 
-            {/* Basic Information */}
-            <Box>
-              <Typography variant="h6" gutterBottom sx={{ 
-                color: 'primary.main', 
-                fontWeight: 600,
-                fontSize: { xs: '1.25rem', md: '1.5rem' }
-              }}>
-                Basic Information
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {renderField('Full Name', customer.name)}
-                {renderField('Email', customer.email)}
-                {renderField('Phone', customer.phone)}
-                {renderField('Address', customer.address)}
-                {renderField('City', (customer as any).city)}
-                {renderField('State', (customer as any).state)}
-              </Box>
-            </Box>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Created
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {new Date(customer.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Typography>
+                  </Box>
 
-            {/* Business Information */}
-            <Box>
-              <Typography variant="h6" gutterBottom sx={{ 
-                color: 'primary.main', 
-                fontWeight: 600,
-                fontSize: { xs: '1.25rem', md: '1.5rem' }
-              }}>
-                Business Information
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {renderField('Company Name', customer.company_name)}
-                {renderField('Tax ID', customer.tax_id)}
-                {renderField('Customer Type', getCustomerTypeName(customer.customer_type))}
-                {renderField('Price Tier', customer.price_tier?.display_name)}
-              </Box>
-            </Box>
-
-            {/* Financial Information */}
-            <Box>
-              <Typography variant="h6" gutterBottom sx={{ 
-                color: 'primary.main', 
-                fontWeight: 600,
-                fontSize: { xs: '1.25rem', md: '1.5rem' }
-              }}>
-                Financial Information
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {renderField('Credit Limit', `$${customer.credit_limit}`)}
-                {renderField('Outstanding Balance', `$${customer.outstanding_balance}`)}
-              </Box>
-            </Box>
-
-            {/* Account Information */}
-            <Box>
-              <Typography variant="h6" gutterBottom sx={{ 
-                color: 'primary.main', 
-                fontWeight: 600,
-                fontSize: { xs: '1.25rem', md: '1.5rem' }
-              }}>
-                Account Information
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {renderField('Username', customer.user?.username)}
-                {renderField('User Status', customer.user?.is_active)}
-                {renderField('Status', customer.is_active)}
-                {renderField('Created At', new Date(customer.created_at).toLocaleDateString())}
-                {renderField('Updated At', new Date(customer.updated_at).toLocaleDateString())}
-              </Box>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Last Updated
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {new Date(customer.updated_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
             </Box>
           </Box>
         </Paper>

@@ -75,7 +75,7 @@ const CreateVehicleMakePage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Vehicle Makes
+            Back
           </Button>
         </Box>
 

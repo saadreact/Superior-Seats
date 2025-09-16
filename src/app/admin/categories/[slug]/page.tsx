@@ -85,7 +85,7 @@ const CategoryDetailPage = () => {
               onClick={handleBack}
               sx={{ color: 'text.secondary' }}
             >
-              Back to Categories
+              Back
             </Button>
           </Box>
 
@@ -107,7 +107,7 @@ const CategoryDetailPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Categories
+            Back
           </Button>
         
           <Button

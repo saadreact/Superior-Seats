@@ -244,7 +244,7 @@ const EditHeatOptionPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Heat Options
+            Back
           </Button>
         </Box>
 

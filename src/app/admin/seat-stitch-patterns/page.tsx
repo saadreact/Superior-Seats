@@ -203,7 +203,7 @@ const SeatStitchPatternsPage = () => {
               }
             }}
           >
-            Add Seat Stitch Pattern
+            Add
           </Button>
         </Box>
 
@@ -264,7 +264,7 @@ const SeatStitchPatternsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>

@@ -19,10 +19,6 @@ import {
   useMediaQuery,
   Tabs,
   Tab,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
 } from '@mui/material';
 import {
   Visibility,
@@ -133,26 +129,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     company_name: '',
   });
 
-  const [countryCode, setCountryCode] = useState('+92');
-
-  // Country codes data
-  const countryCodes = [
-    { code: '+92', country: 'PAK' },
-    { code: '+1', country: 'USA' },
-    { code: '+44', country: 'GBR' },
-    { code: '+91', country: 'IND' },
-    { code: '+86', country: 'CHN' },
-    { code: '+49', country: 'DEU' },
-    { code: '+33', country: 'FRA' },
-    { code: '+39', country: 'ITA' },
-    { code: '+34', country: 'ESP' },
-    { code: '+61', country: 'AUS' },
-    { code: '+81', country: 'JPN' },
-    { code: '+82', country: 'KOR' },
-    { code: '+55', country: 'BRA' },
-    { code: '+52', country: 'MEX' },
-    { code: '+7', country: 'RUS' },
-  ];
+  const [countryCode] = useState('+1'); // Fixed to US code only
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -335,7 +312,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     setJustAuthenticated(false);
     setShowForgotPassword(false);
     setForgotPasswordEmail('');
-    setCountryCode('+92');
+    // Reset country code to default
   };
 
   const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -730,91 +707,83 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                  <FormControl sx={{ minWidth: 120 }}>
-                    <InputLabel size="small">Country</InputLabel>
-                    <Select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      size="small"
-                      label="Country"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '8px !important',
-                          height: '35px',
-                          backgroundColor: 'rgba(255,255,255,0.8)',
-                          '& fieldset': {
-                            borderRadius: '8px !important',
-                            border: '2px solid #e0e0e0',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'primary.main',
-                            borderRadius: '8px !important',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: 'primary.main',
-                            borderWidth: 2,
-                            borderRadius: '8px !important',
-                          },
-                          '&.Mui-focused': {
-                            backgroundColor: 'white',
-                          },
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: 'text.secondary',
-                          transform: 'translate(14px, 8px) scale(1)',
-                          '&.Mui-focused': {
-                            color: 'primary.main',
-                            transform: 'translate(14px, -9px) scale(0.75)',
-                          },
-                          '&.MuiFormLabel-filled': {
-                            transform: 'translate(14px, -9px) scale(0.75)',
-                          },
-                        },
-                      }}
-                    >
-                      {countryCodes.map((country) => (
-                        <MenuItem key={country.code} value={country.code}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <span>{country.code}</span>
-                            <span style={{ fontSize: '0.75rem', color: '#666' }}>
-                              {country.country}
-                            </span>
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <TextField
-                    fullWidth
-                    label="Phone Number"
-                    type="tel"
-                    value={signUpForm.phone}
-                    onChange={handleSignUpChange('phone')}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSignUp();
-                      }
-                    }}
-                    error={!!errors.phone}
-                    helperText={errors.phone }
-                    variant="outlined"
-                    size="small"
-                    inputProps={{
-                      inputMode: 'numeric',
-                      pattern: '[0-9]*',
-                      maxLength: 15,
-                      placeholder: 'xxxxxxxxx'
-                    }}
-                    sx={{ 
-                      ...commonTextFieldStyles,
-                      '& .MuiFormHelperText-root': {
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        marginLeft: 0,
+                <TextField
+                  fullWidth
+                  label="Phone Number"
+                  type="tel"
+                  value={signUpForm.phone}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow digits and basic formatting
+                    const cleanValue = value.replace(/[^\d\s\-\(\)]/g, '');
+                    setSignUpForm((prev) => ({
+                      ...prev,
+                      phone: cleanValue,
+                    }));
+                    // Clear errors for the field
+                    setErrors((prev) => ({ ...prev, phone: '' }));
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSignUp();
+                    }
+                  }}
+                  error={!!errors.phone}
+                  helperText={errors.phone}
+                  variant="outlined"
+                  size="small"
+                  inputProps={{
+                    inputMode: 'tel',
+                    maxLength: 20
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 0.5,
+                          pr: 1
+                        }}>
+                          <Typography variant="body2" sx={{ fontSize: '1rem' }}>
+                            🇺🇸
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                            +1
+                          </Typography>
+                          <Box sx={{ 
+                            width: '1px', 
+                            height: '20px', 
+                            backgroundColor: 'rgba(0, 0, 0, 0.23)',
+                            ml: 0.5
+                          }} />
+                        </Box>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    mb: 2,
+                    ...commonTextFieldStyles,
+                    '& .MuiFormHelperText-root': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      marginLeft: 0,
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'text.secondary',
+                      transform: 'translate(60px, 8px) scale(1)',
+                      '&.Mui-focused': {
+                        color: 'primary.main',
+                        transform: 'translate(14px, -9px) scale(0.75)',
                       },
-                    }}
-                  />
-                </Box>
+                      '&.MuiFormLabel-filled': {
+                        transform: 'translate(14px, -9px) scale(0.75)',
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      paddingLeft: '8px !important',
+                    },
+                  }}
+                />
 
                 <TextField
                   fullWidth

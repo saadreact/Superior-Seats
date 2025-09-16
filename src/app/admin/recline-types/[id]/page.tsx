@@ -101,7 +101,7 @@ const ReclineTypeDetailsPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Recline Types
+            Back
           </Button>
         
           <Button
@@ -109,7 +109,7 @@ const ReclineTypeDetailsPage = () => {
             startIcon={<EditIcon />}
             onClick={handleEdit}
           >
-            Edit Recline Type
+            Edit
           </Button>
         </Box>
 

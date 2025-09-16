@@ -264,26 +264,19 @@ const CustomersPage = () => {
   return (
     <AdminLayout title="Customers">
       <Box>
-        {/* Header Row with Direct Filters and Add Customer button */}
         <Box sx={{ 
-          mb: 2, 
+          mb: 3, 
           display: 'flex', 
-          flexDirection: { xs: 'column', lg: 'row' },
+          flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between', 
-          alignItems: { xs: 'stretch', lg: 'center' },
-          gap: { xs: 2, lg: 1 }
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: { xs: 2, sm: 0 }
         }}>
-          {/* Filters Section */}
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: { xs: 'stretch', md: 'center' },
-            gap: { xs: 1, md: 1.5 },
-            flex: 1,
-            flexWrap: 'wrap'
-          }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+        
+            {/* Search Bar positioned at top-left */}
             <TextField
-              placeholder="Search (name, email, company)"
+              placeholder="Search customers..."
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
               onKeyPress={(e) => {
@@ -291,87 +284,29 @@ const CustomersPage = () => {
                   handleSearch();
                 }
               }}
-              size="small"
-              sx={{ minWidth: { xs: '100%', md: '250px' } }}
-              InputProps={{ 
+              InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <SearchIcon />
                   </InputAdornment>
-                ) 
-              }}
-            />
-            
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', md: '150px' } }}>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={filters.customer_type}
-                label="Type"
-                onChange={(e) => handleFilterChange('customer_type', e.target.value)}
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="retail">Retail</MenuItem>
-                <MenuItem value="wholesale">Wholesale</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', md: '130px' } }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={filters.is_active}
-                label="Status"
-                onChange={(e) => handleFilterChange('is_active', e.target.value)}
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="true">Active</MenuItem>
-                <MenuItem value="false">Inactive</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <TextField 
-              label="Company" 
-              value={filters.company_name} 
-              onChange={(e) => handleFilterChange('company_name', e.target.value)}
+                )}}
+              sx={{ maxWidth: 400 }}
               size="small"
-              sx={{ minWidth: { xs: '100%', md: '180px' } }}
             />
-            
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleSearch}
-                startIcon={<SearchIcon />}
-                sx={{ minWidth: '90px' }}
-              >
-                Search
-              </Button>
-            <Button
-              variant="outlined"
-                size="small"
-                onClick={resetFilters}
-                sx={{ minWidth: '70px' }}
-              >
-                Clear
-            </Button>
-            </Box>
           </Box>
-          
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
-            className="gradient-style"
             sx={{ 
-              alignSelf: { xs: 'stretch', lg: 'auto' },
+              alignSelf: { xs: 'stretch', sm: 'auto' },
               boxShadow: 'none',
-              minWidth: '140px',
               '&:hover': {
                 boxShadow: 'none',
               }
             }}
           >
-            Add Customer
+            Add
           </Button>
         </Box>
 
@@ -386,22 +321,16 @@ const CustomersPage = () => {
         )}
         
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
         ) : (
           <>
             {/* Desktop Table View */}
             <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-              <TableContainer component={Paper} sx={{ 
-                borderRadius: 2, 
-                overflow: 'auto',
-                maxWidth: '100%',
-                '& .MuiTable-root': {
-                  minWidth: 650,
-                },
-              }}>
-                <Table>
+              <Paper sx={{ overflow: 'hidden' }}>
+                <TableContainer>
+                  <Table>
                   <TableHead>
                     <TableRow sx={{ backgroundColor: 'grey.50' }}>
                       <SortableHeader column="name" sortKey="name">Name</SortableHeader>
@@ -410,7 +339,7 @@ const CustomersPage = () => {
                       <TableCell sx={{ fontWeight: 600 }}>Company</TableCell>
                       <SortableHeader column="customer_type" sortKey="customer_type">Customer Type</SortableHeader>
                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                      <SortableHeader column="created_at" sortKey="created_at">Created</SortableHeader>
+                      <SortableHeader column="created_at" sortKey="created_at">Created Date</SortableHeader>
                       <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -457,8 +386,9 @@ const CustomersPage = () => {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
-              </TableContainer>
+                  </Table>
+                </TableContainer>
+              </Paper>
             </Box>
 
             {/* Mobile Card View */}
@@ -504,7 +434,7 @@ const CustomersPage = () => {
                       </Box>
                       <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
                         <Typography variant="caption" color="text.secondary">
-                          Created
+                          Created Date
                         </Typography>
                         <Typography variant="body2">
                           {customer.createdAt.toLocaleDateString()}

@@ -1,7 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Box, Typography, Button, CircularProgress, Alert, FormControlLabel, Switch } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  CircularProgress, 
+  Alert, 
+  FormControlLabel, 
+  Switch,
+  Paper
+} from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import CustomerForm from '@/components/admin/CustomerForm';
@@ -81,49 +90,56 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
   return (
     <AdminLayout title="Edit Customer">
       <Box>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.push('/admin/customers')}
-        >
-          Back to Customers
-        </Button>
-      </Box>
-
-      {alert && (
-        <Alert 
-          severity={alert.type} 
-          sx={{ mb: 2 }}
-          onClose={() => setAlert(null)}
-        >
-          {alert.message}
-        </Alert>
-      )}
-      
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-          <CircularProgress />
-        </Box>
-      ) : customer ? (
-        <CustomerForm
-          customer={customer}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          statusToggle={statusToggle}
-        />
-      ) : (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="h6" color="error">
-            Customer not found
-          </Typography>
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={() => router.push('/admin/customers')}
-            sx={{ mt: 2 }}
+            sx={{ color: 'text.secondary' }}
           >
-            Back to Customers
+            Back
           </Button>
         </Box>
-      )}
+
+        {/* Alerts */}
+        {alert && (
+          <Alert 
+            severity={alert.type} 
+            sx={{ mb: 3 }}
+            onClose={() => setAlert(null)}
+          >
+            {alert.message}
+          </Alert>
+        )}
+        
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+            <CircularProgress />
+          </Box>
+        ) : customer ? (
+          <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+            <CustomerForm
+              customer={customer}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              statusToggle={statusToggle}
+            />
+          </Paper>
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" color="error">
+              Customer not found
+            </Typography>
+            <Button
+              startIcon={<ArrowBackIcon />}
+              onClick={() => router.push('/admin/customers')}
+              sx={{ mt: 2 }}
+            >
+              Back
+            </Button>
+          </Box>
+        )}
+      </Box>
     </AdminLayout>
   );
 };

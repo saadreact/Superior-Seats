@@ -183,7 +183,7 @@ const CreateSeatStitchPatternPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Seat Stitch Patterns
+            Back
           </Button>
         </Box>
 

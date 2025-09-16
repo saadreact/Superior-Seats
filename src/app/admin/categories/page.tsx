@@ -193,7 +193,7 @@ const CategoriesPage = () => {
               }
             }}
           >
-            Add Category
+            Add
           </Button>
         </Box>
 
@@ -237,7 +237,7 @@ const CategoriesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Slug</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>

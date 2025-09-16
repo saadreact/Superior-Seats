@@ -74,7 +74,7 @@ const CreateItemTypePage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Item Types
+            Back
           </Button>
         </Box>
 

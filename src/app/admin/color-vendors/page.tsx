@@ -43,6 +43,7 @@ interface ColorVendor {
   contact_email: string;
   contact_phone: string;
   address: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -185,7 +186,7 @@ const ColorVendorsPage = () => {
               }
             }}
           >
-            Add Color Vendor
+            Add
           </Button>
         </Box>
 
@@ -230,6 +231,7 @@ const ColorVendorsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Website</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Contact</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -292,6 +294,14 @@ const ColorVendorsPage = () => {
                             </Typography>
                           )}
                         </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={colorVendor.is_active ? 'Active' : 'Inactive'}
+                          color={colorVendor.is_active ? 'success' : 'default'}
+                          size="small"
+                          variant="outlined"
+                        />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

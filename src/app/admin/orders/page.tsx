@@ -442,7 +442,7 @@ const OrdersPage = () => {
           mb: 3,
           gap: 2
         }}>
-          <Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main' }}>
+          <Typography variant="h4" sx={{ fontWeight: 600, color: 'text.primary' }}>
             Orders Management
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', sm: 'auto' } }}>

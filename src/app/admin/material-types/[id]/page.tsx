@@ -99,7 +99,7 @@ const MaterialTypeDetailPage = () => {
               onClick={handleBack}
               sx={{ color: 'text.secondary' }}
             >
-              Back to Material Types
+              Back
             </Button>
           </Box>
 
@@ -121,7 +121,7 @@ const MaterialTypeDetailPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Material Types
+            Back
           </Button>
         </Box>
 

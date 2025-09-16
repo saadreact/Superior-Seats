@@ -206,7 +206,7 @@ const CreateMaterialTypePage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Material Types
+            Back
           </Button>
         </Box>
 

@@ -1,8 +1,25 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, FormControlLabel, Switch } from '@mui/material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Alert, 
+  CircularProgress, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  FormControlLabel, 
+  Switch,
+  Paper,
+  Divider
+} from '@mui/material';
+import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import CustomerForm from '@/components/admin/CustomerForm';
 import { useRouter } from 'next/navigation';
@@ -87,65 +104,71 @@ const CreateCustomerPage = () => {
   );
 
   return (
-    <AdminLayout title="Create New Customer">
-      <Box sx={{ mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.push('/admin/customers')}
-          sx={{ mb: 2 }}
-        >
-          Back to Customers
-        </Button>
-      </Box>
-
-      {alert && (
-        <Alert 
-          severity={alert.type} 
-          sx={{ mb: 2 }}
-          onClose={() => setAlert(null)}
-        >
-          {alert.message}
-        </Alert>
-      )}
-      
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-          <CircularProgress />
+    <AdminLayout title="Create Customer">
+      <Box>
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => router.push('/admin/customers')}
+            sx={{ color: 'text.secondary' }}
+          >
+            Back
+          </Button>
         </Box>
-      ) : (
-        <CustomerForm
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          serverErrors={serverErrors}
-          onClearServerError={clearServerError}
-          statusToggle={statusToggle}
-        />
-      )}
 
-      <Dialog open={errorDialogOpen} onClose={handleCloseErrorDialog} fullWidth maxWidth="sm">
-        <DialogTitle>{errorDialogTitle}</DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            {errorDialogMessage}
-          </Typography>
-          {Object.keys(serverErrors).length > 0 && (
-            <List dense>
-              {Object.entries(serverErrors).map(([field, message]) => (
-                <ListItem key={field} disableGutters>
-                  <ListItemText
-                    primary={message}
-                    secondary={field.replace(/_/g, ' ')}
-                    primaryTypographyProps={{ color: 'error' }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseErrorDialog} variant="contained">OK</Button>
-        </DialogActions>
-      </Dialog>
+        {/* Alerts */}
+        {alert && (
+          <Alert 
+            severity={alert.type} 
+            sx={{ mb: 3 }}
+            onClose={() => setAlert(null)}
+          >
+            {alert.message}
+          </Alert>
+        )}
+        
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+            <CustomerForm
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              serverErrors={serverErrors}
+              onClearServerError={clearServerError}
+              statusToggle={statusToggle}
+            />
+          </Paper>
+        )}
+
+        <Dialog open={errorDialogOpen} onClose={handleCloseErrorDialog} fullWidth maxWidth="sm">
+          <DialogTitle>{errorDialogTitle}</DialogTitle>
+          <DialogContent dividers>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              {errorDialogMessage}
+            </Typography>
+            {Object.keys(serverErrors).length > 0 && (
+              <List dense>
+                {Object.entries(serverErrors).map(([field, message]) => (
+                  <ListItem key={field} disableGutters>
+                    <ListItemText
+                      primary={message}
+                      secondary={field.replace(/_/g, ' ')}
+                      primaryTypographyProps={{ color: 'error' }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseErrorDialog} variant="contained">OK</Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </AdminLayout>
   );
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Typography, Button, CircularProgress, Chip, Paper } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Chip, Paper, Stack, Divider } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
@@ -108,7 +108,7 @@ const ViewPriceTierPage = ({ params }: ViewPriceTierPageProps) => {
             onClick={() => router.push('/admin/price-tiers')}
             sx={{ mt: 2 }}
           >
-            Back to Price Tiers
+            Back
           </Button>
         </Box>
       </AdminLayout>
@@ -117,132 +117,136 @@ const ViewPriceTierPage = ({ params }: ViewPriceTierPageProps) => {
 
   return (
     <AdminLayout title="Price Tier Details">
-      <Box sx={{ mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.push('/admin/price-tiers')}
-          sx={{ mb: 2 }}
-        >
-          Back to Price Tiers
-        </Button>
-        
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between', 
-          alignItems: { xs: 'stretch', sm: 'center' },
-          gap: { xs: 2, sm: 0 }
-        }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            {priceTier.name}
-          </Typography>
+      <Box>
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => router.push('/admin/price-tiers')}
+            sx={{ color: 'text.secondary' }}
+          >
+            Back
+          </Button>
+       
           <Button
             variant="contained"
             startIcon={<EditIcon />}
             onClick={() => router.push(`/admin/price-tiers/${priceTier.id}/edit`)}
-            sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
           >
             Edit Price Tier
           </Button>
         </Box>
-      </Box>
 
-      <Box sx={{ display: 'grid', gap: 3 }}>
-        {/* Basic Information */}
-        <Paper sx={{ p: 3, borderRadius: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-            Basic Information
-          </Typography>
-          <Box sx={{ display: 'grid', gap: 2 }}>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                Name
-              </Typography>
-              <Typography variant="body1">
-                {priceTier.name}
-              </Typography>
+        {/* Content */}
+        <Paper sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+            <Box sx={{ flex: 1 }}>
+              <Stack spacing={3}>
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Name
+                  </Typography>
+                  <Typography variant="body1">
+                    {priceTier.name}
+                  </Typography>
+                </Box>
+
+                {priceTier.description && (
+                  <Box>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                      Description
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                      {priceTier.description}
+                    </Typography>
+                  </Box>
+                )}
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Pricing
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Discount Off Retail Price
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                        {priceTier.discount_off_retail_price}%
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Customers Count
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>
+                        {customerCount}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </Stack>
             </Box>
-            
-            {priceTier.description && (
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Description
+
+            <Box sx={{ width: { xs: '100%', md: 300 } }}>
+              <Paper variant="outlined" sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Information
                 </Typography>
-                <Typography variant="body1">
-                  {priceTier.description}
-                </Typography>
-              </Box>
-            )}
-          </Box>
-        </Paper>
+                <Divider sx={{ mb: 2 }} />
+                
+                <Stack spacing={2}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      ID
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {priceTier.id}
+                    </Typography>
+                  </Box>
 
-        {/* Pricing Information */}
-        <Paper sx={{ p: 3, borderRadius: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-            Pricing Settings
-          </Typography>
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-            gap: 2 
-          }}>
-                         <Box>
-               <Typography variant="subtitle2" color="text.secondary">
-                 Discount Off Retail Price
-               </Typography>
-               <Typography variant="body1">
-                 {priceTier.discount_off_retail_price}%
-               </Typography>
-             </Box>
-             
-             <Box>
-               <Typography variant="subtitle2" color="text.secondary">
-                 Customers Count
-               </Typography>
-               <Typography variant="body1">
-                 {customerCount}
-               </Typography>
-             </Box>
-          </Box>
-        </Paper>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Status
+                    </Typography>
+                    <Chip
+                      label={priceTier.is_active !== false ? 'Active' : 'Inactive'}
+                      color={priceTier.is_active !== false ? 'success' : 'default'}
+                      size="small"
+                    />
+                  </Box>
 
-        {/* Status Information */}
-        <Paper sx={{ p: 3, borderRadius: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-            Status & Metadata
-          </Typography>
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
-            gap: 2 
-          }}>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                Status
-              </Typography>
-                             <Chip
-                 label={priceTier.is_active !== false ? 'Active' : 'Inactive'}
-                 color={priceTier.is_active !== false ? 'success' : 'default'}
-                 size="small"
-               />
-            </Box>
-            
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                Created Date
-              </Typography>
-              <Typography variant="body1">
-                {new Date(priceTier.created_at).toLocaleDateString()}
-              </Typography>
-            </Box>
-            
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                Last Updated
-              </Typography>
-              <Typography variant="body1">
-                {new Date(priceTier.updated_at).toLocaleDateString()}
-              </Typography>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Created
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {new Date(priceTier.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Last Updated
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {new Date(priceTier.updated_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
             </Box>
           </Box>
         </Paper>
