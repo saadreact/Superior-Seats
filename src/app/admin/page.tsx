@@ -102,18 +102,7 @@ const AdminDashboard = () => {
       icon: <PeopleIcon />,
       color: '#2196f3',
     },
-    {
-      title: 'Retail Customers',
-      value: overview?.retail_customers != null ? String(overview.retail_customers) : '-',
-      icon: <PeopleIcon />,
-      color: '#8e24aa',
-    },
-    {
-      title: 'Wholesale Customers',
-      value: overview?.wholesale_customers != null ? String(overview.wholesale_customers) : '-',
-      icon: <PeopleIcon />,
-      color: '#6d4c41',
-    },
+    // Removed Retail and Wholesale customer widgets per requirement
   ];
 
   return (
