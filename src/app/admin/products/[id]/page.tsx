@@ -194,7 +194,7 @@ const ProductDetailPage = () => {
             onClick={handleBack}
             variant="outlined"
           >
-            Back to Products
+            Back
           </Button>
         </Container>
       </AdminLayout>
@@ -224,7 +224,7 @@ const ProductDetailPage = () => {
                   }
                 }}
               >
-                Back to Products
+                Back
               </Button>
               <Button
                 variant="contained"

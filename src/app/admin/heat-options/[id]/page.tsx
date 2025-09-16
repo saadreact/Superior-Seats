@@ -114,7 +114,7 @@ const HeatOptionDetailPage = () => {
               onClick={handleBack}
               sx={{ color: 'text.secondary' }}
             >
-              Back to Heat Options
+              Back
             </Button>
           </Box>
 
@@ -136,7 +136,7 @@ const HeatOptionDetailPage = () => {
             onClick={handleBack}
             sx={{ color: 'text.secondary' }}
           >
-            Back to Heat Options
+            Back
           </Button>
        
           <Button

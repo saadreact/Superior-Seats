@@ -48,6 +48,9 @@ interface ProductPage2Form {
   vehicleModel: string;
   vehicleTrim: string;
   
+  // Variations Enable/Disable
+  enableVariations: boolean;
+  
   // Second Half - Variation Fields
   seatType: string[];
   armType: string[];
@@ -111,6 +114,7 @@ const EditProduct2Page = () => {
     vehicleMake: '',
     vehicleModel: '',
     vehicleTrim: '',
+    enableVariations: false,
     seatType: [],
     armType: [],
     lumbarType: [],
@@ -320,6 +324,19 @@ const EditProduct2Page = () => {
           }
         }
 
+        // Determine if variations are enabled based on existing data
+        const hasVariations = productRes.vehicle_trim?.id || 
+          (productWithImages.seat_types && productWithImages.seat_types.length > 0) ||
+          (productWithImages.arm_types && productWithImages.arm_types.length > 0) ||
+          (productWithImages.lumbar_types && productWithImages.lumbar_types.length > 0) ||
+          (productWithImages.recline_types && productWithImages.recline_types.length > 0) ||
+          (productWithImages.heat_options && productWithImages.heat_options.length > 0) ||
+          (productWithImages.material_types && productWithImages.material_types.length > 0) ||
+          (productWithImages.seat_stitch_patterns && productWithImages.seat_stitch_patterns.length > 0) ||
+          (productWithImages.item_types && productWithImages.item_types.length > 0) ||
+          (productWithImages.seat_styles && productWithImages.seat_styles.length > 0) ||
+          (productWithImages.colors && productWithImages.colors.length > 0);
+
         setFormData({
           name: productRes.name || '',
           category: productRes.category?.name || '',
@@ -330,6 +347,7 @@ const EditProduct2Page = () => {
           vehicleMake: '', // Will be set after loading vehicle data
           vehicleModel: '', // Will be set after loading vehicle data  
           vehicleTrim: productRes.vehicle_trim?.id?.toString() || '',
+          enableVariations: hasVariations || false,
           // Use direct arrays from API response and add "None" if no items
           seatType: shouldShowNone(productWithImages.seat_types) ? ['None'] : extractNamesFromArray(productWithImages.seat_types || []),
           armType: shouldShowNone(productWithImages.arm_types) ? ['None'] : extractNamesFromArray(productWithImages.arm_types || []),
@@ -602,6 +620,31 @@ const EditProduct2Page = () => {
     }));
   };
 
+  // Variations toggle handler
+  const handleVariationsToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const enabled = event.target.checked;
+    setFormData(prev => ({
+      ...prev,
+      enableVariations: enabled,
+      // Reset all variation fields when disabled
+      ...(enabled ? {} : {
+        seatType: [],
+        armType: [],
+        lumbarType: [],
+        reclineType: [],
+        heatOption: [],
+        materialType: [],
+        stitchPattern: [],
+        seatItemType: [],
+        seatStyle: [],
+        color: [],
+        vehicleMake: '',
+        vehicleModel: '',
+        vehicleTrim: '',
+      })
+    }));
+  };
+
   // Price tiers handlers
   const handlePriceTiersToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const enabled = event.target.checked;
@@ -700,47 +743,50 @@ const EditProduct2Page = () => {
       newErrors.stock = 'Stock cannot be negative';
     }
 
-    // Helper function to check if field has valid selection (either has options or "None")
-    const hasValidSelection = (field: string[] | number[]) => field.length > 0;
+    // Only validate variations if they are enabled
+    if (formData.enableVariations) {
+      // Helper function to check if field has valid selection (either has options or "None")
+      const hasValidSelection = (field: string[] | number[]) => field.length > 0;
 
-    if (!hasValidSelection(formData.seatType)) {
-      newErrors.seatType = 'Please select at least one seat type or "None"';
-    }
+      if (!hasValidSelection(formData.seatType)) {
+        newErrors.seatType = 'Please select at least one seat type or "None"';
+      }
 
-    if (!hasValidSelection(formData.armType)) {
-      newErrors.armType = 'Please select at least one arm type or "None"';
-    }
+      if (!hasValidSelection(formData.armType)) {
+        newErrors.armType = 'Please select at least one arm type or "None"';
+      }
 
-    if (!hasValidSelection(formData.lumbarType)) {
-      newErrors.lumbarType = 'Please select at least one lumbar type or "None"';
-    }
+      if (!hasValidSelection(formData.lumbarType)) {
+        newErrors.lumbarType = 'Please select at least one lumbar type or "None"';
+      }
 
-    if (!hasValidSelection(formData.reclineType)) {
-      newErrors.reclineType = 'Please select at least one recline type or "None"';
-    }
+      if (!hasValidSelection(formData.reclineType)) {
+        newErrors.reclineType = 'Please select at least one recline type or "None"';
+      }
 
-    if (!hasValidSelection(formData.heatOption)) {
-      newErrors.heatOption = 'Please select at least one heat option or "None"';
-    }
+      if (!hasValidSelection(formData.heatOption)) {
+        newErrors.heatOption = 'Please select at least one heat option or "None"';
+      }
 
-    if (!hasValidSelection(formData.materialType)) {
-      newErrors.materialType = 'Please select at least one material type or "None"';
-    }
+      if (!hasValidSelection(formData.materialType)) {
+        newErrors.materialType = 'Please select at least one material type or "None"';
+      }
 
-    if (!hasValidSelection(formData.stitchPattern)) {
-      newErrors.stitchPattern = 'Please select at least one stitch pattern or "None"';
-    }
+      if (!hasValidSelection(formData.stitchPattern)) {
+        newErrors.stitchPattern = 'Please select at least one stitch pattern or "None"';
+      }
 
-    if (!hasValidSelection(formData.seatItemType)) {
-      newErrors.seatItemType = 'Please select at least one seat item type or "None"';
-    }
+      if (!hasValidSelection(formData.seatItemType)) {
+        newErrors.seatItemType = 'Please select at least one seat item type or "None"';
+      }
 
-    if (!hasValidSelection(formData.seatStyle)) {
-      newErrors.seatStyle = 'Please select at least one seat style or "None"';
-    }
+      if (!hasValidSelection(formData.seatStyle)) {
+        newErrors.seatStyle = 'Please select at least one seat style or "None"';
+      }
 
-    if (!hasValidSelection(formData.color)) {
-      newErrors.color = 'Please select at least one color or "None"';
+      if (!hasValidSelection(formData.color)) {
+        newErrors.color = 'Please select at least one color or "None"';
+      }
     }
 
     setErrors(newErrors);
@@ -758,14 +804,16 @@ const EditProduct2Page = () => {
     
     try {
       // Helper function to map variation names to IDs (excluding "None")
-      const mapNamesToIds = (selectedNames: string[], availableOptions: { id: number; name: string; price: number }[]): number[] => {
-        return selectedNames
+      const mapNamesToIds = (selectedNames: string[], availableOptions: { id: number; name: string; price: number }[]): number[] | undefined => {
+        const ids = selectedNames
           .filter(name => name !== 'None') // Filter out "None" selections
           .map(name => {
             const option = availableOptions.find(opt => opt.name === name);
             return option?.id;
           })
           .filter((id): id is number => id !== undefined);
+        
+        return ids.length > 0 ? ids : undefined;
       };
 
       // Find selected category ID
@@ -783,20 +831,20 @@ const EditProduct2Page = () => {
         category_id: categoryId,
         images: formData.images, // Simple File array like create page
         
-        // Vehicle information - only pass trim ID
-        vehicle_trim_id: formData.vehicleTrim ? Number(formData.vehicleTrim) : undefined,
+        // Vehicle information - only pass trim ID if variations are enabled
+        vehicle_trim_id: formData.enableVariations && formData.vehicleTrim ? Number(formData.vehicleTrim) : undefined,
         
-        // Map variation names to IDs
-        seat_type_ids: mapNamesToIds(formData.seatType, seatTypes),
-        arm_type_ids: mapNamesToIds(formData.armType, armTypes),
-        lumbar_type_ids: mapNamesToIds(formData.lumbarType, lumbarTypes),
-        recline_type_ids: mapNamesToIds(formData.reclineType, reclineTypes),
-        heat_option_ids: mapNamesToIds(formData.heatOption, heatOptions),
-        material_type_ids: mapNamesToIds(formData.materialType, materialTypes),
-        seat_stitch_pattern_ids: mapNamesToIds(formData.stitchPattern, stitchPatterns),
-        item_type_ids: mapNamesToIds(formData.seatItemType, seatItemTypes),
-        seat_style_ids: mapNamesToIds(formData.seatStyle, seatStyles),
-        color_ids: mapNamesToIds(formData.color, colors),
+        // Map variation names to IDs - only if variations are enabled
+        seat_type_ids: formData.enableVariations ? mapNamesToIds(formData.seatType, seatTypes) : undefined,
+        arm_type_ids: formData.enableVariations ? mapNamesToIds(formData.armType, armTypes) : undefined,
+        lumbar_type_ids: formData.enableVariations ? mapNamesToIds(formData.lumbarType, lumbarTypes) : undefined,
+        recline_type_ids: formData.enableVariations ? mapNamesToIds(formData.reclineType, reclineTypes) : undefined,
+        heat_option_ids: formData.enableVariations ? mapNamesToIds(formData.heatOption, heatOptions) : undefined,
+        material_type_ids: formData.enableVariations ? mapNamesToIds(formData.materialType, materialTypes) : undefined,
+        seat_stitch_pattern_ids: formData.enableVariations ? mapNamesToIds(formData.stitchPattern, stitchPatterns) : undefined,
+        item_type_ids: formData.enableVariations ? mapNamesToIds(formData.seatItemType, seatItemTypes) : undefined,
+        seat_style_ids: formData.enableVariations ? mapNamesToIds(formData.seatStyle, seatStyles) : undefined,
+        color_ids: formData.enableVariations ? mapNamesToIds(formData.color, colors) : undefined,
         
         // Price tiers - like lumbar type implementation
         price_tier_ids: [],
@@ -1294,133 +1342,178 @@ const EditProduct2Page = () => {
 
               {/* 🔵 Second Half - Variation Fields */}
               <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Seat Configuration & Materials
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                
-                {/* Seat Configuration Section */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
-                    Seat Configuration
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 2,
+                  flexDirection: { xs: 'column', md: 'row' },
+                  gap: { xs: 2, md: 0 }
+                }}>
+                  <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
+                    Seat Configuration & Materials
                   </Typography>
                   
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
-                    {renderMultiSelectField('seatType', 'Seat Type', seatTypes)}
-                    {renderMultiSelectField('armType', 'Arm Type', armTypes)}
-                  </Box>
-
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
-                    {renderMultiSelectField('lumbarType', 'Lumbar Type', lumbarTypes)}
-                    {renderMultiSelectField('reclineType', 'Recline Type', reclineTypes)}
-                  </Box>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.enableVariations}
+                        onChange={handleVariationsToggle}
+                        color="primary"
+                      />
+                    }
+                    label="Enable Variations"
+                    sx={{ 
+                      gap: 1,
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: '0.875rem',
+                        fontWeight: 500
+                      }
+                    }}
+                  />
                 </Box>
-
-                {/* Materials & Features Section */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
-                    Materials & Features
-                  </Typography>
-                  
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
-                    {renderMultiSelectField('materialType', 'Material Type', materialTypes)}
-                    {renderMultiSelectField('heatOption', 'Heat Option', heatOptions)}
-                  </Box>
-
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
-                    {renderMultiSelectField('stitchPattern', 'Stitching Pattern', stitchPatterns)}
-                    {renderMultiSelectField('seatItemType', 'Seat Item Type', seatItemTypes)}
-                  </Box>
-
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
-                    {renderMultiSelectField('seatStyle', 'Seat Style', seatStyles)}
-                    {renderMultiSelectField('color', 'Color', colors)}
-                  </Box>
-                </Box>
-
-              </Box>
-
-              {/* 🚗 Vehicle Information Section */}
-              <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Vehicle Figments
-                </Typography>
                 <Divider sx={{ mb: 3 }} />
                 
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Vehicle Make</InputLabel>
-                    <Select
-                      value={formData.vehicleMake}
-                      onChange={handleVehicleMakeChange}
-                      label="Vehicle Make"
-                    >
-                      <MenuItem value="">
-                        <em>Select Make</em>
-                      </MenuItem>
-                      {vehicleMakes.map((make) => (
-                        <MenuItem key={make.id} value={make.id}>
-                          {make.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  
-                  <FormControl fullWidth disabled={!formData.vehicleMake}>
-                    <InputLabel>Vehicle Model</InputLabel>
-                    <Select
-                      value={formData.vehicleModel}
-                      onChange={handleVehicleModelChange}
-                      label="Vehicle Model"
-                    >
-                      <MenuItem value="">
-                        <em>Select Model</em>
-                      </MenuItem>
-                      {vehicleModels.map((model) => (
-                        <MenuItem key={model.id} value={model.id}>
-                          {model.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  
-                  <FormControl fullWidth disabled={!formData.vehicleModel}>
-                    <InputLabel>Vehicle Trim</InputLabel>
-                    <Select
-                      value={formData.vehicleTrim}
-                      onChange={handleVehicleTrimChange}
-                      label="Vehicle Trim"
-                    >
-                      <MenuItem value="">
-                        <em>Select Trim</em>
-                      </MenuItem>
-                      {vehicleTrims.map((trim) => (
-                        <MenuItem key={trim.id} value={trim.id}>
-                          {trim.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
+                {formData.enableVariations && (
+                  <>
+                    {/* Seat Configuration Section */}
+                    <Box sx={{ mb: 4 }}>
+                      <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
+                        Seat Configuration
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+                        {renderMultiSelectField('seatType', 'Seat Type', seatTypes)}
+                        {renderMultiSelectField('armType', 'Arm Type', armTypes)}
+                      </Box>
+
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+                        {renderMultiSelectField('lumbarType', 'Lumbar Type', lumbarTypes)}
+                        {renderMultiSelectField('reclineType', 'Recline Type', reclineTypes)}
+                      </Box>
+                    </Box>
+
+                    {/* Materials & Features Section */}
+                    <Box sx={{ mb: 4 }}>
+                      <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
+                        Materials & Features
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+                        {renderMultiSelectField('materialType', 'Material Type', materialTypes)}
+                        {renderMultiSelectField('heatOption', 'Heat Option', heatOptions)}
+                      </Box>
+
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+                        {renderMultiSelectField('stitchPattern', 'Stitching Pattern', stitchPatterns)}
+                        {renderMultiSelectField('seatItemType', 'Seat Item Type', seatItemTypes)}
+                      </Box>
+
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+                        {renderMultiSelectField('seatStyle', 'Seat Style', seatStyles)}
+                        {renderMultiSelectField('color', 'Color', colors)}
+                      </Box>
+                    </Box>
+
+                    {/* 🚗 Vehicle Information Section */}
+                    <Box sx={{ mb: 4 }}>
+                      <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
+                        Vehicle Figments
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
+                        <FormControl fullWidth>
+                          <InputLabel>Vehicle Make</InputLabel>
+                          <Select
+                            value={formData.vehicleMake}
+                            onChange={handleVehicleMakeChange}
+                            label="Vehicle Make"
+                          >
+                            <MenuItem value="">
+                              <em>Select Make</em>
+                            </MenuItem>
+                            {vehicleMakes.map((make) => (
+                              <MenuItem key={make.id} value={make.id}>
+                                {make.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                        
+                        <FormControl fullWidth disabled={!formData.vehicleMake}>
+                          <InputLabel>Vehicle Model</InputLabel>
+                          <Select
+                            value={formData.vehicleModel}
+                            onChange={handleVehicleModelChange}
+                            label="Vehicle Model"
+                          >
+                            <MenuItem value="">
+                              <em>Select Model</em>
+                            </MenuItem>
+                            {vehicleModels.map((model) => (
+                              <MenuItem key={model.id} value={model.id}>
+                                {model.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                        
+                        <FormControl fullWidth disabled={!formData.vehicleModel}>
+                          <InputLabel>Vehicle Trim</InputLabel>
+                          <Select
+                            value={formData.vehicleTrim}
+                            onChange={handleVehicleTrimChange}
+                            label="Vehicle Trim"
+                          >
+                            <MenuItem value="">
+                              <em>Select Trim</em>
+                            </MenuItem>
+                            {vehicleTrims.map((trim) => (
+                              <MenuItem key={trim.id} value={trim.id}>
+                                {trim.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Box>
+                  </>
+                )}
               </Box>
 
               {/* 💰 Price Tiers Section */}
               <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Price Tiers
-                </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 2,
+                  flexDirection: { xs: 'column', md: 'row' },
+                  gap: { xs: 2, md: 0 }
+                }}>
+                  <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
+                    Price Tiers
+                  </Typography>
+                  
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.enablePriceTiers}
+                        onChange={handlePriceTiersToggle}
+                        color="primary"
+                      />
+                    }
+                    label="Enable Price Tiers"
+                    sx={{ 
+                      gap: 1,
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: '0.875rem',
+                        fontWeight: 500
+                      }
+                    }}
+                  />
+                </Box>
                 <Divider sx={{ mb: 3 }} />
-
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.enablePriceTiers}
-                      onChange={handlePriceTiersToggle}
-                      color="primary"
-                    />
-                  }
-                  label="Enable Price Tiers"
-                />
 
                 {formData.enablePriceTiers && (
                   <Box>

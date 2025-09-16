@@ -20,12 +20,15 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { PriceTier } from '@/data/types';
@@ -179,15 +182,30 @@ const PriceTiersPage = () => {
           mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'flex-end', 
+          justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search price tiers..."
+              value=""
+              onChange={() => {}}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handlePriceTierAdd}
-            className="gradient-style"
             sx={{ 
               alignSelf: { xs: 'stretch', sm: 'auto' },
               boxShadow: 'none',
@@ -196,7 +214,7 @@ const PriceTiersPage = () => {
               }
             }}
           >
-            Add Price Tier
+            Add
           </Button>
         </Box>
 
@@ -218,15 +236,8 @@ const PriceTiersPage = () => {
         ) : (
           <>
             {/* Desktop Table View for Price Tiers */}
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-              <TableContainer component={Paper} sx={{ 
-                borderRadius: 2, 
-                overflow: 'auto',
-                maxWidth: '100%',
-                '& .MuiTable-root': {
-                  minWidth: 650,
-                },
-              }}>
+            <Paper sx={{ overflow: 'hidden' }}>
+              <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow sx={{ backgroundColor: 'grey.50' }}>
@@ -235,7 +246,7 @@ const PriceTiersPage = () => {
                       <TableCell sx={{ fontWeight: 600 }}>Discount %</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Customers</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                       <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -290,7 +301,7 @@ const PriceTiersPage = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Box>
+            </Paper>
 
             {/* Mobile Card View for Price Tiers */}
             <Box sx={{ display: { xs: 'block', md: 'none' } }}>
