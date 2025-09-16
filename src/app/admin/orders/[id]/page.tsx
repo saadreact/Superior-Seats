@@ -546,11 +546,11 @@ console.log("order",order)
                   </Box>
                 )}
                 {/* Change Payment Method link - visible when not paid */}
-                {/* {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
+                {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button size="small" variant="text" onClick={() => setPayDialogOpen(true)}>Change Payment Method</Button>
                   </Box>
-                )} */}
+                )}
                 {order?.invoice_number && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="body2">Invoice #:</Typography>
@@ -882,14 +882,11 @@ console.log("order",order)
                 if (!squareRef.current) throw new Error('Payment form not ready');
                 const { token } = await squareRef.current.tokenize();
                 const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string | undefined;
-                // Optional: If you have an endpoint to save the card and return card_id, call it here and include the id.
-                // For now, try to extract card_id from result if API responds with it on charge; otherwise set null.
                 const body = {
-                  customer_id: (order as any)?.user?.id || (order as any)?.customer?.id || null,
+                  customer_id: (order as any)?.customer?.id || null,
                   order_id: getOrderIdNum(),
                   payment_method: 'square',
                   amount: Number(order?.total_amount || 0),
-                  // card_id: null,
                   token,
                   location_id: locationId,
                   notes: `Payment for order #${order?.order_number}`,
@@ -905,10 +902,33 @@ console.log("order",order)
                 });
                 const result = await response.json();
                 if (!response.ok || result?.success === false) throw new Error(result?.error || result?.message || 'Payment failed');
-                // If backend returns a card_id, we could persist it if needed
-                // Update local state to reflect paid status and method
+                // Update local state immediately
                 setOrder(prev => prev ? ({ ...prev, payment_status: 'paid', payment_method: 'square' }) : prev);
                 setPayDialogOpen(false);
+                // Refetch order to sync latest data; fallback to refresh
+                try {
+                  const refreshed = await apiService.getOrder(getOrderIdNum());
+                  const raw = (refreshed as any).data || refreshed;
+                  const mapped = {
+                    ...raw,
+                    items: (raw?.items || []).map((item: any) => ({
+                      id: item.id,
+                      product_id: item.product_id,
+                      variation_id: item.variation_id || 0,
+                      quantity: item.quantity,
+                      unit_price: item.unit_price,
+                      discount_amount: item.discount_amount || 0,
+                      total: item.total,
+                      variants: item.variants || {},
+                      product: { name: item.product?.name || item.name, category: item.product?.category },
+                      variation: item.variation,
+                    })),
+                  } as any;
+                  setOrder(mapped);
+                  try { router.refresh?.(); } catch { /* noop */ }
+                } catch {
+                  try { router.refresh?.(); } catch { window.location.reload(); }
+                }
               } catch (e: any) {
                 setPayError(e?.message || 'Payment processing failed');
               } finally {
