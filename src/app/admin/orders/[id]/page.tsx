@@ -546,11 +546,11 @@ console.log("order",order)
                   </Box>
                 )}
                 {/* Change Payment Method link - visible when not paid */}
-                {/* {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
+                {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button size="small" variant="text" onClick={() => setPayDialogOpen(true)}>Change Payment Method</Button>
                   </Box>
-                )} */}
+                )}
                 {order?.invoice_number && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="body2">Invoice #:</Typography>
@@ -885,7 +885,7 @@ console.log("order",order)
                 // Optional: If you have an endpoint to save the card and return card_id, call it here and include the id.
                 // For now, try to extract card_id from result if API responds with it on charge; otherwise set null.
                 const body = {
-                  customer_id: (order as any)?.user?.id || (order as any)?.customer?.id || null,
+                  customer_id: (order as any)?.customer?.id || null,
                   order_id: getOrderIdNum(),
                   payment_method: 'square',
                   amount: Number(order?.total_amount || 0),
