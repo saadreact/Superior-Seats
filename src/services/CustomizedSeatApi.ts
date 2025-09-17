@@ -419,7 +419,7 @@ export const CustomizedSeatApi = {
       console.log('🔄 CustomizedSeatApi - Fetching product details for ID:', id);
       
       const response = await axios.get<ProductApiResponse>(
-        `${API_BASE_URL}/shop/products/${id}`
+        `${API_BASE_URL}/shop/product/${id}`
       );
 
       if (response.data.status === 'success') {
