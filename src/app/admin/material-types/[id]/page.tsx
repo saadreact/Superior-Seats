@@ -161,16 +161,7 @@ const MaterialTypeDetailPage = () => {
 
                 <Box>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Cost (Wholesale)
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    ${formatPrice(materialtypes.cost)}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Price (Retail)
+                    In Shop Price
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 500 }}>
                     ${formatPrice(materialtypes.price)}

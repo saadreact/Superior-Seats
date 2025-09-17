@@ -33,6 +33,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { reclineTypesService } from '@/services/recline-types';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface ReclineType {
   id: number;
@@ -62,6 +63,9 @@ interface ReclineType {
     discount_off_retail_price: string;
     created_at: string;
     updated_at: string;
+    pivot: {
+      price_adjustment: number;
+    };
   }>;
 }
 
@@ -87,6 +91,16 @@ const ReclineTypesPage = () => {
       return `https://superiorseats.ali-khalid.com/${reclineType.image}`;
     }
     return null;
+  };
+
+  // Helper function to get calculated price tiers for display
+  const getCalculatedPriceTiers = (reclineType: ReclineType) => {
+    return reclineType.price_tiers?.map((tier) => ({
+      id: tier.id,
+      display_name: tier.display_name,
+      calculated_price: tier.pivot?.price_adjustment || 0,
+      is_overridden: false // For list display, we don't track overrides
+    })) || [];
   };
 
   const loadReclineTypes = useCallback(async () => {
@@ -281,8 +295,7 @@ const ReclineTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
@@ -377,32 +390,60 @@ const ReclineTypesPage = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${reclineType.cost || 0}
+                          ${VariantsCalculation.formatPrice(reclineType.price || 0)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${reclineType.price || 0}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {reclineType.price_tiers?.length > 0 ? (
-                            reclineType.price_tiers.map((tier) => (
-                              <Chip
-                                key={tier.id}
-                                label={tier.display_name}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: '0.6rem', height: 20 }}
-                              />
-                            ))
-                          ) : (
+                        {(() => {
+                          const calculatedTiers = getCalculatedPriceTiers(reclineType);
+                          if (calculatedTiers.length > 0) {
+                            return (
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                  {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                </Typography>
+                                <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                  {calculatedTiers.slice(0, 2).map((tier) => (
+                                    <Chip
+                                      key={tier.id}
+                                      label={`${tier.display_name}: $${VariantsCalculation.formatPrice(tier.calculated_price)}`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        borderColor: tier.is_overridden ? 'warning.main' : undefined,
+                                        color: tier.is_overridden ? 'warning.main' : undefined,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                  {calculatedTiers.length > 2 && (
+                                    <Chip
+                                      label={`+${calculatedTiers.length - 2} more`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Stack>
+                              </Box>
+                            );
+                          }
+                          return (
                             <Typography variant="body2" color="text.secondary">
-                              None
+                              No tiers
                             </Typography>
-                          )}
-                        </Box>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

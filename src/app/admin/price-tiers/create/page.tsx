@@ -30,7 +30,6 @@ const CreatePriceTierPage = () => {
     display_name: '',
     description: '',
     discount_off_retail_price: 0,
-    minimum_order_amount: 0,
     is_active: true,
   });
 
@@ -62,7 +61,6 @@ const CreatePriceTierPage = () => {
         display_name: formData.display_name.trim() || formData.name.trim(),
         description: formData.description.trim() || undefined,
         discount_off_retail_price: formData.discount_off_retail_price,
-        minimum_order_amount: formData.minimum_order_amount || undefined,
         is_active: formData.is_active
       };
       

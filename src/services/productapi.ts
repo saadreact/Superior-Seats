@@ -137,6 +137,13 @@ export interface ProductData {
   seat_style_ids?: number[]; // New field from Swagger
   item_type_ids?: number[]; // Updated field name
   color_ids?: number[];
+  
+  // Price tiers fields
+  price_tiers?: Array<{
+    id: number;
+    price_adjustment: number;
+    is_active: boolean;
+  }>;
 }
 
 // Product Update Data Interface (extends ProductData with optional fields)
@@ -323,6 +330,15 @@ class ProductApi {
         });
       }
 
+      // Handle price tiers - new schema
+      if (data.price_tiers && data.price_tiers.length > 0) {
+        data.price_tiers.forEach((tier, index) => {
+          formData.append(`price_tiers[${index}][id]`, tier.id.toString());
+          formData.append(`price_tiers[${index}][price_adjustment]`, tier.price_adjustment.toString());
+          formData.append(`price_tiers[${index}][is_active]`, tier.is_active ? "1" : "0");
+        });
+      }
+
       // Handle images (using product_images field name from schema)
       if (data.images && data.images.length > 0) {
         data.images.forEach((file, index) => {
@@ -473,6 +489,15 @@ class ProductApi {
       if (data.color_ids && data.color_ids.length > 0) {
         data.color_ids.forEach((id: number) => {
           formData.append("color_ids[]", id.toString());
+        });
+      }
+
+      // Handle price tiers - new schema
+      if (data.price_tiers && data.price_tiers.length > 0) {
+        data.price_tiers.forEach((tier, index) => {
+          formData.append(`price_tiers[${index}][id]`, tier.id.toString());
+          formData.append(`price_tiers[${index}][price_adjustment]`, tier.price_adjustment.toString());
+          formData.append(`price_tiers[${index}][is_active]`, tier.is_active ? "1" : "0");
         });
       }
 
@@ -821,6 +846,21 @@ class ProductApi {
       console.error("Error fetching colors:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch colors"
+      );
+    }
+  }
+
+  /**
+   * Get price tiers
+   */
+  async getPriceTiers(): Promise<any[]> {
+    try {
+      const response = await api.get("/price-tiers");
+      return response.data?.data || response.data || [];
+    } catch (error: any) {
+      console.error("Error fetching price tiers:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch price tiers"
       );
     }
   }

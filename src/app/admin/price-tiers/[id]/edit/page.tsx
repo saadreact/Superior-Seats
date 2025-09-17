@@ -35,7 +35,6 @@ const EditPriceTierPage = () => {
     display_name: '',
     description: '',
     discount_off_retail_price: 0,
-    minimum_order_amount: 0,
     is_active: true,
   });
 
@@ -58,7 +57,6 @@ const EditPriceTierPage = () => {
         discount_off_retail_price: typeof priceTier.discount_off_retail_price === 'string' 
           ? parseFloat(priceTier.discount_off_retail_price) 
           : priceTier.discount_off_retail_price || 0,
-        minimum_order_amount: priceTier.minimum_order_amount || 0,
         is_active: priceTier.is_active !== false,
       });
     } catch (err: any) {
@@ -97,7 +95,6 @@ const EditPriceTierPage = () => {
         display_name: formData.display_name.trim() || formData.name.trim(),
         description: formData.description.trim() || undefined,
         discount_off_retail_price: formData.discount_off_retail_price,
-        minimum_order_amount: formData.minimum_order_amount || undefined,
         is_active: formData.is_active
       };
       

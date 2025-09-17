@@ -38,6 +38,7 @@ import { reclineTypesService } from '@/services/recline-types';
 import { heatOptionsService } from '@/services/heat-options';
 import { materialTypesService } from '@/services/material-types';
 import { seatStitchPatternService } from '@/services/seat-stitch-pattern';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface ProductPage2Form {
   // First Half - Product Fields
@@ -73,8 +74,6 @@ interface ProductPage2Form {
   
   // Price Tiers Fields
   enablePriceTiers: boolean;
-  wholesalePrice: number;
-  retailPrice: number;
   
   isActive: boolean;
 }
@@ -108,8 +107,6 @@ const CreateProduct2Page = () => {
     color: [],
     showOnSpecialShop: false,
     enablePriceTiers: false,
-    wholesalePrice: 0,
-    retailPrice: 0,
     isActive: true,
   });
 
@@ -117,6 +114,11 @@ const CreateProduct2Page = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [initialLoading, setInitialLoading] = useState(true);
+  
+  // Price tiers states
+  const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
+  const [priceOverrides, setPriceOverrides] = useState<Record<number, number>>({});
+  const [priceTiers, setPriceTiers] = useState<any[]>([]);
 
   // Data state for dropdowns
   const [categories, setCategories] = useState<{ id: number; name: string; price: number }[]>([]);
@@ -139,6 +141,7 @@ const CreateProduct2Page = () => {
 
   useEffect(() => {
     loadInitialData();
+    loadPriceTiers();
   }, []);
 
   const loadInitialData = async () => {
@@ -294,6 +297,31 @@ const CreateProduct2Page = () => {
     }
   };
 
+  const handleInputChange = (field: keyof ProductPage2Form) => (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const value = parseFloat(event.target.value) || 0;
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+    
+    // Recalculate price tiers if basePrice changes and price tiers are enabled
+    if (field === 'basePrice' && formData.enablePriceTiers && calculatedPriceTiers.length > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+                        // Price adjustments are now handled directly in handleSubmit
+    }
+    
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: '',
+      }));
+    }
+  };
+
   const handleNumberChange = (field: keyof ProductPage2Form) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -420,6 +448,65 @@ const CreateProduct2Page = () => {
       ...prev,
       enablePriceTiers: enabled,
     }));
+    
+    if (enabled) {
+      // Calculate price tiers when enabled
+      if (formData.basePrice > 0) {
+        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.basePrice, priceTiers, priceOverrides);
+        setCalculatedPriceTiers(newCalculatedTiers);
+        
+        // Price tiers are now handled directly in handleSubmit
+      }
+    } else {
+      // Clear price tiers when disabled
+      // Price tiers are now handled directly in handleSubmit
+      setCalculatedPriceTiers([]);
+      setPriceOverrides({});
+    }
+  };
+
+  const handlePriceOverrideChange = (tierId: number, overridePrice: number) => {
+    setPriceOverrides(prev => ({
+      ...prev,
+      [tierId.toString()]: overridePrice
+    }));
+    
+    // Update the calculated price tiers with the new override
+    setCalculatedPriceTiers(prev => prev.map(tier => {
+      if (tier.id === tierId) {
+        const isOverridden = overridePrice > 0 && overridePrice !== tier.calculated_price;
+        return {
+          ...tier,
+          override_price: overridePrice,
+          is_overridden: isOverridden
+        };
+      }
+      return tier;
+    }));
+    
+    // Price adjustments are now handled directly in handleSubmit
+  };
+
+  const handleResetPriceTiers = () => {
+    if (formData.basePrice > 0) {
+      // Clear all overrides
+      setPriceOverrides({});
+      
+      // Recalculate price tiers without overrides
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.basePrice, priceTiers, {});
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Price adjustments are now handled directly in handleSubmit
+    }
+  };
+
+  const loadPriceTiers = async () => {
+    try {
+      const response = await productApi.getPriceTiers();
+      setPriceTiers(response || []);
+    } catch (err) {
+      console.error('Error loading price tiers:', err);
+    }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -614,9 +701,12 @@ const CreateProduct2Page = () => {
         seat_style_ids: formData.enableVariations ? mapNamesToIds(formData.seatStyle, seatStyles) : undefined,
         color_ids: formData.enableVariations ? mapNamesToIds(formData.color, colors) : undefined,
         
-        // Price tiers - like lumbar type implementation
-        price_tier_ids: [],
-        price_adjustments: undefined,
+        // Price tiers - new schema
+        price_tiers: formData.enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map(tier => ({
+          id: tier.id,
+          price_adjustment: VariantsCalculation.getFinalPrice(tier),
+          is_active: true
+        })) : undefined,
       };
 
       // Debug: Log the data being sent
@@ -901,12 +991,25 @@ const CreateProduct2Page = () => {
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
                   <TextField
                     fullWidth
-                    label="Base Price"
+                    label="In Shop Price"
                     type="number"
-                    value={formData.basePrice}
+                    value={formData.basePrice === 0 ? '0' : formData.basePrice.toString()}
                     onChange={(e) => {
-                      const value = parseFloat(e.target.value) || 0;
-                      setFormData(prev => ({ ...prev, basePrice: value }));
+                      const inputValue = e.target.value;
+                      // If user is typing and the value is just "0", allow them to replace it
+                      if (inputValue === '0' && formData.basePrice === 0) {
+                        // Keep as 0 for now, will be updated when they type more
+                        setFormData(prev => ({ ...prev, basePrice: 0 }));
+                      } else {
+                        const value = inputValue === '' ? 0 : parseFloat(inputValue) || 0;
+                        handleInputChange('basePrice')(e);
+                      }
+                    }}
+                    onFocus={(e) => {
+                      // When user focuses on the field, if it's 0, select all text so they can replace it
+                      if (formData.basePrice === 0) {
+                        e.target.select();
+                      }
                     }}
                     required
                     placeholder="Enter base price"
@@ -921,10 +1024,23 @@ const CreateProduct2Page = () => {
                     fullWidth
                     label="Stock"
                     type="number"
-                    value={formData.stock}
+                    value={formData.stock === 0 ? '0' : formData.stock.toString()}
                     onChange={(e) => {
-                      const value = parseFloat(e.target.value) || 0;
-                      setFormData(prev => ({ ...prev, stock: value }));
+                      const inputValue = e.target.value;
+                      // If user is typing and the value is just "0", allow them to replace it
+                      if (inputValue === '0' && formData.stock === 0) {
+                        // Keep as 0 for now, will be updated when they type more
+                        setFormData(prev => ({ ...prev, stock: 0 }));
+                      } else {
+                        const value = inputValue === '' ? 0 : parseFloat(inputValue) || 0;
+                        setFormData(prev => ({ ...prev, stock: value }));
+                      }
+                    }}
+                    onFocus={(e) => {
+                      // When user focuses on the field, if it's 0, select all text so they can replace it
+                      if (formData.stock === 0) {
+                        e.target.select();
+                      }
                     }}
                     required
                     placeholder="Enter stock quantity"
@@ -1208,58 +1324,90 @@ const CreateProduct2Page = () => {
                     Price Tiers
                   </Typography>
                   
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.enablePriceTiers}
-                        onChange={handlePriceTiersToggle}
-                        color="primary"
-                      />
-                    }
-                    label="Enable Price Tiers"
-                    sx={{ 
-                      gap: 1,
-                      '& .MuiFormControlLabel-label': {
-                        fontSize: '0.875rem',
-                        fontWeight: 500
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.enablePriceTiers}
+                          onChange={handlePriceTiersToggle}
+                          color="primary"
+                        />
                       }
-                    }}
-                  />
+                      label="Enable Price Tiers"
+                    />
+                    {formData.enablePriceTiers && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handleResetPriceTiers}
+                        sx={{ ml: 1 }}
+                      >
+                        Reset
+                      </Button>
+                    )}
+                  </Box>
                 </Box>
                 <Divider sx={{ mb: 3 }} />
 
-                {formData.enablePriceTiers && (
-                  <Box>
+                {formData.enablePriceTiers && calculatedPriceTiers.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
-                      Tier Pricing
+                      Price Tiers
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <TextField
-                        label="Retail Price"
-                        type="number"
-                        value={formData.retailPrice}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          setFormData(prev => ({ ...prev, retailPrice: value }));
-                        }}
-                        required
-                        fullWidth
-                        placeholder="Enter retail price"
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
-                      <TextField
-                        label="Wholesale Price"
-                        type="number"
-                        value={formData.wholesalePrice}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          setFormData(prev => ({ ...prev, wholesalePrice: value }));
-                        }}
-                        required
-                        fullWidth
-                        placeholder="Enter wholesale price"
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
+                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                      Base price: ${VariantsCalculation.formatPrice(formData.basePrice)}
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {calculatedPriceTiers.map((tier) => (
+                        <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                {tier.display_name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                {parseFloat(tier.discount_off_retail_price) > 0 
+                                  ? `${tier.discount_off_retail_price}% discount` 
+                                  : 'No discount'
+                                }
+                              </Typography>
+                              {tier.is_overridden && (
+                                <Typography variant="body2" color="text.secondary">
+                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
+                                </Typography>
+                              )}
+                            </Box>
+                            <Box sx={{ minWidth: 120 }}>
+                              <TextField
+                                label="Price"
+                                type="number"
+                                size="small"
+                                value={tier.is_overridden ? tier.override_price || '' : tier.calculated_price || ''}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value) || 0;
+                                  handlePriceOverrideChange(tier.id, value);
+                                }}
+                                inputProps={{ min: 0, step: 0.01 }}
+                                sx={{ mb: 1 }}
+                              />
+                              <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h6" sx={{ 
+                                  fontWeight: 600, 
+                                  color: tier.is_overridden ? 'warning.main' : 'primary.main'
+                                }}>
+                                  ${VariantsCalculation.formatPrice(tier.is_overridden ? tier.override_price : tier.calculated_price)}
+                                </Typography>
+                                {tier.is_overridden && (
+                                  <Typography variant="caption" color="warning.main">
+                                    Overridden
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Paper>
+                      ))}
                     </Box>
                   </Box>
                 )}

@@ -39,6 +39,8 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
+import { productApi } from '@/services/productapi';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface Product {
   id: number;
@@ -97,6 +99,11 @@ interface Product {
       variation_id: number;
     };
   }>;
+  price_tiers?: Array<{
+    id: number;
+    price_adjustment: number;
+    is_active: boolean;
+  }>;
 }
 
 interface ProductsResponse {
@@ -123,11 +130,25 @@ const Products2Page = () => {
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlySpecial, setShowOnlySpecial] = useState(false);
+  const [priceTierDetails, setPriceTierDetails] = useState<Record<number, any>>({});
   
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+
+  const loadPriceTierDetails = useCallback(async () => {
+    try {
+      const response = await productApi.getPriceTiers();
+      const tierDetails: Record<number, any> = {};
+      response.forEach((tier: any) => {
+        tierDetails[tier.id] = tier;
+      });
+      setPriceTierDetails(tierDetails);
+    } catch (error) {
+      console.error('Error loading price tier details:', error);
+    }
+  }, []);
 
   const loadProducts = useCallback(async () => {
     try {
@@ -193,7 +214,8 @@ const Products2Page = () => {
 
   useEffect(() => {
     loadProducts();
-  }, [loadProducts]);
+    loadPriceTierDetails();
+  }, [loadProducts, loadPriceTierDetails]);
 
   const handleAdd = () => {
     router.push('/admin/products-2/create');
@@ -257,6 +279,22 @@ const Products2Page = () => {
     }
     
     return '/TruckImages/01.jpg';
+  };
+
+  const getCalculatedPriceTiers = (product: Product) => {
+    if (!product.price_tiers || product.price_tiers.length === 0) {
+      return [];
+    }
+    
+    return product.price_tiers.map((tier) => {
+      const tierDetails = priceTierDetails[tier.id];
+      return {
+        id: tier.id,
+        display_name: tierDetails?.display_name || tierDetails?.name || `Tier ${tier.id}`,
+        calculated_price: tier.price_adjustment,
+        is_overridden: false // For list display, we don't track overrides
+      };
+    });
   };
 
   // No client-side filtering needed since we're using server-side pagination
@@ -631,11 +669,12 @@ const Products2Page = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Shop Type</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Shop Type</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -742,6 +781,30 @@ const Products2Page = () => {
                         <Typography variant="body2" color="text.secondary">
                           {product.stock} units
                         </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {getCalculatedPriceTiers(product).length > 0 ? (
+                            getCalculatedPriceTiers(product).map((tier) => (
+                              <Chip
+                                key={tier.id}
+                                label={`${tier.display_name}: ${VariantsCalculation.formatPrice(tier.calculated_price)}`}
+                                size="small"
+                                variant="outlined"
+                                color={tier.is_overridden ? "warning" : "default"}
+                                sx={{
+                                  fontSize: '0.6rem',
+                                  height: 20,
+                                  fontWeight: tier.is_overridden ? 600 : 400
+                                }}
+                              />
+                            ))
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              None
+                            </Typography>
+                          )}
+                        </Box>
                       </TableCell>
                       <TableCell>
                         <Chip

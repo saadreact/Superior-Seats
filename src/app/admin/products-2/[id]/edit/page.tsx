@@ -33,6 +33,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { productApi } from '@/services/productapi';
 import { apiService } from '@/utils/api';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface ProductPage2Form {
   // First Half - Product Fields
@@ -68,8 +69,6 @@ interface ProductPage2Form {
   
   // Price Tiers Fields
   enablePriceTiers: boolean;
-  wholesalePrice: number;
-  retailPrice: number;
   
   isActive: boolean;
 }
@@ -127,8 +126,6 @@ const EditProduct2Page = () => {
     color: [],
     showOnSpecialShop: false,
     enablePriceTiers: false,
-    wholesalePrice: 0,
-    retailPrice: 0,
     isActive: true,
   });
 
@@ -137,6 +134,11 @@ const EditProduct2Page = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [success, setSuccess] = useState('');
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  
+  // Price tiers states
+  const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
+  const [priceOverrides, setPriceOverrides] = useState<Record<number, number>>({});
+  const [priceTiers, setPriceTiers] = useState<any[]>([]);
 
   // Data state for dropdowns
   const [categories, setCategories] = useState<{ id: number; name: string; price: number }[]>([]);
@@ -159,6 +161,7 @@ const EditProduct2Page = () => {
 
   useEffect(() => {
     loadInitialData();
+    loadPriceTiers();
   }, [id]);
 
   const loadInitialData = async () => {
@@ -298,30 +301,34 @@ const EditProduct2Page = () => {
         const priceTiersData = (productRes as any).price_tiers;
         const hasPriceTiers = priceTiersData && Array.isArray(priceTiersData) && priceTiersData.length > 0;
         
-        // Extract wholesale and retail prices from price tiers or use base price as fallback
-        let wholesalePrice = 0;
-        let retailPrice = 0;
-        
+        let existingPriceTiers: CalculatedPriceTier[] = [];
         if (hasPriceTiers) {
-          // Look for wholesale and retail tiers
-          const wholesaleTier = priceTiersData.find((tier: any) => 
-            tier.name?.toLowerCase().includes('wholesale') || 
-            tier.name?.toLowerCase().includes('cost')
-          );
-          const retailTier = priceTiersData.find((tier: any) => 
-            tier.name?.toLowerCase().includes('retail') || 
-            tier.name?.toLowerCase().includes('price')
-          );
-          
-          wholesalePrice = wholesaleTier?.price || wholesaleTier?.cost || 0;
-          retailPrice = retailTier?.price || retailTier?.cost || 0;
-        } else {
-          // If no price tiers but we have a base price, use it for both
-          const basePrice = parseFloat(productRes.price) || 0;
-          if (basePrice > 0) {
-            wholesalePrice = basePrice * 0.8; // Assume wholesale is 80% of retail
-            retailPrice = basePrice;
-          }
+          existingPriceTiers = priceTiersData.map((tier: any) => {
+            // Handle both pivot.price_adjustment and direct price_adjustment
+            const existingPrice = parseFloat(tier.pivot?.price_adjustment || tier.price_adjustment) || 0;
+            const calculatedPrice = VariantsCalculation.calculatePriceAdjustment(
+              parseFloat(productRes.price) || 0, 
+              parseFloat(tier.discount_off_retail_price)
+            ).calculatedPrice;
+            
+            // Check if this is an override
+            const isOverridden = Math.abs(existingPrice - calculatedPrice) > 0.01;
+            
+            return {
+              id: tier.id,
+              name: tier.name,
+              display_name: tier.display_name,
+              discount_off_retail_price: tier.discount_off_retail_price,
+              calculated_price: calculatedPrice,
+              discount_amount: (parseFloat(productRes.price) * parseFloat(tier.discount_off_retail_price)) / 100,
+              created_at: tier.created_at,
+              updated_at: tier.updated_at,
+              customers_count: tier.customers_count || 0,
+              pivot: tier.pivot || { price_adjustment: tier.price_adjustment },
+              override_price: isOverridden ? existingPrice : undefined,
+              is_overridden: isOverridden
+            };
+          });
         }
 
         // Determine if variations are enabled based on existing data
@@ -360,19 +367,20 @@ const EditProduct2Page = () => {
           seatStyle: shouldShowNone(productWithImages.seat_styles) ? ['None'] : extractNamesFromArray(productWithImages.seat_styles || []),
           color: shouldShowNone(productWithImages.colors) ? ['None'] : extractNamesFromArray(productWithImages.colors || []),
           showOnSpecialShop: productRes.show_on_special_shop ?? false,
-          enablePriceTiers: hasPriceTiers || (wholesalePrice > 0 || retailPrice > 0), // Enable if price tiers exist or we have price data
-          wholesalePrice: wholesalePrice, // Load from API response
-          retailPrice: retailPrice, // Load from API response
+          enablePriceTiers: hasPriceTiers, // Enable if price tiers exist
           isActive: productRes.is_active ?? true,
         });
+        
+        // Set calculated price tiers if they exist
+        if (hasPriceTiers) {
+          setCalculatedPriceTiers(existingPriceTiers);
+        }
         
         console.log('🔍 Form data set successfully');
         console.log('🔍 Price tiers data:', { 
           hasPriceTiers, 
-          wholesalePrice, 
-          retailPrice, 
-          priceTiersData,
-          enablePriceTiers: hasPriceTiers || (wholesalePrice > 0 || retailPrice > 0)
+          existingPriceTiers,
+          enablePriceTiers: hasPriceTiers
         });
         console.log('🔍 Mapped variation data:', {
           seatType: productWithImages.seat_types?.length || 0,
@@ -652,6 +660,65 @@ const EditProduct2Page = () => {
       ...prev,
       enablePriceTiers: enabled,
     }));
+    
+    if (enabled) {
+      // Calculate price tiers when enabled
+      if (formData.basePrice > 0) {
+        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.basePrice, priceTiers, priceOverrides);
+        setCalculatedPriceTiers(newCalculatedTiers);
+        
+        // Price tiers are now handled directly in handleSubmit
+      }
+    } else {
+      // Clear price tiers when disabled
+      // Price tiers are now handled directly in handleSubmit
+      setCalculatedPriceTiers([]);
+      setPriceOverrides({});
+    }
+  };
+
+  const handlePriceOverrideChange = (tierId: number, overridePrice: number) => {
+    setPriceOverrides(prev => ({
+      ...prev,
+      [tierId.toString()]: overridePrice
+    }));
+    
+    // Update the calculated price tiers with the new override
+    setCalculatedPriceTiers(prev => prev.map(tier => {
+      if (tier.id === tierId) {
+        const isOverridden = overridePrice > 0 && overridePrice !== tier.calculated_price;
+        return {
+          ...tier,
+          override_price: overridePrice,
+          is_overridden: isOverridden
+        };
+      }
+      return tier;
+    }));
+    
+    // Price adjustments are now handled directly in handleSubmit
+  };
+
+  const handleResetPriceTiers = () => {
+    if (formData.basePrice > 0) {
+      // Clear all overrides
+      setPriceOverrides({});
+      
+      // Recalculate price tiers without overrides
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.basePrice, priceTiers, {});
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Price adjustments are now handled directly in handleSubmit
+    }
+  };
+
+  const loadPriceTiers = async () => {
+    try {
+      const response = await productApi.getPriceTiers();
+      setPriceTiers(response || []);
+    } catch (err) {
+      console.error('Error loading price tiers:', err);
+    }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -846,9 +913,12 @@ const EditProduct2Page = () => {
         seat_style_ids: formData.enableVariations ? mapNamesToIds(formData.seatStyle, seatStyles) : undefined,
         color_ids: formData.enableVariations ? mapNamesToIds(formData.color, colors) : undefined,
         
-        // Price tiers - like lumbar type implementation
-        price_tier_ids: [],
-        price_adjustments: undefined,
+        // Price tiers - new schema
+        price_tiers: formData.enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map(tier => ({
+          id: tier.id,
+          price_adjustment: VariantsCalculation.getFinalPrice(tier),
+          is_active: true
+        })) : undefined,
       };
 
       // Debug: Log the data being sent
@@ -1133,12 +1203,20 @@ const EditProduct2Page = () => {
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
                   <TextField
                     fullWidth
-                    label="Base Price"
+                    label="In Shop Price"
                     type="number"
                     value={formData.basePrice}
                     onChange={(e) => {
                       const value = parseFloat(e.target.value) || 0;
                       setFormData(prev => ({ ...prev, basePrice: value }));
+                      
+                      // Recalculate price tiers if enabled
+                      if (formData.enablePriceTiers && calculatedPriceTiers.length > 0) {
+                        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
+                        setCalculatedPriceTiers(newCalculatedTiers);
+                        
+                        // Price adjustments are now handled directly in handleSubmit
+                      }
                     }}
                     required
                     placeholder="Enter base price"
@@ -1495,58 +1573,90 @@ const EditProduct2Page = () => {
                     Price Tiers
                   </Typography>
                   
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.enablePriceTiers}
-                        onChange={handlePriceTiersToggle}
-                        color="primary"
-                      />
-                    }
-                    label="Enable Price Tiers"
-                    sx={{ 
-                      gap: 1,
-                      '& .MuiFormControlLabel-label': {
-                        fontSize: '0.875rem',
-                        fontWeight: 500
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.enablePriceTiers}
+                          onChange={handlePriceTiersToggle}
+                          color="primary"
+                        />
                       }
-                    }}
-                  />
+                      label="Enable Price Tiers"
+                    />
+                    {formData.enablePriceTiers && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handleResetPriceTiers}
+                        sx={{ ml: 1 }}
+                      >
+                        Reset
+                      </Button>
+                    )}
+                  </Box>
                 </Box>
                 <Divider sx={{ mb: 3 }} />
 
-                {formData.enablePriceTiers && (
-                  <Box>
+                {formData.enablePriceTiers && calculatedPriceTiers.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
-                      Tier Pricing
+                      Price Tiers
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <TextField
-                        label="Retail Price"
-                        type="number"
-                        value={formData.retailPrice}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          setFormData(prev => ({ ...prev, retailPrice: value }));
-                        }}
-                        required
-                        fullWidth
-                        placeholder="Enter retail price"
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
-                      <TextField
-                        label="Wholesale Price"
-                        type="number"
-                        value={formData.wholesalePrice}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          setFormData(prev => ({ ...prev, wholesalePrice: value }));
-                        }}
-                        required
-                        fullWidth
-                        placeholder="Enter wholesale price"
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
+                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                      Base price: ${VariantsCalculation.formatPrice(formData.basePrice)}
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {calculatedPriceTiers.map((tier) => (
+                        <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                {tier.display_name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                {parseFloat(tier.discount_off_retail_price) > 0 
+                                  ? `${tier.discount_off_retail_price}% discount` 
+                                  : 'No discount'
+                                }
+                              </Typography>
+                              {tier.is_overridden && (
+                                <Typography variant="body2" color="text.secondary">
+                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
+                                </Typography>
+                              )}
+                            </Box>
+                            <Box sx={{ minWidth: 120 }}>
+                              <TextField
+                                label="Price"
+                                type="number"
+                                size="small"
+                                value={tier.is_overridden ? tier.override_price || '' : tier.calculated_price || ''}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value) || 0;
+                                  handlePriceOverrideChange(tier.id, value);
+                                }}
+                                inputProps={{ min: 0, step: 0.01 }}
+                                sx={{ mb: 1 }}
+                              />
+                              <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h6" sx={{ 
+                                  fontWeight: 600, 
+                                  color: tier.is_overridden ? 'warning.main' : 'primary.main'
+                                }}>
+                                  ${VariantsCalculation.formatPrice(tier.is_overridden ? tier.override_price : tier.calculated_price)}
+                                </Typography>
+                                {tier.is_overridden && (
+                                  <Typography variant="caption" color="warning.main">
+                                    Overridden
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Paper>
+                      ))}
                     </Box>
                   </Box>
                 )}
