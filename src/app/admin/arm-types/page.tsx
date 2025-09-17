@@ -32,6 +32,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 // Helper function to convert cost/price to number
 const parsePriceValue = (value: number | string | undefined): number => {
@@ -44,10 +45,26 @@ interface ArmType {
   id: number;
   name: string;
   description: string;
+  image: string;
   cost?: number | string;
   price?: number | string;
   created_at: string;
   updated_at: string;
+  price_tiers?: Array<{
+    id: number;
+    name: string;
+    display_name: string;
+    discount_off_retail_price: string;
+    created_at: string;
+    updated_at: string;
+    pivot: {
+      arm_type_id: number;
+      price_tier_id: number;
+      price_adjustment: number;
+      created_at: string;
+      updated_at: string;
+    };
+  }>;
 }
 
 const ArmTypesPage = () => {
@@ -67,6 +84,44 @@ const ArmTypesPage = () => {
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Helper function to get arm type image URL
+  const getArmTypeImage = (armType: ArmType) => {
+    if (armType.image) {
+      return `https://superiorseats.ali-khalid.com/${armType.image}`;
+    }
+    return null;
+  };
+
+  // Helper function to get calculated price tiers for an arm type
+  const getCalculatedPriceTiers = (armType: ArmType): CalculatedPriceTier[] => {
+    const basePrice = typeof armType.price === 'string' ? parseFloat(armType.price) : armType.price;
+    if (armType.price_tiers && armType.price_tiers.length > 0 && typeof basePrice === 'number' && basePrice > 0) {
+      // Create calculated price tiers from existing data (show actual prices from API)
+      return armType.price_tiers.map((tier: any) => {
+        const discountPercentage = parseFloat(tier.discount_off_retail_price) || 0;
+        const discountAmount = (basePrice * discountPercentage) / 100;
+        const calculatedPrice = basePrice - discountAmount;
+        const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
+        const isOverridden = actualPrice !== calculatedPrice;
+        
+        return {
+          id: tier.id,
+          name: tier.name,
+          display_name: tier.display_name,
+          discount_off_retail_price: tier.discount_off_retail_price,
+          created_at: tier.created_at,
+          updated_at: tier.updated_at,
+          customers_count: 0,
+          calculated_price: calculatedPrice,
+          discount_amount: discountAmount,
+          override_price: isOverridden ? actualPrice : undefined,
+          is_overridden: isOverridden
+        };
+      });
+    }
+    return [];
+  };
 
   const loadArmTypes = useCallback(async () => {
     try {
@@ -251,10 +306,11 @@ const ArmTypesPage = () => {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                    <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>In Store Price (Retail)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -270,6 +326,64 @@ const ArmTypesPage = () => {
                         transition: 'background-color 0.2s ease'
                       }}
                     >
+                      <TableCell>
+                        <Box sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          position: 'relative',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {getArmTypeImage(armType) ? (
+                            <Box
+                              component="img"
+                              src={getArmTypeImage(armType)!}
+                              alt={armType.name}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: 1,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                // Show fallback when image fails to load
+                                const fallback = target.parentElement?.querySelector('.image-fallback');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          
+                          {/* Fallback for when image is missing or fails to load */}
+                          <Box
+                            className="image-fallback"
+                            sx={{
+                              width: '100%',
+                              height: '100%',
+                              bgcolor: 'grey.200',
+                              display: getArmTypeImage(armType) ? 'none' : 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: 1,
+                              border: '1px solid #e0e0e0',
+                              position: getArmTypeImage(armType) ? 'absolute' : 'static',
+                              top: 0,
+                              left: 0
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                              {getArmTypeImage(armType) ? 'Error' : 'No Image'}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
                       <TableCell>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {armType.name}
@@ -290,14 +404,61 @@ const ArmTypesPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${parsePriceValue(armType.cost).toFixed(2)}
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: 'primary.main' }}>
+                          ${parsePriceValue(armType.price).toFixed(2)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${parsePriceValue(armType.price).toFixed(2)}
-                        </Typography>
+                        {(() => {
+                          const calculatedTiers = getCalculatedPriceTiers(armType);
+                          if (calculatedTiers.length > 0) {
+                            return (
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                  {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                </Typography>
+                                <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                  {calculatedTiers.slice(0, 2).map((tier) => (
+                                    <Chip
+                                      key={tier.id}
+                                      label={`${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        borderColor: tier.is_overridden ? 'warning.main' : undefined,
+                                        color: tier.is_overridden ? 'warning.main' : undefined,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                  {calculatedTiers.length > 2 && (
+                                    <Chip
+                                      label={`+${calculatedTiers.length - 2} more`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Stack>
+                              </Box>
+                            );
+                          }
+                          return (
+                            <Typography variant="body2" color="text.secondary">
+                              No tiers
+                            </Typography>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
