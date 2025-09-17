@@ -35,7 +35,6 @@ interface Customer {
   address: string;
   company_name?: string;
   tax_id?: string;
-  customer_type: string;
   price_tier_id: number;
   credit_limit: string;
   outstanding_balance: string;
@@ -131,13 +130,6 @@ const ViewCustomerPage = () => {
     </Box>
   );
 
-  const getCustomerTypeName = (type?: string) => {
-    if (!type) return 'N/A';
-    const t = String(type).toLowerCase();
-    if (t === 'retail' || t === 'retail_customer') return 'Retail';
-    if (t === 'wholesale' || t === 'wholesale_customer') return 'Wholesale';
-    return t.charAt(0).toUpperCase() + t.slice(1);
-  };
 
   if (loading) {
     return (
@@ -252,18 +244,10 @@ const ViewCustomerPage = () => {
                   </Typography>
                 </Box>
 
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Customer Type
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    {getCustomerTypeName(customer.customer_type)}
-                  </Typography>
-                </Box>
 
                 <Box>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Price Tier
+                    Customer Price Tiers
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
                     {customer.price_tier?.display_name || 'N/A'}

@@ -36,6 +36,7 @@ class LumbarTypesService {
     cost: number;
     price: number;
     price_tier_ids: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -53,6 +54,13 @@ class LumbarTypesService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+        
+        // Append price adjustments
+        if (data.price_adjustments && typeof data.price_adjustments === 'object') {
+          Object.entries(data.price_adjustments).forEach(([tierId, price]) => {
+            formData.append(`price_adjustments[${tierId}]`, price.toString());
           });
         }
 
@@ -86,7 +94,8 @@ class LumbarTypesService {
           description: data.description,
           cost: data.cost,
           price: data.price,
-          price_tier_ids: data.price_tier_ids
+          price_tier_ids: data.price_tier_ids,
+          price_adjustments: data.price_adjustments
         };
         const response = await api.post('/lumbar-types', jsonData);
         return response.data?.data || response.data;
@@ -107,6 +116,7 @@ class LumbarTypesService {
     cost?: number;
     price?: number;
     price_tier_ids?: number[];
+    price_adjustments?: Record<string, number>;
     current_image?: string;
   }) {
     try {
@@ -128,6 +138,13 @@ class LumbarTypesService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+        
+        // Append price adjustments
+        if (data.price_adjustments && typeof data.price_adjustments === 'object') {
+          Object.entries(data.price_adjustments).forEach(([tierId, price]) => {
+            formData.append(`price_adjustments[${tierId}]`, price.toString());
           });
         }
 
@@ -165,6 +182,7 @@ class LumbarTypesService {
           cost: data.cost,
           price: data.price,
           price_tier_ids: data.price_tier_ids,
+          price_adjustments: data.price_adjustments,
           current_image: data.current_image
         };
         const response = await api.put(`/lumbar-types/${id}`, jsonData);

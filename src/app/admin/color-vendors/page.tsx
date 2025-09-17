@@ -232,7 +232,7 @@ const ColorVendorsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Website</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Contact</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>

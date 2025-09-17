@@ -280,8 +280,7 @@ const MaterialTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>In Shop Price</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -370,11 +369,6 @@ const MaterialTypesPage = () => {
                           }}
                         >
                           {materialtypes.description || 'No description available'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${formatPrice(materialtypes.cost)}
                         </Typography>
                       </TableCell>
                       <TableCell>

@@ -445,7 +445,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               alignItems: 'center',
             }}
           >
-            Welcome to Superior Seats
+            {tabValue === 0 ? 'Login' : 'Sign Up'}
           </Typography>
           <IconButton
             aria-label="close"
@@ -493,9 +493,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
           <Box sx={{ overflow: 'hidden' }}>
             <TabPanel value={tabValue} index={0}>
               <Box sx={{ 
-                p: { xs: 3, sm: 4, md: 1, lg: 0.5, xl: 1, xxl: 1},
-                pb: { xs: 4, sm: 5, md: 3, lg: 2, xl: 3, xxl: 3},
-                maxWidth: '400px',
+                p: { xs: 3, sm: 4, md: 3, lg: 3, xl: 3, xxl: 3},
+                pb: { xs: 4, sm: 5, md: 4, lg: 4, xl: 4, xxl: 4},
+                maxWidth: '600px',
                 mx: 'auto',
                 width: '100%'
               }}>
@@ -634,67 +634,77 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
             <TabPanel value={tabValue} index={1}>
               <Box sx={{ 
-                py: { xs: 3, sm: 4, md: 5, lg: 0.1, xl: 0.8, xxl: 1},
-                pb: { xs: 4, sm: 5, md: 6, lg: 3, xl: 4, xxl: 5},
-                maxWidth: '400px',
+                p: { xs: 3, sm: 4, md: 3, lg: 3, xl: 3, xxl: 3},
+                pb: { xs: 4, sm: 5, md: 4, lg: 4, xl: 4, xxl: 4},
+                maxWidth: '600px',
                 mx: 'auto',
                 width: '100%'
               }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 1.5, 
-                    fontWeight: 600,
-                    fontSize: { xs: '1rem', sm: '1.125rem' },
-                    textAlign: 'center',
-                    color: 'text.primary',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  Create your account
-                </Typography>
+                
+
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="First Name"
+                    type="text"
+                    value={signUpForm.first_name}
+                    onChange={handleSignUpChange('first_name')}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSignUp();
+                      }
+                    }}
+                    error={!!errors.first_name}
+                    helperText={errors.first_name}
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      ...commonTextFieldStyles,
+                      '& .MuiFormHelperText-root': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        marginLeft: 0,
+                      },
+                    }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="Last Name"
+                    type="text"
+                    value={signUpForm.last_name}
+                    onChange={handleSignUpChange('last_name')}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSignUp();
+                      }
+                    }}
+                    error={!!errors.last_name}
+                    helperText={errors.last_name}
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      ...commonTextFieldStyles,
+                      '& .MuiFormHelperText-root': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        marginLeft: 0,
+                      },
+                    }}
+                  />
+                </Box>
 
                 <TextField
                   fullWidth
-                  label="First Name"
-                  type="text"
-                  value={signUpForm.first_name}
-                  onChange={handleSignUpChange('first_name')}
+                  label="Email"
+                  type="email"
+                  value={signUpForm.email}
+                  onChange={handleSignUpChange('email')}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       handleSignUp();
                     }
                   }}
-                  error={!!errors.first_name}
-                  helperText={errors.first_name}
-                  variant="outlined"
-                  size="small"
-                  sx={{ 
-                    mb: 2,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                  }}
-                />
-
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  type="text"
-                  value={signUpForm.last_name}
-                  onChange={handleSignUpChange('last_name')}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignUp();
-                    }
-                  }}
-                  error={!!errors.last_name}
-                  helperText={errors.last_name}
+                  error={!!errors.email}
+                  helperText={errors.email}
                   variant="outlined"
                   size="small"
                   sx={{ 
@@ -787,31 +797,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
                 <TextField
                   fullWidth
-                  label="Email"
-                  type="email"
-                  value={signUpForm.email}
-                  onChange={handleSignUpChange('email')}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignUp();
-                    }
-                  }}
-                  error={!!errors.email}
-                  helperText={errors.email}
-                  variant="outlined"
-                  size="small"
-                  sx={{ 
-                    mb: 2,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                  }}
-                />
-
-                <TextField
-                  fullWidth
                   label="Address"
                   type="text"
                   value={signUpForm.address}
@@ -835,55 +820,55 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                <TextField
-                  fullWidth
-                  label="City"
-                  type="text"
-                  value={signUpForm.city}
-                  onChange={handleSignUpChange('city')}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignUp();
-                    }
-                  }}
-                  error={!!errors.city}
-                  helperText={errors.city}
-                  variant="outlined"
-                  size="small"
-                  sx={{ 
-                    mb: 2,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                  }}
-                />
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    type="text"
+                    value={signUpForm.city}
+                    onChange={handleSignUpChange('city')}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSignUp();
+                      }
+                    }}
+                    error={!!errors.city}
+                    helperText={errors.city}
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      ...commonTextFieldStyles,
+                      '& .MuiFormHelperText-root': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        marginLeft: 0,
+                      },
+                    }}
+                  />
 
-                <TextField
-                  fullWidth
-                  label="State"
-                  type="text"
-                  value={signUpForm.state}
-                  onChange={handleSignUpChange('state')}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignUp();
-                    }
-                  }}
-                  error={!!errors.state}
-                  helperText={errors.state}
-                  variant="outlined"
-                  size="small"
-                  sx={{ 
-                    mb: 2,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                  }}
-                />
+                  <TextField
+                    fullWidth
+                    label="State"
+                    type="text"
+                    value={signUpForm.state}
+                    onChange={handleSignUpChange('state')}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSignUp();
+                      }
+                    }}
+                    error={!!errors.state}
+                    helperText={errors.state}
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      ...commonTextFieldStyles,
+                      '& .MuiFormHelperText-root': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        marginLeft: 0,
+                      },
+                    }}
+                  />
+                </Box>
 
                 <TextField
                   fullWidth

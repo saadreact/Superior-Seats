@@ -21,10 +21,12 @@ import {
   Chip,
   Divider,
   FormControlLabel,
+  Grid,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { reclineTypesService } from '@/services/recline-types';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 const EditReclineTypePage = () => {
   const router = useRouter();
@@ -43,10 +45,13 @@ const EditReclineTypePage = () => {
     image: null as File | null,
     cost: 0,
     price: 0,
-    price_tier_ids: [] as number[]
+    price_tier_ids: [] as number[],
+    price_adjustments: {} as Record<string, number>
   });
   
   const [enablePriceTiers, setEnablePriceTiers] = useState(false);
+  const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
+  const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -63,16 +68,56 @@ const EditReclineTypePage = () => {
       
       const reclineType = await reclineTypesService.getReclineType(parseInt(id));
       const priceTierIds = reclineType.price_tiers?.map((tier: any) => tier.id) || [];
+      
+      // Initialize calculated price tiers from existing data
+      const initialCalculatedTiers: CalculatedPriceTier[] = reclineType.price_tiers?.map((tier: any) => {
+        const existingPrice = parseFloat(tier.pivot?.price_adjustment) || 0;
+        const calculatedPrice = VariantsCalculation.calculatePriceAdjustment(
+          reclineType.price || 0, 
+          parseFloat(tier.discount_off_retail_price)
+        ).calculatedPrice;
+        
+        // Check if this is an override
+        const isOverridden = Math.abs(existingPrice - calculatedPrice) > 0.01;
+        
+        return {
+          id: tier.id,
+          name: tier.name,
+          display_name: tier.display_name,
+          discount_off_retail_price: tier.discount_off_retail_price,
+          calculated_price: calculatedPrice,
+          override_price: isOverridden ? existingPrice : undefined,
+          is_overridden: isOverridden
+        };
+      }) || [];
+      
+      // Initialize price adjustments from existing data
+      const initialPriceAdjustments: Record<string, number> = {};
+      initialCalculatedTiers.forEach((tier) => {
+        initialPriceAdjustments[tier.id.toString()] = VariantsCalculation.getFinalPrice(tier);
+      });
+      
       setFormData({
         name: reclineType.name || '',
         description: reclineType.description || '',
         image: null,
         cost: reclineType.cost || 0,
         price: reclineType.price || 0,
-        price_tier_ids: priceTierIds
+        price_tier_ids: priceTierIds,
+        price_adjustments: initialPriceAdjustments
       });
       setEnablePriceTiers(priceTierIds.length > 0);
+      setCalculatedPriceTiers(initialCalculatedTiers);
       setCurrentImage(reclineType.image);
+      
+      // Set up price overrides from calculated tiers
+      const priceOverrides: Record<string, number> = {};
+      initialCalculatedTiers.forEach((tier) => {
+        if (tier.is_overridden && tier.override_price !== undefined) {
+          priceOverrides[tier.id.toString()] = tier.override_price;
+        }
+      });
+      setPriceOverrides(priceOverrides);
     } catch (err: any) {
       setError(err.message || 'Failed to load recline type');
       console.error('Error loading recline type:', err);
@@ -95,6 +140,24 @@ const EditReclineTypePage = () => {
       ...prev,
       [field]: value
     }));
+    
+    // Recalculate price tiers when base price changes
+    if (field === 'price' && enablePriceTiers && value > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Update price_adjustments with calculated prices
+      const newPriceAdjustments = Object.fromEntries(
+        newCalculatedTiers.map(tier => [
+          tier.id.toString(), 
+          VariantsCalculation.getFinalPrice(tier)
+        ])
+      );
+      setFormData(prev => ({
+        ...prev,
+        price_adjustments: newPriceAdjustments
+      }));
+    }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,11 +184,85 @@ const EditReclineTypePage = () => {
     const checked = event.target.checked;
     setEnablePriceTiers(checked);
     
-    // Clear price tiers when disabled
+    // Calculate price tiers when enabled
+    if (checked && formData.price > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, priceOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Update price_adjustments with calculated prices
+      const newPriceAdjustments = Object.fromEntries(
+        newCalculatedTiers.map(tier => [
+          tier.id.toString(), 
+          VariantsCalculation.getFinalPrice(tier)
+        ])
+      );
+      setFormData(prev => ({
+        ...prev,
+        price_tier_ids: newCalculatedTiers.map(tier => tier.id),
+        price_adjustments: newPriceAdjustments
+      }));
+    }
+    
+    // Clear price tiers and adjustments when disabled
     if (!checked) {
       setFormData(prev => ({
         ...prev,
-        price_tier_ids: []
+        price_tier_ids: [],
+        price_adjustments: {}
+      }));
+      setCalculatedPriceTiers([]);
+      setPriceOverrides({});
+    }
+  };
+
+  const handlePriceOverrideChange = (tierId: number, overridePrice: number) => {
+    setPriceOverrides(prev => ({
+      ...prev,
+      [tierId.toString()]: overridePrice
+    }));
+    
+    // Recalculate price tiers with new override
+    if (formData.price > 0) {
+      const newOverrides = {
+        ...priceOverrides,
+        [tierId.toString()]: overridePrice
+      };
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, newOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Update price_adjustments with new calculated prices
+      const newPriceAdjustments = Object.fromEntries(
+        newCalculatedTiers.map(tier => [
+          tier.id.toString(), 
+          VariantsCalculation.getFinalPrice(tier)
+        ])
+      );
+      setFormData(prev => ({
+        ...prev,
+        price_adjustments: newPriceAdjustments
+      }));
+    }
+  };
+
+  const handleResetPriceTiers = () => {
+    if (formData.price > 0) {
+      // Clear all overrides
+      setPriceOverrides({});
+      
+      // Recalculate price tiers without overrides
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, {});
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Update price_adjustments with calculated prices
+      const newPriceAdjustments = Object.fromEntries(
+        newCalculatedTiers.map(tier => [
+          tier.id.toString(), 
+          tier.calculated_price
+        ])
+      );
+      setFormData(prev => ({
+        ...prev,
+        price_adjustments: newPriceAdjustments
       }));
     }
   };
@@ -138,10 +275,6 @@ const EditReclineTypePage = () => {
       return;
     }
 
-    if (formData.cost <= 0) {
-      setError('Cost must be greater than 0');
-      return;
-    }
 
     if (formData.price <= 0) {
       setError('Price must be greater than 0');
@@ -156,9 +289,10 @@ const EditReclineTypePage = () => {
       const submissionData: any = {
         name: formData.name,
         description: formData.description,
-        cost: formData.cost,
+        cost: 1, // Fixed cost value as requested
         price: formData.price,
-        price_tier_ids: enablePriceTiers && formData.price_tier_ids.length > 0 ? formData.price_tier_ids : []
+        price_tier_ids: enablePriceTiers && formData.price_tier_ids.length > 0 ? formData.price_tier_ids : [],
+        price_adjustments: enablePriceTiers && formData.price_adjustments ? formData.price_adjustments : {}
       };
 
       // Only add image to submission data if a new image is selected
@@ -266,28 +400,16 @@ const EditReclineTypePage = () => {
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="Cost (Wholesale)"
-                    type="number"
-                    value={formData.cost}
-                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
-                    required
-                    fullWidth
-                    placeholder="Enter wholesale cost"
-                    inputProps={{ min: 0, step: 0.01 }}
-                  />
-                  <TextField
-                    label="Price (Retail)"
+                  label="In Shop Price"
                     type="number"
                     value={formData.price}
                     onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
                     required
                     fullWidth
-                    placeholder="Enter retail price"
+                  placeholder="Enter shop price"
                     inputProps={{ min: 0, step: 0.01 }}
                   />
-                </Box>
                 </Box>
 
                 {/* Image Upload */}
@@ -299,23 +421,62 @@ const EditReclineTypePage = () => {
 
                 <Box>
                   {/* Current Image */}
-                  {currentImage && !formData.image && (
                     <Box sx={{ mb: 2 }}>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         Current Image:
                       </Typography>
+                    {currentImage ? (
+                      <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'flex-start',
+                        gap: 1
+                      }}>
+                        <Box sx={{ 
+                          border: '2px solid #e0e0e0', 
+                          borderRadius: 2, 
+                          p: 1,
+                          backgroundColor: '#fafafa'
+                        }}>
                       <img
                         src={`https://superiorseats.ali-khalid.com/${currentImage}`}
-                        alt="Current"
+                            alt="Current recline type"
                         style={{
                           maxWidth: '200px',
                           maxHeight: '200px',
                           objectFit: 'cover',
-                          borderRadius: '8px'
-                        }}
-                      />
+                              borderRadius: '8px',
+                              display: 'block'
+                            }}
+                            onError={(e) => {
+                              console.log('Image load error for:', `https://superiorseats.ali-khalid.com/${currentImage}`);
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Image not available</div>';
+                              }
+                            }}
+                          />
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Current image path: {currentImage}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box sx={{ 
+                        border: '2px dashed #ccc', 
+                        borderRadius: 2, 
+                        p: 3, 
+                        textAlign: 'center',
+                        backgroundColor: '#fafafa'
+                      }}>
+                        <Typography variant="body2" color="text.secondary">
+                          No current image
+                        </Typography>
                     </Box>
                   )}
+                  </Box>
 
                   <input
                     accept="image/*"
@@ -357,6 +518,7 @@ const EditReclineTypePage = () => {
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -367,33 +529,77 @@ const EditReclineTypePage = () => {
                   }
                   label="Enable Price Tiers"
                 />
+                  {enablePriceTiers && (
+                    <Button
+                      variant="outlined"
+                      onClick={handleResetPriceTiers}
+                      disabled={calculatedPriceTiers.length === 0}
+                      sx={{ ml: 2 }}
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </div>
 
-                {enablePriceTiers && (
+                {enablePriceTiers && calculatedPriceTiers.length > 0 && (
                   <Box>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
-                      Tier Pricing
+                      Price Tiers
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <TextField
-                        label="Retail Price"
-                        type="number"
-                        value={formData.price}
-                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
-                        required
-                        fullWidth
-                        placeholder="Enter retail price"
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
-                      <TextField
-                        label="Wholesale Price"
-                        type="number"
-                        value={formData.cost}
-                        onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
-                        required
-                        fullWidth
-                        placeholder="Enter wholesale price"
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
+                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                      Base price: ${VariantsCalculation.formatPrice(formData.price)}
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {calculatedPriceTiers.map((tier) => (
+                        <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                {tier.display_name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                {parseFloat(tier.discount_off_retail_price) > 0 
+                                  ? `${tier.discount_off_retail_price}% discount` 
+                                  : 'No discount'
+                                }
+                              </Typography>
+                              {tier.is_overridden && (
+                                <Typography variant="body2" color="text.secondary">
+                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
+                                </Typography>
+                              )}
+                            </Box>
+                            <Box sx={{ minWidth: 120 }}>
+                              <TextField
+                                label="Price"
+                                type="number"
+                                size="small"
+                                value={tier.is_overridden ? tier.override_price || '' : tier.calculated_price || ''}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value) || 0;
+                                  handlePriceOverrideChange(tier.id, value);
+                                }}
+                                inputProps={{ min: 0, step: 0.01 }}
+                                sx={{ mb: 1 }}
+                              />
+                              <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h6" sx={{ 
+                                  fontWeight: 600, 
+                                  color: tier.is_overridden ? 'warning.main' : 'primary.main'
+                                }}>
+                                  ${VariantsCalculation.formatPrice(tier.is_overridden ? tier.override_price : tier.calculated_price)}
+                                </Typography>
+                                {tier.is_overridden && (
+                                  <Typography variant="caption" color="warning.main">
+                                    Overridden
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Paper>
+                      ))}
                     </Box>
                   </Box>
                 )}

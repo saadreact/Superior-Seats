@@ -61,10 +61,9 @@ const CustomersPage = () => {
   // Filters & sorting state
   const [filters, setFilters] = useState({
     search: '',
-    customer_type: '', // retail | wholesale
     is_active: '', // '' | 'true' | 'false'
     company_name: '',
-    sort_by: 'created_at' as 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state',
+    sort_by: 'created_at' as 'name' | 'email' | 'created_at' | 'city' | 'state',
     sort_order: 'desc' as 'asc' | 'desc',
   });
 
@@ -80,7 +79,6 @@ const CustomersPage = () => {
   const resetFilters = () => {
     setFilters({
       search: '',
-      customer_type: '',
       is_active: '',
       company_name: '',
       sort_by: 'created_at',
@@ -90,11 +88,11 @@ const CustomersPage = () => {
     fetchCustomers(1, rowsPerPage);
   };
 
-  const handleSort = (column: 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state') => {
+  const handleSort = (column: 'name' | 'email' | 'created_at' | 'city' | 'state') => {
     const newOrder = filters.sort_by === column && filters.sort_order === 'asc' ? 'desc' : 'asc';
     setFilters(prev => ({
       ...prev,
-      sort_by: column as 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state',
+      sort_by: column as 'name' | 'email' | 'created_at' | 'city' | 'state',
       sort_order: newOrder,
     }));
     setCurrentPage(1);
@@ -111,7 +109,6 @@ const CustomersPage = () => {
         page,
         per_page: perPage,
         search: filters.search || undefined,
-        customer_type: filters.customer_type || undefined,
         is_active: filters.is_active === '' ? undefined : filters.is_active === 'true',
         company_name: filters.company_name || undefined,
         sort_by: filters.sort_by,
@@ -132,8 +129,8 @@ const CustomersPage = () => {
 
       const transformedCustomers: Customer[] = customersData.map((customer: any) => ({
         id: String(customer.id),
-        customerTypeId: customer.customer_type || 'retail',
-        customerType: customer.customer_type || '',
+        customerTypeId: 'retail',
+        customerType: '',
         firstName: (customer.first_name || (customer.name || '').split(' ')[0] || (customer.name || '')),
         lastName: (customer.last_name || (customer.name || '').split(' ').slice(1).join(' ') || ''),
         email: customer.email,
@@ -170,13 +167,6 @@ const CustomersPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, rowsPerPage]);
 
-  const getCustomerTypeName = (type: string) => {
-    if (!type) return '-';
-    const t = String(type).toLowerCase();
-    if (t === 'retail' || t === 'retail_customer') return 'Retail';
-    if (t === 'wholesale' || t === 'wholesale_customer') return 'Wholesale';
-    return t.charAt(0).toUpperCase() + t.slice(1);
-  };
 
   const handleAdd = () => {
     router.push('/admin/customers/create');
@@ -221,7 +211,7 @@ const CustomersPage = () => {
     children, 
     sortKey 
   }: { 
-    column: 'name' | 'email' | 'created_at' | 'customer_type' | 'city' | 'state';
+    column: 'name' | 'email' | 'created_at' | 'city' | 'state';
     children: React.ReactNode;
     sortKey: string;
   }) => {
@@ -337,7 +327,6 @@ const CustomersPage = () => {
                       <SortableHeader column="email" sortKey="email">Email</SortableHeader>
                       <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Company</TableCell>
-                      <SortableHeader column="customer_type" sortKey="customer_type">Customer Type</SortableHeader>
                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                       <SortableHeader column="created_at" sortKey="created_at">Created Date</SortableHeader>
                       <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
@@ -352,7 +341,6 @@ const CustomersPage = () => {
                         <TableCell>{customer.email}</TableCell>
                         <TableCell>{customer.phone}</TableCell>
                         <TableCell>{customer.company || '-'}</TableCell>
-                        <TableCell>{getCustomerTypeName(customer.customerTypeId)}</TableCell>
                         <TableCell>
                           <Chip
                             label={customer.isActive ? 'Active' : 'Inactive'}
@@ -422,14 +410,6 @@ const CustomersPage = () => {
                         </Typography>
                         <Typography variant="body2">
                           {customer.company || '-'}
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          Customer Type
-                        </Typography>
-                        <Typography variant="body2">
-                          {getCustomerTypeName(customer.customerTypeId)}
                         </Typography>
                       </Box>
                       <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>

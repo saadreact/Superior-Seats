@@ -10,15 +10,31 @@ import {
   Alert,
   CircularProgress,
   Stack,
-  Divider} from '@mui/material';
+  Divider,
+  Chip,
+  Grid
+} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { reclineTypesService } from '@/services/recline-types';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface ReclineType {
   id: number;
   name: string;
   description: string;
+  cost: number;
+  price: number;
+  image: string;
+  price_tiers: Array<{
+    id: number;
+    name: string;
+    display_name: string;
+    discount_off_retail_price: number;
+    pivot: {
+      price_adjustment: number;
+    };
+  }>;
   created_at: string;
   updated_at: string;
 }
@@ -31,6 +47,7 @@ const ReclineTypeDetailsPage = () => {
   const [reclineType, setReclineType] = useState<ReclineType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
 
   useEffect(() => {
     loadReclineType();
@@ -43,6 +60,18 @@ const ReclineTypeDetailsPage = () => {
       
       const data = await reclineTypesService.getReclineType(parseInt(id));
       setReclineType(data);
+      
+      // Create calculated price tiers from existing data
+      const priceTiers: CalculatedPriceTier[] = data.price_tiers?.map((tier: any) => ({
+        id: tier.id,
+        name: tier.name,
+        display_name: tier.display_name,
+        discount_off_retail_price: tier.discount_off_retail_price,
+        calculated_price: tier.pivot?.price_adjustment || 0,
+        override_price: undefined,
+        is_overridden: false
+      })) || [];
+      setCalculatedPriceTiers(priceTiers);
     } catch (err: any) {
       setError(err.message || 'Failed to load recline type');
       console.error('Error loading recline type:', err);
@@ -135,6 +164,112 @@ const ReclineTypeDetailsPage = () => {
                     {reclineType.description || 'No description available'}
                   </Typography>
                 </Box>
+
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    Pricing
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        In Shop Price
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                        ${VariantsCalculation.formatPrice(reclineType.price)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+
+                {calculatedPriceTiers.length > 0 && (
+                  <Box>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                      Price Tiers
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                      Based on base price: ${VariantsCalculation.formatPrice(reclineType.price)}
+                    </Typography>
+                    <Stack spacing={2}>
+                      {VariantsCalculation.sortByDiscountPercentage(calculatedPriceTiers).map((tier) => (
+                        <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Box>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                {tier.display_name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {parseFloat(tier.discount_off_retail_price) > 0 
+                                  ? `${tier.discount_off_retail_price}% discount` 
+                                  : 'No discount'
+                                }
+                              </Typography>
+                              {tier.is_overridden && (
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
+                                </Typography>
+                              )}
+                            </Box>
+                            <Box sx={{ textAlign: 'right' }}>
+                              <Typography variant="h6" sx={{ 
+                                fontWeight: 600, 
+                                color: tier.is_overridden ? 'warning.main' : 'primary.main'
+                              }}>
+                                ${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}
+                              </Typography>
+                              {tier.is_overridden && (
+                                <Typography variant="caption" color="warning.main" sx={{ display: 'block' }}>
+                                  Overridden
+                                </Typography>
+                              )}
+                              {!tier.is_overridden && tier.discount_amount > 0 && (
+                                <Typography variant="caption" color="success.main">
+                                  Save: ${VariantsCalculation.formatPrice(tier.discount_amount)}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Box>
+                        </Paper>
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
+
+                {reclineType.image && (
+                  <Box>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                      Image
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <Box sx={{ 
+                      border: '2px solid #e0e0e0', 
+                      borderRadius: 2, 
+                      p: 1,
+                      backgroundColor: '#fafafa',
+                      display: 'inline-block'
+                    }}>
+                      <img
+                        src={`https://superiorseats.ali-khalid.com/${reclineType.image}`}
+                        alt={reclineType.name}
+                        style={{
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          display: 'block'
+                        }}
+                        onError={(e) => {
+                          console.log('Image load error for:', `https://superiorseats.ali-khalid.com/${reclineType.image}`);
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Image not available</div>';
+                          }
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                )}
               </Stack>
             </Box>
 

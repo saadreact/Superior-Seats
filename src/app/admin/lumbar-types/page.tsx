@@ -33,6 +33,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { lumbarTypesService } from '@/services/lumbar-types';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface LumbarType {
   id: number;
@@ -56,6 +57,20 @@ interface LumbarType {
     created_at: string;
     updated_at: string;
   };
+  price_tiers: Array<{
+    id: number;
+    name: string;
+    display_name: string;
+    discount_off_retail_price: string;
+    created_at: string;
+    updated_at: string;
+    pivot: {
+      lumbar_type_id: number;
+      price_tier_id: number;
+      created_at: string;
+      updated_at: string;
+    };
+  }>;
 }
 
 const LumbarTypesPage = () => {
@@ -80,6 +95,36 @@ const LumbarTypesPage = () => {
       return `https://superiorseats.ali-khalid.com/${lumbarType.image}`;
     }
     return null;
+  };
+
+  // Helper function to get calculated price tiers for a lumbar type
+  const getCalculatedPriceTiers = (lumbarType: LumbarType): CalculatedPriceTier[] => {
+    const basePrice = typeof lumbarType.price === 'string' ? parseFloat(lumbarType.price) : lumbarType.price;
+    if (lumbarType.price_tiers && lumbarType.price_tiers.length > 0 && typeof basePrice === 'number' && basePrice > 0) {
+      // Create calculated price tiers from existing data (show actual prices from API)
+      return lumbarType.price_tiers.map((tier: any) => {
+        const discountPercentage = parseFloat(tier.discount_off_retail_price) || 0;
+        const discountAmount = (basePrice * discountPercentage) / 100;
+        const calculatedPrice = basePrice - discountAmount;
+        const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
+        const isOverridden = actualPrice !== calculatedPrice;
+        
+        return {
+          id: tier.id,
+          name: tier.name,
+          display_name: tier.display_name,
+          discount_off_retail_price: tier.discount_off_retail_price,
+          created_at: tier.created_at,
+          updated_at: tier.updated_at,
+          customers_count: 0,
+          calculated_price: calculatedPrice,
+          discount_amount: discountAmount,
+          override_price: isOverridden ? actualPrice : undefined,
+          is_overridden: isOverridden
+        };
+      });
+    }
+    return [];
   };
 
   const loadLumbarTypes = useCallback(async () => {
@@ -211,7 +256,7 @@ const LumbarTypesPage = () => {
               }
             }}
           >
-            Add Lumbar Type
+            Add
           </Button>
         </Box>
 
@@ -269,8 +314,8 @@ const LumbarTypesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -363,13 +408,60 @@ const LumbarTypesPage = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${lumbartypes.cost || 0}
+                          ${lumbartypes.price || 0}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${lumbartypes.price || 0}
-                        </Typography>
+                        {(() => {
+                          const calculatedTiers = getCalculatedPriceTiers(lumbartypes);
+                          if (calculatedTiers.length > 0) {
+                            return (
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                  {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                </Typography>
+                                <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                  {calculatedTiers.slice(0, 2).map((tier) => (
+                                    <Chip
+                                      key={tier.id}
+                                      label={`${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        borderColor: tier.is_overridden ? 'warning.main' : undefined,
+                                        color: tier.is_overridden ? 'warning.main' : undefined,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                  {calculatedTiers.length > 2 && (
+                                    <Chip
+                                      label={`+${calculatedTiers.length - 2} more`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Stack>
+                              </Box>
+                            );
+                          }
+                          return (
+                            <Typography variant="body2" color="text.secondary">
+                              No tiers
+                            </Typography>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

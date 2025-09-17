@@ -36,6 +36,7 @@ class SeatStitchPatternService {
     cost: number;
     price: number;
     price_tier_ids: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -53,6 +54,13 @@ class SeatStitchPatternService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
           });
         }
 
@@ -86,7 +94,8 @@ class SeatStitchPatternService {
           description: data.description,
           cost: data.cost,
           price: data.price,
-          price_tier_ids: data.price_tier_ids
+          price_tier_ids: data.price_tier_ids,
+          price_adjustments: data.price_adjustments
         };
         const response = await api.post('/seat-stitch-patterns', jsonData);
         return response.data?.data || response.data;
@@ -107,6 +116,7 @@ class SeatStitchPatternService {
     cost?: number;
     price?: number;
     price_tier_ids?: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -124,6 +134,13 @@ class SeatStitchPatternService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
           });
         }
 
@@ -160,7 +177,8 @@ class SeatStitchPatternService {
           description: data.description,
           cost: data.cost,
           price: data.price,
-          price_tier_ids: data.price_tier_ids
+          price_tier_ids: data.price_tier_ids,
+          price_adjustments: data.price_adjustments
         };
         const response = await api.put(`/seat-stitch-patterns/${id}`, jsonData);
         return response.data?.data || response.data;
