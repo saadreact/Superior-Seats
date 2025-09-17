@@ -28,8 +28,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  InputAdornment,
   Divider,
+  InputAdornment,
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon, Tune as TuneIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useAppSelector } from '@/store/hooks';
@@ -84,8 +84,7 @@ export default function ShopOrderWizard() {
   const [notes, setNotes] = useState('');
   const [shippingMethod, setShippingMethod] = useState('Standard');
 
-  const [discountPct, setDiscountPct] = useState<number>(0);
-  const [taxPct, setTaxPct] = useState<number>(0);
+  // Discount removed; tax is fixed at 7%
 
   const [successOpen, setSuccessOpen] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
@@ -166,8 +165,8 @@ export default function ShopOrderWizard() {
   }, [user]);
 
   const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
-  const discount = useMemo(() => (subTotal * (Number(discountPct) || 0)) / 100, [subTotal, discountPct]);
-  const tax = useMemo(() => (subTotal * (Number(taxPct) || 0)) / 100, [subTotal, taxPct]);
+  const discount = 0;
+  const tax = useMemo(() => (subTotal * 0.07), [subTotal]);
   const grandTotal = useMemo(() => Math.max(0, subTotal - discount + tax), [subTotal, discount, tax]);
 
   const getUnitPrice = (productId: number) => {
@@ -241,7 +240,7 @@ export default function ShopOrderWizard() {
           amountPaid: grandTotal,
           currency: 'USD',
         },
-        cartSummary: { subTotal, tax, discount, grandTotal },
+        cartSummary: { subTotal, tax, discount: 0, grandTotal },
         notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : ''].filter(Boolean).join(' '),
       };
       const response = await apiService.createOrder(payload as any);
@@ -396,10 +395,9 @@ export default function ShopOrderWizard() {
                       <MenuItem value="Overnight">Overnight</MenuItem>
                     </Select>
                   </FormControl>
-                  <Box mt={2} display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-                    <TextField type="number" label="Discount" value={discountPct} onChange={(e) => setDiscountPct(Math.max(0, Math.min(100, Number(e.target.value))))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} helperText="0-100%" />
-                    <TextField type="number" label="Tax" value={taxPct} onChange={(e) => setTaxPct(Number(e.target.value))} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
-                  </Box>
+                  <Box mt={2} width="100%">
+                    <TextField type="number" fullWidth disabled label="Tax" value={7}  InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+                    </Box>
                 </Box>
               </Box>
             </CardContent>
@@ -425,8 +423,7 @@ export default function ShopOrderWizard() {
                   ))}
                   <Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap" mt={1}>
                     <Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
-                    <Chip label={`Order Discount: $${discount.toFixed(2)} (${discountPct}%)`} />
-                    <Chip label={`Tax: $${tax.toFixed(2)} (${taxPct}%)`} />
+                    <Chip label={`Tax: $${tax.toFixed(2)} (7%)`} />
                     <Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
                   </Box>
                 </Box>

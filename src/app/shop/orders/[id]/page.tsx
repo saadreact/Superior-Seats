@@ -118,7 +118,7 @@ export default function ShopOrderViewPage() {
   };
 
   const formatCurrency = (amount: number): string => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
-  const computeLineTotal = (item: OrderItem): number => Math.max(0, ((item.quantity || 0) * (item.unit_price || 0)) - (item.discount_amount || 0));
+  const computeLineTotal = (item: OrderItem): number => Math.max(0, ((item.quantity || 0) * (item.unit_price || 0)));
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -403,24 +403,20 @@ export default function ShopOrderViewPage() {
                     ))}
                     {(() => {
                       const sub = computeSubtotal(order?.items || []);
-                      const disc = Number(order?.discount_amount || 0);
-                      const tax = Number(order?.tax_amount || 0);
-                      const discPct = safePercent(disc, sub);
+                      const tax = Number(order?.tax_amount || (sub * 0.07));
                       const taxPct = safePercent(tax, sub);
                       return (
                         <TableRow>
                           <TableCell colSpan={3} />
                           <TableCell align="right">
                             <Typography variant="body1" fontWeight={600}>Subtotal:</Typography>
-                            {disc > 0 && (<Typography variant="body2" color="error">Order Discount:</Typography>)}
                             {tax > 0 && (<Typography variant="body2">Tax:</Typography>)}
                             <Typography variant="h6" fontWeight={600} color="primary">Total:</Typography>
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body1" fontWeight={600}>{formatCurrency(sub)}</Typography>
-                            {disc > 0 && (<Typography variant="body2" color="error">-{formatCurrency(disc)} {discPct ? `(${discPct.toFixed(2)}%)` : ''}</Typography>)}
                             {tax > 0 && (<Typography variant="body2">+{formatCurrency(tax)} {taxPct ? `(${taxPct.toFixed(2)}%)` : ''}</Typography>)}
-                            <Typography variant="h6" fontWeight={600} color="primary">{formatCurrency(order?.total_amount || (sub - disc + tax))}</Typography>
+                            <Typography variant="h6" fontWeight={600} color="primary">{formatCurrency(order?.total_amount || (sub + tax))}</Typography>
                           </TableCell>
                         </TableRow>
                       );

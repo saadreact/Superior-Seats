@@ -68,7 +68,7 @@ const Checkout = () => {
   const createOrderFromCart = async (method: 'cash' | 'card', paidRef?: string) => {
     const subTotal = totalPrice;
     const shippingCost = totalPrice > 500 ? 0 : 29.99;
-    const tax = totalPrice * 0.08;
+    const tax = totalPrice * 0.07;
     const grandTotal = subTotal + shippingCost + tax;
 
     const payload = {

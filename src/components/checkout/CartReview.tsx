@@ -337,12 +337,12 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
               <Typography variant="body1" color="text.secondary" sx={{ 
                 fontSize: { xs: '0.8rem', sm: '0.9rem' }
               }}>
-                Tax (8%):
+                Tax (7%):
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ 
                 fontSize: { xs: '0.8rem', sm: '0.9rem' }
               }}>
-                ${(totalPrice * 0.08).toFixed(2)}
+                ${(totalPrice * 0.07).toFixed(2)}
               </Typography>
             </Box>
             
@@ -368,7 +368,7 @@ const CartReview: React.FC<CartReviewProps> = ({ onNext }) => {
                <Typography variant="h5" fontWeight="medium" color="error.main" sx={{ 
                  fontSize: { xs: '1rem', sm: '1.25rem' }
                }}>
-                 ${(totalPrice + (totalPrice > 500 ? 0 : 29.99) + (totalPrice * 0.08)).toFixed(2)}
+                 ${(totalPrice + (totalPrice > 500 ? 0 : 29.99) + (totalPrice * 0.07)).toFixed(2)}
                                </Typography>
               </Box>
             </Box>
