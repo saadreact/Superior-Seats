@@ -65,6 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   const pathname = usePathname();
   const [variationsExpanded, setVariationsExpanded] = useState(false);
   const [vehicleInfoExpanded, setVehicleInfoExpanded] = useState(false);
+  const [vendorsExpanded, setVendorsExpanded] = useState(false);
   
 
 
@@ -122,11 +123,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/colors',
     },
     {
-      text: 'Color Vendors',
-      icon: <ColorIcon />,
-      href: '/admin/color-vendors',
-    },
-    {
       text: 'Heat Options',
       icon: <HeatIcon />,
       href: '/admin/heat-options',
@@ -165,6 +161,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Seat Types',
       icon: <ChairIcon />,
       href: '/admin/seat-types',
+    },
+  ];
+
+  const vendorsSubItems = [
+    {
+      text: 'Color Vendors',
+      icon: <ColorIcon />,
+      href: '/admin/color-vendors',
     },
   ];
 
@@ -236,11 +240,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     setVehicleInfoExpanded(!vehicleInfoExpanded);
   };
 
+  const handleVendorsToggle = () => {
+    setVendorsExpanded(!vendorsExpanded);
+  };
+
   const isVariationsActive = () => {
     return pathname.startsWith('/admin/variations') || 
            pathname.startsWith('/admin/colors') ||
            pathname.startsWith('/admin/arm-types') ||
-           pathname.startsWith('/admin/color-vendors') ||
            pathname.startsWith('/admin/feature-options') ||
            pathname.startsWith('/admin/heat-options') ||
            pathname.startsWith('/admin/item-types') ||
@@ -251,6 +258,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
            pathname.startsWith('/admin/seat-pricing') ||
            pathname.startsWith('/admin/recline-types') ||
            pathname.startsWith('/admin/seat-styles');
+  };
+
+  const isVendorsActive = () => {
+    return pathname.startsWith('/admin/color-vendors');
   };
 
   const isVehicleInfoActive = () => {
@@ -446,6 +457,105 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
           </>
         )}
 
+        {/* Vendors Section with Sub-items */}
+        {!collapsed && (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={handleVendorsToggle}
+                selected={isVendorsActive()}
+                sx={{
+                  mx: 0.5,
+                  borderRadius: 1,
+                  mb: 0.25,
+                  minHeight: 36,
+                  py: 0.75,
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: 'white',
+                    },
+                  },
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: isVendorsActive() ? 'white' : 'inherit',
+                  }}
+                >
+                  <InventoryIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Vendors"
+                  primaryTypographyProps={{
+                    fontWeight: isVendorsActive() ? 600 : 400,
+                    fontSize: '0.875rem',
+                  }}
+                />
+                {vendorsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </ListItemButton>
+            </ListItem>
+
+            <Collapse in={vendorsExpanded} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {vendorsSubItems.map((item) => (
+                  <ListItem key={item.text} disablePadding>
+                    <ListItemButton
+                      onClick={() => handleNavigation(item.href)}
+                      selected={isActive(item.href)}
+                      sx={{
+                        mx: 0.5,
+                        ml: 3,
+                        borderRadius: 1,
+                        mb: 0.25,
+                        minHeight: 32,
+                        py: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark',
+                          },
+                          '& .MuiListItemIcon-root': {
+                            color: 'white',
+                          },
+                        },
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 32,
+                          color: isActive(item.href) ? 'white' : 'inherit',
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{
+                          fontWeight: isActive(item.href) ? 600 : 400,
+                          fontSize: '0.8rem',
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+          </>
+        )}
+
         {/* Vehicle Information Section with Sub-items */}
         {!collapsed && (
           <>
@@ -579,6 +689,45 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
                 }}
               >
                 <SettingsIcon />
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Collapsed Vendors - Show as single item */}
+        {collapsed && (
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigation('/admin/color-vendors')}
+              selected={isVendorsActive()}
+              sx={{
+                mx: 0.5,
+                borderRadius: 1,
+                mb: 0.25,
+                minHeight: 40,
+                py: 0.75,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                },
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 36,
+                  color: isVendorsActive() ? 'white' : 'inherit',
+                }}
+              >
+                <InventoryIcon />
               </ListItemIcon>
             </ListItemButton>
           </ListItem>
