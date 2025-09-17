@@ -37,6 +37,7 @@ class MaterialTypesService {
     price: number;
     is_active?: boolean;
     price_tier_ids: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -55,6 +56,13 @@ class MaterialTypesService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
           });
         }
 
@@ -89,7 +97,8 @@ class MaterialTypesService {
           cost: data.cost,
           price: data.price,
           is_active: data.is_active,
-          price_tier_ids: data.price_tier_ids
+          price_tier_ids: data.price_tier_ids,
+          price_adjustments: data.price_adjustments
         };
         const response = await api.post('/material-types', jsonData);
         return response.data?.data || response.data;
@@ -111,6 +120,7 @@ class MaterialTypesService {
     price?: number;
     is_active?: boolean;
     price_tier_ids?: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -129,6 +139,13 @@ class MaterialTypesService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
           });
         }
 
@@ -171,6 +188,13 @@ class MaterialTypesService {
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
           data.price_tier_ids.forEach(id => {
             formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
           });
         }
 

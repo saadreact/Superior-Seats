@@ -517,6 +517,7 @@ const CreateVariationPage = () => {
 
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mt: 2 }}>
                   {renderField('stitch_pattern', 'Stitch Pattern', 'stitch_patterns')}
+                  {renderField('seat_item_type', 'Seat Item Type', 'seat_item_types')}
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mt: 2 }}>

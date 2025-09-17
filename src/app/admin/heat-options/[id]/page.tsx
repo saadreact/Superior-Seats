@@ -14,6 +14,7 @@ import {
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { heatOptionsService } from '@/services/heat-options';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface HeatOption {
   id: number;
@@ -49,6 +50,7 @@ const HeatOptionDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [heatoptions, setHeatOption] = useState<HeatOption | null>(null);
+  const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
 
   useEffect(() => {
     loadHeatOption();
@@ -61,6 +63,35 @@ const HeatOptionDetailPage = () => {
       
       const data = await heatOptionsService.getHeatOption(parseInt(id));
       setHeatOption(data);
+      
+      // Create calculated price tiers from existing data (show actual prices from API)
+      if (data.price_tiers && data.price_tiers.length > 0 && data.price > 0) {
+        const basePrice = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
+        
+        const existingCalculatedTiers = data.price_tiers.map((tier: any) => {
+          const discountPercentage = parseFloat(tier.discount_off_retail_price) || 0;
+          const discountAmount = (basePrice * discountPercentage) / 100;
+          const calculatedPrice = basePrice - discountAmount;
+          const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
+          const isOverridden = actualPrice !== calculatedPrice;
+          
+          return {
+            id: tier.id,
+            name: tier.name,
+            display_name: tier.display_name,
+            discount_off_retail_price: tier.discount_off_retail_price,
+            created_at: tier.created_at,
+            updated_at: tier.updated_at,
+            customers_count: 0,
+            calculated_price: calculatedPrice,
+            discount_amount: discountAmount,
+            override_price: isOverridden ? actualPrice : undefined,
+            is_overridden: isOverridden
+          };
+        });
+        
+        setCalculatedPriceTiers(existingCalculatedTiers);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load heat option');
       console.error('Error loading heat option:', err);
@@ -195,24 +226,54 @@ const HeatOptionDetailPage = () => {
                   </Box>
                 </Box>
 
-                {heatoptions.price_tiers && heatoptions.price_tiers.length > 0 && (
+                {calculatedPriceTiers.length > 0 && (
                   <Box>
                     <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                       Price Tiers
                     </Typography>
-                    <Stack spacing={1}>
-                      {heatoptions.price_tiers.map((tier) => (
-                        <Box key={tier.id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Typography variant="body2" sx={{ minWidth: 120, fontWeight: 500 }}>
-                            {tier.display_name}:
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {heatoptions.price_adjustments?.[tier.id.toString()] 
-                              ? `+$${formatPrice(heatoptions.price_adjustments[tier.id.toString()])}`
-                              : 'No adjustment'
-                            }
-                          </Typography>
-                        </Box>
+                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                      Based on base price: ${formatPrice(heatoptions.price)}
+                    </Typography>
+                    <Stack spacing={2}>
+                      {VariantsCalculation.sortByDiscountPercentage(calculatedPriceTiers).map((tier) => (
+                        <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Box>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                {tier.display_name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {parseFloat(tier.discount_off_retail_price) > 0 
+                                  ? `${tier.discount_off_retail_price}% discount` 
+                                  : 'No discount'
+                                }
+                              </Typography>
+                              {tier.is_overridden && (
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
+                                </Typography>
+                              )}
+                            </Box>
+                            <Box sx={{ textAlign: 'right' }}>
+                              <Typography variant="h6" sx={{ 
+                                fontWeight: 600, 
+                                color: tier.is_overridden ? 'warning.main' : 'primary.main'
+                              }}>
+                                ${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}
+                              </Typography>
+                              {tier.is_overridden && (
+                                <Typography variant="caption" color="warning.main" sx={{ display: 'block' }}>
+                                  Overridden
+                                </Typography>
+                              )}
+                              {!tier.is_overridden && tier.discount_amount > 0 && (
+                                <Typography variant="caption" color="success.main">
+                                  Save: ${VariantsCalculation.formatPrice(tier.discount_amount)}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Box>
+                        </Paper>
                       ))}
                     </Stack>
                   </Box>

@@ -32,6 +32,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { heatOptionsService } from '@/services/heat-options';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface HeatOption {
   id: number;
@@ -102,6 +103,36 @@ const HeatOptionsPage = () => {
     if (value === undefined || value === null) return '0.00';
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
     return isNaN(numValue) ? '0.00' : numValue.toFixed(2);
+  };
+
+  // Helper function to get calculated price tiers for a heat option
+  const getCalculatedPriceTiers = (heatOption: HeatOption): CalculatedPriceTier[] => {
+    const basePrice = typeof heatOption.price === 'string' ? parseFloat(heatOption.price) : heatOption.price;
+    if (heatOption.price_tiers && heatOption.price_tiers.length > 0 && typeof basePrice === 'number' && basePrice > 0) {
+      // Create calculated price tiers from existing data (show actual prices from API)
+      return heatOption.price_tiers.map((tier: any) => {
+        const discountPercentage = parseFloat(tier.discount_off_retail_price) || 0;
+        const discountAmount = (basePrice * discountPercentage) / 100;
+        const calculatedPrice = basePrice - discountAmount;
+        const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
+        const isOverridden = actualPrice !== calculatedPrice;
+        
+        return {
+          id: tier.id,
+          name: tier.name,
+          display_name: tier.display_name,
+          discount_off_retail_price: tier.discount_off_retail_price,
+          created_at: tier.created_at,
+          updated_at: tier.updated_at,
+          customers_count: 0,
+          calculated_price: calculatedPrice,
+          discount_amount: discountAmount,
+          override_price: isOverridden ? actualPrice : undefined,
+          is_overridden: isOverridden
+        };
+      });
+    }
+    return [];
   };
 
   const loadHeatOptions = useCallback(async () => {
@@ -272,8 +303,8 @@ const HeatOptionsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Cost</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
@@ -368,14 +399,61 @@ const HeatOptionsPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500, color: 'success.main' }}>
-                          ${formatPrice(heatOption.cost)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 500, color: 'primary.main' }}>
                           ${formatPrice(heatOption.price)}
                         </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const calculatedTiers = getCalculatedPriceTiers(heatOption);
+                          if (calculatedTiers.length > 0) {
+                            return (
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                  {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                </Typography>
+                                <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                  {calculatedTiers.slice(0, 2).map((tier) => (
+                                    <Chip
+                                      key={tier.id}
+                                      label={`${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        borderColor: tier.is_overridden ? 'warning.main' : undefined,
+                                        color: tier.is_overridden ? 'warning.main' : undefined,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                  {calculatedTiers.length > 2 && (
+                                    <Chip
+                                      label={`+${calculatedTiers.length - 2} more`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Stack>
+                              </Box>
+                            );
+                          }
+                          return (
+                            <Typography variant="body2" color="text.secondary">
+                              No tiers
+                            </Typography>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

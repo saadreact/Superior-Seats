@@ -39,6 +39,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { productApi } from '@/services/productapi';
 import { apiService } from '@/utils/api';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface Variation {
   id: number;
@@ -100,6 +101,11 @@ interface Product {
     updated_at: string;
   };
   variations?: Variation[];
+  price_tiers?: Array<{
+    id: number;
+    price_adjustment: number;
+    is_active: boolean;
+  }>;
 }
 
 const ProductDetailPage = () => {
@@ -527,10 +533,10 @@ const ProductDetailPage = () => {
                   
                   <Box>
                     <Typography variant="subtitle2" sx={{ color: '#64748b', mb: 1 }}>
-                      Base Price
+                      In Shop Price
                     </Typography>
                     <Typography variant="h5" sx={{ fontWeight: 700, color: '#DA291C' }}>
-                      ${product.price}
+                      {VariantsCalculation.formatPrice(product.price)}
                     </Typography>
                   </Box>
                   
@@ -743,6 +749,42 @@ const ProductDetailPage = () => {
               </CardContent>
             </Card>
         </Box>
+
+        {/* Price Tiers Section */}
+        {product.price_tiers && product.price_tiers.length > 0 && (
+          <Box sx={{ mt: 4 }}>
+            <Card sx={{ 
+              borderRadius: '16px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#1e293b' }}>
+                  Price Tiers
+                </Typography>
+                
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {product.price_tiers.map((tier) => (
+                    <Paper key={tier.id} elevation={1} sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                            Price Tier {tier.id}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Active
+                          </Typography>
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#DA291C' }}>
+                          {VariantsCalculation.formatPrice(tier.price_adjustment)}
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        )}
 
 
         {/* Variations List */}

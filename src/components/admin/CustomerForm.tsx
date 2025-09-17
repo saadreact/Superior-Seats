@@ -36,7 +36,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     last_name: '',
     email: '',
     password: '',
-    customer_type: 'retail',
     phone: '',
     address: '',
     city: '',
@@ -81,7 +80,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         last_name: customer.last_name || lastNameFromName,
         email: customer.email || '',
         password: '', // Don't populate password for edit
-        customer_type: customer.customer_type || 'retail',
         phone: customer.phone || '',
         address: customer.address || '',
         city: customer.city || '',
@@ -155,11 +153,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     }
   };
 
-  // Generate customer type options dynamically from price tiers
-  const customerTypeOptions = priceTiers.map(tier => ({
-    value: tier.name.toLowerCase().replace('_price', '').replace('_', ''),
-    label: tier.display_name || tier.name.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
-  }));
 
   // Generate price tier options for dropdown
   const priceTierOptions = priceTiers.map(tier => ({
@@ -311,19 +304,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
           />
 
           <SelectField
-            name="customer_type"
-            label="Customer Type"
-            value={formData.customer_type}
-            onChange={(value) => handleFieldChange('customer_type', value)}
-            options={customerTypeOptions}
-            required
-            error={allErrors.customer_type}
-            disabled={isViewMode}
-          />
-
-          <SelectField
             name="price_tier_id"
-            label="Price Tier"
+            label="Customer Price Tiers"
             value={formData.price_tier_id.toString()}
             onChange={(value) => handleFieldChange('price_tier_id', parseInt(value))}
             options={priceTierOptions.map(option => ({
