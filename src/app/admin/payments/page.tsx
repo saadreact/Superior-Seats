@@ -81,7 +81,6 @@ const AdminPayments = () => {
             <Avatar sx={{ bgcolor: 'black', width: 56, height: 56 }}>■</Avatar>
       <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>Square</Typography>
-              <Typography variant="body2" color="text.secondary">OrderCircle Payments - Square</Typography>
                 </Box>
               </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>

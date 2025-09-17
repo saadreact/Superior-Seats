@@ -166,34 +166,6 @@ const CreateCategoryPage = () => {
                 </Stack>
               </Box>
 
-              {/* Additional Information */}
-              <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Additional Information
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                
-                <Stack spacing={3}>
-                  <TextField
-                    fullWidth
-                    label="Slug"
-                    value={formData.slug}
-                    onChange={handleChange('slug')}
-                    placeholder="Enter category slug (e.g., truck-seats)"
-                    helperText="URL-friendly version of the name (lowercase, hyphens instead of spaces)"
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Image URL"
-                    value={formData.image_url}
-                    onChange={handleChange('image_url')}
-                    placeholder="Enter image URL"
-                    helperText="Optional: URL to category image"
-                  />
-                </Stack>
-              </Box>
-
               {/* Actions */}
               <Box sx={{ 
                 display: 'flex', 

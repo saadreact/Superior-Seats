@@ -149,22 +149,27 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
             {isAuthenticated && user ? (
               <>
                 <Tooltip title={`${user.username || user.name || user.email} (Click to logout)`} arrow>
-                  <IconButton
-                    color="inherit"
-                    onClick={handleUserMenuClick}
-                    sx={{
-                      color: '#DA291C',
-                      p: { xs: 1, sm: 1.25, md: 1.5 },
-                      '&:hover': {
-                        backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                      {user?.name || user?.username || user?.email}
+                    </Typography>
+                    <IconButton
+                      color="inherit"
+                      onClick={handleUserMenuClick}
+                      sx={{
                         color: '#DA291C',
-                        transform: 'scale(1.05)',
-                      },
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <AccountCircleIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem', md: '1.75rem' } }} />
-                  </IconButton>
+                        p: { xs: 1, sm: 1.25, md: 1.5 },
+                        '&:hover': {
+                          backgroundColor: 'rgba(218, 41, 28, 0.1)',
+                          color: '#DA291C',
+                          transform: 'scale(1.05)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <AccountCircleIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem', md: '1.75rem' } }} />
+                    </IconButton>
+                  </Box>
                 </Tooltip>
                 <Menu
                   anchorEl={userMenuAnchor}

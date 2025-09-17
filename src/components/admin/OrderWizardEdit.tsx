@@ -29,6 +29,7 @@ import {
 	TableRow,
 	TableCell,
 	TableBody,
+	InputAdornment,
 } from '@mui/material';
 import {
 	Add as AddIcon,
@@ -136,7 +137,6 @@ const getUnitPrice = (productId: number) => {
 	const [shippingMethod, setShippingMethod] = useState('Standard');
 
 	// Summary
-	const [discount, setDiscount] = useState<number>(0);
 	const [tax, setTax] = useState<number>(0);
 
 	// Success dialog
@@ -221,9 +221,8 @@ const getUnitPrice = (productId: number) => {
 					const cartItemsFromNew: CartItem[] = cartItemsNew.map((ci: any) => {
 						const qty = Number(ci.quantity) || 0;
 						const price = Number(ci.unitPrice) || 0;
-						const disc = Number(ci.discountAmount) || 0;
-						const total = Math.max(0, (qty * price) - disc);
 						const vi = (ci as any).variants || {};
+						const line = Math.max(0, qty * price);
 						return {
 							itemId: String(ci.itemId || ci.productId),
 							productId: Number(ci.productId),
@@ -231,9 +230,9 @@ const getUnitPrice = (productId: number) => {
 							name: ci.name || '',
 							quantity: qty,
 							unitPrice: price,
-							discountAmount: disc,
-							total,
-							totalPrice: total,
+							discountAmount: 0,
+							total: line,
+							totalPrice: line,
 							variants: vi, // Use variants directly from API without coercing
 						};
 					});
@@ -263,9 +262,8 @@ const getUnitPrice = (productId: number) => {
 					const cartItemsFromLegacy: CartItem[] = legacyItems.map((it: any) => {
 						const qty = Number(it.quantity) || 0;
 						const price = Number(it.unit_price) || 0;
-						const disc = Number(it.discount_amount) || 0;
-						const total = Math.max(0, (qty * price) - disc);
 						const vi = (it as any).variants || {};
+						const line = Math.max(0, qty * price);
 						return {
 							itemId: String(it.product_id),
 							productId: it.product_id,
@@ -273,9 +271,9 @@ const getUnitPrice = (productId: number) => {
 							name: (it.product && it.product.name) || '',
 							quantity: qty,
 							unitPrice: price,
-							discountAmount: disc,
-							total,
-							totalPrice: total,
+							discountAmount: 0,
+							total: line,
+							totalPrice: line,
 							variants: vi, // Use variants directly
 						};
 					});
@@ -284,7 +282,6 @@ const getUnitPrice = (productId: number) => {
 					setCartItems(mapped);
 
 					// Totals & notes
-					setDiscount(Number((order as any)?.cartSummary?.discount ?? order.discount_amount) || 0);
 					setTax(Number((order as any)?.cartSummary?.tax ?? order.tax_amount) || 0);
 					setNotes((order as any)?.notes || (order as any)?.order?.notes || '');
 				}
@@ -299,8 +296,9 @@ const getUnitPrice = (productId: number) => {
 	}, [order]);
 
 	// Derived totals
-	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice) - (i.discountAmount || 0), 0), [cartItems]);
-	const grandTotal = useMemo(() => Math.max(0, subTotal - discount + tax), [subTotal, discount, tax]);
+	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
+	const computedTax = useMemo(() => subTotal * 0.07, [subTotal]);
+	const grandTotal = useMemo(() => Math.max(0, subTotal + computedTax), [subTotal, computedTax]);
 
 	const handleAddItem = () => {
 		setCartItems(prev => ([
@@ -319,8 +317,7 @@ const getUnitPrice = (productId: number) => {
 			const updated: CartItem = { ...it, ...updates } as CartItem;
 			const qty = Number(updated.quantity) || 0;
 			const price = Number(updated.unitPrice) || 0;
-			const disc = Number(updated.discountAmount) || 0;
-			const lineTotal = Math.max(0, (qty * price) - disc);
+			const lineTotal = Math.max(0, (qty * price));
 			updated.total = lineTotal;
 			updated.totalPrice = lineTotal;
 			return updated;
@@ -370,8 +367,8 @@ const getUnitPrice = (productId: number) => {
 				billing_address: { ...billingAddress },
 				notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : ''].filter(Boolean).join(' '),
 				payment_method: 'cash',
-				discount_amount: discount,
-				tax_amount: tax,
+				discount_amount: 0,
+				tax_amount: computedTax,
 				items: cartItems.map(ci => ({
 					product_id: ci.productId,
 					variation_id: ci.variationId,
@@ -611,9 +608,8 @@ const getUnitPrice = (productId: number) => {
 											<MenuItem value="Overnight">Overnight</MenuItem>
 										</Select>
 									</FormControl>
-									<Box mt={2} display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-										<TextField type="number" label="Discount" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
-										<TextField type="number" label="Tax" value={tax} onChange={(e) => setTax(Number(e.target.value))} />
+									<Box mt={2} width="100%">
+										<TextField type="number" fullWidth disabled label="Tax" value={7}  InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
 									</Box>
 								</Box>
 							</Box>
@@ -641,8 +637,7 @@ const getUnitPrice = (productId: number) => {
 																									<Divider sx={{ my: 1 }} />
 																<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
 																	<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
-																	<Chip label={`Order Discount: $${discount.toFixed(2)}`} />
-																	<Chip label={`Tax: $${tax.toFixed(2)}`} />
+																	<Chip label={`Tax: $${computedTax.toFixed(2)} (7%)`} />
 																	<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
 																</Box>
 														</Box>

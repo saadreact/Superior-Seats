@@ -149,7 +149,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
               size="medium"
               onClick={() => {
                 onClose();
-                router.push('/shop');
+                router.push('/shop-now');
               }}
               sx={{
                 backgroundColor: 'primary.main',

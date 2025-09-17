@@ -395,7 +395,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
         status: order.status || 'pending',
         payment_method: order.payment_method || '',
         payment_status: order.payment_status || 'pending',
-        discount_amount: order.discount_amount || 0,
+        discount_amount: 0,
         tax_amount: order.tax_amount || 0,
         total_amount: order.total_amount || 0,
         items: order.items?.map((item: any) => ({
@@ -404,8 +404,8 @@ const OrderForm: React.FC<OrderFormProps> = ({
           variation_id: item.variation_id,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          discount_amount: item.discount_amount || 0,
-          total: (item.quantity * item.unit_price) - (item.discount_amount || 0),
+          discount_amount: 0,
+          total: (item.quantity * item.unit_price),
         })) || [],
       });
 
@@ -424,15 +424,18 @@ const OrderForm: React.FC<OrderFormProps> = ({
   // Calculate totals whenever items change
   const calculateTotals = useCallback(() => {
     const subtotal = formData.items.reduce((sum, item) => 
-      sum + (item.quantity * item.unit_price) - item.discount_amount, 0
+      sum + (item.quantity * item.unit_price), 0
     );
-    const total = subtotal - formData.discount_amount + formData.tax_amount;
+    const tax = subtotal * 0.07;
+    const total = subtotal + tax;
     
     setFormData(prev => ({
       ...prev,
+      tax_amount: tax,
+      discount_amount: 0,
       total_amount: total
     }));
-  }, [formData.items, formData.discount_amount, formData.tax_amount]);
+  }, [formData.items]);
 
   useEffect(() => {
     calculateTotals();
@@ -519,7 +522,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
             variationName: variation?.name || 'Unknown Variation',
             quantity: Number(item.quantity),
             unitPrice: Number(item.unit_price),
-            discountAmount: Number(item.discount_amount || 0),
+            discountAmount: 0,
             total: Number(item.total),
             totalPrice: Number(item.total) // Backend expects totalPrice
           };
@@ -550,9 +553,9 @@ const OrderForm: React.FC<OrderFormProps> = ({
           currency: 'USD'
         },
         cartSummary: {
-          subTotal: Number((formData.total_amount || 0) - (formData.tax_amount || 0) + (formData.discount_amount || 0)),
+          subTotal: Number((formData.total_amount || 0) - (formData.tax_amount || 0)),
           tax: Number(formData.tax_amount) || 0,
-          discount: Number(formData.discount_amount) || 0,
+          discount: 0,
           grandTotal: Number(formData.total_amount) || 0
         },
         notes: formData.notes || '',
@@ -604,7 +607,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
         if (i === index) {
           const updatedItem = { ...item, [field]: typeof value === 'string' ? parseFloat(value) || 0 : value };
           // Calculate item total
-          updatedItem.total = (updatedItem.quantity * updatedItem.unit_price) - updatedItem.discount_amount;
+          updatedItem.total = (updatedItem.quantity * updatedItem.unit_price);
           return updatedItem;
         }
         return item;
@@ -925,14 +928,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                       error={errors[`items.${index}.unit_price`]}
                       disabled={isViewMode}
                     />
-                    <FormField
-                      name={`discount_amount-${index}`}
-                      label="Discount Amount"
-                      value={item.discount_amount}
-                      onChange={(value) => updateItem(index, 'discount_amount', value)}
-                      type="number"
-                      disabled={isViewMode}
-                    />
+                    {/* Discount removed */}
                     <TextField
                       label="Item Total"
                       value={`$${item.total.toFixed(2)}`}
@@ -1118,7 +1114,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
           </Typography>
           <Box sx={{ 
             display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: '2fr auto auto 2fr' },
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: '2fr auto 2fr' },
             gap: 2 
           }}>
             <SelectField
@@ -1127,14 +1123,6 @@ const OrderForm: React.FC<OrderFormProps> = ({
               value={formData.payment_method}
               onChange={(value) => handleFieldChange('payment_method', value)}
               options={paymentMethodOptions}
-              disabled={isViewMode}
-            />
-            <FormField
-              name="discount_amount"
-              label="Discount Amount"
-              value={formData.discount_amount}
-              onChange={(value) => handleFieldChange('discount_amount', parseFloat(value) || 0)}
-              type="number"
               disabled={isViewMode}
             />
             <FormField
