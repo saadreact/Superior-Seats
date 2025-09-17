@@ -236,7 +236,6 @@ const CategoriesPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Slug</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
@@ -275,11 +274,6 @@ const CategoriesPage = () => {
                           size="small"
                           color={category.is_active ? 'success' : 'default'}
                         />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                          {category.slug || 'No slug set'}
-                        </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

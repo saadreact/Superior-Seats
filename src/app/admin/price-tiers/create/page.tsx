@@ -203,7 +203,7 @@ const CreatePriceTierPage = () => {
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="Discount Off Retail Price (%)"
+                    label="Discount Off In Store Price (%)"
                     type="number"
                     value={formData.discount_off_retail_price}
                     onChange={(e) => handleInputChange('discount_off_retail_price', parseFloat(e.target.value) || 0)}
@@ -212,7 +212,8 @@ const CreatePriceTierPage = () => {
                     placeholder="Enter discount percentage"
                     inputProps={{ min: 0, max: 100, step: 0.01 }}
                   />
-                  <TextField
+                  
+                  {/* <TextField
                     label="Minimum Order Amount"
                     type="number"
                     value={formData.minimum_order_amount}
@@ -220,7 +221,7 @@ const CreatePriceTierPage = () => {
                     fullWidth
                     placeholder="Enter minimum order amount (optional)"
                     inputProps={{ min: 0, step: 0.01 }}
-                  />
+                  /> */}
                 </Box>
                 </Box>
 

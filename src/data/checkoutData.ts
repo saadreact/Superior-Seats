@@ -93,7 +93,7 @@ export const defaultPaymentData: PaymentFormData = {
 // Shipping calculation constants
 export const SHIPPING_THRESHOLD = 500; // Free shipping above this amount
 export const SHIPPING_COST = 29.99; // Standard shipping cost
-export const TAX_RATE = 0.08; // 8% tax rate
+export const TAX_RATE = 0.07; // 7% tax rate
 
 // Form validation messages
 export const validationMessages = {
