@@ -289,7 +289,19 @@ class ShopNowApis {
    */
   async getProducts(): Promise<ProductsResponse> {
     try {
-      const response = await apiClient.get<ProductsResponse>('/shop/products');
+      const customerId = (() => {
+        try {
+          const raw = localStorage.getItem('persist:auth');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          const userStr = parsed.user;
+          const user = userStr ? JSON.parse(userStr) : null;
+          const id = user?.role?.id;
+          return typeof id === 'number' ? id : null;
+        } catch { return null; }
+      })();
+      const path = customerId ? `/shop/products/${customerId}` : '/shop/products';
+      const response = await apiClient.get<ProductsResponse>(path);
       return response.data;
     } catch (error) {
       console.warn('⚠️ ShopNowApis - Products endpoint not available, using fallback:', error);
@@ -308,7 +320,21 @@ class ShopNowApis {
    */
   async getSpecialProducts(): Promise<ProductsResponse> {
     try {
-      const response = await apiClient.get<ProductsResponse>('/shop/products?show_on_special_shop=true');
+      const customerId = (() => {
+        try {
+          const raw = localStorage.getItem('persist:auth');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          const userStr = parsed.user;
+          const user = userStr ? JSON.parse(userStr) : null;
+          const id = user?.role?.id;
+          return typeof id === 'number' ? id : null;
+        } catch { return null; }
+      })();
+      const base = customerId ? `/shop/products/${customerId}` : '/shop/products';
+      const sep = base.includes('?') ? '&' : '?';
+      const path = `${base}${sep}show_on_special_shop=true`;
+      const response = await apiClient.get<ProductsResponse>(path);
       return response.data;
     } catch (error) {
       console.warn('⚠️ ShopNowApis - Special products endpoint not available, using fallback:', error);
@@ -328,7 +354,21 @@ class ShopNowApis {
    */
   async getProductsByCategory(categoryId: number): Promise<ProductsResponse> {
     try {
-      const response = await apiClient.get<ProductsResponse>(`/shop/products?category_id=${categoryId}`);
+      const customerId = (() => {
+        try {
+          const raw = localStorage.getItem('persist:auth');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          const userStr = parsed.user;
+          const user = userStr ? JSON.parse(userStr) : null;
+          const id = user?.role?.id;
+          return typeof id === 'number' ? id : null;
+        } catch { return null; }
+      })();
+      const base = customerId ? `/shop/products/${customerId}` : '/shop/products';
+      const sep = base.includes('?') ? '&' : '?';
+      const path = `${base}${sep}category_id=${categoryId}`;
+      const response = await apiClient.get<ProductsResponse>(path);
       return response.data;
     } catch (error) {
       console.error(`❌ ShopNowApis - Error fetching products for category ${categoryId}:`, error);
@@ -343,7 +383,7 @@ class ShopNowApis {
    */
   async getProductById(id: number): Promise<Product> {
     try {
-      const response = await apiClient.get<{ status: string; message: string; data: Product }>(`/shop/products/${id}`);
+      const response = await apiClient.get<{ status: string; message: string; data: Product }>(`/shop/product/${id}`);
       return response.data.data;
     } catch (error) {
       console.error(`❌ ShopNowApis - Error fetching product ${id}:`, error);
