@@ -31,6 +31,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface Color {
   id: number;
@@ -40,6 +41,7 @@ interface Color {
   color_vendor_id: number;
   is_active: boolean;
   price_tier_ids: number[];
+  price_tiers?: any[];
   cost: number | null;
   price: number | null;
   created_at: string;
@@ -58,9 +60,11 @@ interface PriceTier {
   name: string;
   display_name: string;
   description?: string;
-  discount_off_retail_price: number;
+  discount_off_retail_price: string;
   minimum_order_amount?: number;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 const CreateColorPage = () => {
@@ -75,12 +79,12 @@ const CreateColorPage = () => {
     hex_code: '',
     description: '',
     color_vendor_id: 0,
-    cost: 0,
     price: 0,
     is_active: true,
-    price_tier_ids: [] as number[],
   });
   const [enablePriceTiers, setEnablePriceTiers] = useState(false);
+  const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
+  const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
 
   const loadColorVendors = useCallback(async () => {
     try {
@@ -112,19 +116,65 @@ const CreateColorPage = () => {
       ...prev,
       [field]: value
     }));
+
+    // Recalculate price tiers when price changes
+    if (field === 'price' && value > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(
+        value,
+        priceTiers,
+        priceOverrides
+      );
+      setCalculatedPriceTiers(newCalculatedTiers);
+    }
   };
 
-  const handleMultiSelectChange = (event: any) => {
-    const value = event.target.value;
-    setFormData(prev => ({
-      ...prev,
-      price_tier_ids: typeof value === 'string' ? value.split(',').map(Number) : (value || []),
-    }));
-  };
 
   const handleEnablePriceTiersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
     setEnablePriceTiers(checked);
+    
+    if (!checked) {
+      // Clear price tier selections when disabled
+      setPriceOverrides({});
+      setCalculatedPriceTiers([]);
+    } else if (formData.price > 0) {
+      // Recalculate when enabled
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(
+        formData.price,
+        priceTiers,
+        priceOverrides
+      );
+      setCalculatedPriceTiers(newCalculatedTiers);
+    }
+  };
+
+  const handlePriceOverrideChange = (tierId: number, overridePrice: number) => {
+    setPriceOverrides(prev => ({
+      ...prev,
+      [tierId.toString()]: overridePrice
+    }));
+    
+    // Recalculate price tiers with new override
+    if (formData.price > 0) {
+      const newOverrides = {
+        ...priceOverrides,
+        [tierId.toString()]: overridePrice
+      };
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, newOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+    }
+  };
+
+  const handleResetPriceTiers = () => {
+    setPriceOverrides({});
+    if (formData.price > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(
+        formData.price,
+        priceTiers,
+        {}
+      );
+      setCalculatedPriceTiers(newCalculatedTiers);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,11 +213,6 @@ const CreateColorPage = () => {
       return;
     }
     
-    if (formData.cost <= 0) {
-      setError('Cost must be greater than 0');
-      return;
-    }
-
     if (formData.price <= 0) {
       setError('Price must be greater than 0');
       return;
@@ -182,10 +227,16 @@ const CreateColorPage = () => {
         hex_code: hexCode,
         description: formData.description.trim(),
         color_vendor_id: Number(formData.color_vendor_id),
-        cost: formData.cost,
+        cost: 1, // Fixed cost value as per schema
         price: formData.price,
         is_active: formData.is_active,
-        price_tier_ids: enablePriceTiers ? (formData.price_tier_ids || []).map(id => Number(id)) : [],
+        price_tier_ids: enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map(tier => tier.id) : [],
+        price_adjustments: enablePriceTiers && calculatedPriceTiers.length > 0 ? Object.fromEntries(
+          calculatedPriceTiers.map(tier => [
+            tier.id.toString(), 
+            VariantsCalculation.getFinalPrice(tier)
+          ])
+        ) : undefined
       };
       
       await apiService.createColor(submitData);
@@ -351,28 +402,17 @@ const CreateColorPage = () => {
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    label="Cost (Wholesale)"
-                    type="number"
-                    value={formData.cost}
-                    onChange={(e) => handleInputChange('cost', parseFloat(e.target.value) || 0)}
-                    required
-                    fullWidth
-                    placeholder="Enter wholesale cost"
-                    inputProps={{ min: 0, step: 0.01 }}
-                  />
-                  <TextField
-                    label="Price (Retail)"
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
-                    required
-                    fullWidth
-                    placeholder="Enter retail price"
-                    inputProps={{ min: 0, step: 0.01 }}
-                  />
-                </Box>
+                <TextField
+                  label="In Shop Price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                  required
+                  fullWidth
+                  placeholder="Enter in shop price"
+                  inputProps={{ min: 0, step: 0.01 }}
+                  sx={{ mb: 3 }}
+                />
               </Box>
 
               {/* Price Tiers */}
@@ -382,51 +422,93 @@ const CreateColorPage = () => {
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
 
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={enablePriceTiers}
-                      onChange={handleEnablePriceTiersChange}
-                      color="primary"
-                    />
-                  }
-                  label="Enable Price Tiers"
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={enablePriceTiers}
+                        onChange={handleEnablePriceTiersChange}
+                        color="primary"
+                      />
+                    }
+                    label="Enable Price Tiers"
+                  />
+                  {enablePriceTiers && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleResetPriceTiers}
+                      sx={{ ml: 1 }}
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </Box>
 
-                {enablePriceTiers && (
+                {enablePriceTiers && calculatedPriceTiers.length > 0 && (
                   <Box>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
-                      Tier Pricing
+                      Calculated Price Tiers
                     </Typography>
-                    <FormControl fullWidth>
-                      <InputLabel>Price Tiers</InputLabel>
-                      <Select
-                        multiple
-                        value={formData.price_tier_ids}
-                        onChange={handleMultiSelectChange}
-                        input={<OutlinedInput label="Price Tiers" />}
-                        renderValue={(selected) => (
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {(selected as number[] || []).map((value) => {
-                              const tier = priceTiers.find(t => t.id === value);
-                              return (
-                                <Chip key={value} label={tier?.name || value} size="small" />
-                              );
-                            })}
+                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                      Based on base price: ${VariantsCalculation.formatPrice(formData.price)}
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {VariantsCalculation.sortByDiscountPercentage(calculatedPriceTiers).map((tier) => (
+                        <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                {tier.display_name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                {parseFloat(tier.discount_off_retail_price) > 0 
+                                  ? `${tier.discount_off_retail_price}% discount` 
+                                  : 'No discount'
+                                }
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
+                              </Typography>
+                              {tier.discount_amount > 0 && (
+                                <Typography variant="caption" color="success.main">
+                                  Save: ${VariantsCalculation.formatPrice(tier.discount_amount)}
+                                </Typography>
+                              )}
+                            </Box>
+                            <Box sx={{ minWidth: 120 }}>
+                              <TextField
+                                label="Override Price"
+                                type="number"
+                                size="small"
+                                value={tier.is_overridden ? tier.override_price || '' : ''}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value) || 0;
+                                  handlePriceOverrideChange(tier.id, value);
+                                }}
+                                placeholder={VariantsCalculation.formatPrice(tier.calculated_price)}
+                                inputProps={{ min: 0, step: 0.01 }}
+                                sx={{ mb: 1 }}
+                              />
+                              <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h6" sx={{ 
+                                  fontWeight: 600, 
+                                  color: tier.is_overridden ? 'warning.main' : 'primary.main'
+                                }}>
+                                  ${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}
+                                </Typography>
+                                {tier.is_overridden && (
+                                  <Typography variant="caption" color="warning.main">
+                                    Overridden
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
                           </Box>
-                        )}
-                      >
-                        {priceTiers.map((tier) => (
-                          <MenuItem key={tier.id} value={tier.id}>
-                            <Checkbox checked={(formData.price_tier_ids || []).indexOf(tier.id) > -1} />
-                            <ListItemText
-                              primary={tier.name}
-                              secondary={`${tier.discount_off_retail_price}% off retail`}
-                            />
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                        </Paper>
+                      ))}
+                    </Box>
                   </Box>
                 )}
               </Box>

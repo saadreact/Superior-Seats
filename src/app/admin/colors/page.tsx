@@ -33,6 +33,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
+import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface Color {
   id: number;
@@ -41,6 +42,7 @@ interface Color {
   description: string;
   color_vendor_id: number;
   price_tier_ids: number[];
+  price_tiers?: any[];
   cost: number | null;
   price: number | null;
   is_active: boolean;
@@ -59,8 +61,10 @@ interface PriceTier {
   name: string;
   display_name: string;
   description?: string;
-  discount_off_retail_price: number;
+  discount_off_retail_price: string;
   minimum_order_amount?: number;
+  created_at: string;
+  updated_at: string;
 }
 
 const ColorsPage = () => {
@@ -82,6 +86,34 @@ const ColorsPage = () => {
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Helper function to get calculated price tiers for display
+  const getCalculatedPriceTiers = (color: Color): CalculatedPriceTier[] => {
+    if (!color.price_tiers || color.price_tiers.length === 0) {
+      return [];
+    }
+
+    const priceValue = typeof color.price === 'string' ? parseFloat(color.price) : (color.price || 0);
+    if (priceValue <= 0) return [];
+
+    // Extract price adjustments and determine which are truly overridden
+    const overriddenPrices: Record<string, number> = {};
+    
+    color.price_tiers.forEach((tier: any) => {
+      if (tier.pivot && tier.pivot.price_adjustment !== undefined) {
+        const adjustmentValue = parseFloat(tier.pivot.price_adjustment);
+        const discountPercentage = parseFloat(tier.discount_off_retail_price);
+        const calculatedPrice = priceValue - (priceValue * discountPercentage / 100);
+        
+        // Check if the adjustment value is different from calculated price (indicating override)
+        if (Math.abs(adjustmentValue - calculatedPrice) > 0.01) {
+          overriddenPrices[tier.id.toString()] = adjustmentValue;
+        }
+      }
+    });
+
+    return VariantsCalculation.calculatePriceTiers(priceValue, color.price_tiers, overriddenPrices);
+  };
 
 
 
@@ -279,8 +311,7 @@ const ColorsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Vendor</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Cost (Wholesale)</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price (Retail)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
@@ -340,29 +371,25 @@ const ColorsPage = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${color.cost || 0}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           ${color.price || 0}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {color.price_tier_ids && color.price_tier_ids.length > 0 ? (
-                            color.price_tier_ids.map((tierId) => {
-                              const tier = priceTiers.find(t => t.id === tierId);
-                              return tier ? (
+                          {color.price_tiers && color.price_tiers.length > 0 ? (
+                            (() => {
+                              const calculatedTiers = getCalculatedPriceTiers(color);
+                              return calculatedTiers.map((tier) => (
                                 <Chip
-                                  key={tierId}
-                                  label={tier.name}
+                                  key={tier.id}
+                                  label={`${tier.name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`}
                                   size="small"
                                   variant="outlined"
+                                  color={tier.is_overridden ? 'warning' : 'default'}
                                   sx={{ fontSize: '0.6rem', height: 20 }}
                                 />
-                              ) : null;
-                            })
+                              ));
+                            })()
                           ) : (
                             <Typography variant="body2" color="text.secondary">
                               None

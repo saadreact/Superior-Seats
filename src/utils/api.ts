@@ -1969,8 +1969,11 @@ class ApiService {
     hex_code?: string;
     description?: string;
     color_vendor_id: number;
+    cost?: number;
+    price?: number;
     is_active?: boolean;
     price_tier_ids: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       console.log('API createColor - Sending data:', data);
@@ -2005,8 +2008,11 @@ class ApiService {
     hex_code?: string;
     description?: string;
     color_vendor_id?: number;
+    cost?: number;
+    price?: number;
     is_active?: boolean;
     price_tier_ids?: number[];
+    price_adjustments?: Record<string, number>;
   }) {
     try {
       console.log('API updateColor - Updating color with ID:', id);
@@ -2096,6 +2102,7 @@ class ApiService {
   async createArmType(data: {
     name: string;
     description?: string;
+    image?: File;
     cost?: number;
     price?: number;
     is_active?: boolean;
@@ -2103,10 +2110,63 @@ class ApiService {
     price_adjustments?: any;
   }) {
     try {
-      const response = await api.post('/arm-types', data);
-      return response.data?.data || response.data;
+      // Check if we have an image file to determine if we need FormData
+      if (data.image instanceof File) {
+        const formData = new FormData();
+        formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        if (data.cost !== undefined) formData.append('cost', data.cost.toString());
+        if (data.price !== undefined) formData.append('price', data.price.toString());
+        
+        // Append single image (not as array) - arm types have only one image
+        formData.append('image', data.image);
+        
+        // Append price tier IDs as array
+        if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
+          data.price_tier_ids.forEach(id => {
+            formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, (adjustment as number).toString());
+          });
+        }
+
+        // Debug: Log FormData contents
+        console.log('Arm Type FormData being sent:');
+        for (let [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          } else {
+            console.log(`${key}: ${value}`);
+          }
+        }
+        
+        const response = await api.post('/arm-types', formData, {
+          headers: {
+            // Don't set Content-Type for FormData - let browser set it with boundary
+            'Content-Type': undefined, // Explicitly remove Content-Type to let browser set it
+          },
+        });
+        
+        if (response.data && response.data.data) {
+          return response.data.data;
+        } else if (response.data) {
+          return response.data;
+        }
+        return response.data;
+      } else {
+        // Fallback to JSON if no image
+        const response = await api.post('/arm-types', data);
+        return response.data?.data || response.data;
+      }
     } catch (error: any) {
       console.error('Error creating arm type:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       throw new Error(error.response?.data?.message || 'Failed to create arm type');
     }
   }
@@ -2115,6 +2175,7 @@ class ApiService {
   async updateArmType(id: number, data: {
     name?: string;
     description?: string;
+    image?: File | null;
     cost?: number;
     price?: number;
     is_active?: boolean;
@@ -2122,10 +2183,66 @@ class ApiService {
     price_adjustments?: any;
   }) {
     try {
-      const response = await api.put(`/arm-types/${id}`, data);
-      return response.data?.data || response.data;
+      // Check if we have an image file to determine if we need FormData
+      if (data.image instanceof File) {
+        const formData = new FormData();
+        if (data.name) formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        if (data.cost !== undefined) formData.append('cost', data.cost.toString());
+        if (data.price !== undefined) formData.append('price', data.price.toString());
+        
+        // Append single image (not as array) - arm types have only one image
+        formData.append('image', data.image);
+        
+        // Append price tier IDs as array
+        if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {
+          data.price_tier_ids.forEach(id => {
+            formData.append('price_tier_ids[]', id.toString());
+          });
+        }
+
+        // Append price adjustments
+        if (data.price_adjustments) {
+          Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
+            formData.append(`price_adjustments[${tierId}]`, (adjustment as number).toString());
+          });
+        }
+
+        // Use POST with _method: PUT for FormData (Laravel convention)
+        formData.append('_method', 'PUT');
+        
+        // Debug: Log FormData contents
+        console.log('Arm Type Update FormData being sent:');
+        for (let [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          } else {
+            console.log(`${key}: ${value}`);
+          }
+        }
+        
+        const response = await api.post(`/arm-types/${id}`, formData, {
+          headers: {
+            // Don't set Content-Type for FormData - let browser set it with boundary
+            'Content-Type': undefined, // Explicitly remove Content-Type to let browser set it
+          },
+        });
+        
+        if (response.data && response.data.data) {
+          return response.data.data;
+        } else if (response.data) {
+          return response.data;
+        }
+        return response.data;
+      } else {
+        // Fallback to JSON if no image
+        const response = await api.put(`/arm-types/${id}`, data);
+        return response.data?.data || response.data;
+      }
     } catch (error: any) {
       console.error('Error updating arm type:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       if (error.response?.status === 404) {
         throw new Error('Arm type not found');
       }
