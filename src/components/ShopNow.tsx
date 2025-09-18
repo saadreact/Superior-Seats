@@ -46,6 +46,8 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Close,
@@ -70,7 +72,7 @@ import { RootState } from '@/store/store';
 // API IMPORTS
 import shopNowApis, { Product, User, PriceTier, Category } from '@/services/ShopNowApis';
 
-const ShopGallery = () => {
+const ShopNow = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -84,21 +86,66 @@ const ShopGallery = () => {
   // Redux selectors for authentication state
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   
-  // Check if we're on the ShopGallery, Shop Now, or Specials page
-  const isOnShopGalleryPage = pathname === '/ShopGallery' || pathname === '/shop-now' || pathname === '/specials';
+  // Check if we're on the ShopGallery or Shop Now page
+  const isOnShopGalleryPage = pathname === '/ShopGallery' || pathname === '/shop-now';
+  
+  // Debug: Log environment variables in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 ShopNow - Environment check:', {
+        NODE_ENV: process.env.NODE_ENV,
+        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+        pathname: pathname,
+        isOnShopGalleryPage: isOnShopGalleryPage
+      });
+    }
+  }, [pathname, isOnShopGalleryPage]);
+
+  // Debug: Monitor for unexpected navigation changes
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      console.log('🚨 ShopNow - Page is about to unload/reload');
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log('🚨 ShopNow - Page became hidden');
+      } else {
+        console.log('🚨 ShopNow - Page became visible');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
   
   const [selectedMainCategory, setSelectedMainCategory] = useState('all');
   const [selectedSubCategory, setSelectedSubCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState<Product | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(9);   // cards per page
+  const [itemsPerPage] = useState(10);   // cards per page - server-side pagination
   const [modalImageIndex, setModalImageIndex] = useState(0); // For multiple images in modal
+  const [showSpecialOnly, setShowSpecialOnly] = useState(false); // Special products filter
 
   // API State
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paginationMeta, setPaginationMeta] = useState<{
+    current_page: number;
+    from: number;
+    last_page: number;
+    per_page: number;
+    to: number;
+    total: number;
+    has_more_pages: boolean;
+  } | null>(null);
   
   // User State
   const [userData, setUserData] = useState<User | null>(null);
@@ -173,7 +220,107 @@ const ShopGallery = () => {
     }
   }, [isOnShopGalleryPage]);
 
-  // Function to refresh all APIs
+
+  // Function to fetch products with server-side pagination and filtering
+  const fetchProducts = useCallback(async () => {
+    if (!isOnShopGalleryPage) {
+      console.log('🔄 ShopNow - Not on ShopGallery page, skipping products fetch');
+      return;
+    }
+    
+    console.log('🚀 ShopNow - Fetching products with server-side pagination...');
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Build API parameters
+      const apiParams: any = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+      
+      // Add special products filter if enabled
+      if (showSpecialOnly) {
+        apiParams.show_on_special_shop = true;
+      }
+      
+      // Add category filter if not "all"
+      if (selectedMainCategory !== 'all') {
+        // Find the selected category from the current categories state
+        const selectedCategory = categories.find(cat => cat && cat.slug === selectedMainCategory);
+        if (selectedCategory) {
+          apiParams.category_id = selectedCategory.id;
+        }
+      }
+      
+      console.log('📡 ShopNow - API params:', apiParams);
+      
+      // Add userData to API params
+      apiParams.userData = userData;
+      
+      const productsResponse = await shopNowApis.getProducts(apiParams);
+      console.log('✅ ShopNow - Products API Response:', productsResponse);
+      
+      // Debug: Log first product's price tiers to see the structure
+      if (productsResponse.data && productsResponse.data.length > 0) {
+        const firstProduct = productsResponse.data[0];
+        console.log('🔍 ShopNow - First product price tiers debug:', {
+          productId: firstProduct.id,
+          productName: firstProduct.name,
+          priceTiers: firstProduct.price_tiers,
+          priceTiersLength: firstProduct.price_tiers?.length || 0,
+          userData: userData,
+          userRoleId: userData?.role?.id || userData?.role_id
+        });
+      }
+      
+      if (productsResponse.status === 'success' && productsResponse.data) {
+        setApiProducts(productsResponse.data);
+        
+        // Set pagination metadata
+        if (productsResponse.meta?.pagination) {
+          setPaginationMeta(productsResponse.meta.pagination);
+          console.log('📄 ShopNow - Pagination meta:', productsResponse.meta.pagination);
+        }
+        
+        console.log('📦 ShopNow - Products loaded:', productsResponse.data.length);
+      } else {
+        console.warn('⚠️ ShopNow - Products API returned non-success status:', productsResponse);
+        setApiProducts([]);
+        setPaginationMeta(null);
+      }
+    } catch (error: any) {
+      console.error('❌ ShopNow - Error fetching products:', {
+        error: error,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        url: error?.config?.url
+      });
+      
+      // Handle specific error cases
+      if (error?.response?.status === 401) {
+        console.error('🚨 ShopNow - 401 Unauthorized - User may need to re-authenticate');
+        setError('Authentication required. Please log in again.');
+      } else if (error?.response?.status === 403) {
+        console.error('🚨 ShopNow - 403 Forbidden - User may not have permission');
+        setError('Access denied. You may not have permission to view these products.');
+      } else if (error?.response?.status >= 500) {
+        console.error('🚨 ShopNow - Server error');
+        setError('Server error. Please try again later.');
+      } else {
+        console.warn('⚠️ ShopNow - Other error, using fallback');
+        setError('Failed to load products. Please try again.');
+      }
+      
+      setApiProducts([]);
+      setPaginationMeta(null);
+    }
+    
+    setLoading(false);
+  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, categories]);
+
+  // Function to refresh all APIs (categories, price tiers, user data)
   const refreshAllApis = useCallback(async () => {
     // Only refresh APIs if we're on the ShopGallery page
     if (!isOnShopGalleryPage) {
@@ -182,30 +329,6 @@ const ShopGallery = () => {
     }
     
     console.log('🔄 ShopGallery - Refreshing all APIs...');
-    
-    setLoading(true);
-    setError(null);
-    
-    // Fetch all products (including special products)
-    console.log('🚀 ShopNow - Fetching all products from API (including special products)...');
-    try {
-      const productsResponse = await shopNowApis.getProducts();
-      console.log('✅ ShopNow - Products API Response:', productsResponse);
-      
-      if (productsResponse.status === 'success' && productsResponse.data) {
-        // Show all products (including special products)
-        setApiProducts(productsResponse.data);
-        console.log('📦 ShopNow - All products loaded:', productsResponse.data.length);
-        console.log('🌟 ShopNow - Special products included:', productsResponse.data.filter(p => p.show_on_special_shop).length);
-      } else {
-        console.warn('⚠️ ShopNow - Products API returned non-success status:', productsResponse);
-        setApiProducts([]); // Set empty array as fallback
-      }
-    } catch (error) {
-      console.warn('⚠️ ShopNow - Error fetching products, using fallback:', error);
-      setApiProducts([]); // Set empty array as fallback
-      setError('Failed to load products');
-    }
     
     // Fetch categories only (price tiers endpoint might not exist)
     try {
@@ -228,21 +351,43 @@ const ShopGallery = () => {
       try {
         const userResponse = await shopNowApis.getCurrentUser();
         console.log('👤 User data fetched:', userResponse);
+        console.log('👤 User role details:', {
+          roleId: userResponse?.role?.id || userResponse?.role_id,
+          roleName: userResponse?.role?.name,
+          customerType: userResponse?.customer_type || userResponse?.role?.customer_type,
+          fullUserData: userResponse
+        });
         setUserData(userResponse);
-      } catch (userError) {
-        console.warn('⚠️ ShopGallery - Error fetching user data:', userError);
+      } catch (userError: any) {
+        console.error('❌ ShopGallery - Error fetching user data:', {
+          error: userError,
+          status: userError?.response?.status,
+          statusText: userError?.response?.statusText,
+          data: userError?.response?.data
+        });
+        
+        // Don't redirect on user data fetch failure, just clear user data
+        if (userError?.response?.status === 401) {
+          console.log('🔄 ShopGallery - User authentication expired, clearing user data');
+        }
         setUserData(null);
       } finally {
         setUserLoading(false);
       }
     } else {
-      console.log('❌ User is not authenticated, clearing user data');
+      console.log('🔓 User is not authenticated - Shop Now will show products without user-specific pricing');
       setUserData(null);
       setUserLoading(false);
     }
-    
-    setLoading(false);
   }, [isAuthenticated, isOnShopGalleryPage, fetchCategories, fetchPriceTiers]);
+
+  // Effect to fetch products when filters or pagination change
+  useEffect(() => {
+    if (isOnShopGalleryPage) {
+      console.log('🔄 ShopNow - Fetching products due to filter/pagination change');
+      fetchProducts();
+    }
+  }, [fetchProducts, isOnShopGalleryPage]);
 
   // Effect to refresh APIs when authentication state changes (only if on ShopGallery page)
   useEffect(() => {
@@ -262,7 +407,7 @@ const ShopGallery = () => {
     } else {
       console.log('🚀 ShopGallery - Initial load but not on ShopGallery page, skipping');
     }
-  }, [isOnShopGalleryPage]); // Only depend on page check
+  }, [isOnShopGalleryPage, refreshAllApis]); // Only depend on page check
 
   // Check if user is retail customer
   const isRetailCustomer = () => {
@@ -279,13 +424,42 @@ const ShopGallery = () => {
     return shopNowApis.getDisplayPrice(price, isAuthenticated, userData, priceTiers);
   };
 
+  // Get best price tier for a product
+  const getBestPriceTier = (product: Product) => {
+    console.log('🔍 ShopNow - Getting price tier for product:', {
+      productId: product.id,
+      productName: product.name,
+      hasPriceTiers: !!product.price_tiers,
+      priceTiersLength: product.price_tiers?.length || 0,
+      userData: userData,
+      userRoleId: userData?.role?.id || userData?.role_id,
+      userRoleIdType: typeof (userData?.role?.id || userData?.role_id),
+      isAuthenticated: isAuthenticated,
+      priceTiersData: product.price_tiers,
+      priceTiersStructure: product.price_tiers?.map(tier => ({
+        id: tier.id,
+        idType: typeof tier.id,
+        name: tier.name,
+        hasPivot: !!tier.pivot,
+        priceAdjustment: tier.pivot?.price_adjustment
+      }))
+    });
+    
+    const result = shopNowApis.getBestPriceTierForProduct(product, userData);
+    console.log('🔍 ShopNow - Price tier result:', result);
+    return result;
+  };
+
   // Debug logging for user state
   useEffect(() => {
     if (isOnShopGalleryPage) {
       console.log('🔄 ShopGallery - User state updated:', {
         userData,
+        userRoleId: userData?.role?.id || userData?.role_id,
+        userRoleIdType: typeof (userData?.role?.id || userData?.role_id),
+        userRoleStructure: userData?.role,
         isRetail: isRetailCustomer(),
-                 isAuthenticated: shopNowApis.isAuthenticated(),
+        isAuthenticated: shopNowApis.isAuthenticated(),
         reduxIsAuthenticated: isAuthenticated,
         currentPage: isOnShopGalleryPage,
         priceTiers: priceTiers
@@ -293,66 +467,25 @@ const ShopGallery = () => {
     }
   }, [userData, isAuthenticated, isOnShopGalleryPage, priceTiers]);
 
-       // Filter products based on selected categories (using API data)
-   const filteredImages = apiProducts.filter(item => {
-     // If "All Products" is selected, show everything
-     if (selectedMainCategory === 'all') {
-       return true;
-     }
-     
-     // If no categories loaded, show all products
-     if (!categories || categories.length === 0) {
-       return true;
-     }
-     
-     // Check if product's category matches the selected main category
-     const productCategory = item.category;
-     if (!productCategory) {
-       return false;
-     }
-     
-     // Get category name safely
-     const categoryName = typeof productCategory === 'string' 
-       ? productCategory 
-       : (productCategory as any)?.name || '';
-     
-     // Find the selected category from API data
-     const selectedCategory = categories.find(cat => cat && cat.slug === selectedMainCategory);
-     if (!selectedCategory) {
-       return false;
-     }
-     
-     // Check if product's category matches the selected category
-     const matchesMainCategory = categoryName.toLowerCase().includes(selectedCategory.name.toLowerCase()) ||
-                                categoryName.toLowerCase().includes(selectedCategory.slug.toLowerCase());
-     
-     // If main category doesn't match, exclude the product
-     if (!matchesMainCategory) {
-       return false;
-     }
-     
-     // For now, show all products in the selected category (sub-category filtering can be added later)
-     return true;
-   });
+  // Use server-side filtered products directly (no client-side filtering needed)
+  const filteredImages = apiProducts;
+  const currentItems = apiProducts; // All products are already paginated from server
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredImages.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredImages.slice(startIndex, endIndex);
+  // Calculate pagination from server metadata
+  const totalPages = paginationMeta?.last_page || 1;
+  const startIndex = paginationMeta?.from || 1;
+  const endIndex = paginationMeta?.to || 0;
 
      // Debug logging for filtering
    useEffect(() => {
      if (isOnShopGalleryPage) {
-       console.log('🔍 ShopGallery - Filtering Debug:', {
+       console.log('🔍 ShopGallery - Server-side Filtering Debug:', {
          selectedMainCategory,
-         selectedSubCategory,
+         showSpecialOnly,
          totalProducts: apiProducts.length,
-         filteredProducts: filteredImages.length,
-         
-         categoriesLoaded: categories?.length || 0,
          currentPage,
-         itemsPerPage
+         itemsPerPage,
+         paginationMeta
        });
        
        // Log available categories from API
@@ -365,7 +498,7 @@ const ShopGallery = () => {
          })));
        }
      }
-   }, [selectedMainCategory, selectedSubCategory, apiProducts.length, filteredImages.length, categories, isOnShopGalleryPage, currentPage, itemsPerPage]);
+   }, [selectedMainCategory, showSpecialOnly, apiProducts.length, categories, isOnShopGalleryPage, currentPage, itemsPerPage, paginationMeta]);
 
      // Generate main categories from API data
    const apiMainCategories = [
@@ -387,7 +520,7 @@ const ShopGallery = () => {
     
     // Reset sub-category to 'all' when main category changes
     setSelectedSubCategory('all');
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); // Reset to first page for server-side pagination
   };
 
   const handleSubCategoryChange = (event: any) => {
@@ -491,6 +624,7 @@ const ShopGallery = () => {
     setCurrentPage(value);
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // The useEffect will automatically trigger a new API call with the new page
   };
 
   return (
@@ -572,15 +706,53 @@ const ShopGallery = () => {
                </Select>
              </FormControl>
 
-             
+             {/* Special Products Filter Checkbox */}
+             <FormControlLabel
+               control={
+                 <Checkbox
+                   checked={showSpecialOnly}
+                   onChange={(e) => {
+                     setShowSpecialOnly(e.target.checked);
+                     setCurrentPage(1); // Reset to first page when filter changes
+                   }}
+                   sx={{
+                     color: theme.palette.primary.main,
+                     '&.Mui-checked': {
+                       color: theme.palette.primary.main,
+                     },
+                   }}
+                 />
+               }
+               label={
+                 <Typography
+                   variant="body2"
+                   sx={{
+                     fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                     color: 'text.primary',
+                     fontWeight: 'medium',
+                   }}
+                 >
+                   Special Products Only
+                 </Typography>
+               }
+               sx={{
+                 margin: 0,
+                 minWidth: { xs: '100%', sm: 'auto' },
+                 flex: { xs: 'none', sm: '0 0 auto' },
+                 '& .MuiFormControlLabel-label': {
+                   marginLeft: 1,
+                 },
+               }}
+             />
 
       {/* Clear Filters Button */}
-               {selectedMainCategory !== 'all' && (
+               {(selectedMainCategory !== 'all' || showSpecialOnly) && (
                  <Button
                    variant="outlined"
                    size="small"
                    onClick={() => {
                      setSelectedMainCategory('all');
+                     setShowSpecialOnly(false);
                      setCurrentPage(1);
                    }}
                   sx={{
@@ -647,7 +819,7 @@ const ShopGallery = () => {
                     width: { xs: '100%', sm: 'auto' },
                   }}
                 >
-                  {filteredImages.length} product{filteredImages.length !== 1 ? 's' : ''} found
+                {paginationMeta ? `${paginationMeta.total} product${paginationMeta.total !== 1 ? 's' : ''} found` : `${filteredImages.length} product${filteredImages.length !== 1 ? 's' : ''} found`}
                 </Typography>
              </Box>
            </Box>
@@ -841,8 +1013,13 @@ const ShopGallery = () => {
                       </Box>
                     )}
                      
-                    {/* Enhanced Price Display for Wholesale Customers */}
-                    {isAuthenticated && !isRetailCustomer() ? (
+                    {/* Enhanced Price Display with Product-Specific Price Tiers */}
+                    {(() => {
+                      const priceTierInfo = getBestPriceTier(item);
+                      
+                      if (priceTierInfo) {
+                        // Show price tier pricing for wholesale customers
+                        return (
                       <Box
                         sx={{
                           position: 'absolute',
@@ -857,7 +1034,7 @@ const ShopGallery = () => {
                       >
                         {/* Discount Percentage Badge */}
                         <Chip
-                          label={`${getWholesaleDiscount()}% OFF`}
+                              label={`${priceTierInfo.discountPercentage}% OFF`}
                           sx={{
                             backgroundColor: 'primary.main',
                             color: 'white',
@@ -883,7 +1060,7 @@ const ShopGallery = () => {
                             opacity: 0.7,
                           }}
                         >
-                          ${parseFloat(item.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${priceTierInfo.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </Typography>
                         
                         {/* Discounted Price */}
@@ -896,13 +1073,15 @@ const ShopGallery = () => {
                             lineHeight: 1,
                           }}
                         >
-                          ${getDisplayPrice(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${priceTierInfo.finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </Typography>
                       </Box>
-                    ) : (
-                      /* Regular Price Display for Retail Customers */
+                        );
+                      } else {
+                        // Show regular price for retail customers or products without price tiers
+                        return (
                       <Chip
-                        label={`$${getDisplayPrice(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                            label={`$${parseFloat(item.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                         sx={{
                           position: 'absolute',
                           top: { xs: 12, sm: 12, md: 16 },
@@ -922,7 +1101,9 @@ const ShopGallery = () => {
                           boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                         }}
                       />
-                    )}
+                        );
+                      }
+                    })()}
                   </Box>
                   <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2, md: 2.5, lg: 3 } }}>
                     <Typography
@@ -1072,7 +1253,7 @@ const ShopGallery = () => {
             </Box>
           )}
 
-          {totalPages > 1 && (
+          {/* Always show pagination info and controls */}
             <Box sx={{ 
               display: 'flex', 
               flexDirection: { xs: 'column', sm: 'row' },
@@ -1091,10 +1272,32 @@ const ShopGallery = () => {
                   width: { xs: '100%', sm: 'auto' },
                 }}
               >
-                Showing {startIndex + 1} to {Math.min(endIndex, filteredImages.length)} of {filteredImages.length} products
+              {paginationMeta ? `Showing ${startIndex} to ${endIndex} of ${paginationMeta.total} products` : `Showing ${filteredImages.length} product${filteredImages.length !== 1 ? 's' : ''}`}
               </Typography>
 
-              {/* Pagination Controls */}
+            {/* Debug Info - Remove this in production */}
+            {process.env.NODE_ENV === 'development' && (
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: 1,
+                alignItems: { xs: 'center', sm: 'flex-start' },
+                width: { xs: '100%', sm: 'auto' },
+              }}>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: 'text.disabled',
+                    fontSize: '0.7rem',
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
+                  Debug: Page {currentPage}/{totalPages} | Items: {itemsPerPage} | Meta: {paginationMeta ? 'Yes' : 'No'}
+                </Typography>
+              </Box>
+            )}
+
+            {/* Pagination Controls - Always show */}
               <Box sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -1163,7 +1366,6 @@ const ShopGallery = () => {
                  </Button>
               </Box>
             </Box>
-          )}
         </Container>
       </Box>
 
@@ -1235,8 +1437,13 @@ const ShopGallery = () => {
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                   >
-                     {/* Enhanced Price Display in Modal for Wholesale Customers */}
-                     {isAuthenticated && !isRetailCustomer() ? (
+                     {/* Enhanced Price Display in Modal with Product-Specific Price Tiers */}
+                     {(() => {
+                       const priceTierInfo = getBestPriceTier(selectedImage);
+                       
+                       if (priceTierInfo) {
+                         // Show price tier pricing for wholesale customers
+                         return (
                        <Box
                          sx={{
                            position: 'absolute',
@@ -1257,7 +1464,7 @@ const ShopGallery = () => {
                        >
                          {/* Discount Percentage Badge */}
                          <Chip
-                           label={`${getWholesaleDiscount()}% OFF`}
+                               label={`${priceTierInfo.discountPercentage}% OFF`}
                            sx={{
                              backgroundColor: 'primary.main',
                              color: 'white',
@@ -1283,7 +1490,7 @@ const ShopGallery = () => {
                              opacity: 0.7,
                            }}
                          >
-                           ${parseFloat(selectedImage.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                               ${priceTierInfo.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                          </Typography>
                          
                          {/* Discounted Price */}
@@ -1296,13 +1503,15 @@ const ShopGallery = () => {
                              lineHeight: 1,
                            }}
                          >
-                           ${getDisplayPrice(selectedImage.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                               ${priceTierInfo.finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                          </Typography>
                        </Box>
-                     ) : (
-                       /* Regular Price Display in Modal for Retail Customers */
+                         );
+                       } else {
+                         // Show regular price for retail customers or products without price tiers
+                         return (
                        <Chip
-                         label={`$${getDisplayPrice(selectedImage.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                             label={`$${parseFloat(selectedImage.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                          sx={{
                            position: 'absolute',
                            top: { xs: 12, sm: 16, md: 20 },
@@ -1324,7 +1533,9 @@ const ShopGallery = () => {
                            border: '2px solid rgba(255, 255, 255, 0.2)',
                          }}
                        />
-                     )}
+                         );
+                       }
+                     })()}
 
                     {/* Main Product Image */}
                     <Box
@@ -1516,7 +1727,7 @@ const ShopGallery = () => {
                            transition: 'all 0.3s ease',
                          }}
                        >
-                         Start Customizing
+                         Start Building Seat
                        </Button>
                    
                   </Box>
@@ -1636,7 +1847,7 @@ const ShopGallery = () => {
                             },
                           }}
                         >
-                          Start Customizing Now
+                          Start Building Seat
                         </Button>
                        
                        {/* ADD TO CART BUTTON */}
@@ -1681,4 +1892,4 @@ const ShopGallery = () => {
   );
 };
 
-export default ShopGallery; 
+export default ShopNow; 

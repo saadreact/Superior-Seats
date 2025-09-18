@@ -84,7 +84,6 @@ interface Product {
   stock: number;
   images?: string[];
   is_active: boolean;
-  show_on_special_shop: boolean;
   created_at: string;
   updated_at: string;
   category_id?: number | null;
@@ -385,12 +384,12 @@ const ProductDetailPage = () => {
             />
             <Chip 
               icon={<TagIcon />}
-              label={(product as any).show_on_special_shop ? 'Special Shop' : 'Regular Product'}
+              label="Regular Product"
               sx={{ 
                 borderRadius: '20px',
-                bgcolor: (product as any).show_on_special_shop ? '#fef3c7' : '#f3f4f6',
-                color: (product as any).show_on_special_shop ? '#92400e' : '#374151',
-                border: (product as any).show_on_special_shop ? '1px solid #fbbf24' : '1px solid #d1d5db'
+                bgcolor: '#f3f4f6',
+                color: '#374151',
+                border: '1px solid #d1d5db'
               }}
             />
           </Stack>
@@ -565,8 +564,8 @@ const ProductDetailPage = () => {
                       Shop Type
                     </Typography>
                     <Chip
-                      label={(product as any).show_on_special_shop ? 'Special Shop' : 'Regular Product'}
-                      color={(product as any).show_on_special_shop ? 'warning' : 'default'}
+                      label="Regular Product"
+                      color="default"
                       size="small"
                     />
                   </Box>

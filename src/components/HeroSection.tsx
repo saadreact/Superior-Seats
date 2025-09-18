@@ -351,7 +351,7 @@ const HeroSection = () => {
                             viewport={{ once: false, amount: 0.1 }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
                             sx={{
-                              fontSize: { xs: '2rem', sm: '2.5rem', md: '2.5rem', lg: '3.5rem', xl: '5rem' },
+                              fontSize: { xs: '2rem', sm: '2.5rem', md: '2.5rem', lg: '2.5rem', xl: '5rem' },
                               fontWeight: 'bold',
                               lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2, xl: 1.2},
                               textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
@@ -362,7 +362,7 @@ const HeroSection = () => {
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               px: { xs: 1, sm: 0 },
-                                                            textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
+                              textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
                              }}
                            >
                              Superior Seating LLC
@@ -416,10 +416,11 @@ const HeroSection = () => {
                                onClick={() => router.push('/custom-seats')}
                              sx={{
                              //  border: `1px solid ${theme.palette.primary.main}`,
-                             border: '2px solid white',
-                               color: 'white',
-                               backgroundColor: 'transparent',
-                               fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
+                             border: '2px solid text.primary',
+                               color: 'text.primary',
+                               borderColor: 'text.primary',
+                               backgroundColor: 'white',
+                               fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.9rem', lg: '1rem', xl: '1.5rem' },
                                fontWeight: 600,
                                px: { xs: 2, sm: 2.5, md: 3, lg: 4, xl: 8 },
                                py: { xs: 1, sm: 1.25, md: 1, lg: 1, xl: 1 },
@@ -431,7 +432,7 @@ const HeroSection = () => {
                                // Removed hover effects as requested
                              }}
                            >
-                             Start Customizing Your Seat
+                             Start Building Your Seat
                                                         </Button>
                            </motion.div>
                           </Box>

@@ -676,7 +676,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                           marginBottom: { xs: 3, sm: 4, md: 1 ,lg: 1 , xl: 1}
                         }}
                       >
-                        Please select a model or product from our shop to start customizing your perfect seat.
+                        Please select a model or product from our shop to start Building your perfect seat.
                       </Typography>
                                              <Button
                          variant="contained"
