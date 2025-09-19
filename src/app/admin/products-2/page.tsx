@@ -26,6 +26,7 @@ import {
   Card,
   CardContent,
   CardMedia,
+  Tooltip,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -40,7 +41,6 @@ import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
 import { productApi } from '@/services/productapi';
-import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
 interface Product {
   id: number;
@@ -61,6 +61,7 @@ interface Product {
   stock: number;
   images?: string[];
   is_active: boolean;
+  show_on_special_shop: boolean;
   created_at: string;
   updated_at: string;
   category_id?: number | null;
@@ -71,7 +72,7 @@ interface Product {
     alt_text: string | null;
     caption: string | null;
     sort_order: number;
-    is_primary: boolean;
+    set_primary: boolean;
     is_active: boolean;
     created_at: string;
     updated_at: string;
@@ -114,6 +115,13 @@ interface ProductsResponse {
   total: number;
 }
 
+// Helper function to truncate text to 3 words
+const truncateToWords = (text: string, wordLimit: number = 3): string => {
+  if (!text) return '';
+  const words = text.trim().split(/\s+/);
+  return words.length > wordLimit ? words.slice(0, wordLimit).join(' ') + '...' : text;
+};
+
 const Products2Page = () => {
   const router = useRouter();
   const theme = useTheme();
@@ -128,25 +136,13 @@ const Products2Page = () => {
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [priceTierDetails, setPriceTierDetails] = useState<Record<number, any>>({});
+  const [showShopSpecialOnly, setShowShopSpecialOnly] = useState(false);
   
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
-  const loadPriceTierDetails = useCallback(async () => {
-    try {
-      const response = await productApi.getPriceTiers();
-      const tierDetails: Record<number, any> = {};
-      response.forEach((tier: any) => {
-        tierDetails[tier.id] = tier;
-      });
-      setPriceTierDetails(tierDetails);
-    } catch (error) {
-      console.error('Error loading price tier details:', error);
-    }
-  }, []);
 
   const loadProducts = useCallback(async () => {
     try {
@@ -207,8 +203,7 @@ const Products2Page = () => {
 
   useEffect(() => {
     loadProducts();
-    loadPriceTierDetails();
-  }, [loadProducts, loadPriceTierDetails]);
+  }, [loadProducts]);
 
   const handleAdd = () => {
     router.push('/admin/products-2/create');
@@ -270,24 +265,11 @@ const Products2Page = () => {
     return '/TruckImages/01.jpg';
   };
 
-  const getCalculatedPriceTiers = (product: Product) => {
-    if (!product.price_tiers || product.price_tiers.length === 0) {
-      return [];
-    }
-    
-    return product.price_tiers.map((tier) => {
-      const tierDetails = priceTierDetails[tier.id];
-      return {
-        id: tier.id,
-        display_name: tierDetails?.display_name || tierDetails?.name || `Tier ${tier.id}`,
-        calculated_price: tier.price_adjustment,
-        is_overridden: false // For list display, we don't track overrides
-      };
-    });
-  };
 
-  // No client-side filtering needed since we're using server-side pagination
-  const filteredProducts = products;
+  // Filter products based on shop special toggle
+  const filteredProducts = showShopSpecialOnly 
+    ? products.filter(product => product.show_on_special_shop === true)
+    : products;
 
   return (
     <AdminLayout title="Products">
@@ -327,6 +309,26 @@ const Products2Page = () => {
               alignItems: { xs: 'flex-start', sm: 'center' }, 
               gap: { xs: 1, sm: 2 }
             }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showShopSpecialOnly}
+                    onChange={(e) => {
+                      setShowShopSpecialOnly(e.target.checked);
+                      setPage(0); // Reset to first page when filtering
+                    }}
+                    color="primary"
+                    size="small"
+                  />
+                }
+                label="Shop Special Only"
+                sx={{ 
+                  '& .MuiFormControlLabel-label': {
+                    fontSize: '0.875rem',
+                    fontWeight: 500
+                  }
+                }}
+              />
               
               {/* Product count indicator */}
               <Typography 
@@ -484,31 +486,37 @@ const Products2Page = () => {
                   }}>
                     {/* Top Section - Title and Description */}
                     <Box sx={{ mb: 2 }}>
-                      <Typography variant="h6" component="h2" sx={{ 
-                        fontWeight: 600, 
-                        mb: 1,
-                        fontSize: { xs: '0.95rem', sm: '1rem' },
-                        lineHeight: 1.3,
-                        color: 'text.primary'
-                      }}>
-                        {product.name}
-                      </Typography>
+                      <Tooltip title={product.name} arrow placement="top">
+                        <Typography variant="h6" component="h2" sx={{ 
+                          fontWeight: 600, 
+                          mb: 1,
+                          fontSize: { xs: '0.95rem', sm: '1rem' },
+                          lineHeight: 1.3,
+                          color: 'text.primary',
+                          cursor: 'help'
+                        }}>
+                          {truncateToWords(product.name)}
+                        </Typography>
+                      </Tooltip>
                       
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          minHeight: '2.5em',
-                          fontSize: { xs: '0.8rem', sm: '0.875rem' }
-                        }}
-                      >
-                        {product.description || 'No description available'}
-                      </Typography>
+                      <Tooltip title={product.description || 'No description available'} arrow placement="top">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            minHeight: '2.5em',
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                            cursor: 'help'
+                          }}
+                        >
+                          {truncateToWords(product.description || 'No description available')}
+                        </Typography>
+                      </Tooltip>
                     </Box>
                     
                     {/* Middle Section - Chips */}
@@ -517,6 +525,13 @@ const Products2Page = () => {
                         label={typeof product.category === 'string' ? product.category : ((product.category as any)?.name || 'No Category')}
                         size="small"
                         color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                      <Chip
+                        label={product.show_on_special_shop ? 'Shop Special' : 'Regular'}
+                        size="small"
+                        color={product.show_on_special_shop ? 'primary' : 'default'}
                         variant="outlined"
                         sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                       />
@@ -623,9 +638,8 @@ const Products2Page = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Shop Type</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Shop Special</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -698,23 +712,28 @@ const Products2Page = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {product.name}
-                        </Typography>
+                        <Tooltip title={product.name} arrow placement="top">
+                          <Typography variant="body1" sx={{ fontWeight: 500, cursor: 'help' }}>
+                            {truncateToWords(product.name)}
+                          </Typography>
+                        </Tooltip>
                       </TableCell>
                       <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary"
-                          sx={{
-                            maxWidth: 300,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {product.description || 'No description available'}
-                        </Typography>
+                        <Tooltip title={product.description || 'No description available'} arrow placement="top">
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{
+                              maxWidth: 300,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              cursor: 'help'
+                            }}
+                          >
+                            {truncateToWords(product.description || 'No description available')}
+                          </Typography>
+                        </Tooltip>
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -735,30 +754,6 @@ const Products2Page = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {getCalculatedPriceTiers(product).length > 0 ? (
-                            getCalculatedPriceTiers(product).map((tier) => (
-                              <Chip
-                                key={tier.id}
-                                label={`${tier.display_name}: ${VariantsCalculation.formatPrice(tier.calculated_price)}`}
-                                size="small"
-                                variant="outlined"
-                                color={tier.is_overridden ? "warning" : "default"}
-                                sx={{
-                                  fontSize: '0.6rem',
-                                  height: 20,
-                                  fontWeight: tier.is_overridden ? 600 : 400
-                                }}
-                              />
-                            ))
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              None
-                            </Typography>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
                         <Chip
                           label={product.is_active ? 'Active' : 'Inactive'}
                           size="small"
@@ -766,6 +761,12 @@ const Products2Page = () => {
                         />
                       </TableCell>
                       <TableCell>
+                        <Chip
+                          label={product.show_on_special_shop ? 'Shop Special' : 'Regular Product'}
+                          size="small"
+                          color={product.show_on_special_shop ? 'primary' : 'default'}
+                          variant="outlined"
+                        />
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>

@@ -286,7 +286,6 @@ const VehicleTrimsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Model</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Make</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -326,11 +325,6 @@ const VehicleTrimsPage = () => {
                           }}
                         >
                           {vehicleTrim.description || 'No description available'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(vehicleTrim.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">

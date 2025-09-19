@@ -300,7 +300,7 @@ const EditSeatStitchPatternPage = () => {
     }
 
     if (formData.price <= 0) {
-      setError('In Shop Price must be greater than 0');
+      setError('In Store Price must be greater than 0');
       return;
     }
 
@@ -429,7 +429,7 @@ const EditSeatStitchPatternPage = () => {
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="In Shop Price"
+                    label="In Store Price"
                     type="number"
                     value={formData.price === 0 ? '0' : formData.price.toString()}
                     onChange={(e) => {
@@ -443,7 +443,7 @@ const EditSeatStitchPatternPage = () => {
                     }}
                     required
                     fullWidth
-                    placeholder="Enter in shop price"
+                    placeholder="Enter in Store price"
                     inputProps={{ min: 0, step: 0.01 }}
                     onFocus={(e) => {
                       if (e.target.value === '0') {

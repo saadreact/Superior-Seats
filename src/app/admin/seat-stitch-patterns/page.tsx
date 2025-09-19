@@ -261,9 +261,8 @@ const SeatStitchPatternsPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>In Shop Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -372,11 +371,6 @@ const SeatStitchPatternsPage = () => {
                             </Typography>
                           )}
                         </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(item.created_at).toLocaleDateString()}
-                        </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>

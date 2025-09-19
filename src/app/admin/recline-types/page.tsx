@@ -208,8 +208,14 @@ const ReclineTypesPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-            {/* Search Bar positioned at top-left */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            gap: { xs: 2, sm: 3 }, 
+            flex: 1,
+            alignItems: { xs: 'stretch', sm: 'center' }
+          }}>
+            {/* Search Bar */}
             <TextField
               placeholder="Search recline types..."
               value={searchTerm}
@@ -220,10 +226,22 @@ const ReclineTypesPage = () => {
                     <SearchIcon />
                   </InputAdornment>
                 )}}
-              sx={{ maxWidth: 400 }}
+              sx={{ 
+                maxWidth: { xs: '100%', sm: 400 },
+                minWidth: { xs: '100%', sm: 250 }
+              }}
               size="small"
+              fullWidth={isMobile}
             />
+            
+            {/* Results count for mobile */}
+            {isMobile && reclineTypes.length > 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
+                {reclineTypes.length} recline type{reclineTypes.length !== 1 ? 's' : ''} found
+              </Typography>
+            )}
           </Box>
+          
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -231,13 +249,16 @@ const ReclineTypesPage = () => {
             className="gradient-style"
             sx={{ 
               alignSelf: { xs: 'stretch', sm: 'auto' },
+              minWidth: { xs: '100%', sm: 'auto' },
+              height: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
               boxShadow: 'none',
               '&:hover': {
                 boxShadow: 'none',
               }
             }}
           >
-            Add
+            {isMobile ? 'Add Recline Type' : 'Add'}
           </Button>
         </Box>
 
@@ -278,122 +299,116 @@ const ReclineTypesPage = () => {
             <CircularProgress />
           </Box>
         ) : reclineTypes.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No recline types found
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Recline Type" to create your first recline type.`}
+              {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Recline Type" to create your first recline type.'}
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ overflow: 'hidden' }}>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {paginatedData.map((reclineType) => (
-                    <TableRow 
-                      key={reclineType.id}
-                      sx={{ 
-                        '&:hover': { backgroundColor: 'action.hover' },
-                        transition: 'background-color 0.2s ease'
-                      }}
-                    >
-                      <TableCell>
-                        <Box sx={{ 
-                          width: 60, 
-                          height: 60, 
-                          position: 'relative',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          {getReclineTypeImage(reclineType) ? (
-                            <Box
-                              component="img"
-                              src={getReclineTypeImage(reclineType)!}
-                              alt={reclineType.name}
-                              sx={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                borderRadius: 1,
-                                border: '1px solid #e0e0e0',
-                                maxWidth: 60,
-                                maxHeight: 60
-                              }}
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                // Show fallback when image fails to load
-                                const fallback = target.parentElement?.querySelector('.image-fallback');
-                                if (fallback) {
-                                  (fallback as HTMLElement).style.display = 'flex';
-                                }
-                              }}
-                            />
-                          ) : null}
-                          
-                          {/* Fallback for when image is missing or fails to load */}
+          <>
+            {/* Mobile Card View */}
+            {isMobile ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {paginatedData.map((reclineType) => (
+                  <Paper key={reclineType.id} sx={{ p: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                      {/* Image */}
+                      <Box sx={{ 
+                        width: 80, 
+                        height: 80, 
+                        flexShrink: 0,
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {getReclineTypeImage(reclineType) ? (
                           <Box
-                            className="image-fallback"
+                            component="img"
+                            src={getReclineTypeImage(reclineType)!}
+                            alt={reclineType.name}
                             sx={{
                               width: '100%',
                               height: '100%',
-                              bgcolor: 'grey.200',
-                              display: getReclineTypeImage(reclineType) ? 'none' : 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
+                              objectFit: 'cover',
                               borderRadius: 1,
-                              border: '1px solid #e0e0e0',
-                              position: getReclineTypeImage(reclineType) ? 'absolute' : 'static',
-                              top: 0,
-                              left: 0
+                              border: '1px solid #e0e0e0'
                             }}
-                          >
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                              {getReclineTypeImage(reclineType) ? 'Error' : 'No Image'}
-                            </Typography>
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.parentElement?.querySelector('.image-fallback');
+                              if (fallback) {
+                                (fallback as HTMLElement).style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        
+                        <Box
+                          className="image-fallback"
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            bgcolor: 'grey.200',
+                            display: getReclineTypeImage(reclineType) ? 'none' : 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 1,
+                            border: '1px solid #e0e0e0',
+                            position: getReclineTypeImage(reclineType) ? 'absolute' : 'static',
+                            top: 0,
+                            left: 0
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                            {getReclineTypeImage(reclineType) ? 'Error' : 'No Image'}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Content */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, pr: 1 }}>
+                            {reclineType.name}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 0.5 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEdit(reclineType)}
+                              title="Edit"
+                              sx={{ color: 'primary.main', p: 0.5 }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(reclineType)}
+                              title="Delete"
+                              color="error"
+                              sx={{ p: 0.5 }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
                           </Box>
                         </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {reclineType.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
+                        
                         <Typography 
                           variant="body2" 
                           color="text.secondary"
-                          sx={{
-                            maxWidth: 300,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
+                          sx={{ mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
                         >
                           {reclineType.description || 'No description available'}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', mb: 1 }}>
                           ${VariantsCalculation.formatPrice(reclineType.price || 0)}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
+                        
                         {(() => {
                           const calculatedTiers = getCalculatedPriceTiers(reclineType);
                           if (calculatedTiers.length > 0) {
@@ -403,15 +418,15 @@ const ReclineTypesPage = () => {
                                   {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
                                 </Typography>
                                 <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                                  {calculatedTiers.slice(0, 2).map((tier) => (
+                                  {calculatedTiers.slice(0, 1).map((tier) => (
                                     <Chip
                                       key={tier.id}
                                       label={`${tier.display_name}: $${VariantsCalculation.formatPrice(tier.calculated_price)}`}
                                       size="small"
                                       variant="outlined"
                                       sx={{ 
-                                        fontSize: '0.7rem',
-                                        height: 20,
+                                        fontSize: '0.65rem',
+                                        height: 18,
                                         borderColor: tier.is_overridden ? 'warning.main' : undefined,
                                         color: tier.is_overridden ? 'warning.main' : undefined,
                                         '& .MuiChip-label': {
@@ -420,14 +435,14 @@ const ReclineTypesPage = () => {
                                       }}
                                     />
                                   ))}
-                                  {calculatedTiers.length > 2 && (
+                                  {calculatedTiers.length > 1 && (
                                     <Chip
-                                      label={`+${calculatedTiers.length - 2} more`}
+                                      label={`+${calculatedTiers.length - 1} more`}
                                       size="small"
                                       variant="outlined"
                                       sx={{ 
-                                        fontSize: '0.7rem',
-                                        height: 20,
+                                        fontSize: '0.65rem',
+                                        height: 18,
                                         '& .MuiChip-label': {
                                           px: 0.5
                                         }
@@ -439,51 +454,206 @@ const ReclineTypesPage = () => {
                             );
                           }
                           return (
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="caption" color="text.secondary">
                               No tiers
                             </Typography>
                           );
                         })()}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {reclineType.creator?.username || 'Unknown'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(reclineType.created_at).toLocaleDateString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEdit(reclineType)}
-                            title="Edit"
-                            sx={{ color: 'primary.main' }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDelete(reclineType)}
-                            title="Delete"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                        
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              /* Desktop Table View */
+              <Paper sx={{ overflow: 'hidden' }}>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedData.map((reclineType) => (
+                        <TableRow 
+                          key={reclineType.id}
+                          sx={{ 
+                            '&:hover': { backgroundColor: 'action.hover' },
+                            transition: 'background-color 0.2s ease'
+                          }}
+                        >
+                          <TableCell>
+                            <Box sx={{ 
+                              width: 60, 
+                              height: 60, 
+                              position: 'relative',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              {getReclineTypeImage(reclineType) ? (
+                                <Box
+                                  component="img"
+                                  src={getReclineTypeImage(reclineType)!}
+                                  alt={reclineType.name}
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: 1,
+                                    border: '1px solid #e0e0e0',
+                                    maxWidth: 60,
+                                    maxHeight: 60
+                                  }}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    // Show fallback when image fails to load
+                                    const fallback = target.parentElement?.querySelector('.image-fallback');
+                                    if (fallback) {
+                                      (fallback as HTMLElement).style.display = 'flex';
+                                    }
+                                  }}
+                                />
+                              ) : null}
+                              
+                              {/* Fallback for when image is missing or fails to load */}
+                              <Box
+                                className="image-fallback"
+                                sx={{
+                                  width: '100%',
+                                  height: '100%',
+                                  bgcolor: 'grey.200',
+                                  display: getReclineTypeImage(reclineType) ? 'none' : 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderRadius: 1,
+                                  border: '1px solid #e0e0e0',
+                                  position: getReclineTypeImage(reclineType) ? 'absolute' : 'static',
+                                  top: 0,
+                                  left: 0
+                                }}
+                              >
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                  {getReclineTypeImage(reclineType) ? 'Error' : 'No Image'}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {reclineType.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{
+                                maxWidth: 300,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {reclineType.description || 'No description available'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              ${VariantsCalculation.formatPrice(reclineType.price || 0)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {(() => {
+                              const calculatedTiers = getCalculatedPriceTiers(reclineType);
+                              if (calculatedTiers.length > 0) {
+                                return (
+                                  <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                      {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                    </Typography>
+                                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                      {calculatedTiers.slice(0, 2).map((tier) => (
+                                        <Chip
+                                          key={tier.id}
+                                          label={`${tier.display_name}: $${VariantsCalculation.formatPrice(tier.calculated_price)}`}
+                                          size="small"
+                                          variant="outlined"
+                                          sx={{ 
+                                            fontSize: '0.7rem',
+                                            height: 20,
+                                            borderColor: tier.is_overridden ? 'warning.main' : undefined,
+                                            color: tier.is_overridden ? 'warning.main' : undefined,
+                                            '& .MuiChip-label': {
+                                              px: 0.5
+                                            }
+                                          }}
+                                        />
+                                      ))}
+                                      {calculatedTiers.length > 2 && (
+                                        <Chip
+                                          label={`+${calculatedTiers.length - 2} more`}
+                                          size="small"
+                                          variant="outlined"
+                                          sx={{ 
+                                            fontSize: '0.7rem',
+                                            height: 20,
+                                            '& .MuiChip-label': {
+                                              px: 0.5
+                                            }
+                                          }}
+                                        />
+                                      )}
+                                    </Stack>
+                                  </Box>
+                                );
+                              }
+                              return (
+                                <Typography variant="body2" color="text.secondary">
+                                  No tiers
+                                </Typography>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(reclineType)}
+                                title="Edit"
+                                sx={{ color: 'primary.main' }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(reclineType)}
+                                title="Delete"
+                                color="error"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Paper>
+            )}
             
             {/* Pagination */}
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
               component="div"
               count={filteredData.length}
               rowsPerPage={rowsPerPage}
@@ -495,30 +665,63 @@ const ReclineTypesPage = () => {
                 borderColor: 'divider',
                 '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                   color: 'text.secondary',
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
+                },
+                '& .MuiTablePagination-toolbar': {
+                  flexWrap: isMobile ? 'wrap' : 'nowrap',
+                  gap: isMobile ? 1 : 0
                 }
               }}
             />
-          </Paper>
+          </>
         )}
 
         {/* Delete Confirmation Dialog */}
         <Dialog
           open={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              mx: { xs: 2, sm: 'auto' },
+              width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+            }
+          }}
         >
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Confirm Delete
             </Typography>
             <Typography sx={{ mb: 3 }}>
               Are you sure you want to delete &quot;{reclineTypeToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
+            <Stack 
+              direction={{ xs: 'column', sm: 'row' }} 
+              spacing={2} 
+              justifyContent="flex-end"
+              sx={{ 
+                '& .MuiButton-root': {
+                  minHeight: { xs: 44, sm: 'auto' },
+                  fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                }
+              }}
+            >
+              <Button 
+                onClick={() => setIsDeleteDialogOpen(false)} 
+                disabled={deleting}
+                fullWidth={isMobile}
+                variant={isMobile ? 'outlined' : 'text'}
+              >
                 Cancel
               </Button>
-              <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
+              <Button 
+                onClick={confirmDelete} 
+                color="error" 
+                variant="contained" 
+                disabled={deleting}
+                fullWidth={isMobile}
+              >
                 {deleting ? 'Deleting...' : 'Delete'}
               </Button>
             </Stack>

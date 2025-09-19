@@ -171,11 +171,20 @@ const ViewCustomerPage = () => {
     <AdminLayout title="View Customer">
       <Box>
         {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ 
+          mb: 3, 
+          display: 'flex', 
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'center' }
+        }}>
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={() => router.push('/admin/customers')}
-            sx={{ color: 'text.secondary' }}
+            sx={{ 
+              color: 'text.secondary',
+              alignSelf: { xs: 'flex-start', sm: 'auto' }
+            }}
           >
             Back
           </Button>
@@ -184,6 +193,10 @@ const ViewCustomerPage = () => {
             variant="contained"
             startIcon={<EditIcon />}
             onClick={handleEdit}
+            sx={{
+              minHeight: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' }
+            }}
           >
             Edit Customer
           </Button>
@@ -195,70 +208,104 @@ const ViewCustomerPage = () => {
             {error}
           </Alert>
         )}
-        <Paper sx={{ p: 4 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
             <Box sx={{ flex: 1 }}>
               <Stack spacing={3}>
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Name
                   </Typography>
-                  <Typography variant="body1">
+                  <Typography variant="body1" sx={{ 
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {customer.name}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Email
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{ 
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {customer.email}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Phone
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{ 
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {customer.phone}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Address
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{ 
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {customer.address}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Company Name
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{ 
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {customer.company_name || 'N/A'}
                   </Typography>
                 </Box>
 
-
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Customer Price Tiers
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{ 
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {customer.price_tier?.display_name || 'N/A'}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Status
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{ 
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {customer.is_active ? 'Active' : 'Inactive'}
                   </Typography>
                 </Box>
@@ -266,27 +313,40 @@ const ViewCustomerPage = () => {
             </Box>
 
             <Box sx={{ width: { xs: '100%', md: 300 } }}>
-              <Paper variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
+                <Typography variant="h6" gutterBottom sx={{ 
+                  fontWeight: 600,
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                }}>
                   Information
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
                 <Stack spacing={2}>
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ 
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}>
                       ID
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {customer.id}
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ 
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}>
                       Created
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {new Date(customer.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -298,10 +358,15 @@ const ViewCustomerPage = () => {
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ 
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}>
                       Last Updated
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {new Date(customer.updated_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -322,20 +387,51 @@ const ViewCustomerPage = () => {
       <Dialog
         open={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            mx: { xs: 2, sm: 'auto' },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+          }
+        }}
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+          Confirm Delete
+        </DialogTitle>
         <DialogContent>
-          <Typography>
+          <Typography sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>
             Are you sure you want to delete &quot;{customer?.name}&quot;? This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsDeleteDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={confirmDelete} color="error" variant="contained">
-            Delete
-          </Button>
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={2} 
+            sx={{ 
+              width: '100%',
+              '& .MuiButton-root': {
+                minHeight: { xs: 44, sm: 'auto' },
+                fontSize: { xs: '0.95rem', sm: '0.875rem' }
+              }
+            }}
+          >
+            <Button 
+              onClick={() => setIsDeleteDialogOpen(false)}
+              fullWidth={isMobile}
+              variant={isMobile ? 'outlined' : 'text'}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmDelete} 
+              color="error" 
+              variant="contained"
+              fullWidth={isMobile}
+            >
+              Delete
+            </Button>
+          </Stack>
         </DialogActions>
       </Dialog>
     </AdminLayout>

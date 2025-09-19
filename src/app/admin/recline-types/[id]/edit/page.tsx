@@ -22,6 +22,8 @@ import {
   Divider,
   FormControlLabel,
   Grid,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -32,6 +34,8 @@ const EditReclineTypePage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -401,7 +405,7 @@ const EditReclineTypePage = () => {
                   <Divider sx={{ mb: 3 }} />
 
                   <TextField
-                  label="In Shop Price"
+                  label="In Store Price"
                     type="number"
                     value={formData.price}
                     onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
@@ -616,6 +620,11 @@ const EditReclineTypePage = () => {
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
+                    fullWidth={isMobile}
+                    sx={{
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}
                   >
                     Cancel
                   </Button>
@@ -624,8 +633,11 @@ const EditReclineTypePage = () => {
                     variant="contained"
                     startIcon={<SaveIcon />}
                     disabled={loading}
+                    fullWidth={isMobile}
                     sx={{
                       backgroundColor: '#DA291C',
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' },
                       '&:hover': {
                         backgroundColor: '#B71C1C',
                       },

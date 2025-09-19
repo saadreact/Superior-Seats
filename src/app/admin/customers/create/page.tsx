@@ -17,7 +17,10 @@ import {
   FormControlLabel, 
   Switch,
   Paper,
-  Divider
+  Divider,
+  useTheme,
+  useMediaQuery,
+  Stack
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -28,6 +31,9 @@ import { CustomerType } from '@/data/types';
 
 const CreateCustomerPage = () => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
@@ -99,11 +105,20 @@ const CreateCustomerPage = () => {
         />
       }
       label={
-        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+        <Typography variant="body1" sx={{ 
+          fontWeight: 500,
+          fontSize: { xs: '1rem', sm: '0.875rem' }
+        }}>
           {isActive ? 'Active' : 'Inactive'}
         </Typography>
       }
       labelPlacement="start"
+      sx={{ 
+        '& .MuiFormControlLabel-label': {
+          fontSize: { xs: '1rem', sm: '0.875rem' },
+          fontWeight: 500
+        }
+      }}
     />
   );
 
@@ -148,10 +163,26 @@ const CreateCustomerPage = () => {
           </Paper>
         )}
 
-        <Dialog open={errorDialogOpen} onClose={handleCloseErrorDialog} fullWidth maxWidth="sm">
-          <DialogTitle>{errorDialogTitle}</DialogTitle>
+        <Dialog 
+          open={errorDialogOpen} 
+          onClose={handleCloseErrorDialog} 
+          fullWidth 
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              mx: { xs: 2, sm: 'auto' },
+              width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+            }
+          }}
+        >
+          <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+            {errorDialogTitle}
+          </DialogTitle>
           <DialogContent dividers>
-            <Typography variant="body2" sx={{ mb: 2 }}>
+            <Typography variant="body2" sx={{ 
+              mb: 2,
+              fontSize: { xs: '1rem', sm: '0.875rem' }
+            }}>
               {errorDialogMessage}
             </Typography>
             {Object.keys(serverErrors).length > 0 && (
@@ -161,7 +192,13 @@ const CreateCustomerPage = () => {
                     <ListItemText
                       primary={message}
                       secondary={field.replace(/_/g, ' ')}
-                      primaryTypographyProps={{ color: 'error' }}
+                      primaryTypographyProps={{ 
+                        color: 'error',
+                        fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                      }}
+                      secondaryTypographyProps={{
+                        fontSize: { xs: '0.85rem', sm: '0.75rem' }
+                      }}
                     />
                   </ListItem>
                 ))}
@@ -169,7 +206,17 @@ const CreateCustomerPage = () => {
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseErrorDialog} variant="contained">OK</Button>
+            <Button 
+              onClick={handleCloseErrorDialog} 
+              variant="contained"
+              sx={{
+                minHeight: { xs: 44, sm: 'auto' },
+                fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                width: { xs: '100%', sm: 'auto' }
+              }}
+            >
+              OK
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>

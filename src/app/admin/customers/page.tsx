@@ -28,6 +28,9 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  useTheme,
+  useMediaQuery,
+  Stack,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -45,6 +48,9 @@ import { apiService } from '@/utils/api';
 
 const CustomersPage = () => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerTypes, setCustomerTypes] = useState<CustomerType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -262,9 +268,14 @@ const CustomersPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-        
-            {/* Search Bar positioned at top-left */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            gap: { xs: 2, sm: 3 }, 
+            flex: 1,
+            alignItems: { xs: 'stretch', sm: 'center' }
+          }}>
+            {/* Search Bar */}
             <TextField
               placeholder="Search customers..."
               value={filters.search}
@@ -280,23 +291,39 @@ const CustomersPage = () => {
                     <SearchIcon />
                   </InputAdornment>
                 )}}
-              sx={{ maxWidth: 400 }}
+              sx={{ 
+                maxWidth: { xs: '100%', sm: 400 },
+                minWidth: { xs: '100%', sm: 250 }
+              }}
               size="small"
+              fullWidth={isMobile}
             />
+            
+            {/* Results count for mobile */}
+            {isMobile && customers.length > 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
+                {customers.length} customer{customers.length !== 1 ? 's' : ''} found
+              </Typography>
+            )}
           </Box>
+          
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
+            className="gradient-style"
             sx={{ 
               alignSelf: { xs: 'stretch', sm: 'auto' },
+              minWidth: { xs: '100%', sm: 'auto' },
+              height: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
               boxShadow: 'none',
               '&:hover': {
                 boxShadow: 'none',
               }
             }}
           >
-            Add
+            {isMobile ? 'Add Customer' : 'Add'}
           </Button>
         </Box>
 
@@ -316,8 +343,81 @@ const CustomersPage = () => {
           </Box>
         ) : (
           <>
-            {/* Desktop Table View */}
-            <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+            {/* Mobile Card View */}
+            {isMobile ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {customers.map((customer) => (
+                  <Paper key={customer.id} sx={{ p: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                      {/* Customer Info */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, pr: 1 }}>
+                            {customer.firstName} {customer.lastName}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 0.5 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleView(customer)}
+                              title="View"
+                              sx={{ color: 'primary.main', p: 0.5 }}
+                            >
+                              <ViewIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEdit(customer)}
+                              title="Edit"
+                              sx={{ color: 'primary.main', p: 0.5 }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(customer)}
+                              title="Delete"
+                              color="error"
+                              sx={{ p: 0.5 }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                        
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{ mb: 1, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                        >
+                          {customer.email}
+                        </Typography>
+                        
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          {customer.phone}
+                        </Typography>
+                        
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          Company: {customer.company || 'N/A'}
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                          <Chip
+                            label={customer.isActive ? 'Active' : 'Inactive'}
+                            color={customer.isActive ? 'success' : 'default'}
+                            size="small"
+                            sx={{ fontSize: '0.7rem', height: 20 }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            {customer.createdAt.toLocaleDateString()}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              /* Desktop Table View */
               <Paper sx={{ overflow: 'hidden' }}>
                 <TableContainer>
                   <Table>
@@ -334,13 +434,51 @@ const CustomersPage = () => {
                   </TableHead>
                   <TableBody>
                     {customers.map((customer) => (
-                      <TableRow key={customer.id}>
+                      <TableRow 
+                        key={customer.id}
+                        sx={{ 
+                          '&:hover': { backgroundColor: 'action.hover' },
+                          transition: 'background-color 0.2s ease'
+                        }}
+                      >
                         <TableCell>
-                          {customer.firstName} {customer.lastName}
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {customer.firstName} {customer.lastName}
+                          </Typography>
                         </TableCell>
-                        <TableCell>{customer.email}</TableCell>
-                        <TableCell>{customer.phone}</TableCell>
-                        <TableCell>{customer.company || '-'}</TableCell>
+                        <TableCell>
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{
+                              maxWidth: 200,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {customer.email}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {customer.phone}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{
+                              maxWidth: 150,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {customer.company || '-'}
+                          </Typography>
+                        </TableCell>
                         <TableCell>
                           <Chip
                             label={customer.isActive ? 'Active' : 'Inactive'}
@@ -349,10 +487,20 @@ const CustomersPage = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          {customer.createdAt.toLocaleDateString()}
+                          <Typography variant="body2" color="text.secondary">
+                            {customer.createdAt.toLocaleDateString()}
+                          </Typography>
                         </TableCell>
                         <TableCell align="center" sx={{ minWidth: 120 }}>
                           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleView(customer)}
+                              title="View"
+                              sx={{ color: 'primary.main' }}
+                            >
+                              <ViewIcon />
+                            </IconButton>
                             <IconButton
                               size="small"
                               onClick={() => handleEdit(customer)}
@@ -377,81 +525,7 @@ const CustomersPage = () => {
                   </Table>
                 </TableContainer>
               </Paper>
-            </Box>
-
-            {/* Mobile Card View */}
-            <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
-              <Box sx={{ display: 'grid', gap: 2 }}>
-                {customers.map((customer) => (
-                  <Paper key={customer.id} sx={{ p: 2, borderRadius: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                          {customer.firstName} {customer.lastName}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                          {customer.email}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {customer.phone}
-                        </Typography>
-                      </Box>
-                      <Chip
-                        label={customer.isActive ? 'Active' : 'Inactive'}
-                        color={customer.isActive ? 'success' : 'default'}
-                        size="small"
-                      />
-                    </Box>
-                    
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1, mb: 2 }}>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          Company
-                        </Typography>
-                        <Typography variant="body2">
-                          {customer.company || '-'}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Created Date
-                        </Typography>
-                        <Typography variant="body2">
-                          {customer.createdAt.toLocaleDateString()}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleView(customer)}
-                        title="View"
-                        sx={{ color: 'primary.main' }}
-                      >
-                        <ViewIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(customer)}
-                        title="Edit"
-                        sx={{ color: 'primary.main' }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(customer)}
-                        title="Delete"
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </Paper>
-                ))}
-              </Box>
-            </Box>
+            )}
 
             {/* Pagination Controls */}
             <Box sx={{ mt: 2 }}>
@@ -462,6 +536,16 @@ const CustomersPage = () => {
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
                 rowsPerPageOptions={[]}
+                sx={{
+                  '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                    color: 'text.secondary',
+                    fontSize: isMobile ? '0.75rem' : '0.875rem'
+                  },
+                  '& .MuiTablePagination-toolbar': {
+                    flexWrap: isMobile ? 'wrap' : 'nowrap',
+                    gap: isMobile ? 1 : 0
+                  }
+                }}
               />
             </Box>
 
@@ -469,6 +553,14 @@ const CustomersPage = () => {
             <Dialog
               open={isDeleteDialogOpen}
               onClose={() => setIsDeleteDialogOpen(false)}
+              fullWidth
+              maxWidth="sm"
+              PaperProps={{
+                sx: {
+                  mx: { xs: 2, sm: 'auto' },
+                  width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+                }
+              }}
             >
               <DialogTitle>Confirm Delete</DialogTitle>
               <DialogContent>
@@ -477,12 +569,33 @@ const CustomersPage = () => {
                 </Typography>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setIsDeleteDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={confirmDelete} color="error" variant="contained">
-                  Delete
-                </Button>
+                <Stack 
+                  direction={{ xs: 'column', sm: 'row' }} 
+                  spacing={2} 
+                  sx={{ 
+                    width: '100%',
+                    '& .MuiButton-root': {
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }
+                  }}
+                >
+                  <Button 
+                    onClick={() => setIsDeleteDialogOpen(false)}
+                    fullWidth={isMobile}
+                    variant={isMobile ? 'outlined' : 'text'}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={confirmDelete} 
+                    color="error" 
+                    variant="contained"
+                    fullWidth={isMobile}
+                  >
+                    Delete
+                  </Button>
+                </Stack>
               </DialogActions>
             </Dialog>
 

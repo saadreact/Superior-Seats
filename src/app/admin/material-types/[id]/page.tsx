@@ -11,7 +11,9 @@ import {
   Chip,
   Stack,
   CircularProgress,
-  Divider} from '@mui/material';
+  Divider,
+  useTheme,
+  useMediaQuery} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { materialTypesService } from '@/services/material-types';
@@ -31,6 +33,8 @@ const MaterialTypeDetailPage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,67 +119,99 @@ const MaterialTypeDetailPage = () => {
     <AdminLayout title="Material Type Details">
       <Box>
         {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ 
+          mb: 3, 
+          display: 'flex', 
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' }
+        }}>
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={handleBack}
-            sx={{ color: 'text.secondary' }}
+            sx={{ 
+              color: 'text.secondary',
+              alignSelf: { xs: 'flex-start', sm: 'auto' }
+            }}
           >
             Back
           </Button>
-        </Box>
-
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-       
           <Button
             variant="contained"
             startIcon={<EditIcon />}
             onClick={handleEdit}
+            sx={{
+              minHeight: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
+              alignSelf: { xs: 'stretch', sm: 'auto' }
+            }}
           >
             Edit Material Type
           </Button>
         </Box>
 
         {/* Content */}
-        <Paper sx={{ p: 4 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
             <Box sx={{ flex: 1 }}>
               <Stack spacing={3}>
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Name
                   </Typography>
-                  <Typography variant="body1">
+                  <Typography variant="body1" sx={{
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {materialtypes.name}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Description
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {materialtypes.description || 'No description available'}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    In Shop Price
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
+                    In Store Price
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ 
+                    fontWeight: 500,
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     ${formatPrice(materialtypes.price)}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Status
                   </Typography>
                   <Chip
                     label={materialtypes.is_active ? 'Active' : 'Inactive'}
                     color={materialtypes.is_active ? 'success' : 'default'}
                     size="small"
+                    sx={{
+                      fontSize: { xs: '0.8rem', sm: '0.75rem' }
+                    }}
                   />
                 </Box>
 
@@ -183,36 +219,54 @@ const MaterialTypeDetailPage = () => {
             </Box>
 
             <Box sx={{ width: { xs: '100%', md: 300 } }}>
-              <Paper variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
+                <Typography variant="h6" gutterBottom sx={{ 
+                  fontWeight: 600,
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                }}>
                   Information
                 </Typography>
                 <Divider sx={{ mb: 2 }} /> 
                 
                 <Stack spacing={2}>
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{
+                      fontSize: { xs: '0.9rem', sm: '0.875rem' }
+                    }}>
                       ID
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {materialtypes.id}
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{
+                      fontSize: { xs: '0.9rem', sm: '0.875rem' }
+                    }}>
                       Created
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {formatDate(materialtypes.created_at)}
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{
+                      fontSize: { xs: '0.9rem', sm: '0.875rem' }
+                    }}>
                       Last Updated
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {formatDate(materialtypes.updated_at)}
                     </Typography>
                   </Box>
