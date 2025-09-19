@@ -100,7 +100,6 @@ const Header = () => {
     { text: 'Home', href: '/' },
     { text: 'Customize Your Seat', href: '/custom-seats' },
     { text: 'Shop Now', href: '/shop-now' },
-    { text: 'Shop Specials', href: '/ShopGallery' },
     { text: 'Gallery', href: '/gallery' },
     { text: 'About', href: '/about' },
     { text: 'Contact', href: '/contact' },

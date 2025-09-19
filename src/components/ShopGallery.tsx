@@ -84,8 +84,8 @@ const ShopGallery = () => {
   // Redux selectors for authentication state
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   
-  // Check if we're on the ShopGallery, Shop Now, or Specials page
-  const isOnShopGalleryPage = pathname === '/ShopGallery' || pathname === '/shop-now' || pathname === '/specials';
+  // Check if we're on the ShopGallery or Shop Now page
+  const isOnShopGalleryPage = pathname === '/ShopGallery' || pathname === '/shop-now';
   
   const [selectedMainCategory, setSelectedMainCategory] = useState('all');
   const [selectedSubCategory, setSelectedSubCategory] = useState('all');
@@ -148,28 +148,17 @@ const ShopGallery = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch special products only
-      console.log('🚀 ShopGallery - Fetching special products from API...');
-      const productsResponse = await shopNowApis.getSpecialProducts();
-      console.log('✅ ShopGallery - Special Products API Response:', productsResponse);
-      console.log('🔍 ShopGallery - Products with show_on_special_shop=true:', productsResponse.data?.filter(p => p.show_on_special_shop === true).length || 0);
+      // Fetch all products
+      console.log('🚀 ShopGallery - Fetching all products from API...');
+      const productsResponse = await shopNowApis.getProducts();
+      console.log('✅ ShopGallery - Products API Response:', productsResponse);
       
       if (productsResponse.status === 'success' && productsResponse.data) {
-        // Double-check: Filter to ensure only products with show_on_special_shop: true
-        const specialProducts = productsResponse.data.filter(product => product.show_on_special_shop === true);
-        setApiProducts(specialProducts);
-        console.log('📦 Special products loaded:', specialProducts.length);
-        console.log('🔍 Total products from API:', productsResponse.data.length);
-        console.log('🔍 Filtered special products:', specialProducts.length);
-        
-        // Log any products that were filtered out
-        const filteredOut = productsResponse.data.filter(product => product.show_on_special_shop !== true);
-        if (filteredOut.length > 0) {
-          console.warn('⚠️ Filtered out non-special products:', filteredOut.map(p => ({ id: p.id, name: p.name, show_on_special_shop: p.show_on_special_shop })));
-        }
+        setApiProducts(productsResponse.data);
+        console.log('📦 All products loaded:', productsResponse.data.length);
       } else {
-        setError('Failed to load special products');
-        console.error('❌ Special Products API returned error status');
+        setError('Failed to load products');
+        console.error('❌ Products API returned error status');
       }
       
       // Fetch price tiers (always fetch for potential wholesale customers)
@@ -253,19 +242,12 @@ const ShopGallery = () => {
   }, [userData, isAuthenticated, isOnShopGalleryPage, priceTiers]);
 
   // Filter products based on selected categories (using API data)
-  // Note: apiProducts already contains only special products (show_on_special_shop: true)
   const filteredImages = apiProducts.filter(item => {
-    // Double-check: Ensure only special products are shown
-    if (item.show_on_special_shop !== true) {
-      console.warn('⚠️ Non-special product found in filtered list:', { id: item.id, name: item.name, show_on_special_shop: item.show_on_special_shop });
-      return false;
-    }
-    
     if (selectedMainCategory === 'all') {
-      return true; // Show all special products
+      return true; // Show all products
     }
     
-    // For now, we'll show all special products since category filtering needs to be implemented
+    // For now, we'll show all products since category filtering needs to be implemented
     // based on your API structure
     return true;
   });
@@ -615,58 +597,60 @@ const ShopGallery = () => {
                     </Box>
 
                     {/* Special Product Diagonal Ribbon */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: { xs: '80px', sm: '90px', md: '100px' },
-                        height: { xs: '80px', sm: '90px', md: '100px' },
-                        overflow: 'hidden',
-                        zIndex: 3,
-                      }}
-                    >
+                    {item.show_on_special_shop && (
                       <Box
                         sx={{
                           position: 'absolute',
-                          top: { xs: '15px', sm: '18px', md: '20px' },
-                          left: { xs: '-25px', sm: '-28px', md: '-30px' },
-                          width: { xs: '100px', sm: '120px', md: '130px' },
-                          height: { xs: '25px', sm: '28px', md: '32px' },
-                          backgroundColor: 'error.main',
-                          color: 'white',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transform: 'rotate(-45deg)',
-                          fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
-                          fontWeight: 'bold',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                          '&::before': {
-                            content: '""',
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: 'linear-gradient(135deg, rgba(255,255,255,0.2), transparent)',
-                          },
-                          '&::after': {
-                            content: '""',
-                            position: 'absolute',
-                            bottom: '-2px',
-                            left: 0,
-                            right: 0,
-                            height: '2px',
-                            background: 'rgba(0,0,0,0.2)',
-                          }
+                          top: 0,
+                          left: 0,
+                          width: { xs: '80px', sm: '90px', md: '100px' },
+                          height: { xs: '80px', sm: '90px', md: '100px' },
+                          overflow: 'hidden',
+                          zIndex: 3,
                         }}
                       >
-                        Special
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: { xs: '15px', sm: '18px', md: '20px' },
+                            left: { xs: '-25px', sm: '-28px', md: '-30px' },
+                            width: { xs: '100px', sm: '120px', md: '130px' },
+                            height: { xs: '25px', sm: '28px', md: '32px' },
+                            backgroundColor: 'error.main',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transform: 'rotate(-45deg)',
+                            fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background: 'linear-gradient(135deg, rgba(255,255,255,0.2), transparent)',
+                            },
+                            '&::after': {
+                              content: '""',
+                              position: 'absolute',
+                              bottom: '-2px',
+                              left: 0,
+                              right: 0,
+                              height: '2px',
+                              background: 'rgba(0,0,0,0.2)',
+                            }
+                          }}
+                        >
+                          Special
+                        </Box>
                       </Box>
-                    </Box>
+                    )}
                      
                     {/* Enhanced Price Display for Wholesale Customers */}
                     {isAuthenticated && !isRetailCustomer() ? (
@@ -1333,7 +1317,7 @@ const ShopGallery = () => {
                            transition: 'all 0.3s ease',
                          }}
                        >
-                         Start Customizing
+                         Start Building Seat
                        </Button>
                    
                   </Box>
@@ -1453,7 +1437,7 @@ const ShopGallery = () => {
                             },
                           }}
                         >
-                          Start Customizing Now
+                          Start Building Seat
                         </Button>
                        
                        {/* ADD TO CART BUTTON */}

@@ -69,8 +69,6 @@ interface ProductPage2Form {
   seatStyle: string[]; // Added new field
   color: string[];
   
-  // Special Shop Field
-  showOnSpecialShop: boolean;
   
   // Price Tiers Fields
   enablePriceTiers: boolean;
@@ -105,7 +103,6 @@ const CreateProduct2Page = () => {
     seatItemType: [],
     seatStyle: [], // Added new field
     color: [],
-    showOnSpecialShop: false,
     enablePriceTiers: false,
     isActive: true,
   });
@@ -682,7 +679,6 @@ const CreateProduct2Page = () => {
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
-        show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Simple File array like lumbar types
         
@@ -916,24 +912,6 @@ const CreateProduct2Page = () => {
                       }}
                     />
                     
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={formData.showOnSpecialShop}
-                          onChange={handleSwitchChange('showOnSpecialShop')}
-                          color="error"
-                        />
-                      }
-                      label="Special Shop"
-                      labelPlacement="start"
-                      sx={{ 
-                        gap: 1,
-                        '& .MuiFormControlLabel-label': {
-                          fontSize: '0.875rem',
-                          fontWeight: 500
-                        }
-                      }}
-                    />
                   </Box>
                 </Box>
                 

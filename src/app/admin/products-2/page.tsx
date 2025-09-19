@@ -61,7 +61,6 @@ interface Product {
   stock: number;
   images?: string[];
   is_active: boolean;
-  show_on_special_shop: boolean;
   created_at: string;
   updated_at: string;
   category_id?: number | null;
@@ -129,7 +128,6 @@ const Products2Page = () => {
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showOnlySpecial, setShowOnlySpecial] = useState(false);
   const [priceTierDetails, setPriceTierDetails] = useState<Record<number, any>>({});
   
   // Pagination state
@@ -166,13 +164,8 @@ const Products2Page = () => {
         params.search = searchTerm.trim();
       }
       
-       // Add special shop filter if enabled
-       if (showOnlySpecial) {
-         params.show_on_special_shop = true;
-       }
       
        console.log('🔍 Loading products with params:', params);
-       console.log('🔍 Special shop filter enabled:', showOnlySpecial);
        
        const response = await apiService.getProducts(params);
        console.log('🔍 API Response:', response);
@@ -210,7 +203,7 @@ const Products2Page = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, searchTerm, showOnlySpecial, router]);
+  }, [page, rowsPerPage, searchTerm, router]);
 
   useEffect(() => {
     loadProducts();
@@ -254,10 +247,6 @@ const Products2Page = () => {
     setPage(0); // Reset to first page when searching
   };
 
-  const handleSpecialFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setShowOnlySpecial(event.target.checked);
-    setPage(0); // Reset to first page when filtering
-  };
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -338,34 +327,6 @@ const Products2Page = () => {
               alignItems: { xs: 'flex-start', sm: 'center' }, 
               gap: { xs: 1, sm: 2 }
             }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={showOnlySpecial}
-                    onChange={handleSpecialFilterChange}
-                    sx={{
-                      color: '#4caf50',
-                      '&.Mui-checked': {
-                        color: '#4caf50',
-                      },
-                    }}
-                  />
-                }
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckIcon sx={{ fontSize: '1rem', color: '#4caf50' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      Show only Special Shop products
-                    </Typography>
-                  </Box>
-                }
-                sx={{ 
-                  alignSelf: 'flex-start',
-                  '& .MuiFormControlLabel-label': {
-                    color: showOnlySpecial ? '#4caf50' : 'text.secondary'
-                  }
-                }}
-              />
               
               {/* Product count indicator */}
               <Typography 
@@ -378,7 +339,6 @@ const Products2Page = () => {
                 }}
               >
                 Showing {filteredProducts.length} of {totalCount} products
-                {showOnlySpecial && ` (Special Shop only)`}
               </Typography>
             </Box>
           </Box>
@@ -437,13 +397,11 @@ const Products2Page = () => {
         ) : filteredProducts.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              {showOnlySpecial ? 'No special shop products found' : 
-               searchTerm ? 'No products found matching your search' : 
+              {searchTerm ? 'No products found matching your search' : 
                'No products found'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {searchTerm ? 'Try adjusting your search terms.' : 
-               showOnlySpecial ? 'No products are marked for special shop.' : 
                'Click "Add Product" to create your first product.'}
             </Typography>
           </Paper>
@@ -566,12 +524,6 @@ const Products2Page = () => {
                         label={product.is_active ? 'Active' : 'Inactive'}
                         size="small"
                         color={product.is_active ? 'success' : 'default'}
-                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                      />
-                      <Chip
-                        label={(product as any).show_on_special_shop ? 'Special' : 'Regular'}
-                        size="small"
-                        color={(product as any).show_on_special_shop ? 'warning' : 'default'}
                         sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                       />
                     </Box>
@@ -814,11 +766,6 @@ const Products2Page = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={(product as any).show_on_special_shop ? 'Special Shop' : 'Regular'}
-                          size="small"
-                          color={(product as any).show_on_special_shop ? 'warning' : 'default'}
-                        />
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>

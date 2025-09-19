@@ -40,7 +40,11 @@ const CreateCustomerPage = () => {
     setAlert(null);
     setServerErrors({});
     try {
-      const customerData = { ...customer, is_active: isActive };
+      const customerData = { 
+        ...customer, 
+        customer_type: 'retail',
+        is_active: isActive 
+      };
       await apiService.createCustomer(customerData);
       setAlert({ type: 'success', message: 'Customer created successfully' });
       router.push('/admin/customers');
