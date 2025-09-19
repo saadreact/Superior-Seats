@@ -10,7 +10,10 @@ import {
   Alert,
   CircularProgress,
   Stack,
-  Divider} from '@mui/material';
+  Divider,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { heatOptionsService } from '@/services/heat-options';
@@ -46,6 +49,8 @@ const HeatOptionDetailPage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,11 +166,20 @@ const HeatOptionDetailPage = () => {
     <AdminLayout title="Heat Option Details">
       <Box>
         {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ 
+          mb: 3, 
+          display: 'flex', 
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'center' }
+        }}>
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={handleBack}
-            sx={{ color: 'text.secondary' }}
+            sx={{ 
+              color: 'text.secondary',
+              alignSelf: { xs: 'flex-start', sm: 'auto' }
+            }}
           >
             Back
           </Button>
@@ -174,52 +188,81 @@ const HeatOptionDetailPage = () => {
             variant="contained"
             startIcon={<EditIcon />}
             onClick={handleEdit}
+            sx={{
+              minHeight: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' }
+            }}
           >
             Edit Heat Option
           </Button>
         </Box>
 
         {/* Content */}
-        <Paper sx={{ p: 4 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
             <Box sx={{ flex: 1 }}>
               <Stack spacing={3}>
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Name
                   </Typography>
-                  <Typography variant="body1">
+                  <Typography variant="body1" sx={{
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {heatoptions.name}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Description
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{
+                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                  }}>
                     {heatoptions.description || 'No description available'}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}>
                     Pricing
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                     <Box>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                      <Typography variant="body2" color="text.secondary" gutterBottom sx={{
+                        fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                      }}>
                         Cost (Wholesale)
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 600, 
+                        color: 'success.main',
+                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                      }}>
                         ${formatPrice(heatoptions.cost)}
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                      <Typography variant="body2" color="text.secondary" gutterBottom sx={{
+                        fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                      }}>
                         Price (Retail)
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 600, 
+                        color: 'primary.main',
+                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                      }}>
                         ${formatPrice(heatoptions.price)}
                       </Typography>
                     </Box>
@@ -228,46 +271,72 @@ const HeatOptionDetailPage = () => {
 
                 {calculatedPriceTiers.length > 0 && (
                   <Box>
-                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" gutterBottom sx={{ 
+                      fontWeight: 600,
+                      fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                    }}>
                       Price Tiers
                     </Typography>
-                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                    <Typography variant="body2" sx={{ 
+                      mb: 2, 
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}>
                       Based on base price: ${formatPrice(heatoptions.price)}
                     </Typography>
                     <Stack spacing={2}>
                       {VariantsCalculation.sortByDiscountPercentage(calculatedPriceTiers).map((tier) => (
-                        <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Box>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        <Paper key={tier.id} variant="outlined" sx={{ p: { xs: 1.5, sm: 2 } }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            gap: { xs: 1, sm: 0 }
+                          }}>
+                            <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+                              <Typography variant="subtitle2" sx={{ 
+                                fontWeight: 600,
+                                fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                              }}>
                                 {tier.display_name}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{
+                                fontSize: { xs: '0.85rem', sm: '0.75rem' }
+                              }}>
                                 {parseFloat(tier.discount_off_retail_price) > 0 
                                   ? `${tier.discount_off_retail_price}% discount` 
                                   : 'No discount'
                                 }
                               </Typography>
                               {tier.is_overridden && (
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ 
+                                  fontSize: { xs: '0.75rem', sm: '0.7rem' }
+                                }}>
                                   Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
                                 </Typography>
                               )}
                             </Box>
-                            <Box sx={{ textAlign: 'right' }}>
+                            <Box sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
                               <Typography variant="h6" sx={{ 
                                 fontWeight: 600, 
-                                color: tier.is_overridden ? 'warning.main' : 'primary.main'
+                                color: tier.is_overridden ? 'warning.main' : 'primary.main',
+                                fontSize: { xs: '1rem', sm: '1.25rem' }
                               }}>
                                 ${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}
                               </Typography>
                               {tier.is_overridden && (
-                                <Typography variant="caption" color="warning.main" sx={{ display: 'block' }}>
+                                <Typography variant="caption" color="warning.main" sx={{ 
+                                  display: 'block',
+                                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                                }}>
                                   Overridden
                                 </Typography>
                               )}
                               {!tier.is_overridden && tier.discount_amount > 0 && (
-                                <Typography variant="caption" color="success.main">
+                                <Typography variant="caption" color="success.main" sx={{
+                                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                                }}>
                                   Save: ${VariantsCalculation.formatPrice(tier.discount_amount)}
                                 </Typography>
                               )}
@@ -282,36 +351,54 @@ const HeatOptionDetailPage = () => {
             </Box>
 
             <Box sx={{ width: { xs: '100%', md: 300 } }}>
-              <Paper variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
+                <Typography variant="h6" gutterBottom sx={{ 
+                  fontWeight: 600,
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                }}>
                   Information
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
                 <Stack spacing={2}>
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}>
                       ID
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {heatoptions.id}
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}>
                       Created
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {formatDate(heatoptions.created_at)}
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}>
                       Last Updated
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }}>
                       {formatDate(heatoptions.updated_at)}
                     </Typography>
                   </Box>

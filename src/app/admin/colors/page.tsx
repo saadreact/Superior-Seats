@@ -23,6 +23,7 @@ import {
   TableRow,
   TablePagination,
   Dialog,
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -237,9 +238,14 @@ const ColorsPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-       
-            {/* Search Bar positioned at top-left */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            gap: { xs: 2, sm: 3 }, 
+            flex: 1,
+            alignItems: { xs: 'stretch', sm: 'center' }
+          }}>
+            {/* Search Bar */}
             <TextField
               placeholder="Search colors..."
               value={searchTerm}
@@ -250,10 +256,22 @@ const ColorsPage = () => {
                     <SearchIcon />
                   </InputAdornment>
                 )}}
-              sx={{ maxWidth: 400 }}
+              sx={{ 
+                maxWidth: { xs: '100%', sm: 400 },
+                minWidth: { xs: '100%', sm: 250 }
+              }}
               size="small"
+              fullWidth={isMobile}
             />
+            
+            {/* Results count for mobile */}
+            {isMobile && colors.length > 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
+                {colors.length} color{colors.length !== 1 ? 's' : ''} found
+              </Typography>
+            )}
           </Box>
+          
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -261,13 +279,16 @@ const ColorsPage = () => {
             className="gradient-style"
             sx={{ 
               alignSelf: { xs: 'stretch', sm: 'auto' },
+              minWidth: { xs: '100%', sm: 'auto' },
+              height: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
               boxShadow: 'none',
               '&:hover': {
                 boxShadow: 'none',
               }
             }}
           >
-            Add
+            {isMobile ? 'Add Color' : 'Add'}
           </Button>
         </Box>
 
@@ -293,7 +314,7 @@ const ColorsPage = () => {
             <CircularProgress />
           </Box>
         ) : colors.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No colors found
             </Typography>
@@ -302,135 +323,318 @@ const ColorsPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ overflow: 'hidden' }}>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 600 }}>Color</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Vendor</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {colors
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((color) => (
-                    <TableRow 
-                      key={color.id}
-                      sx={{ 
-                        '&:hover': { backgroundColor: 'action.hover' },
-                        transition: 'background-color 0.2s ease'
-                      }}
-                    >
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Box
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: 1,
-                              backgroundColor: color.hex_code || '#ccc',
-                              border: 1,
-                              borderColor: 'divider',
-                            }}
-                          />
-                          <Typography variant="body2" color="text.secondary">
+          <>
+            {/* Mobile Card View */}
+            {isMobile ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {colors
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((color) => (
+                    <Paper key={color.id} sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                        {/* Color Swatch */}
+                        <Box sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          flexShrink: 0,
+                          borderRadius: 1,
+                          backgroundColor: color.hex_code || '#ccc',
+                          border: 1,
+                          borderColor: 'divider',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ 
+                            fontSize: '0.6rem',
+                            color: color.hex_code === '#ffffff' || color.hex_code === '#fff' ? '#000' : '#fff',
+                            textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                          }}>
                             {color.hex_code}
                           </Typography>
                         </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {color.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary"
-                          sx={{
-                            maxWidth: 300,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
+
+                        {/* Content */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, pr: 1 }}>
+                              {color.name}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(color)}
+                                title="Edit"
+                                sx={{ color: 'primary.main', p: 0.5 }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(color)}
+                                title="Delete"
+                                color="error"
+                                sx={{ p: 0.5 }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                          
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{ mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                          >
+                            {color.description || 'No description available'}
+                          </Typography>
+                          
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            Vendor: {colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown'}
+                          </Typography>
+                          
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', mb: 1 }}>
+                            ${color.price || 0}
+                          </Typography>
+                          
+                          {(() => {
+                            const calculatedTiers = getCalculatedPriceTiers(color);
+                            if (calculatedTiers.length > 0) {
+                              const firstTier = calculatedTiers[0];
+                              const allTiersText = calculatedTiers.map(tier => 
+                                `${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`
+                              ).join('\n');
+                              
+                              return (
+                                <Box>
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                    {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                  </Typography>
+                                  <Tooltip 
+                                    title={
+                                      <Box sx={{ whiteSpace: 'pre-line', textAlign: 'left' }}>
+                                        {allTiersText}
+                                      </Box>
+                                    }
+                                    arrow
+                                    placement="top"
+                                  >
+                                    <Box sx={{ display: 'inline-block', cursor: 'pointer' }}>
+                                      <Chip
+                                        label={`${firstTier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(firstTier))}`}
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{ 
+                                          fontSize: '0.65rem',
+                                          height: 18,
+                                          borderColor: firstTier.is_overridden ? 'warning.main' : undefined,
+                                          color: firstTier.is_overridden ? 'warning.main' : undefined,
+                                          '& .MuiChip-label': {
+                                            px: 0.5
+                                          }
+                                        }}
+                                      />
+                                      {calculatedTiers.length > 1 && (
+                                        <Chip
+                                          label={`+${calculatedTiers.length - 1} more`}
+                                          size="small"
+                                          variant="outlined"
+                                          sx={{ 
+                                            fontSize: '0.65rem',
+                                            height: 18,
+                                            ml: 0.5,
+                                            '& .MuiChip-label': {
+                                              px: 0.5
+                                            }
+                                          }}
+                                        />
+                                      )}
+                                    </Box>
+                                  </Tooltip>
+                                </Box>
+                              );
+                            }
+                            return (
+                              <Typography variant="caption" color="text.secondary">
+                                No tiers
+                              </Typography>
+                            );
+                          })()}
+                          
+                        </Box>
+                      </Box>
+                    </Paper>
+                  ))}
+              </Box>
+            ) : (
+              /* Desktop Table View */
+              <Paper sx={{ overflow: 'hidden' }}>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Color</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Vendor</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {colors
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((color) => (
+                        <TableRow 
+                          key={color.id}
+                          sx={{ 
+                            '&:hover': { backgroundColor: 'action.hover' },
+                            transition: 'background-color 0.2s ease'
                           }}
                         >
-                          {color.description || 'No description available'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          ${color.price || 0}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {color.price_tiers && color.price_tiers.length > 0 ? (
-                            (() => {
-                              const calculatedTiers = getCalculatedPriceTiers(color);
-                              return calculatedTiers.map((tier) => (
-                                <Chip
-                                  key={tier.id}
-                                  label={`${tier.name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`}
-                                  size="small"
-                                  variant="outlined"
-                                  color={tier.is_overridden ? 'warning' : 'default'}
-                                  sx={{ fontSize: '0.6rem', height: 20 }}
-                                />
-                              ));
-                            })()
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              None
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <Box
+                                sx={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: 1,
+                                  backgroundColor: color.hex_code || '#ccc',
+                                  border: 1,
+                                  borderColor: 'divider',
+                                }}
+                              />
+                              <Typography variant="body2" color="text.secondary">
+                                {color.hex_code}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {color.name}
                             </Typography>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(color.created_at).toLocaleDateString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEdit(color)}
-                            title="Edit"
-                            sx={{ color: 'primary.main' }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDelete(color)}
-                            title="Delete"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                          </TableCell>
+                          <TableCell>
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{
+                                maxWidth: 300,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {color.description || 'No description available'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              ${color.price || 0}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {(() => {
+                              const calculatedTiers = getCalculatedPriceTiers(color);
+                              if (calculatedTiers.length > 0) {
+                                const firstTier = calculatedTiers[0];
+                                const allTiersText = calculatedTiers.map(tier => 
+                                  `${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`
+                                ).join('\n');
+                                
+                                return (
+                                  <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                      {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                    </Typography>
+                                    <Tooltip 
+                                      title={
+                                        <Box sx={{ whiteSpace: 'pre-line', textAlign: 'left' }}>
+                                          {allTiersText}
+                                        </Box>
+                                      }
+                                      arrow
+                                      placement="top"
+                                    >
+                                      <Box sx={{ display: 'inline-block', cursor: 'pointer' }}>
+                                        <Chip
+                                          label={`${firstTier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(firstTier))}`}
+                                          size="small"
+                                          variant="outlined"
+                                          sx={{ 
+                                            fontSize: '0.7rem',
+                                            height: 20,
+                                            borderColor: firstTier.is_overridden ? 'warning.main' : undefined,
+                                            color: firstTier.is_overridden ? 'warning.main' : undefined,
+                                            '& .MuiChip-label': {
+                                              px: 0.5
+                                            }
+                                          }}
+                                        />
+                                        {calculatedTiers.length > 1 && (
+                                          <Chip
+                                            label={`+${calculatedTiers.length - 1} more`}
+                                            size="small"
+                                            variant="outlined"
+                                            sx={{ 
+                                              fontSize: '0.7rem',
+                                              height: 20,
+                                              ml: 0.5,
+                                              '& .MuiChip-label': {
+                                                px: 0.5
+                                              }
+                                            }}
+                                          />
+                                        )}
+                                      </Box>
+                                    </Tooltip>
+                                  </Box>
+                                );
+                              }
+                              return (
+                                <Typography variant="body2" color="text.secondary">
+                                  No tiers
+                                </Typography>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(color)}
+                                title="Edit"
+                                sx={{ color: 'primary.main' }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(color)}
+                                title="Delete"
+                                color="error"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Paper>
+            )}
             
             {/* Pagination */}
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
               component="div"
               count={colors.length}
               rowsPerPage={rowsPerPage}
@@ -442,11 +646,15 @@ const ColorsPage = () => {
                 borderColor: 'divider',
                 '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                   color: 'text.secondary',
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
+                },
+                '& .MuiTablePagination-toolbar': {
+                  flexWrap: isMobile ? 'wrap' : 'nowrap',
+                  gap: isMobile ? 1 : 0
                 }
               }}
             />
-          </Paper>
+          </>
         )}
 
 
@@ -455,19 +663,48 @@ const ColorsPage = () => {
         <Dialog
           open={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              mx: { xs: 2, sm: 'auto' },
+              width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+            }
+          }}
         >
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Confirm Delete
             </Typography>
             <Typography sx={{ mb: 3 }}>
               Are you sure you want to delete &quot;{colorToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
+            <Stack 
+              direction={{ xs: 'column', sm: 'row' }} 
+              spacing={2} 
+              justifyContent="flex-end"
+              sx={{ 
+                '& .MuiButton-root': {
+                  minHeight: { xs: 44, sm: 'auto' },
+                  fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                }
+              }}
+            >
+              <Button 
+                onClick={() => setIsDeleteDialogOpen(false)} 
+                disabled={deleting}
+                fullWidth={isMobile}
+                variant={isMobile ? 'outlined' : 'text'}
+              >
                 Cancel
               </Button>
-              <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
+              <Button 
+                onClick={confirmDelete} 
+                color="error" 
+                variant="contained" 
+                disabled={deleting}
+                fullWidth={isMobile}
+              >
                 {deleting ? 'Deleting...' : 'Delete'}
               </Button>
             </Stack>

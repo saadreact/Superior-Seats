@@ -48,6 +48,7 @@ interface ProductPage2Form {
   basePrice: number;
   stock: number;
   images: File[];
+  showOnSpecialShop: boolean;
   
   // Vehicle Information Fields
   vehicleMake: string;
@@ -89,6 +90,7 @@ const CreateProduct2Page = () => {
     basePrice: 0,
     stock: 0,
     images: [],
+    showOnSpecialShop: false,
     vehicleMake: '',
     vehicleModel: '',
     vehicleTrim: '',
@@ -679,6 +681,7 @@ const CreateProduct2Page = () => {
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
+        show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Simple File array like lumbar types
         
@@ -896,6 +899,25 @@ const CreateProduct2Page = () => {
                     <FormControlLabel
                       control={
                         <Switch
+                          checked={formData.showOnSpecialShop}
+                          onChange={handleSwitchChange('showOnSpecialShop')}
+                          color="primary"
+                        />
+                      }
+                      label="Shop Special"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch
                           checked={formData.isActive}
                           onChange={handleSwitchChange('isActive')}
                           color="error"
@@ -969,7 +991,7 @@ const CreateProduct2Page = () => {
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
                   <TextField
                     fullWidth
-                    label="In Shop Price"
+                    label="In Store Price"
                     type="number"
                     value={formData.basePrice === 0 ? '0' : formData.basePrice.toString()}
                     onChange={(e) => {

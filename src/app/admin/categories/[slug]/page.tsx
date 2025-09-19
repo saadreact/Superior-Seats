@@ -184,7 +184,7 @@ const CategoryDetailPage = () => {
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap' }}>
                     <Box sx={{ flex: 1, minWidth: 200 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Created
+                        Created Date
                       </Typography>
                       <Typography variant="body1">
                         {new Date(category.created_at).toLocaleDateString()}

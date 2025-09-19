@@ -21,6 +21,8 @@ import {
   Chip,
   Divider,
   FormControlLabel,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -38,6 +40,9 @@ interface PriceTier {
 
 const CreateMaterialTypePage = () => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -246,7 +251,7 @@ const CreateMaterialTypePage = () => {
     }
 
     if (formData.price <= 0) {
-      setError('In Shop Price must be greater than 0');
+      setError('In Store Price must be greater than 0');
       return;
     }
 
@@ -358,7 +363,12 @@ const CreateMaterialTypePage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Basic Information */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Basic Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
@@ -370,7 +380,15 @@ const CreateMaterialTypePage = () => {
                   required
                   fullWidth
                   placeholder="Enter material type name"
-                  sx={{ mb: 3 }}
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
 
                 <TextField
@@ -381,19 +399,32 @@ const CreateMaterialTypePage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
                 </Box>
 
                 {/* Pricing Information */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Pricing Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="In Shop Price"
+                    label="In Store Price"
                     type="number"
                     value={formData.price === 0 ? '0' : formData.price.toString()}
                     onChange={(e) => {
@@ -407,11 +438,19 @@ const CreateMaterialTypePage = () => {
                     }}
                     required
                     fullWidth
-                    placeholder="Enter in shop price"
+                    placeholder="Enter in Store price"
                     inputProps={{ min: 0, step: 0.01 }}
                     onFocus={(e) => {
                       if (e.target.value === '0') {
                         e.target.select();
+                      }
+                    }}
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
                       }
                     }}
                   />
@@ -420,7 +459,12 @@ const CreateMaterialTypePage = () => {
 
                 {/* Image Upload Field */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Image
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
@@ -437,7 +481,12 @@ const CreateMaterialTypePage = () => {
                     <Button
                       variant="outlined"
                       component="span"
-                      sx={{ mb: 2 }}
+                      sx={{ 
+                        mb: 2,
+                        minHeight: { xs: 44, sm: 'auto' },
+                        fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                        width: { xs: '100%', sm: 'auto' }
+                      }}
                     >
                       {formData.image ? `Image Selected: ${formData.image.name}` : 'Upload Image'}
                     </Button>
@@ -462,12 +511,22 @@ const CreateMaterialTypePage = () => {
 
                 {/* Price Tiers */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Price Tiers
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 2,
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: { xs: 'flex-start', sm: 'center' }
+                }}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -476,14 +535,32 @@ const CreateMaterialTypePage = () => {
                         color="primary"
                       />
                     }
-                    label="Enable Price Tiers"
+                    label={
+                      <Typography variant="body1" sx={{ 
+                        fontWeight: 500,
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }}>
+                        Enable Price Tiers
+                      </Typography>
+                    }
+                    sx={{ 
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' },
+                        fontWeight: 500
+                      }
+                    }}
                   />
                   {enablePriceTiers && (
                     <Button
                       variant="outlined"
                       size="small"
                       onClick={handleResetPriceTiers}
-                      sx={{ ml: 1 }}
+                      sx={{ 
+                        ml: { xs: 0, sm: 1 },
+                        mt: { xs: 1, sm: 0 },
+                        minHeight: { xs: 36, sm: 'auto' },
+                        fontSize: { xs: '0.9rem', sm: '0.75rem' }
+                      }}
                     >
                       Reset
                     </Button>
@@ -565,6 +642,11 @@ const CreateMaterialTypePage = () => {
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
+                    sx={{
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                      order: { xs: 2, sm: 1 }
+                    }}
                   >
                     Cancel
                   </Button>
@@ -575,6 +657,9 @@ const CreateMaterialTypePage = () => {
                     disabled={loading}
                     sx={{
                       backgroundColor: '#DA291C',
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                      order: { xs: 1, sm: 2 },
                       '&:hover': {
                         backgroundColor: '#B71C1C',
                       },

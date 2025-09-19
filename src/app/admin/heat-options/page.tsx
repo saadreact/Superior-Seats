@@ -23,6 +23,10 @@ import {
   TableRow,
   TablePagination,
   Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -230,9 +234,14 @@ const HeatOptionsPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-        
-            {/* Search Bar positioned at top-left */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            gap: { xs: 2, sm: 3 }, 
+            flex: 1,
+            alignItems: { xs: 'stretch', sm: 'center' }
+          }}>
+            {/* Search Bar */}
             <TextField
               placeholder="Search heat options..."
               value={searchTerm}
@@ -243,10 +252,22 @@ const HeatOptionsPage = () => {
                     <SearchIcon />
                   </InputAdornment>
                 )}}
-              sx={{ maxWidth: 400 }}
+              sx={{ 
+                maxWidth: { xs: '100%', sm: 400 },
+                minWidth: { xs: '100%', sm: 250 }
+              }}
               size="small"
+              fullWidth={isMobile}
             />
+            
+            {/* Results count for mobile */}
+            {isMobile && heatoptionss.length > 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
+                {heatoptionss.length} option{heatoptionss.length !== 1 ? 's' : ''} found
+              </Typography>
+            )}
           </Box>
+          
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -254,13 +275,16 @@ const HeatOptionsPage = () => {
             className="gradient-style"
             sx={{ 
               alignSelf: { xs: 'stretch', sm: 'auto' },
+              minWidth: { xs: '100%', sm: 'auto' },
+              height: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
               boxShadow: 'none',
               '&:hover': {
                 boxShadow: 'none',
               }
             }}
           >
-            Add
+            {isMobile ? 'Add Heat Option' : 'Add'}
           </Button>
         </Box>
 
@@ -295,36 +319,20 @@ const HeatOptionsPage = () => {
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ overflow: 'hidden' }}>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created By</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {heatoptionss
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((heatOption) => (
-                    <TableRow 
-                      key={heatOption.id}
-                      sx={{ 
-                        '&:hover': { backgroundColor: 'action.hover' },
-                        transition: 'background-color 0.2s ease'
-                      }}
-                    >
-                      <TableCell>
+          <>
+            {/* Mobile Card View */}
+            {isMobile ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {heatoptionss
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((heatOption) => (
+                    <Paper key={heatOption.id} sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                        {/* Image */}
                         <Box sx={{ 
                           width: 60, 
                           height: 60, 
+                          flexShrink: 0,
                           position: 'relative',
                           display: 'flex',
                           alignItems: 'center',
@@ -340,14 +348,11 @@ const HeatOptionsPage = () => {
                                 height: '100%',
                                 objectFit: 'cover',
                                 borderRadius: 1,
-                                border: '1px solid #e0e0e0',
-                                maxWidth: 60,
-                                maxHeight: 60
+                                border: '1px solid #e0e0e0'
                               }}
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.style.display = 'none';
-                                // Show fallback when image fails to load
                                 const fallback = target.parentElement?.querySelector('.image-fallback');
                                 if (fallback) {
                                   (fallback as HTMLElement).style.display = 'flex';
@@ -356,7 +361,6 @@ const HeatOptionsPage = () => {
                             />
                           ) : null}
                           
-                          {/* Fallback for when image is missing or fails to load */}
                           <Box
                             className="image-fallback"
                             sx={{
@@ -378,161 +382,392 @@ const HeatOptionsPage = () => {
                             </Typography>
                           </Box>
                         </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {heatOption.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary"
-                          sx={{
-                            maxWidth: 300,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
+
+                        {/* Content */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, pr: 1 }}>
+                              {heatOption.name}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(heatOption)}
+                                title="Edit"
+                                sx={{ color: 'primary.main', p: 0.5 }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(heatOption)}
+                                title="Delete"
+                                color="error"
+                                sx={{ p: 0.5 }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                          
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{ mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                          >
+                            {heatOption.description || 'No description available'}
+                          </Typography>
+                          
+                          <Typography variant="body2" sx={{ fontWeight: 500, color: 'primary.main', mb: 1 }}>
+                            ${formatPrice(heatOption.price)}
+                          </Typography>
+                          
+                          
+                          {(() => {
+                            const calculatedTiers = getCalculatedPriceTiers(heatOption);
+                            if (calculatedTiers.length > 0) {
+                              const firstTier = calculatedTiers[0];
+                              const allTiersText = calculatedTiers.map(tier => 
+                                `${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`
+                              ).join('\n');
+                              
+                              return (
+                                <Box>
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                    {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                  </Typography>
+                                  <Tooltip 
+                                    title={
+                                      <Box sx={{ whiteSpace: 'pre-line', textAlign: 'left' }}>
+                                        {allTiersText}
+                                      </Box>
+                                    }
+                                    arrow
+                                    placement="top"
+                                  >
+                                    <Box sx={{ display: 'inline-block', cursor: 'pointer' }}>
+                                      <Chip
+                                        label={`${firstTier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(firstTier))}`}
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{ 
+                                          fontSize: '0.65rem',
+                                          height: 18,
+                                          borderColor: firstTier.is_overridden ? 'warning.main' : undefined,
+                                          color: firstTier.is_overridden ? 'warning.main' : undefined,
+                                          '& .MuiChip-label': {
+                                            px: 0.5
+                                          }
+                                        }}
+                                      />
+                                      {calculatedTiers.length > 1 && (
+                                        <Chip
+                                          label={`+${calculatedTiers.length - 1} more`}
+                                          size="small"
+                                          variant="outlined"
+                                          sx={{ 
+                                            fontSize: '0.65rem',
+                                            height: 18,
+                                            ml: 0.5,
+                                            '& .MuiChip-label': {
+                                              px: 0.5
+                                            }
+                                          }}
+                                        />
+                                      )}
+                                    </Box>
+                                  </Tooltip>
+                                </Box>
+                              );
+                            }
+                            return (
+                              <Typography variant="caption" color="text.secondary">
+                                No tiers
+                              </Typography>
+                            );
+                          })()}
+                          
+                        </Box>
+                      </Box>
+                    </Paper>
+                  ))}
+              </Box>
+            ) : (
+              /* Desktop Table View */
+              <Paper sx={{ overflow: 'hidden' }}>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {heatoptionss
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((heatOption) => (
+                        <TableRow 
+                          key={heatOption.id}
+                          sx={{ 
+                            '&:hover': { backgroundColor: 'action.hover' },
+                            transition: 'background-color 0.2s ease'
                           }}
                         >
-                          {heatOption.description || 'No description available'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500, color: 'primary.main' }}>
-                          ${formatPrice(heatOption.price)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {(() => {
-                          const calculatedTiers = getCalculatedPriceTiers(heatOption);
-                          if (calculatedTiers.length > 0) {
-                            return (
-                              <Box>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                  {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                          <TableCell>
+                            <Box sx={{ 
+                              width: 60, 
+                              height: 60, 
+                              position: 'relative',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              {getHeatOptionImage(heatOption) ? (
+                                <Box
+                                  component="img"
+                                  src={getHeatOptionImage(heatOption)!}
+                                  alt={heatOption.name}
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: 1,
+                                    border: '1px solid #e0e0e0',
+                                    maxWidth: 60,
+                                    maxHeight: 60
+                                  }}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const fallback = target.parentElement?.querySelector('.image-fallback');
+                                    if (fallback) {
+                                      (fallback as HTMLElement).style.display = 'flex';
+                                    }
+                                  }}
+                                />
+                              ) : null}
+                              
+                              <Box
+                                className="image-fallback"
+                                sx={{
+                                  width: '100%',
+                                  height: '100%',
+                                  bgcolor: 'grey.200',
+                                  display: getHeatOptionImage(heatOption) ? 'none' : 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderRadius: 1,
+                                  border: '1px solid #e0e0e0',
+                                  position: getHeatOptionImage(heatOption) ? 'absolute' : 'static',
+                                  top: 0,
+                                  left: 0
+                                }}
+                              >
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                  {getHeatOptionImage(heatOption) ? 'Error' : 'No Image'}
                                 </Typography>
-                                <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                                  {calculatedTiers.slice(0, 2).map((tier) => (
-                                    <Chip
-                                      key={tier.id}
-                                      label={`${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`}
-                                      size="small"
-                                      variant="outlined"
-                                      sx={{ 
-                                        fontSize: '0.7rem',
-                                        height: 20,
-                                        borderColor: tier.is_overridden ? 'warning.main' : undefined,
-                                        color: tier.is_overridden ? 'warning.main' : undefined,
-                                        '& .MuiChip-label': {
-                                          px: 0.5
-                                        }
-                                      }}
-                                    />
-                                  ))}
-                                  {calculatedTiers.length > 2 && (
-                                    <Chip
-                                      label={`+${calculatedTiers.length - 2} more`}
-                                      size="small"
-                                      variant="outlined"
-                                      sx={{ 
-                                        fontSize: '0.7rem',
-                                        height: 20,
-                                        '& .MuiChip-label': {
-                                          px: 0.5
-                                        }
-                                      }}
-                                    />
-                                  )}
-                                </Stack>
                               </Box>
-                            );
-                          }
-                          return (
-                            <Typography variant="body2" color="text.secondary">
-                              No tiers
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {heatOption.name}
                             </Typography>
-                          );
-                        })()}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {heatOption.creator?.username || 'Unknown'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(heatOption.created_at).toLocaleDateString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEdit(heatOption)}
-                            title="Edit"
-                            sx={{ color: 'primary.main' }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDelete(heatOption)}
-                            title="Delete"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            
-            {/* Pagination */}
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={heatoptionss.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
-                borderTop: 1,
-                borderColor: 'divider',
-                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  color: 'text.secondary',
-                  fontSize: '0.875rem'
-                }
-              }}
-            />
-          </Paper>
+                          </TableCell>
+                          <TableCell>
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{
+                                maxWidth: 300,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {heatOption.description || 'No description available'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 500, color: 'primary.main' }}>
+                              ${formatPrice(heatOption.price)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {(() => {
+                              const calculatedTiers = getCalculatedPriceTiers(heatOption);
+                              if (calculatedTiers.length > 0) {
+                                const firstTier = calculatedTiers[0];
+                                const allTiersText = calculatedTiers.map(tier => 
+                                  `${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`
+                                ).join('\n');
+                                
+                                return (
+                                  <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                      {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                    </Typography>
+                                    <Tooltip 
+                                      title={
+                                        <Box sx={{ whiteSpace: 'pre-line', textAlign: 'left' }}>
+                                          {allTiersText}
+                                        </Box>
+                                      }
+                                      arrow
+                                      placement="top"
+                                    >
+                                      <Box sx={{ display: 'inline-block', cursor: 'pointer' }}>
+                                        <Chip
+                                          label={`${firstTier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(firstTier))}`}
+                                          size="small"
+                                          variant="outlined"
+                                          sx={{ 
+                                            fontSize: '0.7rem',
+                                            height: 20,
+                                            borderColor: firstTier.is_overridden ? 'warning.main' : undefined,
+                                            color: firstTier.is_overridden ? 'warning.main' : undefined,
+                                            '& .MuiChip-label': {
+                                              px: 0.5
+                                            }
+                                          }}
+                                        />
+                                        {calculatedTiers.length > 1 && (
+                                          <Chip
+                                            label={`+${calculatedTiers.length - 1} more`}
+                                            size="small"
+                                            variant="outlined"
+                                            sx={{ 
+                                              fontSize: '0.7rem',
+                                              height: 20,
+                                              ml: 0.5,
+                                              '& .MuiChip-label': {
+                                                px: 0.5
+                                              }
+                                            }}
+                                          />
+                                        )}
+                                      </Box>
+                                    </Tooltip>
+                                  </Box>
+                                );
+                              }
+                              return (
+                                <Typography variant="body2" color="text.secondary">
+                                  No tiers
+                                </Typography>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(heatOption)}
+                                title="Edit"
+                                sx={{ color: 'primary.main' }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(heatOption)}
+                                title="Delete"
+                                color="error"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                
+                {/* Pagination */}
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={heatoptionss.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  sx={{
+                    borderTop: 1,
+                    borderColor: 'divider',
+                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                      color: 'text.secondary',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem'
+                    },
+                    '& .MuiTablePagination-toolbar': {
+                      flexWrap: isMobile ? 'wrap' : 'nowrap',
+                      gap: isMobile ? 1 : 0
+                    }
+                  }}
+                />
+              </Paper>
+            )}
+          </>
         )}
 
         {/* Delete Confirmation Dialog */}
         <Dialog
           open={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              mx: { xs: 2, sm: 'auto' },
+              width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+            }
+          }}
         >
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Confirm Delete
-            </Typography>
-            <Typography sx={{ mb: 3 }}>
+          <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+            Confirm Delete
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>
               Are you sure you want to delete &quot;{heatoptionsToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
+          </DialogContent>
+          <DialogActions>
+            <Stack 
+              direction={{ xs: 'column', sm: 'row' }} 
+              spacing={2} 
+              sx={{ 
+                width: '100%',
+                '& .MuiButton-root': {
+                  minHeight: { xs: 44, sm: 'auto' },
+                  fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                }
+              }}
+            >
+              <Button 
+                onClick={() => setIsDeleteDialogOpen(false)} 
+                disabled={deleting}
+                fullWidth={isMobile}
+                variant={isMobile ? 'outlined' : 'text'}
+              >
                 Cancel
               </Button>
-              <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
+              <Button 
+                onClick={confirmDelete} 
+                color="error" 
+                variant="contained" 
+                disabled={deleting}
+                fullWidth={isMobile}
+              >
                 {deleting ? 'Deleting...' : 'Delete'}
               </Button>
             </Stack>
-          </Box>
+          </DialogActions>
         </Dialog>
       </Box>
     </AdminLayout>

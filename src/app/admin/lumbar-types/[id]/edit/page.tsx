@@ -22,6 +22,8 @@ import {
   ListItemText,
   Chip,
   Divider,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -32,6 +34,8 @@ const EditLumbarTypePage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -302,7 +306,7 @@ const EditLumbarTypePage = () => {
     }
 
     if (formData.price <= 0) {
-      setError('In Shop Price must be greater than 0');
+      setError('In Store Price must be greater than 0');
       return;
     }
 
@@ -462,13 +466,13 @@ const EditLumbarTypePage = () => {
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="In Shop Price"
+                    label="In Store Price"
                     type="number"
                     value={formData.price}
                     onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
                     required
                     fullWidth
-                    placeholder="Enter in shop price"
+                    placeholder="Enter in Store price"
                     inputProps={{ min: 0, step: 0.01 }}
                   />
                 </Box>
@@ -682,6 +686,11 @@ const EditLumbarTypePage = () => {
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
+                    fullWidth={isMobile}
+                    sx={{
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                    }}
                   >
                     Cancel
                   </Button>
@@ -690,8 +699,11 @@ const EditLumbarTypePage = () => {
                     variant="contained"
                     startIcon={<SaveIcon />}
                     disabled={loading}
+                    fullWidth={isMobile}
                     sx={{
                       backgroundColor: '#DA291C',
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' },
                       '&:hover': {
                         backgroundColor: '#B71C1C',
                       },

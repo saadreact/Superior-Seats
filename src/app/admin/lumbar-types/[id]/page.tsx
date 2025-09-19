@@ -10,7 +10,9 @@ import {
   Alert,
   CircularProgress,
   Stack,
-  Divider} from '@mui/material';
+  Divider,
+  useTheme,
+  useMediaQuery} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { lumbarTypesService } from '@/services/lumbar-types';
@@ -45,6 +47,8 @@ const LumbarTypeDetailPage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -166,13 +170,18 @@ const LumbarTypeDetailPage = () => {
             variant="contained"
             startIcon={<EditIcon />}
             onClick={handleEdit}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' }
+            }}
           >
             Edit Lumbar Type
           </Button>
         </Box>
 
         {/* Content */}
-        <Paper sx={{ p: 4 }}>
+        <Paper sx={{ p: { xs: 2, sm: 4 } }}>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
             <Box sx={{ flex: 1 }}>
               <Stack spacing={3}>
@@ -201,7 +210,7 @@ const LumbarTypeDetailPage = () => {
                   <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        In Shop Price
+                        In Store Price
                       </Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
                         ${lumbartypes.price || 0}
@@ -266,7 +275,7 @@ const LumbarTypeDetailPage = () => {
             </Box>
 
             <Box sx={{ width: { xs: '100%', md: 300 } }}>
-              <Paper variant="outlined" sx={{ p: 3 }}>
+              <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   Information
                 </Typography>

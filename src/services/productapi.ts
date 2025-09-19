@@ -29,7 +29,7 @@ export interface ProductImage {
   alt_text: string | null;
   caption: string | null;
   sort_order: number;
-  is_primary: boolean;
+  set_primary: boolean;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -82,6 +82,7 @@ export interface Product {
   stock: number;
   images?: string[];
   is_active: boolean;
+  show_on_special_shop?: boolean;
   created_at: string;
   updated_at: string;
   vehicle_trim_id?: number | null;
@@ -120,9 +121,15 @@ export interface ProductData {
   price: number;
   stock: number;
   is_active: boolean;
+  show_on_special_shop?: boolean;
   category_id?: number;
   vehicle_trim_id?: number;
   images?: File[];
+  image_data?: Array<{
+    alt_text: string;
+    caption: string;
+    set_primary: boolean;
+  }>;
 
   variation_ids?: number[];
   seat_type_ids?: number[];
@@ -137,6 +144,7 @@ export interface ProductData {
   color_ids?: number[];
   
   // Price tiers fields
+  price_tier_ids?: number[]; // Alternative format: Simple array of price tier IDs
   price_tiers?: Array<{
     id: number;
     price_adjustment: number;
@@ -165,6 +173,19 @@ export interface ProductUpdateData extends Partial<ProductData> {
 // ============================================================================
 
 class ProductApi {
+  private baseUrl: string;
+
+  constructor() {
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://superiorseats.ali-khalid.com/api';
+  }
+
+  private getHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+  }
+
   // ============================================================================
   // PRODUCT CRUD OPERATIONS
   // ============================================================================
@@ -259,6 +280,9 @@ class ProductApi {
       formData.append("price", data.price.toString());
       formData.append("stock", data.stock.toString());
       formData.append("is_active", data.is_active ? "1" : "0");
+      if (data.show_on_special_shop !== undefined) {
+        formData.append("show_on_special_shop", data.show_on_special_shop ? "1" : "0");
+      }
 
       if (data.category_id) {
         formData.append("category_id", data.category_id.toString());
@@ -327,43 +351,109 @@ class ProductApi {
         });
       }
 
-      // Handle price tiers - new schema
+      // Handle price tiers - backend supports both formats
       if (data.price_tiers && data.price_tiers.length > 0) {
+        // Preferred format: Array of price tiers with their price adjustments
         data.price_tiers.forEach((tier, index) => {
           formData.append(`price_tiers[${index}][id]`, tier.id.toString());
           formData.append(`price_tiers[${index}][price_adjustment]`, tier.price_adjustment.toString());
           formData.append(`price_tiers[${index}][is_active]`, tier.is_active ? "1" : "0");
         });
-      }
-
-      // Handle images (using product_images field name from schema)
-      if (data.images && data.images.length > 0) {
-        data.images.forEach((file, index) => {
-          // Send each image as a separate 'product_images' field (matching schema)
-          formData.append("images[]", file);
-
-          // Add image metadata - first image is primary
-          const isPrimary = index === 0;
-          formData.append(
-            `image_data[${index}][alt_text]`,
-            `Product image ${index + 1}`
-          );
-          formData.append(
-            `image_data[${index}][caption]`,
-            `Product image ${index + 1}`
-          );
-          formData.append(
-            `image_data[${index}][set_primary]`,
-            isPrimary ? "1" : "0"
-          );
+      } else if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+        // Alternative format: Simple array of price tier IDs (for backward compatibility)
+        data.price_tier_ids.forEach((id) => {
+          formData.append("price_tier_ids[]", id.toString());
         });
       }
 
+      // Handle images according to backend API specification
+      if (data.images && data.images.length > 0) {
+        console.log("🔄 Processing images for create:", data.images.length, "files");
+        
+        // Send images as array of files (backend expects array<string> for image files)
+        data.images.forEach((file, index) => {
+          console.log(`🔄 Adding image ${index}:`, {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            isFile: file instanceof File
+          });
+          
+          // Backend expects images as array of files
+          formData.append('images[]', file);
+        });
+        
+        // Add image metadata using nested object notation (matching backend expectation)
+        if (data.image_data && data.image_data.length > 0) {
+          data.image_data.forEach((imageMeta, index) => {
+            formData.append(`image_data[${index}].alt_text`, imageMeta.alt_text || "");
+            formData.append(`image_data[${index}].caption`, imageMeta.caption || "");
+            formData.append(`image_data[${index}].set_primary`, imageMeta.set_primary ? "1" : "0");
+            console.log(`🔄 Added image_data[${index}].set_primary = ${imageMeta.set_primary ? "1" : "0"}`);
+          });
+          console.log("🔄 Image metadata added to FormData");
+        } else {
+          // Default image metadata if not provided
+          data.images.forEach((_, index) => {
+            formData.append(`image_data[${index}].alt_text`, `Product image ${index + 1}`);
+            formData.append(`image_data[${index}].caption`, `Product image ${index + 1}`);
+            formData.append(`image_data[${index}].set_primary`, index === 0 ? "1" : "0");
+            console.log(`🔄 Added image_data[${index}].set_primary = ${index === 0 ? "1" : "0"}`);
+          });
+          console.log("🔄 Default image metadata added to FormData");
+        }
+        
+        console.log("🔄 Images and metadata added to FormData");
+      } else {
+        console.log("🔄 No images to process for create");
+      }
+
+      // Debug: Log FormData contents
+      console.log("🔄 Creating product with FormData:");
+      console.log("🔄 FormData entries count:", Array.from(formData.entries()).length);
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
+      
+      // Debug: Check if images are actually in FormData
+      const imageEntries = Array.from(formData.entries()).filter(([key, value]) => 
+        key.includes('image') && value instanceof File
+      );
+      console.log("🔄 Image entries in FormData:", imageEntries.length);
+      imageEntries.forEach(([key, value]) => {
+        if (value instanceof File) {
+          console.log(`  Image entry: ${key} = File(${value.name}, ${value.size} bytes)`);
+        } else {
+          console.log(`  Image entry: ${key} = ${value}`);
+        }
+      });
+      
+      // Debug: Check FormData type
+      console.log("🔄 FormData constructor:", formData.constructor.name);
+      console.log("🔄 FormData is FormData:", formData instanceof FormData);
+      console.log("🔄 API endpoint:", "/products");
+      console.log("🔄 Request method: POST");
+
       const response = await api.post("/products", formData, {
         headers: {
-          // Don't set Content-Type for FormData - let browser set it with boundary
+          // Completely remove Content-Type to let browser set multipart boundary
           "Content-Type": undefined,
         },
+        // Ensure FormData is not transformed
+        transformRequest: [(data) => {
+          if (data instanceof FormData) {
+            console.log("🔄 FormData being sent directly to API");
+            return data;
+          }
+          console.log("🔄 Non-FormData being sent:", typeof data);
+          return data;
+        }],
+        // Add timeout and other options
+        timeout: 30000, // 30 seconds timeout for file uploads
       });
 
       if (response.data && response.data.data) {
@@ -376,6 +466,10 @@ class ProductApi {
       console.error("Error creating product:", error);
       console.error("Error response:", error.response?.data);
       console.error("Error status:", error.response?.status);
+      console.error("Error config:", error.config);
+      console.error("Request headers:", error.config?.headers);
+      console.error("Request data type:", typeof error.config?.data);
+      console.error("Request data is FormData:", error.config?.data instanceof FormData);
 
       if (
         error.response?.data?.message?.includes("Duplicate entry") ||
@@ -419,6 +513,9 @@ class ProductApi {
         formData.append("stock", data.stock.toString());
       if (data.is_active !== undefined)
         formData.append("is_active", data.is_active ? "1" : "0");
+      if (data.show_on_special_shop !== undefined) {
+        formData.append("show_on_special_shop", data.show_on_special_shop ? "1" : "0");
+      }
 
       if (data.category_id !== undefined) {
         formData.append("category_id", data.category_id.toString());
@@ -487,30 +584,28 @@ class ProductApi {
         });
       }
 
-      // Handle price tiers - new schema
+      // Handle price tiers - backend supports both formats
       if (data.price_tiers && data.price_tiers.length > 0) {
+        // Preferred format: Array of price tiers with their price adjustments
         data.price_tiers.forEach((tier, index) => {
           formData.append(`price_tiers[${index}][id]`, tier.id.toString());
           formData.append(`price_tiers[${index}][price_adjustment]`, tier.price_adjustment.toString());
           formData.append(`price_tiers[${index}][is_active]`, tier.is_active ? "1" : "0");
         });
+      } else if (data.price_tier_ids && data.price_tier_ids.length > 0) {
+        // Alternative format: Simple array of price tier IDs (for backward compatibility)
+        data.price_tier_ids.forEach((id) => {
+          formData.append("price_tier_ids[]", id.toString());
+        });
       }
 
-      // Add image_data field if provided (as array of metadata)
+      // Add image metadata using nested object notation (matching backend expectation)
       if (data.image_data && Array.isArray(data.image_data)) {
         data.image_data.forEach((imageMeta, index) => {
-          formData.append(
-            `image_data[${index}][alt_text]`,
-            imageMeta.alt_text || ""
-          );
-          formData.append(
-            `image_data[${index}][caption]`,
-            imageMeta.caption || ""
-          );
-          formData.append(
-            `image_data[${index}][set_primary]`,
-            imageMeta.set_primary?.toString() || "0"
-          );
+          formData.append(`image_data[${index}].alt_text`, imageMeta.alt_text || "");
+          formData.append(`image_data[${index}].caption`, imageMeta.caption || "");
+          formData.append(`image_data[${index}].set_primary`, imageMeta.set_primary ? "1" : "0");
+          console.log(`🔄 Update: Added image_data[${index}].set_primary = ${imageMeta.set_primary ? "1" : "0"}`);
         });
       }
 
@@ -528,23 +623,80 @@ class ProductApi {
         });
       }
 
-      // Handle new images
+      // Handle new images according to backend API specification
       if (data.images && data.images.length > 0) {
-        data.images.forEach((file) => {
+        console.log("🔄 Processing images for update:", data.images.length, "files");
+        data.images.forEach((file, index) => {
           if (file instanceof File) {
-            formData.append("product_images", file);
+            console.log(`🔄 Adding image ${index}:`, {
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              isFile: file instanceof File
+            });
+            
+            // Backend expects images as array of files
+            formData.append('images[]', file);
+            
+            console.log(`🔄 Added image ${index} to FormData`);
           }
         });
+        
+        // Add image metadata for new images using nested object notation
+        if (data.image_data && data.image_data.length > 0) {
+          data.image_data.forEach((imageMeta, index) => {
+            formData.append(`image_data[${index}].alt_text`, imageMeta.alt_text || "");
+            formData.append(`image_data[${index}].caption`, imageMeta.caption || "");
+            formData.append(`image_data[${index}].set_primary`, imageMeta.set_primary ? "1" : "0");
+            console.log(`🔄 New images: Added image_data[${index}].set_primary = ${imageMeta.set_primary ? "1" : "0"}`);
+          });
+          console.log("🔄 New image metadata added to FormData");
+        } else {
+          // Default image metadata for new images if not provided
+          data.images.forEach((_, index) => {
+            formData.append(`image_data[${index}].alt_text`, `Product image ${index + 1}`);
+            formData.append(`image_data[${index}].caption`, `Product image ${index + 1}`);
+            formData.append(`image_data[${index}].set_primary`, index === 0 ? "1" : "0");
+            console.log(`🔄 New images default: Added image_data[${index}].set_primary = ${index === 0 ? "1" : "0"}`);
+          });
+          console.log("🔄 Default image metadata added for new images");
+        }
+        
+        console.log("🔄 New images and metadata added to FormData");
+      } else {
+        console.log("🔄 No new images to process for update");
       }
 
       // Use POST with _method: PUT for FormData (Laravel convention)
       formData.append("_method", "PUT");
 
+      // Debug: Log FormData contents
+      console.log(`🔄 Updating product ${id} with FormData:`);
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
+      
+      // Debug: Check FormData type
+      console.log("🔄 FormData constructor:", formData.constructor.name);
+      console.log("🔄 FormData is FormData:", formData instanceof FormData);
+
       const response = await api.post(`/products/${id}`, formData, {
         headers: {
-          // Don't set Content-Type for FormData - let browser set it with boundary
+          // Explicitly remove Content-Type to let browser set multipart boundary
           "Content-Type": undefined,
         },
+        // Override the default axios configuration for this request
+        transformRequest: [(data) => {
+          // If data is FormData, return it as-is without transformation
+          if (data instanceof FormData) {
+            return data;
+          }
+          return data;
+        }],
       });
 
       if (response.data && response.data.data) {
@@ -557,6 +709,10 @@ class ProductApi {
       console.error("Error updating product:", error);
       console.error("Error response:", error.response?.data);
       console.error("Error status:", error.response?.status);
+      console.error("Error config:", error.config);
+      console.error("Request headers:", error.config?.headers);
+      console.error("Request data type:", typeof error.config?.data);
+      console.error("Request data is FormData:", error.config?.data instanceof FormData);
 
       if (error.response?.status === 404) {
         throw new Error("Product not found");
@@ -948,6 +1104,106 @@ class ProductApi {
       errors,
     };
   }
+
+  // ============================================================================
+  // VEHICLE-RELATED METHODS
+  // ============================================================================
+
+  /**
+   * Get all vehicle makes
+   */
+  async getVehicleMakes(): Promise<any[]> {
+    try {
+      console.log('🚗 Fetching vehicle makes...');
+      const response = await fetch(`${this.baseUrl}/vehicle-makes`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Vehicle makes fetched successfully:', data);
+      return data.data || data;
+    } catch (error) {
+      console.error('❌ Error fetching vehicle makes:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get vehicle models by make ID
+   */
+  async getVehicleModels(makeId: number): Promise<any[]> {
+    try {
+      console.log(`🚗 Fetching vehicle models for make ID: ${makeId}...`);
+      const response = await fetch(`${this.baseUrl}/vehicle-makes/${makeId}/models`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Vehicle models fetched successfully:', data);
+      return data.data || data;
+    } catch (error) {
+      console.error('❌ Error fetching vehicle models:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get vehicle trims by model ID
+   */
+  async getVehicleTrims(modelId: number): Promise<any[]> {
+    try {
+      console.log(`🚗 Fetching vehicle trims for model ID: ${modelId}...`);
+      const response = await fetch(`${this.baseUrl}/vehicle-models/${modelId}/trims`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Vehicle trims fetched successfully:', data);
+      return data.data || data;
+    } catch (error) {
+      console.error('❌ Error fetching vehicle trims:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get vehicle trim by ID
+   */
+  async getVehicleTrimById(trimId: number): Promise<any> {
+    try {
+      console.log(`🚗 Fetching vehicle trim by ID: ${trimId}...`);
+      const response = await fetch(`${this.baseUrl}/vehicle-trims/${trimId}`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Vehicle trim fetched successfully:', data);
+      return data.data || data;
+    } catch (error) {
+      console.error('❌ Error fetching vehicle trim:', error);
+      throw error;
+    }
+  }
 }
 
 // ============================================================================
@@ -956,3 +1212,4 @@ class ProductApi {
 
 export const productApi = new ProductApi();
 export default productApi;
+
