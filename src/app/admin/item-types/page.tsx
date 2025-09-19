@@ -148,8 +148,14 @@ const ItemTypesPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-            {/* Search Bar positioned at top-left */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            gap: { xs: 2, sm: 3 }, 
+            flex: 1,
+            alignItems: { xs: 'stretch', sm: 'center' }
+          }}>
+            {/* Search Bar */}
             <TextField
               placeholder="Search item types..."
               value={searchTerm}
@@ -160,10 +166,22 @@ const ItemTypesPage = () => {
                     <SearchIcon />
                   </InputAdornment>
                 )}}
-              sx={{ maxWidth: 400 }}
+              sx={{ 
+                maxWidth: { xs: '100%', sm: 400 },
+                minWidth: { xs: '100%', sm: 250 }
+              }}
               size="small"
+              fullWidth={isMobile}
             />
+            
+            {/* Results count for mobile */}
+            {isMobile && itemtypess.length > 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
+                {itemtypess.length} item type{itemtypess.length !== 1 ? 's' : ''} found
+              </Typography>
+            )}
           </Box>
+          
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -171,13 +189,16 @@ const ItemTypesPage = () => {
             className="gradient-style"
             sx={{ 
               alignSelf: { xs: 'stretch', sm: 'auto' },
+              minWidth: { xs: '100%', sm: 'auto' },
+              height: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
               boxShadow: 'none',
               '&:hover': {
                 boxShadow: 'none',
               }
             }}
           >
-            Add
+            {isMobile ? 'Add Item Type' : 'Add'}
           </Button>
         </Box>
 
@@ -218,90 +239,137 @@ const ItemTypesPage = () => {
             <CircularProgress />
           </Box>
         ) : itemtypess.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No item types found
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : `Click "Add Item Type" to create your first item type.`}
+              {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Item Type" to create your first item type.'}
             </Typography>
           </Paper>
         ) : (
-          <Paper sx={{ overflow: 'hidden' }}>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {itemtypess
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((itemtypes) => (
-                    <TableRow 
-                      key={itemtypes.id}
-                      sx={{ 
-                        '&:hover': { backgroundColor: 'action.hover' },
-                        transition: 'background-color 0.2s ease'
-                      }}
-                    >
-                      <TableCell>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {itemtypes.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary"
-                          sx={{
-                            maxWidth: 300,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
+          <>
+            {/* Mobile Card View */}
+            {isMobile ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {itemtypess
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((itemtypes) => (
+                    <Paper key={itemtypes.id} sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                        {/* Content */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, pr: 1 }}>
+                              {itemtypes.name}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(itemtypes)}
+                                title="Edit"
+                                sx={{ color: 'primary.main', p: 0.5 }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(itemtypes)}
+                                title="Delete"
+                                color="error"
+                                sx={{ p: 0.5 }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                          
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{ mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                          >
+                            {itemtypes.description || 'No description available'}
+                          </Typography>
+                          
+                        </Box>
+                      </Box>
+                    </Paper>
+                  ))}
+              </Box>
+            ) : (
+              /* Desktop Table View */
+              <Paper sx={{ overflow: 'hidden' }}>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {itemtypess
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((itemtypes) => (
+                        <TableRow 
+                          key={itemtypes.id}
+                          sx={{ 
+                            '&:hover': { backgroundColor: 'action.hover' },
+                            transition: 'background-color 0.2s ease'
                           }}
                         >
-                          {itemtypes.description || 'No description available'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(itemtypes.created_at).toLocaleDateString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEdit(itemtypes)}
-                            title="Edit"
-                            sx={{ color: 'primary.main' }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDelete(itemtypes)}
-                            title="Delete"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                          <TableCell>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {itemtypes.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{
+                                maxWidth: 300,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {itemtypes.description || 'No description available'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(itemtypes)}
+                                title="Edit"
+                                sx={{ color: 'primary.main' }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(itemtypes)}
+                                title="Delete"
+                                color="error"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Paper>
+            )}
             
             {/* Pagination */}
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
               component="div"
               count={itemtypess.length}
               rowsPerPage={rowsPerPage}
@@ -313,30 +381,63 @@ const ItemTypesPage = () => {
                 borderColor: 'divider',
                 '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                   color: 'text.secondary',
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
+                },
+                '& .MuiTablePagination-toolbar': {
+                  flexWrap: isMobile ? 'wrap' : 'nowrap',
+                  gap: isMobile ? 1 : 0
                 }
               }}
             />
-          </Paper>
+          </>
         )}
 
         {/* Delete Confirmation Dialog */}
         <Dialog
           open={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              mx: { xs: 2, sm: 'auto' },
+              width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+            }
+          }}
         >
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Confirm Delete
             </Typography>
             <Typography sx={{ mb: 3 }}>
               Are you sure you want to delete &quot;{itemtypesToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
+            <Stack 
+              direction={{ xs: 'column', sm: 'row' }} 
+              spacing={2} 
+              justifyContent="flex-end"
+              sx={{ 
+                '& .MuiButton-root': {
+                  minHeight: { xs: 44, sm: 'auto' },
+                  fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                }
+              }}
+            >
+              <Button 
+                onClick={() => setIsDeleteDialogOpen(false)} 
+                disabled={deleting}
+                fullWidth={isMobile}
+                variant={isMobile ? 'outlined' : 'text'}
+              >
                 Cancel
               </Button>
-              <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
+              <Button 
+                onClick={confirmDelete} 
+                color="error" 
+                variant="contained" 
+                disabled={deleting}
+                fullWidth={isMobile}
+              >
                 {deleting ? 'Deleting...' : 'Delete'}
               </Button>
             </Stack>

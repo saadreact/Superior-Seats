@@ -9,7 +9,9 @@ import {
   Alert, 
   FormControlLabel, 
   Switch,
-  Paper
+  Paper,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -26,6 +28,9 @@ interface EditCustomerPageProps {
 
 const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [customer, setCustomer] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [alert, setAlert] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -79,11 +84,20 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
         />
       }
       label={
-        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+        <Typography variant="body1" sx={{ 
+          fontWeight: 500,
+          fontSize: { xs: '1rem', sm: '0.875rem' }
+        }}>
           {isActive ? 'Active' : 'Inactive'}
         </Typography>
       }
       labelPlacement="start"
+      sx={{ 
+        '& .MuiFormControlLabel-label': {
+          fontSize: { xs: '1rem', sm: '0.875rem' },
+          fontWeight: 500
+        }
+      }}
     />
   );
 

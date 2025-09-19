@@ -11,13 +11,18 @@ import {
   Alert,
   Stack,
   CircularProgress,
-  Divider} from '@mui/material';
+  Divider,
+  useTheme,
+  useMediaQuery} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
 
 const CreateItemTypePage = () => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -136,6 +141,11 @@ const CreateItemTypePage = () => {
                   variant="outlined"
                   onClick={handleBack}
                   disabled={loading}
+                  fullWidth={isMobile}
+                  sx={{
+                    minHeight: { xs: 44, sm: 'auto' },
+                    fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                  }}
                 >
                   Cancel
                 </Button>
@@ -144,8 +154,11 @@ const CreateItemTypePage = () => {
                   variant="contained"
                   startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
                   disabled={loading}
+                  fullWidth={isMobile}
                   sx={{
                     backgroundColor: '#DA291C',
+                    minHeight: { xs: 44, sm: 'auto' },
+                    fontSize: { xs: '0.95rem', sm: '0.875rem' },
                     '&:hover': {
                       backgroundColor: '#B71C1C',
                     },

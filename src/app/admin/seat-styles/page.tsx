@@ -233,7 +233,6 @@ const SeatStylesPage = () => {
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -265,11 +264,6 @@ const SeatStylesPage = () => {
                           }}
                         >
                           {seatStyle.description || 'No description available'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(seatStyle.created_at).toLocaleDateString()}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">

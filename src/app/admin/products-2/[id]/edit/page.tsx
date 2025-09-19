@@ -43,6 +43,7 @@ interface ProductPage2Form {
   basePrice: number;
   stock: number;
   images: File[];
+  showOnSpecialShop: boolean;
   
   // Vehicle Information Fields
   vehicleMake: string;
@@ -107,6 +108,7 @@ const EditProduct2Page = () => {
     basePrice: 0,
     stock: 0,
     images: [],
+    showOnSpecialShop: false,
     vehicleMake: '',
     vehicleModel: '',
     vehicleTrim: '',
@@ -347,6 +349,7 @@ const EditProduct2Page = () => {
           basePrice: parseFloat(productRes.price) || 0,
           stock: productRes.stock || 0,
           images: [], // Start with empty array for new file uploads
+          showOnSpecialShop: (productRes as any).show_on_special_shop ?? false,
           vehicleMake: '', // Will be set after loading vehicle data
           vehicleModel: '', // Will be set after loading vehicle data  
           vehicleTrim: productRes.vehicle_trim?.id?.toString() || '',
@@ -889,6 +892,7 @@ const EditProduct2Page = () => {
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
+        show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Simple File array like create page
         
@@ -1103,6 +1107,25 @@ const EditProduct2Page = () => {
                       margin: 0
                     }
                   }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.showOnSpecialShop}
+                          onChange={handleSwitchChange('showOnSpecialShop')}
+                          color="primary"
+                        />
+                      }
+                      label="Shop Special"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
                     <FormControlLabel
                       control={
                         <Switch

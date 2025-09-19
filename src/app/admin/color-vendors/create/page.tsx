@@ -14,6 +14,8 @@ import {
   Stack,
   CircularProgress,
   Divider,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -21,6 +23,9 @@ import { apiService } from '@/utils/api';
 
 const CreateColorVendorPage = () => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -115,8 +120,19 @@ const CreateColorVendorPage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Basic Information */}
               <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  mb: 2,
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  gap: { xs: 2, sm: 0 }
+                }}>
+                  <Typography variant="h5" sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Basic Information
                   </Typography>
                   
@@ -130,7 +146,10 @@ const CreateColorVendorPage = () => {
                       />
                     }
                     label={
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body1" sx={{ 
+                        fontWeight: 500,
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }}>
                         {formData.is_active ? 'Active' : 'Inactive'}
                       </Typography>
                     }
@@ -139,7 +158,7 @@ const CreateColorVendorPage = () => {
                       gap: 1,
                       margin: 0,
                       '& .MuiFormControlLabel-label': {
-                        fontSize: '0.875rem',
+                        fontSize: { xs: '1rem', sm: '0.875rem' },
                         fontWeight: 500
                       }
                     }}
@@ -154,7 +173,15 @@ const CreateColorVendorPage = () => {
                   required
                   fullWidth
                   placeholder="Enter color vendor name"
-                  sx={{ mb: 3 }}
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
 
                 <TextField
@@ -164,7 +191,15 @@ const CreateColorVendorPage = () => {
                   required
                   fullWidth
                   placeholder="Enter vendor code (e.g., SW001)"
-                  sx={{ mb: 3 }}
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
 
                 <TextField
@@ -175,12 +210,25 @@ const CreateColorVendorPage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
               </Box>
 
               {/* Contact Information */}
               <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                <Typography variant="h5" gutterBottom sx={{ 
+                  color: 'text.primary', 
+                  fontWeight: 700, 
+                  mb: 2,
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                }}>
                   Contact Information
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
@@ -191,10 +239,23 @@ const CreateColorVendorPage = () => {
                   onChange={(e) => handleInputChange('website', e.target.value)}
                   fullWidth
                   placeholder="https://www.example.com"
-                  sx={{ mb: 3 }}
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
 
-                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 2, 
+                  mb: 3,
+                  flexDirection: { xs: 'column', sm: 'row' }
+                }}>
                   <TextField
                     label="Contact Email"
                     type="email"
@@ -202,6 +263,14 @@ const CreateColorVendorPage = () => {
                     onChange={(e) => handleInputChange('contact_email', e.target.value)}
                     fullWidth
                     placeholder="contact@example.com"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }
+                    }}
                   />
 
                   <TextField
@@ -210,6 +279,14 @@ const CreateColorVendorPage = () => {
                     onChange={(e) => handleInputChange('contact_phone', e.target.value)}
                     fullWidth
                     placeholder="+1-800-123-4567"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }
+                    }}
                   />
                 </Box>
 
@@ -221,6 +298,14 @@ const CreateColorVendorPage = () => {
                   multiline
                   rows={2}
                   placeholder="Enter full address"
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
               </Box>
 
@@ -235,6 +320,11 @@ const CreateColorVendorPage = () => {
                   variant="outlined"
                   onClick={handleBack}
                   disabled={loading}
+                  sx={{
+                    minHeight: { xs: 44, sm: 'auto' },
+                    fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                    order: { xs: 2, sm: 1 }
+                  }}
                 >
                   Cancel
                 </Button>
@@ -245,6 +335,9 @@ const CreateColorVendorPage = () => {
                   disabled={loading}
                   sx={{
                     backgroundColor: '#DA291C',
+                    minHeight: { xs: 44, sm: 'auto' },
+                    fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                    order: { xs: 1, sm: 2 },
                     '&:hover': {
                       backgroundColor: '#B71C1C',
                     },

@@ -12,7 +12,9 @@ import {
   Stack,
   Divider,
   Chip,
-  Grid
+  Grid,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -43,6 +45,8 @@ const ReclineTypeDetailsPage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [reclineType, setReclineType] = useState<ReclineType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -137,13 +141,18 @@ const ReclineTypeDetailsPage = () => {
             variant="contained"
             startIcon={<EditIcon />}
             onClick={handleEdit}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' }
+            }}
           >
             Edit
           </Button>
         </Box>
 
         {/* Content */}
-        <Paper sx={{ p: 4 }}>
+        <Paper sx={{ p: { xs: 2, sm: 4 } }}>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
             <Box sx={{ flex: 1 }}>
               <Stack spacing={3}>
@@ -172,7 +181,7 @@ const ReclineTypeDetailsPage = () => {
                   <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        In Shop Price
+                        In Store Price
                       </Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
                         ${VariantsCalculation.formatPrice(reclineType.price)}
@@ -274,7 +283,7 @@ const ReclineTypeDetailsPage = () => {
             </Box>
 
             <Box sx={{ width: { xs: '100%', md: 300 } }}>
-              <Paper variant="outlined" sx={{ p: 3 }}>
+              <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   Information
                 </Typography>

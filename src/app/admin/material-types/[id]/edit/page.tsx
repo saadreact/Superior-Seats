@@ -21,6 +21,8 @@ import {
   Chip,
   Divider,
   FormControlLabel,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -40,6 +42,8 @@ const EditMaterialTypePage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -341,7 +345,7 @@ const EditMaterialTypePage = () => {
     }
 
     if (formData.price <= 0) {
-      setError('In Shop Price must be greater than 0');
+      setError('In Store Price must be greater than 0');
       return;
     }
 
@@ -466,7 +470,12 @@ const EditMaterialTypePage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Basic Information */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Basic Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
@@ -478,7 +487,15 @@ const EditMaterialTypePage = () => {
                   required
                   fullWidth
                   placeholder="Enter material type name"
-                  sx={{ mb: 3 }}
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
 
                 <TextField
@@ -489,19 +506,32 @@ const EditMaterialTypePage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
                 />
                 </Box>
 
                 {/* Pricing Information */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Pricing Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="In Shop Price"
+                    label="In Store Price"
                     type="number"
                     value={formData.price === 0 ? '0' : formData.price.toString()}
                     onChange={(e) => {
@@ -515,11 +545,19 @@ const EditMaterialTypePage = () => {
                     }}
                     required
                     fullWidth
-                    placeholder="Enter in shop price"
+                    placeholder="Enter in Store price"
                     inputProps={{ min: 0, step: 0.01 }}
                     onFocus={(e) => {
                       if (e.target.value === '0') {
                         e.target.select();
+                      }
+                    }}
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
                       }
                     }}
                   />
@@ -528,7 +566,12 @@ const EditMaterialTypePage = () => {
 
                 {/* Image Management */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Image
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
@@ -588,7 +631,12 @@ const EditMaterialTypePage = () => {
                     <Button
                       variant="outlined"
                       component="span"
-                      sx={{ mb: 2 }}
+                      sx={{ 
+                        mb: 2,
+                        minHeight: { xs: 44, sm: 'auto' },
+                        fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                        width: { xs: '100%', sm: 'auto' }
+                      }}
                     >
                       {formData.image ? `Change Image: ${formData.image.name}` : 'Upload New Image'}
                     </Button>
@@ -617,12 +665,22 @@ const EditMaterialTypePage = () => {
 
                 {/* Price Tiers */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
                     Price Tiers
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 2,
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: { xs: 'flex-start', sm: 'center' }
+                }}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -631,14 +689,32 @@ const EditMaterialTypePage = () => {
                         color="primary"
                       />
                     }
-                    label="Enable Price Tiers"
+                    label={
+                      <Typography variant="body1" sx={{ 
+                        fontWeight: 500,
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }}>
+                        Enable Price Tiers
+                      </Typography>
+                    }
+                    sx={{ 
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' },
+                        fontWeight: 500
+                      }
+                    }}
                   />
                   {enablePriceTiers && (
                     <Button
                       variant="outlined"
                       size="small"
                       onClick={handleResetPriceTiers}
-                      sx={{ ml: 1 }}
+                      sx={{ 
+                        ml: { xs: 0, sm: 1 },
+                        mt: { xs: 1, sm: 0 },
+                        minHeight: { xs: 36, sm: 'auto' },
+                        fontSize: { xs: '0.9rem', sm: '0.75rem' }
+                      }}
                     >
                       Reset
                     </Button>
@@ -647,34 +723,62 @@ const EditMaterialTypePage = () => {
 
                 {enablePriceTiers && calculatedPriceTiers.length > 0 && (
                   <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+                    <Typography variant="subtitle1" sx={{ 
+                      fontWeight: 600, 
+                      mb: 2, 
+                      color: 'text.primary',
+                      fontSize: { xs: '1.1rem', sm: '1rem' }
+                    }}>
                       Price Tiers
                     </Typography>
-                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                    <Typography variant="body2" sx={{ 
+                      mb: 2, 
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.9rem', sm: '0.875rem' }
+                    }}>
                       Base price: ${VariantsCalculation.formatPrice(formData.price)}
                     </Typography>
                     
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {calculatedPriceTiers.map((tier) => (
-                        <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                        <Paper key={tier.id} variant="outlined" sx={{ 
+                          p: { xs: 2, sm: 2 }
+                        }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'flex-start', 
+                            gap: 2,
+                            flexDirection: { xs: 'column', sm: 'row' }
+                          }}>
                             <Box sx={{ flex: 1 }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                              <Typography variant="subtitle2" sx={{ 
+                                fontWeight: 600,
+                                fontSize: { xs: '1rem', sm: '0.875rem' }
+                              }}>
                                 {tier.display_name}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ 
+                                mb: 1,
+                                fontSize: { xs: '0.9rem', sm: '0.75rem' }
+                              }}>
                                 {parseFloat(tier.discount_off_retail_price) > 0 
                                   ? `${tier.discount_off_retail_price}% discount` 
                                   : 'No discount'
                                 }
                               </Typography>
                               {tier.is_overridden && (
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2" color="text.secondary" sx={{
+                                  fontSize: { xs: '0.9rem', sm: '0.75rem' }
+                                }}>
                                   Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
                                 </Typography>
                               )}
                             </Box>
-                            <Box sx={{ minWidth: 120 }}>
+                            <Box sx={{ 
+                              minWidth: { xs: '100%', sm: 120 },
+                              width: { xs: '100%', sm: 'auto' }
+                            }}>
                               <TextField
                                 label="Price"
                                 type="number"
@@ -685,17 +789,28 @@ const EditMaterialTypePage = () => {
                                   handlePriceOverrideChange(tier.id, value);
                                 }}
                                 inputProps={{ min: 0, step: 0.01 }}
-                                sx={{ mb: 1 }}
+                                sx={{ 
+                                  mb: 1,
+                                  '& .MuiInputBase-input': {
+                                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                                  },
+                                  '& .MuiInputLabel-root': {
+                                    fontSize: { xs: '1rem', sm: '0.875rem' }
+                                  }
+                                }}
                               />
                               <Box sx={{ textAlign: 'center' }}>
                                 <Typography variant="h6" sx={{ 
                                   fontWeight: 600, 
-                                  color: tier.is_overridden ? 'warning.main' : 'primary.main'
+                                  color: tier.is_overridden ? 'warning.main' : 'primary.main',
+                                  fontSize: { xs: '1.2rem', sm: '1.125rem' }
                                 }}>
                                   ${VariantsCalculation.formatPrice(tier.is_overridden ? tier.override_price : tier.calculated_price)}
                                 </Typography>
                                 {tier.is_overridden && (
-                                  <Typography variant="caption" color="warning.main">
+                                  <Typography variant="caption" color="warning.main" sx={{
+                                    fontSize: { xs: '0.8rem', sm: '0.75rem' }
+                                  }}>
                                     Overridden
                                   </Typography>
                                 )}
@@ -720,6 +835,11 @@ const EditMaterialTypePage = () => {
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
+                    sx={{
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                      order: { xs: 2, sm: 1 }
+                    }}
                   >
                     Cancel
                   </Button>
@@ -733,6 +853,9 @@ const EditMaterialTypePage = () => {
                       '&:hover': {
                         backgroundColor: '#B71C1C',
                       },
+                      minHeight: { xs: 44, sm: 'auto' },
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' },
+                      order: { xs: 1, sm: 2 }
                     }}
                   >
                     {loading ? 'Updating...' : 'Update Material Type'}
