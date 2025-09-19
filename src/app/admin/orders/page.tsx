@@ -60,6 +60,8 @@ import {
   Payment as PaymentIcon,
   MoreVert as MoreVertIcon,
   Clear as ClearIcon,
+  ArrowUpward as ArrowUpwardIcon,
+  ArrowDownward as ArrowDownwardIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
@@ -124,8 +126,8 @@ interface OrderStatistics {
 const OrdersPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  	const [orders, setOrders] = useState<Order[]>([]);
-	const [statistics, setStatistics] = useState<OrderStatistics | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [statistics, setStatistics] = useState<OrderStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
@@ -140,7 +142,7 @@ const OrdersPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Filter states
+  // Filter states - Updated to match customer list structure
   const [filters, setFilters] = useState({
     search: '',
     status: '',
@@ -150,8 +152,8 @@ const OrdersPage = () => {
     date_to: '',
     min_amount: '',
     max_amount: '',
-    sort: 'created_at',
-    order: 'desc' as 'asc' | 'desc',
+    sort_by: 'created_at' as 'order_number' | 'created_at' | 'total_amount' | 'status',
+    sort_order: 'desc' as 'asc' | 'desc',
   });
 
   const mapPaymentStatus = (status?: string) => {
@@ -165,98 +167,146 @@ const OrdersPage = () => {
     return s;
   };
 
+  // Sorting handler similar to customer list
+  const handleSort = (column: 'order_number' | 'created_at' | 'total_amount' | 'status') => {
+    const newOrder = filters.sort_by === column && filters.sort_order === 'asc' ? 'desc' : 'asc';
+    setFilters(prev => ({
+      ...prev,
+      sort_by: column,
+      sort_order: newOrder,
+    }));
+    setPage(0);
+    // Trigger fetch with new sort parameters
+    setTimeout(() => {
+      fetchOrders();
+    }, 0);
+  };
+
+  // Search handler similar to customer list
+  const handleSearch = () => {
+    setPage(0);
+    fetchOrders();
+  };
+
+  // Reset filters similar to customer list
+  const resetFilters = () => {
+    setFilters({
+      search: '',
+      status: '',
+      payment_status: '',
+      customer_id: '',
+      date_from: '',
+      date_to: '',
+      min_amount: '',
+      max_amount: '',
+      sort_by: 'created_at',
+      sort_order: 'desc',
+    });
+    setPage(0);
+  };
+
   // Fetch orders with current filters and pagination
-  	const fetchOrders = useCallback(async () => {
-		try {
-			setLoading(true);
-			const params = {
-				page: page + 1,
-				per_page: rowsPerPage,
-				...Object.fromEntries(
-					Object.entries(filters).filter(([_, value]) => value !== '' && value !== null && value !== undefined)
-				),
-			} as any;
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: page + 1,
+        per_page: rowsPerPage,
+        ...Object.fromEntries(
+          Object.entries(filters).filter(([_, value]) => value !== '' && value !== null && value !== undefined)
+        ),
+      } as any;
 
-			const ordersResponse = await apiService.getOrders(params);
-			const payload: any = ordersResponse || {};
-			const rawList: any[] = Array.isArray(payload.data)
-				? payload.data
-				: (Array.isArray(payload)
-					? payload
-					: (Array.isArray(payload.data?.data)
-						? payload.data.data
-						: (payload.orders || [])));
-			const total = payload.total ?? payload.meta?.pagination?.total ?? payload.data?.total ?? rawList.length;
+      // Convert sort parameters to match API expectations
+      if (params.sort_by) {
+        params.sort = params.sort_by;
+        delete params.sort_by;
+      }
+      if (params.sort_order) {
+        params.order = params.sort_order;
+        delete params.sort_order;
+      }
 
-			const normalized: Order[] = rawList.map((o: any) => {
-				const cust = o.customer || o.user || {};
-				const nameCombined = `${cust.first_name || ''} ${cust.last_name || ''}`.trim();
-				const displayName = nameCombined || cust.name || cust.email || 'Unknown Customer';
-				const primaryPayment = Array.isArray(o.payments) && o.payments.length > 0 ? o.payments[0] : null;
+      const ordersResponse = await apiService.getOrders(params);
+      const payload: any = ordersResponse || {};
+      const rawList: any[] = Array.isArray(payload.data)
+        ? payload.data
+        : (Array.isArray(payload)
+          ? payload
+          : (Array.isArray(payload.data?.data)
+            ? payload.data.data
+            : (payload.orders || [])));
+      const total = payload.total ?? payload.meta?.pagination?.total ?? payload.data?.total ?? rawList.length;
 
-				return {
-					id: o.id,
-					order_number: o.order_number,
-					status: o.status,
-					payment_status: mapPaymentStatus(primaryPayment?.status),
-					payment_method: primaryPayment?.method || '',
-					total_amount: parseFloat(o.total_amount || o.grand_total || 0),
-					shipping_address: o.shipping_address || '',
-					billing_address: o.billing_address || '',
-					notes: o.notes || '',
-					invoice_number: o.invoice_number || '',
-					created_at: o.created_at,
-					updated_at: o.updated_at,
-					user: {
-						id: cust.id,
-						name: displayName,
-						email: cust.email,
-						customer_type: cust.customer_type,
-						company_name: cust.company_name,
-					},
-					items: (o.order_items || []).map((it: any) => ({
-						id: it.id,
-						product_id: parseInt(it.item_id) || 0,
-						variation_id: 0,
-						quantity: it.quantity,
-						unit_price: parseFloat(it.unit_price || 0),
-						total: parseFloat(it.total_price || 0),
-						product: {
-							name: it.name || 'Product',
-							category: '',
-						},
-						variation: {
-							name: it.name || 'Variation',
-							material_type: '',
-						},
-					})),
-				} as Order;
-			});
+      const normalized: Order[] = rawList.map((o: any) => {
+        const cust = o.customer || o.user || {};
+        const nameCombined = `${cust.first_name || ''} ${cust.last_name || ''}`.trim();
+        const displayName = nameCombined || cust.name || cust.email || 'Unknown Customer';
+        const primaryPayment = Array.isArray(o.payments) && o.payments.length > 0 ? o.payments[0] : null;
 
-			setOrders(normalized);
-			setTotalCount(Number(total) || 0);
+        return {
+          id: o.id,
+          order_number: o.order_number,
+          status: o.status,
+          payment_status: mapPaymentStatus(primaryPayment?.status),
+          payment_method: primaryPayment?.method || '',
+          total_amount: parseFloat(o.total_amount || o.grand_total || 0),
+          shipping_address: o.shipping_address || '',
+          billing_address: o.billing_address || '',
+          notes: o.notes || '',
+          invoice_number: o.invoice_number || '',
+          created_at: o.created_at,
+          updated_at: o.updated_at,
+          user: {
+            id: cust.id,
+            name: displayName,
+            email: cust.email,
+            customer_type: cust.customer_type,
+            company_name: cust.company_name,
+          },
+          items: (o.order_items || []).map((it: any) => ({
+            id: it.id,
+            product_id: parseInt(it.item_id) || 0,
+            variation_id: 0,
+            quantity: it.quantity,
+            unit_price: parseFloat(it.unit_price || 0),
+            total: parseFloat(it.total_price || 0),
+            product: {
+              name: it.name || 'Product',
+              category: '',
+            },
+            variation: {
+              name: it.name || 'Variation',
+              material_type: '',
+            },
+          })),
+        } as Order;
+      });
 
-			// Stats from current page
-			const today = new Date().toDateString();
-			const calculatedStats = {
-				total_orders: Number(total) || normalized.length,
-				total_revenue: normalized.reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0),
-				pending_orders: normalized.filter((o: any) => o.status === 'pending').length,
-				processing_orders: normalized.filter((o: any) => o.status === 'processing').length,
-				shipped_orders: normalized.filter((o: any) => o.status === 'shipped').length,
-				delivered_orders: normalized.filter((o: any) => o.status === 'delivered').length,
-				cancelled_orders: normalized.filter((o: any) => o.status === 'cancelled').length,
-				today_orders: normalized.filter((o: any) => new Date(o.created_at).toDateString() === today).length,
-				today_revenue: normalized.filter((o: any) => new Date(o.created_at).toDateString() === today).reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0)
-			};
-			setStatistics(calculatedStats);
-		} catch (error) {
-			console.error('Error fetching orders:', error);
-			setAlert({ type: 'error', message: 'Failed to load orders' });
-		} finally {
-			setLoading(false);
-		}
-	}, [page, rowsPerPage, filters]);
+      setOrders(normalized);
+      setTotalCount(Number(total) || 0);
+
+      // Stats from current page
+      const today = new Date().toDateString();
+      const calculatedStats = {
+        total_orders: Number(total) || normalized.length,
+        total_revenue: normalized.reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0),
+        pending_orders: normalized.filter((o: any) => o.status === 'pending').length,
+        processing_orders: normalized.filter((o: any) => o.status === 'processing').length,
+        shipped_orders: normalized.filter((o: any) => o.status === 'shipped').length,
+        delivered_orders: normalized.filter((o: any) => o.status === 'delivered').length,
+        cancelled_orders: normalized.filter((o: any) => o.status === 'cancelled').length,
+        today_orders: normalized.filter((o: any) => new Date(o.created_at).toDateString() === today).length,
+        today_revenue: normalized.filter((o: any) => new Date(o.created_at).toDateString() === today).reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0)
+      };
+      setStatistics(calculatedStats);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      setAlert({ type: 'error', message: 'Failed to load orders' });
+    } finally {
+      setLoading(false);
+    }
+  }, [page, rowsPerPage, filters]);
 
   useEffect(() => {
     // Initialize filters from URL params on first load
@@ -283,8 +333,8 @@ const OrdersPage = () => {
       date_to: '',
       min_amount: '',
       max_amount: '',
-      sort: 'created_at',
-      order: 'desc',
+      sort_by: 'created_at',
+      sort_order: 'desc',
     });
     setPage(0);
   };
@@ -405,6 +455,51 @@ const OrdersPage = () => {
     });
   };
 
+  // SortableHeader component similar to customer list
+  const SortableHeader = ({ 
+    column, 
+    children, 
+    sortKey 
+  }: { 
+    column: 'order_number' | 'created_at' | 'total_amount' | 'status';
+    children: React.ReactNode;
+    sortKey: string;
+  }) => {
+    const isActive = filters.sort_by === sortKey;
+    const isAsc = filters.sort_order === 'asc';
+    
+    return (
+      <TableCell 
+        sx={{ 
+          fontWeight: 600, 
+          cursor: 'pointer',
+          userSelect: 'none',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          },
+          position: 'relative',
+          padding: '16px',
+          backgroundColor: 'grey.50',
+        }}
+        onClick={() => handleSort(column)}
+      >
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 0.5,
+          width: '100%'
+        }}>
+          {children}
+          {isActive && (
+            <Box sx={{ ml: 0.5 }}>
+              {isAsc ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />}
+            </Box>
+          )}
+        </Box>
+      </TableCell>
+    );
+  };
+
   const statusOptions = [
     { value: '', label: 'All Statuses' },
     { value: 'pending', label: 'Pending' },
@@ -425,8 +520,8 @@ const OrdersPage = () => {
   ];
 
   return (
-    <AdminLayout>
-      <Box sx={{ p: { xs: 2, md: 3 } }}>
+    <AdminLayout title="Orders">
+      <Box>
         {alert && (
           <Alert 
             severity={alert.type} 
@@ -439,16 +534,34 @@ const OrdersPage = () => {
 
         {/* Header */}
         <Box sx={{ 
+          mb: 3, 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between', 
           alignItems: { xs: 'stretch', sm: 'center' },
-          mb: 3,
-          gap: 2
+          gap: { xs: 2, sm: 0 }
         }}>
-          <Typography variant="h4" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            Orders Management
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            {/* Search Bar positioned at top-left */}
+            <TextField
+              placeholder="Search orders..."
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )}}
+              sx={{ maxWidth: 400 }}
+              size="small"
+            />
+          </Box>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Button
               variant="outlined"
@@ -470,74 +583,18 @@ const OrdersPage = () => {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleCreate}
-              size="small"
-              className="gradient-style"
-              sx={{
+              sx={{ 
+                alignSelf: { xs: 'stretch', sm: 'auto' },
                 boxShadow: 'none',
                 '&:hover': {
                   boxShadow: 'none',
                 }
               }}
             >
-              New Order
+              Add
             </Button>
           </Stack>
         </Box>
-
-        {/* Statistics Cards */}
-        {statistics && (
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
-            gap: 2, 
-            mb: 3 
-          }}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <TrendingUpIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h6" fontWeight={600}>
-                  {statistics.total_orders}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Orders
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <PaymentIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h6" fontWeight={600}>
-                  {formatCurrency(statistics.total_revenue)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Revenue
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <ScheduleIcon color="warning" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h6" fontWeight={600}>
-                  {statistics.pending_orders}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Pending Orders
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <CartIcon color="info" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h6" fontWeight={600}>
-                  {statistics.today_orders}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Today&apos;s Orders
-                </Typography>
-              </CardContent>
-            </Card>
-          </Box>
-        )}
 
         {/* Filters Dialog */}
         <Dialog open={filterDialogOpen} onClose={() => setFilterDialogOpen(false)} maxWidth="lg" fullWidth>
@@ -587,7 +644,7 @@ const OrdersPage = () => {
                 </Select>
               </FormControl>
             </Box>
-            <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr auto auto' }, gap: 2 }}>
+            <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
               <TextField
                 fullWidth
                 label="From Date"
@@ -606,13 +663,6 @@ const OrdersPage = () => {
               />
               <TextField
                 fullWidth
-                label="Customer ID"
-                type="number"
-                value={filters.customer_id}
-                onChange={(e) => handleFilterChange('customer_id', e.target.value)}
-              />
-              <TextField
-                fullWidth
                 label="Min Amount"
                 type="number"
                 value={filters.min_amount}
@@ -625,186 +675,159 @@ const OrdersPage = () => {
                 value={filters.max_amount}
                 onChange={(e) => handleFilterChange('max_amount', e.target.value)}
               />
-              <FormControl fullWidth sx={{ minWidth: { md: 160 }, maxWidth: { md: 220 } }}>
-                <InputLabel>Sort By</InputLabel>
-                <Select
-                  value={filters.sort}
-                  label="Sort By"
-                  onChange={(e) => handleFilterChange('sort', e.target.value)}
-                >
-                  <MenuItem value="created_at">Created</MenuItem>
-                  <MenuItem value="updated_at">Updated</MenuItem>
-                  <MenuItem value="total_amount">Total Amount</MenuItem>
-                  <MenuItem value="order_number">Order Number</MenuItem>
-                  <MenuItem value="status">Status</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl fullWidth sx={{ minWidth: { md: 120 }, maxWidth: { md: 160 } }}>
-                <InputLabel>Order</InputLabel>
-                <Select
-                  value={filters.order}
-                  label="Order"
-                  onChange={(e) => handleFilterChange('order', e.target.value)}
-                >
-                  <MenuItem value="asc">Asc</MenuItem>
-                  <MenuItem value="desc">Desc</MenuItem>
-                </Select>
-              </FormControl>
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={clearFilters} startIcon={<ClearIcon />}>Clear</Button>
+            <Button onClick={resetFilters} startIcon={<ClearIcon />}>Clear</Button>
             <Button onClick={() => setFilterDialogOpen(false)} variant="contained">Close</Button>
           </DialogActions>
         </Dialog>
 
-        {/* Orders Table */}
-        <Card>
-          {/* Desktop Table View */}
-          <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Order #</TableCell>
-                    <TableCell>Customer</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Payment</TableCell>
-                    <TableCell>Total</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                        <CircularProgress />
-                      </TableCell>
-                    </TableRow>
-                  ) : orders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                        <Typography color="text.secondary">
-                          No orders found
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    orders.map((order) => (
-                      <TableRow key={order.id} hover>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={600}>
-                            {order.order_number}
-                          </Typography>
-                          {order.invoice_number && (
-                            <Typography variant="caption" color="text.secondary">
-                              Invoice: {order.invoice_number}
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+              <Paper sx={{ overflow: 'hidden' }}>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                        <SortableHeader column="order_number" sortKey="order_number">Order #</SortableHeader>
+                        <TableCell sx={{ fontWeight: 600, backgroundColor: 'grey.50' }}>Customer</TableCell>
+                        <SortableHeader column="status" sortKey="status">Status</SortableHeader>
+                        <TableCell sx={{ fontWeight: 600, backgroundColor: 'grey.50' }}>Payment</TableCell>
+                        <SortableHeader column="total_amount" sortKey="total_amount">Total</SortableHeader>
+                        <SortableHeader column="created_at" sortKey="created_at">Date</SortableHeader>
+                        <TableCell align="center" sx={{ fontWeight: 600, backgroundColor: 'grey.50' }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {orders.map((order) => (
+                        <TableRow key={order.id} hover>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight={600}>
+                              {order.order_number}
                             </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Box>
-                            <Typography variant="body2" fontWeight={500}>
-                              {order.user?.name || 'Unknown Customer'}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {order.user?.email || 'No email'}
-                            </Typography>
-                            {order.user?.company_name && (
-                              <Typography variant="caption" color="text.secondary" display="block">
-                                {order.user.company_name}
+                            {order.invoice_number && (
+                              <Typography variant="caption" color="text.secondary">
+                                Invoice: {order.invoice_number}
                               </Typography>
                             )}
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={order.status || 'Unknown'}
-                            color={getStatusColor(order.status) as any}
-                            size="small"
-                            sx={{ textTransform: 'capitalize' }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Stack spacing={0.5}>
+                          </TableCell>
+                          <TableCell>
+                            <Box>
+                              <Typography variant="body2" fontWeight={500}>
+                                {order.user?.name || 'Unknown Customer'}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {order.user?.email || 'No email'}
+                              </Typography>
+                              {order.user?.company_name && (
+                                <Typography variant="caption" color="text.secondary" display="block">
+                                  {order.user.company_name}
+                                </Typography>
+                              )}
+                            </Box>
+                          </TableCell>
+                          <TableCell>
                             <Chip
-                              label={order.payment_status || 'Unknown'}
-                              color={getPaymentStatusColor(order.payment_status) as any}
+                              label={order.status || 'Unknown'}
+                              color={getStatusColor(order.status) as any}
                               size="small"
                               sx={{ textTransform: 'capitalize' }}
                             />
-                            {order.payment_method && (
-                              <Typography variant="caption" color="text.secondary">
-                                {order.payment_method.replace('_', ' ')}
-                              </Typography>
-                            )}
-                          </Stack>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={600}>
-                            {formatCurrency(order.total_amount || 0)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {formatDate(order.created_at)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuClick(e, order.id)}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Stack spacing={0.5}>
+                              <Chip
+                                label={order.payment_status || 'Unknown'}
+                                color={getPaymentStatusColor(order.payment_status) as any}
+                                size="small"
+                                sx={{ textTransform: 'capitalize' }}
+                              />
+                              {order.payment_method && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {order.payment_method.replace('_', ' ')}
+                                </Typography>
+                              )}
+                            </Stack>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight={600}>
+                              {formatCurrency(order.total_amount || 0)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {formatDate(order.created_at)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center" sx={{ minWidth: 120 }}>
+                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(order.id)}
+                                title="Edit"
+                                sx={{ color: 'primary.main' }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => confirmDelete(order)}
+                                title="Delete"
+                                color="error"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Paper>
+            </Box>
 
-          {/* Mobile Card View */}
-          <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
-                <CircularProgress />
-              </Box>
-            ) : orders.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography color="text.secondary">No orders found</Typography>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'grid', gap: 2, p: 2 }}>
+            {/* Mobile Card View */}
+            <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
+              <Box sx={{ display: 'grid', gap: 2 }}>
                 {orders.map((order) => (
                   <Paper key={order.id} sx={{ p: 2, borderRadius: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                       <Box>
-                        <Typography variant="subtitle1" fontWeight={600}>{order.order_number}</Typography>
-                        {order.invoice_number && (
-                          <Typography variant="caption" color="text.secondary">Invoice: {order.invoice_number}</Typography>
-                        )}
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          {order.order_number}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          {order.user?.name || 'Unknown Customer'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {order.user?.email || 'No email'}
+                        </Typography>
                       </Box>
-                      <Chip label={order.status || 'Unknown'} color={getStatusColor(order.status) as any} size="small" sx={{ textTransform: 'capitalize' }} />
+                      <Chip
+                        label={order.status || 'Unknown'}
+                        color={getStatusColor(order.status) as any}
+                        size="small"
+                        sx={{ textTransform: 'capitalize' }}
+                      />
                     </Box>
-                    <Box sx={{ mb: 1 }}>
-                      <Typography variant="body2" fontWeight={500}>{order.user?.name || 'Unknown Customer'}</Typography>
-                      <Typography variant="caption" color="text.secondary">{order.user?.email || 'No email'}</Typography>
-                      {order.user?.company_name && (
-                        <Typography variant="caption" color="text.secondary" display="block">{order.user.company_name}</Typography>
-                      )}
-                    </Box>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr' }, gap: 1, mb: 1 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr' }, gap: 1, mb: 2 }}>
                       <Box>
                         <Typography variant="caption" color="text.secondary">Payment</Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Chip label={order.payment_status || 'Unknown'} color={getPaymentStatusColor(order.payment_status) as any} size="small" sx={{ textTransform: 'capitalize' }} />
-                          {order.payment_method && (
-                            <Typography variant="caption" color="text.secondary">{order.payment_method.replace('_', ' ')}</Typography>
-                          )}
+                          <Chip 
+                            label={order.payment_status || 'Unknown'} 
+                            color={getPaymentStatusColor(order.payment_status) as any} 
+                            size="small" 
+                            sx={{ textTransform: 'capitalize' }} 
+                          />
                         </Stack>
                       </Box>
                       <Box>
@@ -834,59 +857,22 @@ const OrdersPage = () => {
                   </Paper>
                 ))}
               </Box>
-            )}
-          </Box>
+            </Box>
 
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            component="div"
-            count={totalCount}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(_, newPage) => setPage(newPage)}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
-          />
-        </Card>
-
-        {/* Actions Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        >
-          <MenuItem onClick={() => selectedOrderId && handleView(selectedOrderId)}>
-            <ListItemIcon>
-              <ViewIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>View Details</ListItemText>
-          </MenuItem>
-          {canEditSelected && (
-            <MenuItem onClick={() => selectedOrderId && handleEdit(selectedOrderId)}>
-              <ListItemIcon>
-                <EditIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Edit Order</ListItemText>
-            </MenuItem>
-          )}
-          <Divider />
-          <MenuItem 
-            onClick={() => {
-              const order = orders.find(o => o.id === selectedOrderId);
-              if (order) confirmDelete(order);
-            }}
-            sx={{ color: 'error.main' }}
-          >
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" color="error" />
-            </ListItemIcon>
-            <ListItemText>Delete Order</ListItemText>
-          </MenuItem>
-        </Menu>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25, 50]}
+              component="div"
+              count={totalCount}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={(_, newPageZeroBased) => setPage(newPageZeroBased)}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+            />
+          </>
+        )}
 
         {/* Delete Confirmation Dialog */}
         <Dialog

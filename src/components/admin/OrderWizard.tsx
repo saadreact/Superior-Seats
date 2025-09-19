@@ -29,6 +29,7 @@ import {
 	TableRow,
 	TableCell,
 	TableBody,
+	InputAdornment,
 } from '@mui/material';
 import {
 	Add as AddIcon,
@@ -465,7 +466,7 @@ const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
 																			</Select>
 																		</FormControl>
 																		<Box mt={2} width="100%">
-																			<TextField type="number" fullWidth disabled label="Tax" value={7}  />
+																		   <TextField type="number" fullWidth disabled label="Tax" value={7}  InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
 																		</Box>
 																	</Box>
 																</Box>
