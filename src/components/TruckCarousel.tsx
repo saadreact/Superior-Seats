@@ -48,8 +48,11 @@ const TruckCarousel = () => {
         overflow: 'hidden',
         marginBottom: { xs: 1, md: 1, lg: 2, xl: 2 },
         width: '100%',
+        py: { xs: 3, md: 4, lg: 5, xl: 6 },
+        minHeight: { xs: '200px', md: '250px', lg: '300px', xl: '350px' },
         display: 'flex',
         justifyContent: 'center',
+        alignItems: 'center',
       }}
     >
       <Box
@@ -100,7 +103,7 @@ const TruckCarousel = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                minWidth: '120px',
+                minWidth: '140px',
                 filter: 'grayscale(100%)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
@@ -112,8 +115,8 @@ const TruckCarousel = () => {
               <Image
                 src={brand.logo}
                 alt={brand.name}
-                width={100}
-                height={100}
+                width={120}
+                height={120}
                 style={{
                   objectFit: 'contain',
                   maxWidth: '100%',
@@ -143,7 +146,7 @@ const TruckCarousel = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                minWidth: '120px',
+                minWidth: '140px',
                 filter: 'grayscale(100%)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
@@ -155,8 +158,8 @@ const TruckCarousel = () => {
               <Image
                 src={brand.logo}
                 alt={brand.name}
-                width={100}
-                height={100}
+                width={120}
+                height={120}
                 style={{
                   objectFit: 'contain',
                   maxWidth: '100%',

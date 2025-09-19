@@ -64,8 +64,6 @@ interface ProductPage2Form {
   seatStyle: string[];
   color: string[];
   
-  // Special Shop Field
-  showOnSpecialShop: boolean;
   
   // Price Tiers Fields
   enablePriceTiers: boolean;
@@ -90,7 +88,6 @@ interface ProductItem {
   stitchPattern: string[];
   seatItemType: string[];
   color: string[];
-  show_on_special_shop: boolean;
   isActive: boolean;
   createdAt: string;
 }
@@ -124,7 +121,6 @@ const EditProduct2Page = () => {
     seatItemType: [],
     seatStyle: [],
     color: [],
-    showOnSpecialShop: false,
     enablePriceTiers: false,
     isActive: true,
   });
@@ -366,7 +362,6 @@ const EditProduct2Page = () => {
           seatItemType: shouldShowNone(productWithImages.item_types) ? ['None'] : extractNamesFromArray(productWithImages.item_types || []),
           seatStyle: shouldShowNone(productWithImages.seat_styles) ? ['None'] : extractNamesFromArray(productWithImages.seat_styles || []),
           color: shouldShowNone(productWithImages.colors) ? ['None'] : extractNamesFromArray(productWithImages.colors || []),
-          showOnSpecialShop: productRes.show_on_special_shop ?? false,
           enablePriceTiers: hasPriceTiers, // Enable if price tiers exist
           isActive: productRes.is_active ?? true,
         });
@@ -894,7 +889,6 @@ const EditProduct2Page = () => {
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
-        show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Simple File array like create page
         
@@ -1128,24 +1122,6 @@ const EditProduct2Page = () => {
                       }}
                     />
                     
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={formData.showOnSpecialShop}
-                          onChange={handleSwitchChange('showOnSpecialShop')}
-                          color="error"
-                        />
-                      }
-                      label="Special Shop"
-                      labelPlacement="start"
-                      sx={{ 
-                        gap: 1,
-                        '& .MuiFormControlLabel-label': {
-                          fontSize: '0.875rem',
-                          fontWeight: 500
-                        }
-                      }}
-                    />
                   </Box>
                 </Box>
                 

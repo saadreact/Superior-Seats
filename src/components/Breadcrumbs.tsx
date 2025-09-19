@@ -41,7 +41,6 @@ const pageTitles: { [key: string]: string } = {
   '/custom-seats': 'Customize Your Seat',
   '/ShopGallery': 'Shop Specials',
   '/shop-now': 'Shop Now',
-  '/specials': 'Shop Specials',
   '/customize-your-seat': 'Customize Your Seat',
   '/privacy-policy': 'Privacy Policy',
   '/terms-of-service': 'Terms of Service',
