@@ -33,7 +33,7 @@ const getToken = (): string | null => {
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: 'https://superiorseats.ali-khalid.com/api',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://superiorseats.ali-khalid.com/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -1051,7 +1051,6 @@ class ApiService {
     price_max?: number;
     page?: number;
     per_page?: number;
-    show_on_special_shop?: boolean;
   } = {}) {
     try {
       const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();

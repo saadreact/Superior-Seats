@@ -215,7 +215,7 @@ const HomePage = () => {
       </Box>
 
       {/* Products Section */}
-      <Box sx={{ py: { xs: 2, md: 3, lg: 1, xl: 2 }, width: '100%' }}>
+      {/* <Box sx={{ py: { xs: 2, md: 3, lg: 1, xl: 2 }, width: '100%' }}>
         <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
                      <MotionBox
              variants={sectionVariants}
@@ -372,7 +372,7 @@ const HomePage = () => {
             </Grid>
           </MotionBox>
         </Container>
-      </Box>
+      </Box> */}
 
      
       {/* Truck Carousel Section */}
