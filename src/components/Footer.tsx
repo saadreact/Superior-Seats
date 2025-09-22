@@ -457,185 +457,70 @@ const Footer: React.FC<FooterProps> = () => {
               </Typography>
               <Box
                 sx={{
+                  marginLeft: { md: "2rem", lg: "2.5rem", xl: "3rem" },
                   display: "flex",
                   flexDirection: "column",
-                  gap: 1.5,
-                  alignItems: { xs: "center", md: "flex-start" },
+                  gap: 1,
+                  alignItems: { xs: "center", md: "center" },
                 }}
               >
-                <Box
+                <IconButton
+                  component="a"
+                  href="https://www.facebook.com/people/Superior-Seating-LLC/61576399660914/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   sx={{
+                    color: "white",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255,255,255,0.5)",
+                    borderRadius: "12px",
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      transform: "scale(1.05) translateY(-1px)",
+                      boxShadow: "0 4px 15px rgba(255,255,255,0.2)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                    },
+                    transition: "all 0.3s ease",
+                    width: {
+                      xs: "48px",
+                      sm: "48px",
+                      md: "42px",
+                      lg: "45px",
+                      xl: "50px",
+                    },
+                    height: {
+                      xs: "48px",
+                      sm: "48px",
+                      md: "42px",
+                      lg: "45px",
+                      xl: "50px",
+                    },
                     display: "flex",
-                    gap: { xs: 2, sm: 2.5 },
-                    justifyContent: { xs: "center", md: "flex-start" },
-                    flexWrap: "wrap",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    p: 0,
                   }}
                 >
-                  <IconButton
-                    component="a"
-                    href="https://www.facebook.com/people/Superior-Seating-LLC/61576399660914/"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Box
+                    component="span"
                     sx={{
-                      color: "white",
-                      backgroundColor: "rgba(255,255,255,0.1)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255,255,255,0.5)",
-                      borderRadius: "12px",
-                      "&:hover": {
-                        backgroundColor: "rgba(255,255,255,0.2)",
-                        transform: "scale(1.05) translateY(-1px)",
-                        boxShadow: "0 4px 15px rgba(255,255,255,0.2)",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                      },
-                      transition: "all 0.3s ease",
-                      width: {
-                        xs: "48px",
-                        sm: "48px",
-                        md: "42px",
-                        lg: "45px",
-                        xl: "50px",
-                      },
-                      height: {
-                        xs: "48px",
-                        sm: "48px",
-                        md: "42px",
-                        lg: "45px",
-                        xl: "50px",
-                      },
+                      fontSize: { xs: "1.5rem", sm: "1.75rem" },
+                      fontWeight: "bold",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      p: 0,
+                      width: "100%",
+                      height: "100%",
+                      lineHeight: 1,
+                      textAlign: "center",
+                      position: "relative",
+                      top: "1px",
                     }}
                   >
-                    <Box
-                      component="span"
-                      sx={{
-                        fontSize: { xs: "1.5rem", sm: "1.75rem" },
-                        fontWeight: "bold",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "100%",
-                        height: "100%",
-                        lineHeight: 1,
-                        textAlign: "center",
-                        position: "relative",
-                        top: "1px",
-                      }}
-                    >
-                      f
-                    </Box>
-                  </IconButton>
-
-                  <IconButton
-                    component="a"
-                    href="https://instagram.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      color: "white",
-                      backgroundColor: "rgba(255,255,255,0.1)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.5)",
-                      borderRadius: "12px",
-                      "&:hover": {
-                        backgroundColor: "rgba(255,255,255,0.2)",
-                        transform: "scale(1.05) translateY(-1px)",
-                        boxShadow: "0 4px 15px rgba(255,255,255,0.2)",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                      },
-                      transition: "all 0.3s ease",
-                      width: {
-                        xs: "48px",
-                        sm: "48px",
-                        md: "42px",
-                        lg: "45px",
-                        xl: "50px",
-                      },
-                      height: {
-                        xs: "48px",
-                        sm: "48px",
-                        md: "42px",
-                        lg: "45px",
-                        xl: "50px",
-                      },
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      p: 0,
-                    }}
-                  >
-                    <Instagram
-                      sx={{
-                        fontSize: { xs: "1.25rem", sm: "1.5rem" },
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    />
-                  </IconButton>
-
-                  <IconButton
-                    component="a"
-                    href="https://youtube.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      color: "white",
-                      backgroundColor: "rgba(255,255,255,0.1)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255,255,255,0.5)",
-                      borderRadius: "12px",
-                      "&:hover": {
-                        backgroundColor: "rgba(255,255,255,0.2)",
-                        transform: "scale(1.05) translateY(-1px)",
-                        boxShadow: "0 4px 15px rgba(255,255,255,0.2)",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                      },
-                      transition: "all 0.3s ease",
-                      width: {
-                        xs: "48px",
-                        sm: "48px",
-                        md: "42px",
-                        lg: "45px",
-                        xl: "50px",
-                      },
-                      height: {
-                        xs: "48px",
-                        sm: "48px",
-                        md: "42px",
-                        lg: "45px",
-                        xl: "50px",
-                      },
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      p: 0,
-                    }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        fontSize: { xs: "1.5rem", sm: "1.75rem" },
-                        fontWeight: "bold",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "100%",
-                        height: "100%",
-                        lineHeight: 1,
-                        textAlign: "center",
-                        position: "relative",
-                        top: "1px",
-                        left: "1px",
-                      }}
-                    >
-                      ▶
-                    </Box>
-                  </IconButton>
-                </Box>
+                    f
+                  </Box>
+                </IconButton>
               </Box>
             </Box>
           </Box>

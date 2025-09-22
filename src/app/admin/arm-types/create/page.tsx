@@ -310,7 +310,8 @@ const CreateArmTypePage = () => {
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   fullWidth
                   multiline
-                  rows={3}
+                  minRows={1}
+                  maxRows={3}
                   placeholder="Enter description (optional)"
                   InputProps={{
                     sx: { fontSize: { xs: '1rem', sm: '0.875rem' } }

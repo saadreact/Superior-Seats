@@ -131,7 +131,8 @@ const EditProduct2Page = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [success, setSuccess] = useState('');
-  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<{id: number, url: string}[]>([]);
+  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
   
   // Price tiers states
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
@@ -276,24 +277,30 @@ const EditProduct2Page = () => {
         console.log('🔍 Full product response:', productRes);
         
         // Handle existing images - use product_images array from API response
-        const existingImageUrls: string[] = [];
+        const existingImageData: {id: number, url: string}[] = [];
         const productWithImages = productRes as any;
         if (productWithImages.product_images && Array.isArray(productWithImages.product_images)) {
           console.log('🔍 Processing existing images from product_images:', productWithImages.product_images);
           // Sort by sort_order to maintain proper order
           const sortedImages = productWithImages.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order);
-          existingImageUrls.push(...sortedImages.map((img: any) => 
-            img.image_path || img.image_url || ''
-          ).filter(Boolean));
+          const mappedImages = sortedImages.map((img: any) => ({
+            id: img.id,
+            url: img.image_path || img.image_url || ''
+          }));
+          existingImageData.push(...mappedImages.filter((img: {id: number, url: string}) => img.url));
         }
         
         // Also check for primary_image as fallback
-        if (productRes.primary_image?.image_path && !existingImageUrls.includes(productRes.primary_image.image_path)) {
-          existingImageUrls.unshift(productRes.primary_image.image_path);
+        if (productRes.primary_image?.image_path && !existingImageData.some(img => img.url === productRes.primary_image?.image_path)) {
+          const primaryImage = productRes.primary_image;
+          existingImageData.unshift({
+            id: primaryImage.id || 0,
+            url: primaryImage.image_path
+          });
         }
         
-        console.log('🔍 Existing image URLs:', existingImageUrls);
-        setExistingImages(existingImageUrls);
+        console.log('🔍 Existing image data:', existingImageData);
+        setExistingImages(existingImageData);
 
         // Load price tiers data from API response if available
         const priceTiersData = (productRes as any).price_tiers;
@@ -785,6 +792,16 @@ const EditProduct2Page = () => {
     }));
   };
 
+  const removeExistingImage = (index: number) => {
+    const imageToRemove = existingImages[index];
+    if (imageToRemove && imageToRemove.id) {
+      // Add to deleted images list
+      setDeletedImageIds(prev => [...prev, imageToRemove.id]);
+    }
+    // Remove from existing images list
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -895,6 +912,7 @@ const EditProduct2Page = () => {
         show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Simple File array like create page
+        deleted_image_ids: deletedImageIds.length > 0 ? deletedImageIds : undefined, // Include deleted image IDs
         
         // Vehicle information - only pass trim ID if variations are enabled
         vehicle_trim_id: formData.enableVariations && formData.vehicleTrim ? Number(formData.vehicleTrim) : undefined,
@@ -922,7 +940,8 @@ const EditProduct2Page = () => {
       // Debug: Log the data being sent
       console.log('🔄 Products-2 data being sent to new productApi:', {
         ...productData,
-        images: productData.images?.map(file => `File(${file.name}, ${file.size} bytes)`)
+        images: productData.images?.map(file => `File(${file.name}, ${file.size} bytes)`),
+        deleted_image_ids: deletedImageIds
       });
       
       // Debug: Check if images are actually present
@@ -1151,7 +1170,7 @@ const EditProduct2Page = () => {
                 <Divider sx={{ mb: 3 }} />
                 
                 {/* Product Name */}
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
                   <TextField
                     fullWidth
                     label="Product Name"
@@ -1162,10 +1181,10 @@ const EditProduct2Page = () => {
                     error={!!errors.name}
                     helperText={errors.name}
                   />
-                </Box>
+               
 
                 {/* Category */}
-                <Box sx={{ mb: 3 }}>
+               
                   <FormControl fullWidth required error={!!errors.category}>
                     <InputLabel>Category</InputLabel>
                     <Select
@@ -1180,6 +1199,7 @@ const EditProduct2Page = () => {
                       )) : []}
                     </Select>
                   </FormControl>
+             
                 </Box>
 
                 {/* Description */}
@@ -1192,7 +1212,8 @@ const EditProduct2Page = () => {
                     required
                     placeholder="Enter product description"
                     multiline
-                    rows={4}
+                     minRows={1}
+                    maxRows={4}
                     error={!!errors.description}
                     helperText={errors.description}
                   />
@@ -1248,21 +1269,6 @@ const EditProduct2Page = () => {
                     Product Images
                   </Typography>
                   
-                  {/* Debug: Show current images state */}
-                  <Box sx={{ mb: 2, p: 1, bgcolor: 'grey.100', borderRadius: 1 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Debug: Images count: {formData.images.length}
-                    </Typography>
-                    {formData.images.length > 0 && (
-                      <Box>
-                        {formData.images.map((img, idx) => (
-                          <Typography key={idx} variant="caption" display="block">
-                            Image {idx}: {img?.name || 'No name'} ({img?.size || 0} bytes) - {img instanceof File ? 'File' : typeof img}
-                          </Typography>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
                   
                   {/* Existing Images Preview */}
                   {existingImages.length > 0 && (
@@ -1271,10 +1277,10 @@ const EditProduct2Page = () => {
                         Existing Images:
                       </Typography>
                       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', sm: 'repeat(12, 1fr)', md: 'repeat(16, 1fr)' }, gap: 0, mb: 2 }}>
-                        {existingImages.map((imageUrl, index) => (
-                          <Box key={`existing-${index}`} sx={{ position: 'relative' }}>
+                        {existingImages.map((imageData, index) => (
+                          <Box key={`existing-${imageData.id}`} sx={{ position: 'relative', width: 60, height: 60 }}>
                             <img
-                              src={imageUrl.startsWith('http') ? imageUrl : `https://superiorseats.ali-khalid.com${imageUrl}`}
+                              src={imageData.url.startsWith('http') ? imageData.url : `https://superiorseats.ali-khalid.com${imageData.url}`}
                               alt={`Existing ${index + 1}`}
                               style={{
                                 width: '100%',
@@ -1283,8 +1289,6 @@ const EditProduct2Page = () => {
                                 objectFit: 'cover',
                                 borderRadius: 4,
                                 border: '1px solid #e0e0e0',
-                                maxWidth: 60,
-                                maxHeight: 60,
                               }}
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
@@ -1295,8 +1299,8 @@ const EditProduct2Page = () => {
                             <Box
                               sx={{
                                 position: 'absolute',
-                                top: 2,
-                                left: 2,
+                                top: 4,
+                                left: 4,
                                 bgcolor: 'primary.main',
                                 color: 'white',
                                 px: 0.5,
@@ -1304,10 +1308,33 @@ const EditProduct2Page = () => {
                                 borderRadius: 0.5,
                                 fontSize: '0.6rem',
                                 fontWeight: 'bold',
+                                zIndex: 5,
                               }}
                             >
                               {index === 0 ? 'PRIMARY' : 'EXISTING'}
                             </Box>
+                            <IconButton
+                              onClick={() => removeExistingImage(index)}
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: 4,
+                                right: 4,
+                                bgcolor: 'rgba(0, 0, 0, 0.6)',
+                                color: 'white',
+                                width: 18,
+                                height: 18,
+                                minWidth: 18,
+                                '&:hover': {
+                                  bgcolor: 'rgba(0, 0, 0, 0.8)',
+                                  transform: 'scale(1.1)',
+                                },
+                                transition: 'all 0.2s ease-in-out',
+                                zIndex: 10,
+                              }}
+                            >
+                              <CloseIcon sx={{ fontSize: 12 }} />
+                            </IconButton>
                           </Box>
                         ))}
                       </Box>
@@ -1321,66 +1348,49 @@ const EditProduct2Page = () => {
                         New Images:
                       </Typography>
                       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', sm: 'repeat(12, 1fr)', md: 'repeat(16, 1fr)' }, gap: 0, mb: 2 }}>
-                        {formData.images.map((image, index) => {
-                          console.log(`🖼️ Rendering image ${index}:`, {
-                            image,
-                            type: typeof image,
-                            isFile: image instanceof File,
-                            name: image?.name,
-                            size: image?.size
-                          });
-                          
-                          return (
-                            <Box key={index} sx={{ position: 'relative' }}>
-                              <img
-                                src={URL.createObjectURL(image)}
-                                alt={`Preview ${index + 1}`}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  aspectRatio: '1/1',
-                                  objectFit: 'cover',
-                                  borderRadius: 4,
-                                  border: '1px solid #e0e0e0',
-                                  maxWidth: 60,
-                                  maxHeight: 60,
-                                }}
-                                onError={(e) => {
-                                  console.log(`❌ Image ${index} failed to load:`, e);
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
-                                }}
-                                onLoad={() => {
-                                  console.log(`✅ Image ${index} loaded successfully`);
-                                }}
-                              />
-                            <IconButton
-                              onClick={() => removeImage(index)}
-                              size="small"
-                              sx={{
-                                position: 'absolute',
-                                top: 2,
-                                right: 2,
-                                bgcolor: 'rgba(255, 255, 255, 0.95)',
-                                boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                                width: 16,
-                                height: 16,
-                                border: '1px solid #fff',
-                                '&:hover': {
-                                  bgcolor: 'rgba(255, 255, 255, 1)',
-                                  transform: 'scale(1.1)',
-                                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                                },
-                                transition: 'all 0.2s ease-in-out',
-                                zIndex: 10,
-                              }}
-                            >
-                              <CloseIcon sx={{ fontSize: 10, color: '#666' }} />
-                            </IconButton>
-                          </Box>
-                          );
-                        })}
+                      {formData.images.map((image, index) => (
+                        <Box key={index} sx={{ position: 'relative', width: 60, height: 60 }}>
+                          <img
+                            src={URL.createObjectURL(image)}
+                            alt={`Preview ${index + 1}`}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              aspectRatio: '1/1',
+                              objectFit: 'cover',
+                              borderRadius: 4,
+                              border: '1px solid #e0e0e0',
+                            }}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
+                            }}
+                          />
+                          <IconButton
+                            onClick={() => removeImage(index)}
+                            size="small"
+                            sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              bgcolor: 'rgba(0, 0, 0, 0.6)',
+                              color: 'white',
+                              width: 18,
+                              height: 18,
+                              minWidth: 18,
+                              '&:hover': {
+                                bgcolor: 'rgba(0, 0, 0, 0.8)',
+                                transform: 'scale(1.1)',
+                              },
+                              transition: 'all 0.2s ease-in-out',
+                              zIndex: 10,
+                            }}
+                          >
+                            <CloseIcon sx={{ fontSize: 12 }} />
+                          </IconButton>
+                        </Box>
+                      ))}
                       </Box>
                     </Box>
                   )}
