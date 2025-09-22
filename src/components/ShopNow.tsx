@@ -155,41 +155,8 @@ const ShopNow = () => {
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
   const [priceTiersLoading, setPriceTiersLoading] = useState(false);
 
-  // Categories State
+  // Categories State - Now extracted from products
   const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [categoriesError, setCategoriesError] = useState<string | null>(null);
-
-     // Function to fetch categories
-   const fetchCategories = useCallback(async () => {
-     if (!isOnShopGalleryPage) {
-       console.log('🔄 ShopGallery - Not on ShopGallery page, skipping categories fetch');
-       return;
-     }
-
-     try {
-       setCategoriesLoading(true);
-       setCategoriesError(null);
-       console.log('📂 ShopGallery - Fetching categories...');
-       
-       const response = await shopNowApis.getCategories();
-       
-       if (response.status === 'success' && response.data) {
-         setCategories(response.data);
-         console.log('✅ ShopGallery - Categories loaded:', response.data);
-       } else {
-         // Don't set error, just log it and continue without categories
-         console.warn('⚠️ ShopGallery - Categories API returned non-success status:', response);
-         setCategories([]); // Set empty array to prevent errors
-       }
-     } catch (error) {
-       // Don't set error, just log it and continue without categories
-       console.warn('⚠️ ShopGallery - Error fetching categories, continuing without categories:', error);
-       setCategories([]); // Set empty array to prevent errors
-     } finally {
-       setCategoriesLoading(false);
-     }
-   }, [isOnShopGalleryPage]);
 
     // Function to fetch price tiers
   const fetchPriceTiers = useCallback(async () => {
@@ -221,10 +188,65 @@ const ShopNow = () => {
   }, [isOnShopGalleryPage]);
 
 
+  // Function to extract unique categories from products
+  const extractCategoriesFromProducts = useCallback((products: Product[]) => {
+    const categoryMap = new Map();
+    
+    products.forEach(product => {
+      if (product.category && product.category.id) {
+        const category = product.category;
+        if (!categoryMap.has(category.id)) {
+          categoryMap.set(category.id, {
+            id: category.id,
+            name: category.name,
+            slug: category.slug,
+            description: category.description,
+            image_url: category.image_url,
+            is_active: category.is_active,
+            sort_order: category.sort_order,
+            products_count: 1
+          });
+        } else {
+          // Increment products count
+          const existingCategory = categoryMap.get(category.id);
+          existingCategory.products_count += 1;
+        }
+      }
+    });
+    
+    return Array.from(categoryMap.values()).sort((a, b) => a.sort_order - b.sort_order);
+  }, []);
+
+  // Function to fetch all categories by getting all products first
+  const fetchAllCategories = useCallback(async () => {
+    if (!isOnShopGalleryPage || categories.length > 0) {
+      return; // Skip if not on the right page or categories already loaded
+    }
+
+    try {
+      console.log('📂 ShopNow - Fetching all categories...');
+      const response = await shopNowApis.getProducts({ page: 1, limit: 1000 }); // Get a large number to get all products
+      
+      if (response.status === 'success' && response.data) {
+        const extractedCategories = extractCategoriesFromProducts(response.data);
+        setCategories(extractedCategories);
+        console.log('📂 ShopNow - All categories loaded:', extractedCategories);
+      }
+    } catch (error) {
+      console.warn('⚠️ ShopNow - Error fetching all categories:', error);
+    }
+  }, [isOnShopGalleryPage, categories.length, extractCategoriesFromProducts]);
+
   // Function to fetch products with server-side pagination and filtering
   const fetchProducts = useCallback(async () => {
     if (!isOnShopGalleryPage) {
       console.log('🔄 ShopNow - Not on ShopGallery page, skipping products fetch');
+      return;
+    }
+    
+    // If a specific category is selected but categories are not loaded yet, wait
+    if (selectedMainCategory !== 'all' && categories.length === 0) {
+      console.log('⏳ ShopNow - Waiting for categories to load before fetching products for category:', selectedMainCategory);
       return;
     }
     
@@ -250,6 +272,18 @@ const ShopNow = () => {
         const selectedCategory = categories.find(cat => cat && cat.slug === selectedMainCategory);
         if (selectedCategory) {
           apiParams.category_id = selectedCategory.id;
+          console.log('🔍 ShopNow - Filtering by category:', {
+            categorySlug: selectedMainCategory,
+            categoryId: selectedCategory.id,
+            categoryName: selectedCategory.name,
+            availableCategories: categories.map(cat => ({ id: cat.id, slug: cat.slug, name: cat.name }))
+          });
+        } else {
+          console.warn('⚠️ ShopNow - Category not found in categories list:', {
+            selectedCategory: selectedMainCategory,
+            availableCategories: categories.map(cat => ({ id: cat.id, slug: cat.slug, name: cat.name }))
+          });
+          // Don't add category_id if category not found, this will show all products
         }
       }
       
@@ -276,6 +310,8 @@ const ShopNow = () => {
       
       if (productsResponse.status === 'success' && productsResponse.data) {
         setApiProducts(productsResponse.data);
+        
+        // Categories are now loaded separately via fetchAllCategories
         
         // Set pagination metadata
         if (productsResponse.meta?.pagination) {
@@ -318,9 +354,9 @@ const ShopNow = () => {
     }
     
     setLoading(false);
-  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, categories]);
+  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, categories, extractCategoriesFromProducts]);
 
-  // Function to refresh all APIs (categories, price tiers, user data)
+  // Function to refresh all APIs (price tiers, user data, categories)
   const refreshAllApis = useCallback(async () => {
     // Only refresh APIs if we're on the ShopGallery page
     if (!isOnShopGalleryPage) {
@@ -330,11 +366,11 @@ const ShopNow = () => {
     
     console.log('🔄 ShopGallery - Refreshing all APIs...');
     
-    // Fetch categories only (price tiers endpoint might not exist)
+    // Fetch all categories first
     try {
-      await fetchCategories();
+      await fetchAllCategories();
     } catch (error) {
-      console.warn('⚠️ ShopGallery - Categories API call failed:', error);
+      console.warn('⚠️ ShopNow - Categories API call failed:', error);
     }
     
     // Fetch price tiers
@@ -379,7 +415,7 @@ const ShopNow = () => {
       setUserData(null);
       setUserLoading(false);
     }
-  }, [isAuthenticated, isOnShopGalleryPage, fetchCategories, fetchPriceTiers]);
+  }, [isAuthenticated, isOnShopGalleryPage, fetchPriceTiers, fetchAllCategories]);
 
   // Effect to fetch products when filters or pagination change
   useEffect(() => {
@@ -388,6 +424,14 @@ const ShopNow = () => {
       fetchProducts();
     }
   }, [fetchProducts, isOnShopGalleryPage]);
+
+  // Effect to fetch products when categories are loaded and a specific category is selected
+  useEffect(() => {
+    if (isOnShopGalleryPage && selectedMainCategory !== 'all' && categories.length > 0) {
+      console.log('🔄 ShopNow - Categories loaded, fetching products for selected category:', selectedMainCategory);
+      fetchProducts();
+    }
+  }, [categories, selectedMainCategory, isOnShopGalleryPage, fetchProducts]);
 
   // Effect to refresh APIs when authentication state changes (only if on ShopGallery page)
   useEffect(() => {
@@ -500,15 +544,15 @@ const ShopNow = () => {
      }
    }, [selectedMainCategory, showSpecialOnly, apiProducts.length, categories, isOnShopGalleryPage, currentPage, itemsPerPage, paginationMeta]);
 
-     // Generate main categories from API data
+     // Generate main categories from extracted categories data
    const apiMainCategories = [
      { value: 'all', label: 'All Products' },
      ...(categories || []) // Add null check for categories
-       .filter(cat => cat && cat.is_active && cat.products_count > 0) // Only show active categories with products
+       .filter(cat => cat && cat.is_active) // Only show active categories
        .sort((a, b) => a.sort_order - b.sort_order) // Sort by sort_order
        .map(cat => ({
          value: cat.slug,
-         label: `${cat.name} (${cat.products_count})`
+         label: `${cat.name}${cat.products_count ? ` (${cat.products_count})` : ''}`
        }))
    ];
 
@@ -611,10 +655,6 @@ const ShopNow = () => {
     setSelectedItem({ 
       id: item.id
     });
-    
-    // Save product ID to localStorage
-    localStorage.setItem('selectedProductId', item.id.toString());
-    console.log('💾 ShopNow - Saved product ID to localStorage:', item.id);
     
     // Navigate to customization page
     router.push('/customize-your-seat');
@@ -1727,7 +1767,7 @@ const ShopNow = () => {
                            transition: 'all 0.3s ease',
                          }}
                        >
-                         Start Building Seat
+                         Build Your Own Seat
                        </Button>
                    
                   </Box>
@@ -1847,7 +1887,7 @@ const ShopNow = () => {
                             },
                           }}
                         >
-                          Start Building Seat
+                          Build Your Own Seat
                         </Button>
                        
                        {/* ADD TO CART BUTTON */}

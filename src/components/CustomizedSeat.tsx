@@ -99,29 +99,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   // Variation data state
   const [variations, setVariations] = useState<ProductVariations | null>(null);
 
-  // Check for product ID in local storage on component mount (runs only once)
-  useEffect(() => {
-    const savedProductId = localStorage.getItem('selectedProductId');
-    // console.log('🔄 CustomizedSeat - Component mounted, checking localStorage:', savedProductId);
-    
-    if (savedProductId) {
-      const productId = parseInt(savedProductId);
-      // console.log('🔄 CustomizedSeat - Found saved product ID in localStorage:', productId);
-      // console.log('🔄 CustomizedSeat - Setting product ID from localStorage:', productId);
-      setSelectedItem({ id: productId });
-    } else {
-      // console.log('🔄 CustomizedSeat - No saved product ID found in localStorage');
-    }
-  }, []); // Empty dependency array - runs only once on mount
-
-  // Cleanup function to clear localStorage when component unmounts (optional)
-  useEffect(() => {
-    return () => {
-      // Optional: Clear localStorage when leaving the page
-      // Uncomment the line below if you want to clear localStorage when leaving the customize page
-      // localStorage.removeItem('selectedProductId');
-    };
-  }, []);
+  // Removed localStorage functionality - product ID is now only managed through context
 
   // Fetch product data when selectedItem ID changes
   useEffect(() => {
@@ -133,10 +111,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           setProductLoading(true);
           setProductError(null);
           console.log('🔄 CustomizedSeat - Fetching product data for ID:', selectedItem.id);
-          
-          // Save the product ID to localStorage
-          localStorage.setItem('selectedProductId', selectedItem.id.toString());
-          console.log('💾 CustomizedSeat - Saved product ID to localStorage:', selectedItem.id);
           
           const product = await CustomizedSeatApi.getProductById(selectedItem.id);
           setProductData(product);
@@ -615,9 +589,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         variant="contained"
                         size="large"
                         onClick={() => {
-                          // Clear localStorage and navigate to shop now
+                          // Navigate to shop now
                           console.log('🔄 CustomizedSeat - Shop Now button clicked (error state)');
-                          localStorage.removeItem('selectedProductId');
                           clearSelectedItem();
                           console.log('🔄 CustomizedSeat - Navigating to /shop-now');
                           router.push('/shop-now');
@@ -676,15 +649,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                           marginBottom: { xs: 3, sm: 4, md: 1 ,lg: 1 , xl: 1}
                         }}
                       >
-                        Please select a model or product from our shop to start Building your perfect seat.
+                        Please select a model or product from our shop to start Building your Own perfect seat.
                       </Typography>
                                              <Button
                          variant="contained"
                          size="large"
                          onClick={() => {
-                           // Clear localStorage and navigate to shop now
+                           // Navigate to shop now
                            console.log('🔄 CustomizedSeat - Browse Shop button clicked');
-                           localStorage.removeItem('selectedProductId');
                            clearSelectedItem();
                            console.log('🔄 CustomizedSeat - Navigating to /shop-now');
                            router.push('/shop-now');
@@ -774,83 +746,88 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                     
                                          {/* Selected Material Name - Removed to show only on hover */}
                     
-                    <Box className={styles.materialOptionsContainer}>
-                      {/* None Option - Always First */}
-                      <Tooltip title="No Material">
-                        <Box
-                          onClick={() => setSelectedTexture('none')}
-                          className={`${styles.materialOption} ${selectedTexture === 'none' ? styles.selected : ''}`}
-                        >
-                          <Box className={styles.noneOption}>
-                            <Typography variant="caption" className={styles.noneText}>
-                              None
-                            </Typography>
-                          </Box>
-                          {selectedTexture === 'none' && (
-                            <Box className={styles.selectedOverlay}>
-                              <CheckCircle sx={{ 
-                                color: 'white', 
-                                fontSize: { xs: 18, sm: 20, md: 24 } 
-                              }} />
-                            </Box>
-                          )}
-                        </Box>
-                      </Tooltip>
-                      
-                      {/* Dynamic materials from API data */}
-                      {variations?.material_types?.map((material: any) => (
-                        <Tooltip key={material.id} title={material.name} placement="top">
-                          <Box
-                            onClick={() => setSelectedTexture(material.id.toString())}
-                            className={`${styles.materialOption} ${selectedTexture === material.id.toString() ? styles.selected : ''}`}
-                          >
-                            {material.image_url ? (
-                              <Image
-                                src={material.image_url}
-                                alt={material.name}
-                                fill
-                                style={{ objectFit: 'cover' }}
-                              />
-                            ) : (
-                              <Box className={styles.noneOption}>
-                                <Typography variant="caption" className={styles.noneText}>
-                                  {material.name}
-                                </Typography>
-                              </Box>
-                            )}
-                            {selectedTexture === material.id.toString() && (
-                              <Box className={styles.selectedOverlay}>
-                                <CheckCircle sx={{ 
-                                  color: 'white', 
-                                  fontSize: { xs: 18, sm: 20, md: 24 } 
-                                }} />
-                              </Box>
-                            )}
-                          </Box>
-                        </Tooltip>
-                      )) || (
-                        // Fallback when no variation data is available
-                        <Box sx={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          width: '100%',
-                          minHeight: '60px',
-                          padding: 2,
-                          backgroundColor: '#f5f5f5',
-                          borderRadius: 1,
-                          border: '1px dashed #ccc'
-                        }}>
-                          <Typography variant="body2" sx={{ 
-                            color: 'text.secondary',
-                            textAlign: 'center',
-                            fontWeight: 'medium'
-                          }}>
-                            No materials available
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
+                     <Box className={styles.materialOptionsContainer}>
+                       {/* Dynamic materials from API data */}
+                       {variations?.material_types && variations.material_types.length > 0 ? (
+                         <>
+                           {/* None Option - Only show when materials are available */}
+                           <Tooltip title="No Material">
+                             <Box
+                               onClick={() => setSelectedTexture('none')}
+                               className={`${styles.materialOption} ${selectedTexture === 'none' ? styles.selected : ''}`}
+                             >
+                               <Box className={styles.noneOption}>
+                                 <Typography variant="caption" className={styles.noneText}>
+                                   None
+                                 </Typography>
+                               </Box>
+                               {selectedTexture === 'none' && (
+                                 <Box className={styles.selectedOverlay}>
+                                   <CheckCircle sx={{ 
+                                     color: 'white', 
+                                     fontSize: { xs: 18, sm: 20, md: 24 } 
+                                   }} />
+                                 </Box>
+                               )}
+                             </Box>
+                           </Tooltip>
+                           
+                           {/* Material options */}
+                           {variations.material_types.map((material: any) => (
+                             <Tooltip key={material.id} title={material.name} placement="top">
+                               <Box
+                                 onClick={() => setSelectedTexture(material.id.toString())}
+                                 className={`${styles.materialOption} ${selectedTexture === material.id.toString() ? styles.selected : ''}`}
+                               >
+                                 {material.image_url ? (
+                                   <Image
+                                     src={material.image_url}
+                                     alt={material.name}
+                                     fill
+                                     style={{ objectFit: 'cover' }}
+                                   />
+                                 ) : (
+                                   <Box className={styles.noneOption}>
+                                     <Typography variant="caption" className={styles.noneText}>
+                                       {material.name}
+                                     </Typography>
+                                   </Box>
+                                 )}
+                                 {selectedTexture === material.id.toString() && (
+                                   <Box className={styles.selectedOverlay}>
+                                     <CheckCircle sx={{ 
+                                       color: 'white', 
+                                       fontSize: { xs: 18, sm: 20, md: 24 } 
+                                     }} />
+                                   </Box>
+                                 )}
+                               </Box>
+                             </Tooltip>
+                           ))}
+                         </>
+                       ) : (
+                         // Fallback when no variation data is available
+                         <Box sx={{
+                           display: 'flex',
+                           justifyContent: 'center',
+                           alignItems: 'center',
+                           width: '100%',
+                           minHeight: '60px',
+                           padding: 2,
+                           backgroundColor: 'transparent',
+                           borderRadius: 1,
+                           border: '1px dashed #ccc'
+                         }}>
+                           <Typography variant="body2" sx={{ 
+                             color: 'text.secondary',
+                             textAlign: 'center',
+                             fontWeight: 'medium'
+                           }}>
+                             No materials available
+                           </Typography>
+                         </Box>
+                       )}
+                     </Box>
                     
                     
                   </Box>
@@ -875,80 +852,85 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                        })()}
                      </Box>
                      
-                     {/* Dynamic color display from variation data */}
-                     <Box className={styles.colorOptionsContainer}>
-                       {/* None Option - Always First */}
-                       <Tooltip title="No Color">
-                         <Box
-                           onClick={() => setSelectedColor('none')}
-                           className={`${styles.colorOption} ${selectedColor === 'none' ? styles.selected : ''}`}
-                           style={{ backgroundColor: '#f5f5f5' }}
-                         >
-                           <Typography 
-                             variant="caption" 
-                             className={styles.noneColorText}
-                             style={{ color: selectedColor === 'none' ? '#d32f2f' : '#666' }}
-                           >
-                             None
-                           </Typography>
-                           {selectedColor === 'none' && (
-                             <CheckCircle sx={{
-                               color: '#d32f2f',
-                               fontSize: { xs: 12, sm: 14, md: 16 },
-                               position: 'absolute',
-                               top: '50%',
-                               left: '50%',
-                               transform: 'translate(-50%, -50%)',
-                               zIndex: 2
-                             }} />
-                           )}
-                         </Box>
-                       </Tooltip>
-                       
-                       {/* Dynamic colors from API data */}
-                       {variations?.colors?.map((color: any) => (
-                         <Tooltip key={color.id} title={color.name}>
-                           <Box
-                             onClick={() => setSelectedColor(color.id.toString())}
-                             className={`${styles.colorOption} ${selectedColor === color.id.toString() ? styles.selected : ''}`}
-                             style={{ backgroundColor: color.hex_code || '#ccc' }}
-                           >
-                             {selectedColor === color.id.toString() && (
-                               <CheckCircle sx={{
-                                 color: 'white',
-                                 fontSize: { xs: 16, sm: 17, md: 18 },
-                                 position: 'absolute',
-                                 top: '50%',
-                                 left: '50%',
-                                 transform: 'translate(-50%, -50%)',
-                                 zIndex: 2
-                               }} />
-                             )}
-                           </Box>
-                         </Tooltip>
-                       )) || (
-                         // Fallback when no variation data is available
-                         <Box sx={{
-                           display: 'flex',
-                           justifyContent: 'center',
-                           alignItems: 'center',
-                           width: '100%',
-                           minHeight: '60px',
-                           padding: 2,
-                           backgroundColor: '#f5f5f5',
-                           borderRadius: 1,
-                           border: '1px dashed #ccc'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             color: 'text.secondary',
-                             textAlign: 'center',
-                             fontWeight: 'medium'
-                           }}>
-                             No colors available
-                           </Typography>
-                         </Box>
-                       )}
-                     </Box>
+                      {/* Dynamic color display from variation data */}
+                      <Box className={styles.colorOptionsContainer}>
+                        {/* Dynamic colors from API data */}
+                        {variations?.colors && variations.colors.length > 0 ? (
+                          <>
+                            {/* None Option - Only show when colors are available */}
+                            <Tooltip title="No Color">
+                              <Box
+                                onClick={() => setSelectedColor('none')}
+                                className={`${styles.colorOption} ${selectedColor === 'none' ? styles.selected : ''}`}
+                                style={{ backgroundColor: '#f5f5f5' }}
+                              >
+                                <Typography 
+                                  variant="caption" 
+                                  className={styles.noneColorText}
+                                  style={{ color: selectedColor === 'none' ? '#d32f2f' : '#666' }}
+                                >
+                                  None
+                                </Typography>
+                                {selectedColor === 'none' && (
+                                  <CheckCircle sx={{
+                                    color: '#d32f2f',
+                                    fontSize: { xs: 12, sm: 14, md: 16 },
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    zIndex: 2
+                                  }} />
+                                )}
+                              </Box>
+                            </Tooltip>
+                            
+                            {/* Color options */}
+                            {variations.colors.map((color: any) => (
+                              <Tooltip key={color.id} title={color.name}>
+                                <Box
+                                  onClick={() => setSelectedColor(color.id.toString())}
+                                  className={`${styles.colorOption} ${selectedColor === color.id.toString() ? styles.selected : ''}`}
+                                  style={{ backgroundColor: color.hex_code || '#ccc' }}
+                                >
+                                  {selectedColor === color.id.toString() && (
+                                    <CheckCircle sx={{
+                                      color: 'white',
+                                      fontSize: { xs: 16, sm: 17, md: 18 },
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      transform: 'translate(-50%, -50%)',
+                                      zIndex: 2
+                                    }} />
+                                  )}
+                                </Box>
+                              </Tooltip>
+                            ))}
+                          </>
+                        ) : (
+                          // Fallback when no variation data is available
+                          <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                            minHeight: '60px',
+                            padding: 2,
+                            backgroundColor: 'transparent',
+                            borderRadius: 1,
+                            border: '1px dashed #ccc'
+                          }}>
+                            <Typography variant="body2" sx={{ 
+                              color: 'text.secondary',
+                              textAlign: 'center',
+                              fontWeight: 'medium'
+                            }}>
+                              No colors available
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
                   </Box>
 
                   {/* Divider */}
@@ -971,83 +953,88 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                         })()}
                       </Box>
                      
-                     <Box className={styles.stitchingOptionsContainer}>
-                       {/* None Option - Always First */}
-                       <Tooltip title="No Stitching Pattern">
-                         <Box
-                           onClick={() => setSelectedStitching('none')}
-                           className={`${styles.stitchingOption} ${selectedStitching === 'none' ? styles.selected : ''}`}
-                         >
-                           <Box className={styles.noneOption}>
-                             <Typography variant="caption" className={styles.noneText}>
-                               None
-                             </Typography>
-                           </Box>
-                           {selectedStitching === 'none' && (
-                             <Box className={styles.selectedOverlay}>
-                               <CheckCircle sx={{ 
-                                 color: 'white', 
-                                 fontSize: { xs: 18, sm: 20, md: 24 } 
-                               }} />
-                             </Box>
-                           )}
-                         </Box>
-                       </Tooltip>
-                       
-                       {/* Dynamic stitching patterns from API data */}
-                       {variations?.seat_stitch_patterns?.map((stitching: any) => (
-                         <Tooltip key={stitching.id} title={stitching.name} placement="top">
-                           <Box
-                             onClick={() => setSelectedStitching(stitching.id.toString())}
-                             className={`${styles.stitchingOption} ${selectedStitching === stitching.id.toString() ? styles.selected : ''}`}
-                           >
-                             {stitching.image_url ? (
-                               <Image
-                                 src={stitching.image_url}
-                                 alt={stitching.name}
-                                 fill
-                                 style={{ objectFit: 'cover' }}
-                               />
-                             ) : (
-                               <Box className={styles.noneOption}>
-                                 <Typography variant="caption" className={styles.noneText}>
-                                   {stitching.name}
-                                 </Typography>
-                               </Box>
-                             )}
-                             {selectedStitching === stitching.id.toString() && (
-                               <Box className={styles.selectedOverlay}>
-                                 <CheckCircle sx={{ 
-                                   color: 'white', 
-                                   fontSize: { xs: 18, sm: 20, md: 24 } 
-                                 }} />
-                               </Box>
-                             )}
-                           </Box>
-                         </Tooltip>
-                       )) || (
-                         // Fallback when no variation data is available
-                         <Box sx={{
-                           display: 'flex',
-                           justifyContent: 'center',
-                           alignItems: 'center',
-                           width: '100%',
-                           minHeight: '60px',
-                           padding: 2,
-                           backgroundColor: '#f5f5f5',
-                           borderRadius: 1,
-                           border: '1px dashed #ccc'
-                         }}>
-                           <Typography variant="body2" sx={{ 
-                             color: 'text.secondary',
-                             textAlign: 'center',
-                             fontWeight: 'medium'
-                           }}>
-                             No stitching patterns available
-                           </Typography>
-                         </Box>
-                       )}
-                     </Box>
+                      <Box className={styles.stitchingOptionsContainer}>
+                        {/* Dynamic stitching patterns from API data */}
+                        {variations?.seat_stitch_patterns && variations.seat_stitch_patterns.length > 0 ? (
+                          <>
+                            {/* None Option - Only show when stitching patterns are available */}
+                            <Tooltip title="No Stitching Pattern">
+                              <Box
+                                onClick={() => setSelectedStitching('none')}
+                                className={`${styles.stitchingOption} ${selectedStitching === 'none' ? styles.selected : ''}`}
+                              >
+                                <Box className={styles.noneOption}>
+                                  <Typography variant="caption" className={styles.noneText}>
+                                    None
+                                  </Typography>
+                                </Box>
+                                {selectedStitching === 'none' && (
+                                  <Box className={styles.selectedOverlay}>
+                                    <CheckCircle sx={{ 
+                                      color: 'white', 
+                                      fontSize: { xs: 18, sm: 20, md: 24 } 
+                                    }} />
+                                  </Box>
+                                )}
+                              </Box>
+                            </Tooltip>
+                            
+                            {/* Stitching pattern options */}
+                            {variations.seat_stitch_patterns.map((stitching: any) => (
+                              <Tooltip key={stitching.id} title={stitching.name} placement="top">
+                                <Box
+                                  onClick={() => setSelectedStitching(stitching.id.toString())}
+                                  className={`${styles.stitchingOption} ${selectedStitching === stitching.id.toString() ? styles.selected : ''}`}
+                                >
+                                  {stitching.image_url ? (
+                                    <Image
+                                      src={stitching.image_url}
+                                      alt={stitching.name}
+                                      fill
+                                      style={{ objectFit: 'cover' }}
+                                    />
+                                  ) : (
+                                    <Box className={styles.noneOption}>
+                                      <Typography variant="caption" className={styles.noneText}>
+                                        {stitching.name}
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                  {selectedStitching === stitching.id.toString() && (
+                                    <Box className={styles.selectedOverlay}>
+                                      <CheckCircle sx={{ 
+                                        color: 'white', 
+                                        fontSize: { xs: 18, sm: 20, md: 24 } 
+                                      }} />
+                                    </Box>
+                                  )}
+                                </Box>
+                              </Tooltip>
+                            ))}
+                          </>
+                        ) : (
+                          // Fallback when no variation data is available
+                          <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                            minHeight: '60px',
+                            padding: 2,
+                            backgroundColor: 'transparent',
+                            borderRadius: 1,
+                            border: '1px dashed #ccc'
+                          }}>
+                            <Typography variant="body2" sx={{ 
+                              color: 'text.secondary',
+                              textAlign: 'center',
+                              fontWeight: 'medium'
+                            }}>
+                              No stitching patterns available
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
                    </Box>
 
                                      {/* Divider */}
@@ -1125,347 +1112,385 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                            </Box>
                          </Box>
                        ) : (
-                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
+                        <Box sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          minHeight: '60px',
+                          padding: 2,
+                          backgroundColor: 'transparent',
+                          borderRadius: 1,
+                          border: '1px dashed #ccc'
+                        }}>
                            <Typography variant="body2" color="text.secondary">
-                             No vehicle Fitments available
+                             No vehicle Fitments available for this product
                            </Typography>
                          </Box>
                        )}
-                   </Box>
+                     </Box>
 
                                        {/* Divider */}
-                    <Divider className={styles.divider} />
+                     <Divider className={styles.divider} />
 
            {/* ===== VARIATION SECTION ===== */}
-                      <Box className={styles.variationSection}>
-                        <Typography variant="h6" className={styles.sectionTitle}>
-                          Variation
-                        </Typography>
-                      
-                       <Box className={styles.formRow}>
-                         {/* Recline */}
-                         <Box className={styles.formField}>
-                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                             <Typography variant="body2" className={styles.fieldLabel}>
-                               Recline:
-                               {selectedRecline && (() => {
-                                 const selectedReclineItem = variations?.recline_types?.find((r: any) => r.id.toString() === selectedRecline);
-                                 return selectedReclineItem?.price && parseFloat(selectedReclineItem.price.toString()) > 0 ? (
-                                   <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
-                                     +${parseFloat(selectedReclineItem.price.toString()).toFixed(2)}
-                                   </span>
-                                 ) : null;
-                               })()}
-                             </Typography>
-                           </Box>
-                           <FormControl className={styles.formControl}>
-                             <Select
-                               value={selectedRecline}
-                               onChange={(e) => setSelectedRecline(e.target.value)}
-                               displayEmpty
-                               className={styles.selectField}
-                             >
-                              <MenuItem value="" disabled>
-                                Recline
-                              </MenuItem>
-                              {variations?.recline_types?.map((recline: any) => (
-                                <MenuItem key={recline.id} value={recline.id.toString()}>
-                                  {recline.name}
-                                </MenuItem>
-                              )) || (
-                                <MenuItem value="none" disabled>
-                                  No recline options available
-                                </MenuItem>
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Box>
+                     <Box className={styles.variationSection}>
+                       <Typography variant="h6" className={styles.sectionTitle}>
+                         Variation
+                       </Typography>
+                     
+                       {/* Check if any variation options are available */}
+                       {((variations?.recline_types && variations.recline_types.length > 0) || 
+                         (variations?.lumbar_types && variations.lumbar_types.length > 0) || 
+                         (variations?.heat_options && variations.heat_options.length > 0)) ? (
+                         <Box className={styles.formRow}>
+                           {/* Recline - Only show if options available */}
+                           {variations?.recline_types && variations.recline_types.length > 0 && (
+                             <Box className={styles.formField}>
+                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <Typography variant="body2" className={styles.fieldLabel}>
+                                   Recline:
+                                   {selectedRecline && (() => {
+                                     const selectedReclineItem = variations?.recline_types?.find((r: any) => r.id.toString() === selectedRecline);
+                                     return selectedReclineItem?.price && parseFloat(selectedReclineItem.price.toString()) > 0 ? (
+                                       <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                         +${parseFloat(selectedReclineItem.price.toString()).toFixed(2)}
+                                       </span>
+                                     ) : null;
+                                   })()}
+                                 </Typography>
+                               </Box>
+                               <FormControl className={styles.formControl}>
+                                 <Select
+                                   value={selectedRecline}
+                                   onChange={(e) => setSelectedRecline(e.target.value)}
+                                   displayEmpty
+                                   className={styles.selectField}
+                                 >
+                                  <MenuItem value="" disabled>
+                                    Recline
+                                  </MenuItem>
+                                  {variations.recline_types.map((recline: any) => (
+                                    <MenuItem key={recline.id} value={recline.id.toString()}>
+                                      {recline.name}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            </Box>
+                           )}
 
-                        {/* Lumber */}
-                        <Box className={styles.formField}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="body2" className={styles.fieldLabel}>
-                              Lumber:
-                               {selectedLumber && (() => {
-                                 const selectedLumberItem = variations?.lumbar_types?.find((l: any) => l.id.toString() === selectedLumber);
-                                 return selectedLumberItem?.price && parseFloat(selectedLumberItem.price.toString()) > 0 ? (
-                                   <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
-                                     +${parseFloat(selectedLumberItem.price.toString()).toFixed(2)}
-                                   </span>
-                                 ) : null;
-                               })()}
-                            </Typography>
-                          </Box>
-                          <FormControl className={styles.formControl}>
-                             <Select
-                               value={selectedLumber}
-                               onChange={(e) => setSelectedLumber(e.target.value)}
-                               displayEmpty
-                               className={styles.selectField}
-                             >
-                              <MenuItem value="" disabled>
-                                Lumber
-                              </MenuItem>
-                              {variations?.lumbar_types?.map((lumber: any) => (
-                                <MenuItem key={lumber.id} value={lumber.id.toString()}>
-                                  {lumber.name}
-                                </MenuItem>
-                              )) || (
-                                <MenuItem value="none" disabled>
-                                  No lumber options available
-                                </MenuItem>
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Box>
+                           {/* Lumber - Only show if options available */}
+                           {variations?.lumbar_types && variations.lumbar_types.length > 0 && (
+                             <Box className={styles.formField}>
+                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <Typography variant="body2" className={styles.fieldLabel}>
+                                   Lumber:
+                                    {selectedLumber && (() => {
+                                      const selectedLumberItem = variations?.lumbar_types?.find((l: any) => l.id.toString() === selectedLumber);
+                                      return selectedLumberItem?.price && parseFloat(selectedLumberItem.price.toString()) > 0 ? (
+                                        <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                          +${parseFloat(selectedLumberItem.price.toString()).toFixed(2)}
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                 </Typography>
+                               </Box>
+                               <FormControl className={styles.formControl}>
+                                  <Select
+                                    value={selectedLumber}
+                                    onChange={(e) => setSelectedLumber(e.target.value)}
+                                    displayEmpty
+                                    className={styles.selectField}
+                                  >
+                                   <MenuItem value="" disabled>
+                                     Lumber
+                                   </MenuItem>
+                                   {variations.lumbar_types.map((lumber: any) => (
+                                     <MenuItem key={lumber.id} value={lumber.id.toString()}>
+                                       {lumber.name}
+                                     </MenuItem>
+                                   ))}
+                                 </Select>
+                               </FormControl>
+                             </Box>
+                           )}
 
-                        {/* Heating and Cooling */}
-                        <Box className={styles.formField}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="body2" className={styles.fieldLabel}>
-                              Heating and Cooling:
-                               {selectedHeatingCooling && (() => {
-                                 const selectedHeatingItem = variations?.heat_options?.find((h: any) => h.id.toString() === selectedHeatingCooling);
-                                 return selectedHeatingItem?.price && parseFloat(selectedHeatingItem.price.toString()) > 0 ? (
-                                   <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
-                                     +${parseFloat(selectedHeatingItem.price.toString()).toFixed(2)}
-                                   </span>
-                                 ) : null;
-                               })()}
-                            </Typography>
-                          </Box>
-                          <FormControl className={styles.formControl}>
-                             <Select
-                               value={selectedHeatingCooling}
-                               onChange={(e) => setSelectedHeatingCooling(e.target.value)}
-                               displayEmpty
-                               className={styles.selectField}
-                             >
-                              <MenuItem value="" disabled>
-                                Heating/Cooling
-                              </MenuItem>
-                              {variations?.heat_options?.map((heatingCooling: any) => (
-                                <MenuItem key={heatingCooling.id} value={heatingCooling.id.toString()}>
-                                  {heatingCooling.name}
-                                </MenuItem>
-                              )) || (
-                                <MenuItem value="none" disabled>
-                                  No heating/cooling options available
-                                </MenuItem>
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Box>
-                      </Box>
-                    </Box>
+                           {/* Heating and Cooling - Only show if options available */}
+                           {variations?.heat_options && variations.heat_options.length > 0 && (
+                             <Box className={styles.formField}>
+                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <Typography variant="body2" className={styles.fieldLabel}>
+                                   Heating and Cooling:
+                                    {selectedHeatingCooling && (() => {
+                                      const selectedHeatingItem = variations?.heat_options?.find((h: any) => h.id.toString() === selectedHeatingCooling);
+                                      return selectedHeatingItem?.price && parseFloat(selectedHeatingItem.price.toString()) > 0 ? (
+                                        <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                          +${parseFloat(selectedHeatingItem.price.toString()).toFixed(2)}
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                 </Typography>
+                               </Box>
+                               <FormControl className={styles.formControl}>
+                                  <Select
+                                    value={selectedHeatingCooling}
+                                    onChange={(e) => setSelectedHeatingCooling(e.target.value)}
+                                    displayEmpty
+                                    className={styles.selectField}
+                                  >
+                                   <MenuItem value="" disabled>
+                                     Heating/Cooling
+                                   </MenuItem>
+                                   {variations.heat_options.map((heatingCooling: any) => (
+                                     <MenuItem key={heatingCooling.id} value={heatingCooling.id.toString()}>
+                                       {heatingCooling.name}
+                                     </MenuItem>
+                                   ))}
+                                 </Select>
+                               </FormControl>
+                             </Box>
+                           )}
+                         </Box>
+                       ) : (
+                        <Box sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          minHeight: '60px',
+                          padding: 2,
+                          backgroundColor: 'transparent',
+                          borderRadius: 1,
+                          border: '1px dashed #ccc'
+                        }}>
+                           <Typography variant="body2" color="text.secondary">
+                             No variations available for this product
+                           </Typography>
+                         </Box>
+                       )}
+                     </Box>
 
                     {/* Divider */}
                     <Divider className={styles.divider} />
 
                                                                                    {/* ===== SEAT SECTION ===== */}
-                      <Box className={styles.seatSection}>
-                        <Typography variant="h6" className={styles.sectionTitle}>
-                          Seat
-                        </Typography>
-                      
-                                                                    <Box className={styles.formRow}>
-                                                  {/* Seat Type */}
-                          <Box className={styles.formField}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography variant="body2" className={styles.fieldLabel}>
-                                Seat Type:
-                                 {selectedSeatType && (() => {
-                                   const selectedSeatTypeItem = variations?.seat_types?.find((s: any) => s.id.toString() === selectedSeatType);
-                                   const price = Number(selectedSeatTypeItem?.price);
-                                   return selectedSeatTypeItem?.price && price > 0 ? (
-                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
-                                       +${price.toFixed(2)}
-                                     </span>
-                                   ) : null;
-                                 })()}
-                              </Typography>
-                            </Box>
-                            <FormControl className={styles.formControl}>
-                               <Select
-                                 value={selectedSeatType}
-                                 onChange={(e) => setSelectedSeatType(e.target.value)}
-                                 displayEmpty
-                                 className={styles.selectField}
-                               >
-                                <MenuItem value="" disabled>
-                                  Seat Type
-                                </MenuItem>
-                                {variations?.seat_types?.map((seatType: any) => (
-                                  <MenuItem key={seatType.id} value={seatType.id.toString()}>
-                                    {seatType.name}
-                                  </MenuItem>
-                                )) || (
-                                  <MenuItem value="none" disabled>
-                                    No seat type options available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Box>
+                     <Box className={styles.seatSection}>
+                       <Typography variant="h6" className={styles.sectionTitle}>
+                         Seat
+                       </Typography>
+                     
+                       {/* Check if any seat options are available */}
+                       {((variations?.seat_types && variations.seat_types.length > 0) || 
+                         (variations?.item_types && variations.item_types.length > 0) || 
+                         (variations?.seat_styles && variations.seat_styles.length > 0) || 
+                         (variations?.material_types && variations.material_types.length > 0) || 
+                         (variations?.arm_types && variations.arm_types.length > 0)) ? (
+                         <Box className={styles.formRow}>
+                           {/* Seat Type - Only show if options available */}
+                           {variations?.seat_types && variations.seat_types.length > 0 && (
+                             <Box className={styles.formField}>
+                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <Typography variant="body2" className={styles.fieldLabel}>
+                                   Seat Type:
+                                    {selectedSeatType && (() => {
+                                      const selectedSeatTypeItem = variations?.seat_types?.find((s: any) => s.id.toString() === selectedSeatType);
+                                      const price = Number(selectedSeatTypeItem?.price);
+                                      return selectedSeatTypeItem?.price && price > 0 ? (
+                                        <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                          +${price.toFixed(2)}
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                 </Typography>
+                               </Box>
+                               <FormControl className={styles.formControl}>
+                                  <Select
+                                    value={selectedSeatType}
+                                    onChange={(e) => setSelectedSeatType(e.target.value)}
+                                    displayEmpty
+                                    className={styles.selectField}
+                                  >
+                                   <MenuItem value="" disabled>
+                                     Seat Type
+                                   </MenuItem>
+                                   {variations.seat_types.map((seatType: any) => (
+                                     <MenuItem key={seatType.id} value={seatType.id.toString()}>
+                                       {seatType.name}
+                                     </MenuItem>
+                                   ))}
+                                 </Select>
+                               </FormControl>
+                             </Box>
+                           )}
 
-                          {/* Item Type */}
-                          <Box className={styles.formField}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography variant="body2" className={styles.fieldLabel}>
-                                Item Type:
-                                 {selectedItemType && (() => {
-                                   const selectedItemTypeItem = variations?.item_types?.find((i: any) => i.id.toString() === selectedItemType);
-                                   const price = Number(selectedItemTypeItem?.price);
-                                   return selectedItemTypeItem?.price && price > 0 ? (
-                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
-                                       +${price.toFixed(2)}
-                                     </span>
-                                   ) : null;
-                                 })()}
-                              </Typography>
-                            </Box>
-                            <FormControl className={styles.formControl}>
-                               <Select
-                                 value={selectedItemType}
-                                 onChange={(e) => setSelectedItemType(e.target.value)}
-                                 displayEmpty
-                                 className={styles.selectField}
-                               >
-                                <MenuItem value="" disabled>
-                                   Item Type
-                                </MenuItem>
-                                {variations?.item_types?.map((itemType: any) => (
-                                  <MenuItem key={itemType.id} value={itemType.id.toString()}>
-                                    {itemType.name}
-                                  </MenuItem>
-                                )) || (
-                                  <MenuItem value="none" disabled>
-                                    No item type options available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Box>
+                           {/* Item Type - Only show if options available */}
+                           {variations?.item_types && variations.item_types.length > 0 && (
+                             <Box className={styles.formField}>
+                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <Typography variant="body2" className={styles.fieldLabel}>
+                                   Item Type:
+                                    {selectedItemType && (() => {
+                                      const selectedItemTypeItem = variations?.item_types?.find((i: any) => i.id.toString() === selectedItemType);
+                                      const price = Number(selectedItemTypeItem?.price);
+                                      return selectedItemTypeItem?.price && price > 0 ? (
+                                        <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                          +${price.toFixed(2)}
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                 </Typography>
+                               </Box>
+                               <FormControl className={styles.formControl}>
+                                  <Select
+                                    value={selectedItemType}
+                                    onChange={(e) => setSelectedItemType(e.target.value)}
+                                    displayEmpty
+                                    className={styles.selectField}
+                                  >
+                                   <MenuItem value="" disabled>
+                                      Item Type
+                                   </MenuItem>
+                                   {variations.item_types.map((itemType: any) => (
+                                     <MenuItem key={itemType.id} value={itemType.id.toString()}>
+                                       {itemType.name}
+                                     </MenuItem>
+                                   ))}
+                                 </Select>
+                               </FormControl>
+                             </Box>
+                           )}
 
-                          {/* Seat Style */}
-                          <Box className={styles.formField}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography variant="body2" className={styles.fieldLabel}>
-                                Seat Style:
-                                 {selectedSeatStyle && (() => {
-                                   const selectedSeatStyleItem = variations?.seat_styles?.find((s: any) => s.id.toString() === selectedSeatStyle);
-                                   const price = Number(selectedSeatStyleItem?.price);
-                                   return selectedSeatStyleItem?.price && price > 0 ? (
-                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
-                                       +${price.toFixed(2)}
-                                     </span>
-                                   ) : null;
-                                 })()}
-                              </Typography>
-                            </Box>
-                            <FormControl className={styles.formControl}>
-                               <Select
-                                 value={selectedSeatStyle}
-                                 onChange={(e) => setSelectedSeatStyle(e.target.value)}
-                                 displayEmpty
-                                 className={styles.selectField}
-                               >
-                                <MenuItem value="" disabled>
-                                  Seat Style
-                                </MenuItem>
-                                {variations?.seat_styles?.map((seatStyle: any) => (
-                                  <MenuItem key={seatStyle.id} value={seatStyle.id.toString()}>
-                                    {seatStyle.name}
-                                  </MenuItem>
-                                )) || (
-                                  <MenuItem value="none" disabled>
-                                    No seat style options available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Box>
+                           {/* Seat Style - Only show if options available */}
+                           {variations?.seat_styles && variations.seat_styles.length > 0 && (
+                             <Box className={styles.formField}>
+                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <Typography variant="body2" className={styles.fieldLabel}>
+                                   Seat Style:
+                                    {selectedSeatStyle && (() => {
+                                      const selectedSeatStyleItem = variations?.seat_styles?.find((s: any) => s.id.toString() === selectedSeatStyle);
+                                      const price = Number(selectedSeatStyleItem?.price);
+                                      return selectedSeatStyleItem?.price && price > 0 ? (
+                                        <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                          +${price.toFixed(2)}
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                 </Typography>
+                               </Box>
+                               <FormControl className={styles.formControl}>
+                                  <Select
+                                    value={selectedSeatStyle}
+                                    onChange={(e) => setSelectedSeatStyle(e.target.value)}
+                                    displayEmpty
+                                    className={styles.selectField}
+                                  >
+                                   <MenuItem value="" disabled>
+                                     Seat Style
+                                   </MenuItem>
+                                   {variations.seat_styles.map((seatStyle: any) => (
+                                     <MenuItem key={seatStyle.id} value={seatStyle.id.toString()}>
+                                       {seatStyle.name}
+                                     </MenuItem>
+                                   ))}
+                                 </Select>
+                               </FormControl>
+                             </Box>
+                           )}
 
-                          {/* Material Type */}
-                          <Box className={styles.formField}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography variant="body2" className={styles.fieldLabel}>
-                                Material Type:
-                                 {selectedMaterialType && (() => {
-                                   const selectedMaterialTypeItem = variations?.material_types?.find((m: any) => m.id.toString() === selectedMaterialType);
-                                   const price = Number(selectedMaterialTypeItem?.price);
-                                   return selectedMaterialTypeItem?.price && price > 0 ? (
-                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
-                                       +${price.toFixed(2)}
-                                     </span>
-                                   ) : null;
-                                 })()}
-                              </Typography>
-                            </Box>
-                            <FormControl className={styles.formControl}>
-                               <Select
-                                 value={selectedMaterialType}
-                                 onChange={(e) => setSelectedMaterialType(e.target.value)}
-                                 displayEmpty
-                                 className={styles.selectField}
-                               >
-                                <MenuItem value="" disabled>
-                                   Material Type
-                                </MenuItem>
-                                {variations?.material_types?.map((materialType: any) => (
-                                  <MenuItem key={materialType.id} value={materialType.id.toString()}>
-                                    {materialType.name}
-                                  </MenuItem>
-                                )) || (
-                                  <MenuItem value="none" disabled>
-                                    No material type options available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Box>
+                           {/* Material Type - Only show if options available */}
+                           {variations?.material_types && variations.material_types.length > 0 && (
+                             <Box className={styles.formField}>
+                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <Typography variant="body2" className={styles.fieldLabel}>
+                                   Material Type:
+                                    {selectedMaterialType && (() => {
+                                      const selectedMaterialTypeItem = variations?.material_types?.find((m: any) => m.id.toString() === selectedMaterialType);
+                                      const price = Number(selectedMaterialTypeItem?.price);
+                                      return selectedMaterialTypeItem?.price && price > 0 ? (
+                                        <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                          +${price.toFixed(2)}
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                 </Typography>
+                               </Box>
+                               <FormControl className={styles.formControl}>
+                                  <Select
+                                    value={selectedMaterialType}
+                                    onChange={(e) => setSelectedMaterialType(e.target.value)}
+                                    displayEmpty
+                                    className={styles.selectField}
+                                  >
+                                   <MenuItem value="" disabled>
+                                      Material Type
+                                   </MenuItem>
+                                   {variations.material_types.map((materialType: any) => (
+                                     <MenuItem key={materialType.id} value={materialType.id.toString()}>
+                                       {materialType.name}
+                                     </MenuItem>
+                                   ))}
+                                 </Select>
+                               </FormControl>
+                             </Box>
+                           )}
 
-                          {/* Included Arm */}
-                          <Box className={styles.formField}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography variant="body2" className={styles.fieldLabel}>
-                                Included Arm:
-                                 {selectedIncludedArm && (() => {
-                                   const selectedIncludedArmItem = variations?.arm_types?.find((a: any) => a.id.toString() === selectedIncludedArm);
-                                   const price = Number(selectedIncludedArmItem?.price);
-                                   return selectedIncludedArmItem?.price && price > 0 ? (
-                                     <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
-                                       +${price.toFixed(2)}
-                                     </span>
-                                   ) : null;
-                                 })()}
-                              </Typography>
-                            </Box>
-                            <FormControl className={styles.formControl}>
-                               <Select
-                                 value={selectedIncludedArm}
-                                 onChange={(e) => setSelectedIncludedArm(e.target.value)}
-                                 displayEmpty
-                                 className={styles.selectField}
-                               >
-                                <MenuItem value="" disabled>
-                                  Included Arm
-                                </MenuItem>
-                                {variations?.arm_types?.map((includedArm: any) => (
-                                  <MenuItem key={includedArm.id} value={includedArm.id.toString()}>
-                                    {includedArm.name}
-                                  </MenuItem>
-                                )) || (
-                                  <MenuItem value="none" disabled>
-                                    No included arm options available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Box>
+                           {/* Included Arm - Only show if options available */}
+                           {variations?.arm_types && variations.arm_types.length > 0 && (
+                             <Box className={styles.formField}>
+                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <Typography variant="body2" className={styles.fieldLabel}>
+                                   Included Arm:
+                                    {selectedIncludedArm && (() => {
+                                      const selectedIncludedArmItem = variations?.arm_types?.find((a: any) => a.id.toString() === selectedIncludedArm);
+                                      const price = Number(selectedIncludedArmItem?.price);
+                                      return selectedIncludedArmItem?.price && price > 0 ? (
+                                        <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '8px' }}>
+                                          +${price.toFixed(2)}
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                 </Typography>
+                               </Box>
+                               <FormControl className={styles.formControl}>
+                                  <Select
+                                    value={selectedIncludedArm}
+                                    onChange={(e) => setSelectedIncludedArm(e.target.value)}
+                                    displayEmpty
+                                    className={styles.selectField}
+                                  >
+                                   <MenuItem value="" disabled>
+                                     Included Arm
+                                   </MenuItem>
+                                   {variations.arm_types.map((includedArm: any) => (
+                                     <MenuItem key={includedArm.id} value={includedArm.id.toString()}>
+                                       {includedArm.name}
+                                     </MenuItem>
+                                   ))}
+                                 </Select>
+                               </FormControl>
+                             </Box>
+                           )}
 
-                       </Box>
-                    </Box>
+                        </Box>
+                       ) : (
+                        <Box sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          minHeight: '60px',
+                          padding: 2,
+                          backgroundColor: 'transparent',
+                          borderRadius: 1,
+                          border: '1px dashed #ccc'
+                        }}>
+                           <Typography variant="body2" color="text.secondary">
+                             No seat options available for this product
+                           </Typography>
+                         </Box>
+                       )}
+                     </Box>
 
                                          {/* Divider */}
                      <Divider className={styles.finalDivider} />

@@ -156,6 +156,7 @@ export interface ProductData {
 export interface ProductUpdateData extends Partial<ProductData> {
   existing_images?: string[];
   removed_images?: string[];
+  deleted_image_ids?: number[];
   primary_image_index?: number;
   image_data?: Array<{
     alt_text: string;
@@ -620,6 +621,13 @@ class ProductApi {
       if (data.removed_images && data.removed_images.length > 0) {
         data.removed_images.forEach((imagePath) => {
           formData.append("removed_images[]", imagePath);
+        });
+      }
+
+      // Handle deleted image IDs
+      if (data.deleted_image_ids && data.deleted_image_ids.length > 0) {
+        data.deleted_image_ids.forEach((imageId) => {
+          formData.append("deleted_image_ids[]", imageId.toString());
         });
       }
 

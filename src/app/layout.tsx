@@ -12,7 +12,7 @@ import './globals.css';
 const inter = Raleway({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Superior Seats - Responsive Next.js App',
+  title: 'Superior Seats LLC',
   description: 'A modern, responsive Next.js application built with Material UI',
   icons: {
     icon: '/superiorlogo/logored.png',

@@ -432,7 +432,7 @@ const HeroSection = () => {
                                // Removed hover effects as requested
                              }}
                            >
-                             Start Building Your Seat
+                             Build Your Own Seat
                                                         </Button>
                            </motion.div>
                           </Box>

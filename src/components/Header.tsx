@@ -98,7 +98,7 @@ const Header = () => {
 
   const menuItems = [
     { text: 'Home', href: '/' },
-    { text: 'Customize Your Seat', href: '/custom-seats' },
+    { text: 'Build Your Own Seat', href: '/custom-seats' },
     { text: 'Shop Now', href: '/shop-now' },
     { text: 'Gallery', href: '/gallery' },
     { text: 'About', href: '/about' },
