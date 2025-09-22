@@ -1317,7 +1317,7 @@ const ShopGallery = () => {
                            transition: 'all 0.3s ease',
                          }}
                        >
-                         Start Building Seat
+                       Build Your Own Seat
                        </Button>
                    
                   </Box>
@@ -1437,7 +1437,7 @@ const ShopGallery = () => {
                             },
                           }}
                         >
-                          Start Building Seat
+                          Build Your Own Seat
                         </Button>
                        
                        {/* ADD TO CART BUTTON */}

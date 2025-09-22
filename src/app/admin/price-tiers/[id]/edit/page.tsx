@@ -205,7 +205,9 @@ const EditPriceTierPage = () => {
                     />
                   </Box>
                   <Divider sx={{ mb: 3 }} />
-                
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, }}>
+
+              
                 <TextField
                   label="Name"
                   value={formData.name}
@@ -224,14 +226,15 @@ const EditPriceTierPage = () => {
                   placeholder="Enter display name (optional)"
                   sx={{ mb: 3 }}
                 />
-
+  </Box>
                 <TextField
                   label="Description"
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   fullWidth
                   multiline
-                  rows={3}
+                  minRows={1}
+                  maxRows={3}
                   placeholder="Enter description (optional)"
                 />
                 </Box>

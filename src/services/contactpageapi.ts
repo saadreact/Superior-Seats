@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, AxiosError } from 'axios';
 
 // API base URL - can be configured via environment variables
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://superiorseats.ali-khalid.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://superiorseats.ali-khalid.com/api';
 
 // Contact form data interface
 export interface ContactFormData {
@@ -58,16 +58,67 @@ export class ContactPageAPI {
         message: formData.message,
       };
 
-      const response: AxiosResponse<ContactApiResponse> = await axios.post(
-        `${API_BASE_URL}/api/contact`,
-        transformedData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          timeout: this.timeout,
+      console.log('📧 Sending contact form to:', `${API_BASE_URL}/contact`);
+      console.log('📧 Contact form data:', transformedData);
+
+      // Try the contact endpoint first
+      let response: AxiosResponse<ContactApiResponse> | undefined;
+      
+      try {
+        response = await axios.post(
+          `${API_BASE_URL}/contact`,
+          transformedData,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            timeout: this.timeout,
+          }
+        );
+      } catch (endpointError) {
+        // If contact endpoint doesn't exist, try alternative endpoints
+        console.log('📧 Contact endpoint failed, trying alternative endpoints...');
+        
+        // Try sending as a general message or inquiry
+        const alternativeData = {
+          ...transformedData,
+          type: 'contact_form',
+          source: 'website'
+        };
+        
+        // Try different possible endpoints
+        const possibleEndpoints = ['/messages', '/inquiries', '/support', '/feedback'];
+        
+        for (const endpoint of possibleEndpoints) {
+          try {
+            console.log(`📧 Trying endpoint: ${endpoint}`);
+            response = await axios.post(
+              `${API_BASE_URL}${endpoint}`,
+              alternativeData,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                timeout: this.timeout,
+              }
+            );
+            console.log(`📧 Success with endpoint: ${endpoint}`);
+            break;
+          } catch (altError) {
+            console.log(`📧 Endpoint ${endpoint} failed:`, altError);
+            if (endpoint === possibleEndpoints[possibleEndpoints.length - 1]) {
+              // If all alternative endpoints fail, throw the original error
+              throw endpointError;
+            }
+          }
         }
-      );
+      }
+
+      if (!response) {
+        throw new Error('No response received from any endpoint');
+      }
+
+      console.log('📧 Contact form response:', response.data);
 
       return {
         success: true,
@@ -75,8 +126,24 @@ export class ContactPageAPI {
         data: response.data,
       };
     } catch (error) {
-      console.error('Contact API failed:', error);
+      console.error('📧 Contact API failed:', error);
       const errorResult = this.handleError(error);
+      
+      // If all API endpoints fail, provide a fallback option
+      if (errorResult.code === 'NETWORK_ERROR' || errorResult.status === 404) {
+        return {
+          success: false,
+          message: `API endpoint not available. Please contact us directly at support@superiorseats.com or call us at (555) 123-4567. Your message: "${formData.subject}"`,
+          data: { 
+            status: errorResult.status, 
+            code: errorResult.code,
+            fallback: true,
+            email: 'support@superiorseats.com',
+            phone: '(555) 123-4567'
+          }
+        };
+      }
+      
       return {
         success: false,
         message: errorResult.message,

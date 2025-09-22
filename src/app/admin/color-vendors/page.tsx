@@ -46,7 +46,6 @@ interface ColorVendor {
   contact_email: string;
   contact_phone: string;
   address: string;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -302,14 +301,6 @@ const ColorVendorsPage = () => {
                             </Typography>
                           )}
                           
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Chip
-                              label={colorVendor.is_active ? 'Active' : 'Inactive'}
-                              color={colorVendor.is_active ? 'success' : 'default'}
-                              size="small"
-                              sx={{ fontSize: '0.7rem', height: 20 }}
-                            />
-                          </Box>
                         </Box>
                       </Box>
                     </Paper>
@@ -327,7 +318,6 @@ const ColorVendorsPage = () => {
                         <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Website</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Contact</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                         <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                       </TableRow>
                     </TableHead>
@@ -389,14 +379,6 @@ const ColorVendorsPage = () => {
                                 </Typography>
                               )}
                             </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={colorVendor.is_active ? 'Active' : 'Inactive'}
-                              color={colorVendor.is_active ? 'success' : 'default'}
-                              size="small"
-                              variant="outlined"
-                            />
                           </TableCell>
                           <TableCell align="center">
                             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>

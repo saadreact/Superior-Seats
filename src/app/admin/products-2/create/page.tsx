@@ -939,8 +939,8 @@ const CreateProduct2Page = () => {
                 
                 <Divider sx={{ mb: 3 }} />
                 
-                {/* Product Name */}
-                <Box sx={{ mb: 3 }}>
+                {/* Product Name and Category in one row */}
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
                   <TextField
                     fullWidth
                     label="Product Name"
@@ -951,10 +951,7 @@ const CreateProduct2Page = () => {
                     error={!!errors.name}
                     helperText={errors.name}
                   />
-                </Box>
-
-                {/* Category */}
-                <Box sx={{ mb: 3 }}>
+                  
                   <FormControl fullWidth required error={!!errors.category}>
                     <InputLabel>Category</InputLabel>
                     <Select
@@ -981,9 +978,20 @@ const CreateProduct2Page = () => {
                     required
                     placeholder="Enter product description"
                     multiline
-                    rows={4}
+                    minRows={1}
+                    maxRows={4}
                     error={!!errors.description}
                     helperText={errors.description}
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        alignItems: 'flex-start',
+                      },
+                      '& .MuiInputBase-input': {
+                        resize: 'vertical',
+                        overflow: 'auto',
+                        lineHeight: '1.5',
+                      }
+                    }}
                   />
                 </Box>
 
@@ -1055,36 +1063,12 @@ const CreateProduct2Page = () => {
                     Product Images
                   </Typography>
                   
-                  {/* Debug: Show current images state */}
-                  <Box sx={{ mb: 2, p: 1, bgcolor: 'grey.100', borderRadius: 1 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Debug: Images count: {formData.images.length}
-                    </Typography>
-                    {formData.images.length > 0 && (
-                      <Box>
-                        {formData.images.map((img, idx) => (
-                          <Typography key={idx} variant="caption" display="block">
-                            Image {idx}: {img?.name || 'No name'} ({img?.size || 0} bytes) - {img instanceof File ? 'File' : typeof img}
-                          </Typography>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
                   
                   {/* Image Preview */}
                   {formData.images.length > 0 && (
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', sm: 'repeat(12, 1fr)', md: 'repeat(16, 1fr)' }, gap: 0, mb: 2 }}>
-                      {formData.images.map((image, index) => {
-                        console.log(`🖼️ Rendering image ${index}:`, {
-                          image,
-                          type: typeof image,
-                          isFile: image instanceof File,
-                          name: image?.name,
-                          size: image?.size
-                        });
-                        
-                        return (
-                          <Box key={index} sx={{ position: 'relative' }}>
+                      {formData.images.map((image, index) => (
+                          <Box key={index} sx={{ position: 'relative', width: 60, height: 60 }}>
                             <img
                               src={URL.createObjectURL(image)}
                               alt={`Preview ${index + 1}`}
@@ -1095,45 +1079,37 @@ const CreateProduct2Page = () => {
                                 objectFit: 'cover',
                                 borderRadius: 4,
                                 border: '1px solid #e0e0e0',
-                                maxWidth: 60,
-                                maxHeight: 60,
                               }}
                               onError={(e) => {
-                                console.log(`❌ Image ${index} failed to load:`, e);
                                 const target = e.target as HTMLImageElement;
                                 target.style.display = 'none';
                                 target.parentElement!.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 8px;">Error</div>';
                               }}
-                              onLoad={() => {
-                                console.log(`✅ Image ${index} loaded successfully`);
-                              }}
                             />
-                          <IconButton
-                            onClick={() => removeImage(index)}
-                            size="small"
-                            sx={{
-                              position: 'absolute',
-                              top: 2,
-                              right: 2,
-                              bgcolor: 'rgba(255, 255, 255, 0.95)',
-                              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                              width: 16,
-                              height: 16,
-                              border: '1px solid #fff',
-                              '&:hover': {
-                                bgcolor: 'rgba(255, 255, 255, 1)',
-                                transform: 'scale(1.1)',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                              },
-                              transition: 'all 0.2s ease-in-out',
-                              zIndex: 10,
-                            }}
-                          >
-                            <CloseIcon sx={{ fontSize: 10, color: '#666' }} />
-                          </IconButton>
-                        </Box>
-                        );
-                      })}
+                            <IconButton
+                              onClick={() => removeImage(index)}
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: 4,
+                                right: 4,
+                                bgcolor: 'rgba(0, 0, 0, 0.6)',
+                                color: 'white',
+                                width: 18,
+                                height: 18,
+                                minWidth: 18,
+                                '&:hover': {
+                                  bgcolor: 'rgba(0, 0, 0, 0.8)',
+                                  transform: 'scale(1.1)',
+                                },
+                                transition: 'all 0.2s ease-in-out',
+                                zIndex: 10,
+                              }}
+                            >
+                              <CloseIcon sx={{ fontSize: 12 }} />
+                            </IconButton>
+                          </Box>
+                      ))}
                     </Box>
                   )}
                   

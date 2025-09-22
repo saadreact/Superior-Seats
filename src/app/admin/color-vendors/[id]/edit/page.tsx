@@ -41,7 +41,6 @@ const EditColorVendorPage = () => {
     contact_email: '',
     contact_phone: '',
     address: '',
-    is_active: true,
   });
 
   useEffect(() => {
@@ -62,7 +61,6 @@ const EditColorVendorPage = () => {
         contact_email: colorVendor.contact_email || '',
         contact_phone: colorVendor.contact_phone || '',
         address: colorVendor.address || '',
-        is_active: colorVendor.is_active ?? true,
       });
     } catch (err: any) {
       setError(err.message || 'Failed to load color vendor');
@@ -161,50 +159,14 @@ const EditColorVendorPage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Basic Information */}
               <Box>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  mb: 2,
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'flex-start', sm: 'center' },
-                  gap: { xs: 2, sm: 0 }
+                <Typography variant="h5" sx={{ 
+                  color: 'text.primary', 
+                  fontWeight: 700,
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                  mb: 2
                 }}>
-                  <Typography variant="h5" sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
-                    Basic Information
-                  </Typography>
-                  
-                  {/* Status Toggle */}
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.is_active}
-                        onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                        color="primary"
-                      />
-                    }
-                    label={
-                      <Typography variant="body1" sx={{ 
-                        fontWeight: 500,
-                        fontSize: { xs: '1rem', sm: '0.875rem' }
-                      }}>
-                        {formData.is_active ? 'Active' : 'Inactive'}
-                      </Typography>
-                    }
-                    labelPlacement="start"
-                    sx={{ 
-                      gap: 1,
-                      margin: 0,
-                      '& .MuiFormControlLabel-label': {
-                        fontSize: { xs: '1rem', sm: '0.875rem' },
-                        fontWeight: 500
-                      }
-                    }}
-                  />
-                </Box>
+                  Basic Information
+                </Typography>
                 <Divider sx={{ mb: 3 }} />
                 
                 <TextField
@@ -249,7 +211,8 @@ const EditColorVendorPage = () => {
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   fullWidth
                   multiline
-                  rows={3}
+                  minRows={1}
+                  maxRows={3}
                   placeholder="Enter description (optional)"
                   sx={{
                     '& .MuiInputBase-input': {
