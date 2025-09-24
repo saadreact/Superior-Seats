@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Customer } from '@/data/types';
 
 // API Configuration
-const API_BASE_URL = 'https://superiorseats.ali-khalid.com/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

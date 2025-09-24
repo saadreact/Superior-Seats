@@ -174,10 +174,10 @@ export interface ProductUpdateData extends Partial<ProductData> {
 // ============================================================================
 
 class ProductApi {
-  private baseUrl: string;
+  private baseUrl: string | undefined;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://superiorseats.ali-khalid.com/api';
+    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   }
 
   private getHeaders() {

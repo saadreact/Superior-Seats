@@ -1,7 +1,7 @@
 import api from '../utils/axios';
 
 // Base URL for the API - Use environment variable if available, fallback to hardcoded URL
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://superiorseats.ali-khalid.com/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // Debug logging for base URL
 console.log('🔧 ShopNowApis - Environment variables:', {

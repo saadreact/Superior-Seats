@@ -134,7 +134,7 @@ export default function ShopOrderViewPage() {
   const [isPaying, setIsPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const auth = useAppSelector((s: any) => s.auth);
-
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   useEffect(() => {
     const fetchOrder = async () => {
       try {
@@ -494,7 +494,7 @@ export default function ShopOrderViewPage() {
                     location_id: locationId,
                     notes: `Payment for order #${order?.order_number}`,
                   };
-                  const response = await fetch('https://superiorseats.ali-khalid.com/api/payments/charge', {
+                  const response = await fetch(`${BASE_URL}/payments/charge`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
