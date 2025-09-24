@@ -349,14 +349,14 @@ class ShopNowApis {
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());
       
-      // Add special shop filter
+      // Add special shop filter - ensure it's properly passed as boolean
       if (params.show_on_special_shop !== undefined) {
         queryParams.append('show_on_special_shop', params.show_on_special_shop.toString());
       }
       
-      // Add category filter
+      // Add category filter - use category_id as per API specification
       if (params.category_id) {
-        queryParams.append('category_id', params.category_id.toString());
+        queryParams.append('category', params.category_id.toString());
       }
       
       // Build the path with customer ID - use /shop/products/{customer} pattern
@@ -375,6 +375,13 @@ class ShopNowApis {
         roleId: params.userData?.role?.id || params.userData?.role_id,
         roleName: params.userData?.role?.name,
         customerType: params.userData?.customer_type
+      });
+      console.log('🔧 ShopNowApis - Query Parameters:', {
+        page: params.page,
+        limit: params.limit,
+        show_on_special_shop: params.show_on_special_shop,
+        category_id: params.category_id,
+        queryString: queryString
       });
       
       const response = await api.get<ProductsResponse>(path);
@@ -463,7 +470,7 @@ class ShopNowApis {
       })();
       
       const base = customerId ? `/shop/products/${customerId}` : '/shop/products/{customer?%7D=';
-      const path = `${base}?category_id=${categoryId}`;
+      const path = `${base}?category=${categoryId}`;
       const response = await api.get<ProductsResponse>(path);
       return response.data;
     } catch (error) {
