@@ -61,12 +61,37 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
 
   const handleSubmit = async (updatedCustomer: any) => {
     try {
-      const customerData = { ...updatedCustomer, is_active: isActive };
+      // Remove empty password field for updates
+      const { password, ...customerDataWithoutPassword } = updatedCustomer;
+      
+      // Create payload matching the backend schema exactly
+      const customerData = {
+        first_name: customerDataWithoutPassword.first_name || '',
+        last_name: customerDataWithoutPassword.last_name || '',
+        email: customerDataWithoutPassword.email || '',
+        phone: customerDataWithoutPassword.phone || '',
+        address: customerDataWithoutPassword.address || '',
+        city: customerDataWithoutPassword.city || '',
+        state: customerDataWithoutPassword.state || '',
+        company_name: customerDataWithoutPassword.company_name || '',
+        customer_type: 'retail', // Hardcoded like in create page
+        price_tier_id: Number(customerDataWithoutPassword.price_tier_id) || 1,
+        is_active: Boolean(isActive)
+      };
+      
+      console.log('Sending customer data:', customerData);
       await apiService.updateCustomer(parseInt(resolvedParams.id), customerData);
+      setAlert({ type: 'success', message: 'Customer updated successfully' });
       router.push('/admin/customers');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating customer:', error);
-      setAlert({ type: 'error', message: 'Failed to update customer' });
+      console.error('Error response:', error?.response?.data);
+      
+      // Show more detailed error message
+      const errorMessage = error?.response?.data?.message || 
+                          error?.response?.data?.error || 
+                          'Failed to update customer';
+      setAlert({ type: 'error', message: errorMessage });
     }
   };
 

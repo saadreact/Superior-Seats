@@ -11,6 +11,7 @@ import {
   AddressFields 
 } from '@/components/common/FormComponents';
 import { apiService } from '@/utils/api';
+import { US_STATES } from '@/api/customers';
 
 interface CustomerFormProps {
   customer?: any;
@@ -273,11 +274,15 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isViewMode}
           />
 
-          <FormField
+          <SelectField
             name="state"
             label="State"
             value={formData.state}
             onChange={(value) => handleFieldChange('state', value)}
+            options={US_STATES.map(state => ({
+              value: state.value,
+              label: state.label
+            }))}
             error={allErrors.state}
             disabled={isViewMode}
           />

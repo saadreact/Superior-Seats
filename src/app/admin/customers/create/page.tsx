@@ -46,11 +46,23 @@ const CreateCustomerPage = () => {
     setAlert(null);
     setServerErrors({});
     try {
-      const customerData = { 
-        ...customer, 
-        customer_type: 'retail',
-        is_active: isActive 
+      // Create payload matching the backend schema exactly
+      const customerData = {
+        first_name: customer.first_name || '',
+        last_name: customer.last_name || '',
+        email: customer.email || '',
+        password: customer.password || '', // Include password for create
+        phone: customer.phone || '',
+        address: customer.address || '',
+        city: customer.city || '',
+        state: customer.state || '',
+        company_name: customer.company_name || '',
+        customer_type: 'retail', // Hardcoded
+        price_tier_id: Number(customer.price_tier_id) || 1,
+        is_active: Boolean(isActive)
       };
+      
+      console.log('Creating customer with data:', customerData);
       await apiService.createCustomer(customerData);
       setAlert({ type: 'success', message: 'Customer created successfully' });
       router.push('/admin/customers');
