@@ -8,7 +8,11 @@ const FloatingButtonWrapper = () => {
   const router = useRouter();
 
   const handleFloatingButtonClick = () => {
-    router.push('/custom-seats');
+    // TODO: Uncomment when customize page is ready
+    // router.push('/custom-seats');
+    
+    // Temporary: Show alert that feature is coming soon
+    alert('Customize feature coming soon!');
   };
 
   return <FloatingButton onClick={handleFloatingButtonClick} />;

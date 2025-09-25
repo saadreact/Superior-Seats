@@ -48,6 +48,8 @@ import {
   InputLabel,
   Checkbox,
   FormControlLabel,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Close,
@@ -132,6 +134,7 @@ const ShopNow = () => {
   const [itemsPerPage] = useState(10);   // cards per page - server-side pagination
   const [modalImageIndex, setModalImageIndex] = useState(0); // For multiple images in modal
   const [showSpecialOnly, setShowSpecialOnly] = useState(false); // Special products filter
+  const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
 
   // API State
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
@@ -657,7 +660,11 @@ const ShopNow = () => {
     });
     
     // Navigate to customization page
-    router.push('/customize-your-seat');
+    // TODO: Uncomment when customize page is ready
+    // router.push('/customize-your-seat');
+    
+    // Temporary: Show alert that feature is coming soon
+    alert('Customize feature coming soon!');
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -665,6 +672,18 @@ const ShopNow = () => {
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
     // The useEffect will automatically trigger a new API call with the new page
+  };
+
+  // Snackbar handlers
+  const handleSnackbarOpen = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   return (
@@ -905,8 +924,8 @@ const ShopNow = () => {
            {!loading && !error && (
             <Box sx={{ 
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)' },
-              gap: { xs: 3, sm: 2, md: 3, lg: 4 },
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)', xxl: 'repeat(4, 1fr)' },
+              gap: { xs: 3, sm: 2, md: 3, lg: 4, xl: 3, xxl: 3 },
               justifyContent: 'center',
               width: '100%'
             }}>
@@ -1181,7 +1200,11 @@ const ShopNow = () => {
                            size="small"
                            onClick={(e) => {
                              e.stopPropagation();
-                             handleCustomize(item); // FUNCTION: Navigate to customize page with item details
+                             // TODO: Uncomment when customize page is ready
+                             // handleCustomize(item); // FUNCTION: Navigate to customize page with item details
+                             
+                             // Temporary: Show snackbar that feature is coming soon
+                             handleSnackbarOpen();
                            }}
                                                        sx={{
                               borderColor: theme.palette.primary.main,
@@ -1739,8 +1762,12 @@ const ShopNow = () => {
                           variant="outlined"
                           size="small"
                           onClick={() => {
-                            handleCustomize(selectedImage);
-                            handleCloseLightbox();
+                            // TODO: Uncomment when customize page is ready
+                            // handleCustomize(selectedImage);
+                            // handleCloseLightbox();
+                            
+                            // Temporary: Show snackbar that feature is coming soon
+                            handleSnackbarOpen();
                           }}
                           sx={{
                             position: 'absolute',
@@ -1868,8 +1895,12 @@ const ShopNow = () => {
                           variant="outlined"
                           size="medium"
                           onClick={() => {
-                            handleCustomize(selectedImage);
-                            handleCloseLightbox();
+                            // TODO: Uncomment when customize page is ready
+                            // handleCustomize(selectedImage);
+                            // handleCloseLightbox();
+                            
+                            // Temporary: Show snackbar that feature is coming soon
+                            handleSnackbarOpen();
                           }}
                           sx={{
                             display: { xs: 'flex', sm: 'none' }, // Only show on mobile
@@ -1926,6 +1957,22 @@ const ShopNow = () => {
              )}
         </DialogContent>
       </Dialog>
+      
+      {/* Snackbar for customize feature coming soon */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity="success" 
+          sx={{ width: '100%' }}
+        >
+          Customize feature is coming soon!
+        </Alert>
+      </Snackbar>
       
       <Footer />
     </Box>

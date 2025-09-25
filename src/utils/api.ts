@@ -33,7 +33,7 @@ const getToken = (): string | null => {
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://superiorseats.ali-khalid.com/api',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -1750,19 +1750,19 @@ class ApiService {
     return response.data.data || response.data;
   }
 
-  // Create customer
+  // Create customer - Updated schema
   async createCustomer(data: {
-    name: string;
+    first_name: string;
+    last_name: string;
     email: string;
-    username: string;
-    password: string;
-    customer_type: string;
     phone: string;
     address: string;
+    city: string;
+    state: string;
     company_name?: string;
-    tax_id?: string;
+    customer_type: string;
     price_tier_id: number;
-    credit_limit: number;
+    is_active: boolean;
   }) {
     const response = await api.post('/register', data);
     return response.data.data || response.data;
@@ -1770,18 +1770,34 @@ class ApiService {
 
   // Update customer
   async updateCustomer(id: number, data: {
+    first_name?: string;
+    last_name?: string;
     name?: string;
     email?: string;
+    password?: string;
     phone?: string;
-    company_name?: string;
     address?: string;
+    city?: string;
+    state?: string;
+    company_name?: string;
     customer_type?: string;
     tax_id?: string;
     price_tier_id?: number;
     credit_limit?: number;
+    is_active?: boolean;
   }) {
-    const response = await api.put(`/customers/${id}`, data);
-    return response.data.data || response.data;
+    try {
+      console.log('API: Updating customer with ID:', id);
+      console.log('API: Customer data being sent:', data);
+      const response = await api.put(`/customers/${id}`, data);
+      console.log('API: Update customer response:', response.data);
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.error('API: Error updating customer:', error);
+      console.error('API: Error response data:', error?.response?.data);
+      console.error('API: Error response status:', error?.response?.status);
+      throw error;
+    }
   }
 
   // Delete customer

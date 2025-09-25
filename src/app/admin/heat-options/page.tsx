@@ -145,8 +145,8 @@ const HeatOptionsPage = () => {
       setError(null);
       
       // Debug environment variable
-      console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-      console.log('API Base URL:', process.env.NEXT_PUBLIC_API_URL || 'https://superiorseats.ali-khalid.com/api');
+    
+      
       
       const params: Record<string, any> = {};
       if (searchTerm) params.search = searchTerm;

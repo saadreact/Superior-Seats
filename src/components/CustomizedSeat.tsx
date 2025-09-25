@@ -352,7 +352,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             {showHero && (
         /* Hero Section */
         <HeroSectionCommon
-         title="Customize Your Seat"
+         title="Build Your Own Seat"
          description="Design your perfect seat with our interactive 3D configurator"
          height={{
           xs: '75px',
@@ -369,7 +369,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       <Breadcrumbs
         items={[
           { label: 'Shop', href: '/shop-now' },
-          { label: 'Customize Your Seat' }
+          { label: 'Build Your Own Seat' }
         ]}
       />
 
