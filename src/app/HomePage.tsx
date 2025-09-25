@@ -18,6 +18,8 @@ import {
   DialogContent,
   IconButton,
   Stack,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
@@ -142,6 +144,9 @@ const HomePage = () => {
   // Modal state
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
 
 
@@ -172,6 +177,18 @@ const HomePage = () => {
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedProduct(null);
+  };
+
+  // Snackbar handlers
+  const handleSnackbarOpen = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   return (
@@ -376,6 +393,7 @@ const HomePage = () => {
 
      
       {/* Truck Carousel Section */}
+      
       <TruckCarousel />
       
       {/* Product Details Modal */}
@@ -541,6 +559,11 @@ const HomePage = () => {
                   <Button
                     variant="outlined"
                     size="large"
+                    onClick={() => {
+                      // TODO: Uncomment when customize page is ready
+                      // Navigate to customize page
+                      handleSnackbarOpen();
+                    }}
                     sx={{
                       flex: 1,
                       borderColor: 'primary.main',
@@ -569,6 +592,22 @@ const HomePage = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Snackbar for customize feature coming soon */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity="success" 
+          sx={{ width: '100%' }}
+        >
+          Customize feature is coming soon!
+        </Alert>
+      </Snackbar>
       
    <Footer/>
   

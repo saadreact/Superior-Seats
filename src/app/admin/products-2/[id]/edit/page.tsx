@@ -132,7 +132,6 @@ const EditProduct2Page = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [success, setSuccess] = useState('');
   const [existingImages, setExistingImages] = useState<{id: number, url: string}[]>([]);
-  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
   
   // Price tiers states
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
@@ -793,12 +792,7 @@ const EditProduct2Page = () => {
   };
 
   const removeExistingImage = (index: number) => {
-    const imageToRemove = existingImages[index];
-    if (imageToRemove && imageToRemove.id) {
-      // Add to deleted images list
-      setDeletedImageIds(prev => [...prev, imageToRemove.id]);
-    }
-    // Remove from existing images list
+    // Simply remove from existing images list
     setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -911,8 +905,17 @@ const EditProduct2Page = () => {
         is_active: formData.isActive,
         show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
-        images: formData.images, // Simple File array like create page
-        deleted_image_ids: deletedImageIds.length > 0 ? deletedImageIds : undefined, // Include deleted image IDs
+        images: formData.images, // Only send new images like create page
+        
+        // Combine existing and new images into single image_data array (like backend expects)
+        existing_images: existingImages.map(img => img.url), // Send existing image URLs for backend processing
+        
+        // Add image metadata for new images (like create page)
+        image_data: formData.images.length > 0 ? formData.images.map((_, index) => ({
+          alt_text: `Product image ${existingImages.length + index + 1}`, 
+          caption: `Product image ${existingImages.length + index + 1}`,
+          set_primary: existingImages.length === 0 && index === 0 // First new image is primary only if no existing images
+        })) : undefined,
         
         // Vehicle information - only pass trim ID if variations are enabled
         vehicle_trim_id: formData.enableVariations && formData.vehicleTrim ? Number(formData.vehicleTrim) : undefined,
@@ -941,8 +944,14 @@ const EditProduct2Page = () => {
       console.log('🔄 Products-2 data being sent to new productApi:', {
         ...productData,
         images: productData.images?.map(file => `File(${file.name}, ${file.size} bytes)`),
-        deleted_image_ids: deletedImageIds
+        image_data: productData.image_data,
+        existing_images: (productData as any).existing_images,
       });
+      console.log('🔄 VERIFY: No deleted_image_ids in payload:', !productData.hasOwnProperty('deleted_image_ids'));
+      console.log('🔄 Existing images count:', existingImages.length);
+      console.log('🔄 New images count:', formData.images.length);
+      console.log('🔄 Total images in payload:', existingImages.length + formData.images.length);
+      console.log('🔄 Backend will combine existing + new images into single image_data[] array');
       
       // Debug: Check if images are actually present
       console.log('🔄 FormData.images length:', formData.images.length);
@@ -969,14 +978,15 @@ const EditProduct2Page = () => {
         console.log('❌ No images in productData.images');
       }
 
-      // Call the new productApi to update product
-      await productApi.updateProduct(parseInt(id), productData);
-      
-      setSuccess('Product updated successfully!');
-      
-      setTimeout(() => {
-        handleBackToList();
-      }, 1500);
+        // Call the new productApi to update product
+        await productApi.updateProduct(parseInt(id), productData);
+        
+        setSuccess('Product updated successfully!');
+        
+        
+        setTimeout(() => {
+          handleBackToList();
+        }, 1500);
     } catch (error: any) {
       setErrors({ submit: error.message || 'Failed to update product. Please try again.' });
     } finally {

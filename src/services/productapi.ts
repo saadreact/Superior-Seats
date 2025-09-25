@@ -154,9 +154,6 @@ export interface ProductData {
 
 // Product Update Data Interface (extends ProductData with optional fields)
 export interface ProductUpdateData extends Partial<ProductData> {
-  existing_images?: string[];
-  removed_images?: string[];
-  deleted_image_ids?: number[];
   primary_image_index?: number;
   image_data?: Array<{
     alt_text: string;
@@ -600,43 +597,60 @@ class ProductApi {
         });
       }
 
-      // Add image metadata using nested object notation (matching backend expectation)
+      // Combine existing images and new images into a single image_data array
+      let allImageData: Array<{
+        image_path?: string;
+        alt_text: string;
+        caption: string;
+        set_primary: boolean;
+        isNewImage?: boolean;
+      }> = [];
+
+      // Add existing images first
+      if ((data as any).existing_images && Array.isArray((data as any).existing_images)) {
+        (data as any).existing_images.forEach((imageUrl: string, index: number) => {
+          allImageData.push({
+            image_path: imageUrl,
+            alt_text: `Product image ${index + 1}`,
+            caption: `Product image ${index + 1}`,
+            set_primary: index === 0,
+            isNewImage: false
+          });
+        });
+        console.log("🔄 Added existing images to combined image_data array");
+      }
+
+      // Add new images metadata
       if (data.image_data && Array.isArray(data.image_data)) {
         data.image_data.forEach((imageMeta, index) => {
-          formData.append(`image_data[${index}].alt_text`, imageMeta.alt_text || "");
-          formData.append(`image_data[${index}].caption`, imageMeta.caption || "");
-          formData.append(`image_data[${index}].set_primary`, imageMeta.set_primary ? "1" : "0");
-          console.log(`🔄 Update: Added image_data[${index}].set_primary = ${imageMeta.set_primary ? "1" : "0"}`);
+          allImageData.push({
+            alt_text: imageMeta.alt_text || `Product image ${allImageData.length + 1}`,
+            caption: imageMeta.caption || `Product image ${allImageData.length + 1}`,
+            set_primary: imageMeta.set_primary,
+            isNewImage: true
+          });
         });
+        console.log("🔄 Added new images metadata to combined image_data array");
       }
 
-      // Handle existing images
-      if (data.existing_images && data.existing_images.length > 0) {
-        data.existing_images.forEach((imagePath) => {
-          formData.append("existing_images[]", imagePath);
-        });
-      }
+      // Add all image_data to FormData
+      allImageData.forEach((imageData, index) => {
+        if (imageData.image_path) {
+          formData.append(`image_data[${index}].image_path`, imageData.image_path);
+        }
+        formData.append(`image_data[${index}].alt_text`, imageData.alt_text);
+        formData.append(`image_data[${index}].caption`, imageData.caption);
+        formData.append(`image_data[${index}].set_primary`, imageData.set_primary ? "1" : "0");
+        console.log(`🔄 Update: Added image_data[${index}] = ${imageData.image_path || 'new image'}`);
+      });
 
-      // Handle removed images
-      if (data.removed_images && data.removed_images.length > 0) {
-        data.removed_images.forEach((imagePath) => {
-          formData.append("removed_images[]", imagePath);
-        });
-      }
-
-      // Handle deleted image IDs
-      if (data.deleted_image_ids && data.deleted_image_ids.length > 0) {
-        data.deleted_image_ids.forEach((imageId) => {
-          formData.append("deleted_image_ids[]", imageId.toString());
-        });
-      }
 
       // Handle new images according to backend API specification
       if (data.images && data.images.length > 0) {
-        console.log("🔄 Processing images for update:", data.images.length, "files");
+        console.log("🔄 Processing new images for update:", data.images.length, "files");
         data.images.forEach((file, index) => {
           if (file instanceof File) {
-            console.log(`🔄 Adding image ${index}:`, {
+            console.log(`🔄 Adding new image ${index}:`, {
               name: file.name,
               size: file.size,
               type: file.type,
@@ -646,31 +660,10 @@ class ProductApi {
             // Backend expects images as array of files
             formData.append('images[]', file);
             
-            console.log(`🔄 Added image ${index} to FormData`);
+            console.log(`🔄 Added new image ${index} to FormData`);
           }
         });
-        
-        // Add image metadata for new images using nested object notation
-        if (data.image_data && data.image_data.length > 0) {
-          data.image_data.forEach((imageMeta, index) => {
-            formData.append(`image_data[${index}].alt_text`, imageMeta.alt_text || "");
-            formData.append(`image_data[${index}].caption`, imageMeta.caption || "");
-            formData.append(`image_data[${index}].set_primary`, imageMeta.set_primary ? "1" : "0");
-            console.log(`🔄 New images: Added image_data[${index}].set_primary = ${imageMeta.set_primary ? "1" : "0"}`);
-          });
-          console.log("🔄 New image metadata added to FormData");
-        } else {
-          // Default image metadata for new images if not provided
-          data.images.forEach((_, index) => {
-            formData.append(`image_data[${index}].alt_text`, `Product image ${index + 1}`);
-            formData.append(`image_data[${index}].caption`, `Product image ${index + 1}`);
-            formData.append(`image_data[${index}].set_primary`, index === 0 ? "1" : "0");
-            console.log(`🔄 New images default: Added image_data[${index}].set_primary = ${index === 0 ? "1" : "0"}`);
-          });
-          console.log("🔄 Default image metadata added for new images");
-        }
-        
-        console.log("🔄 New images and metadata added to FormData");
+        console.log("🔄 New images added to FormData");
       } else {
         console.log("🔄 No new images to process for update");
       }
@@ -1046,7 +1039,7 @@ class ProductApi {
   /**
    * Get product image URL
    */
-  getProductImageUrl(product: Product): string {
+  getProductImageUrl(product: Product): string | null {
     // Handle both images array and primary_image object from API response
     if (product.primary_image?.image_path) {
       return `https://superiorseats.ali-khalid.com${product.primary_image.image_path}`;
@@ -1056,7 +1049,7 @@ class ProductApi {
       return `https://superiorseats.ali-khalid.com${product.images[0]}`;
     }
 
-    return "/TruckImages/01.jpg"; // Fallback image
+    return null; // No fallback image
   }
 
   /**

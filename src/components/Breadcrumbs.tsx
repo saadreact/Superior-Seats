@@ -38,10 +38,11 @@ const pageTitles: { [key: string]: string } = {
   '/contact': 'Contact',
   '/gallery': 'Gallery',
   '/shop': 'Shop',
-  '/custom-seats': 'Build Your Own Seat',
+  // TODO: Uncomment when customize page is ready
+  // '/custom-seats': 'Build Your Own Seat',
   '/ShopGallery': 'Shop Specials',
   '/shop-now': 'Shop Now',
-  '/customize-your-seat': 'Build Your Own Seat',
+  // '/customize-your-seat': 'Build Your Own Seat',
   '/privacy-policy': 'Privacy Policy',
   '/terms-of-service': 'Terms of Service',
   '/warranty': 'Warranty',

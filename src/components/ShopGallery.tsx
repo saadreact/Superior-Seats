@@ -362,21 +362,22 @@ const ShopGallery = () => {
   };
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
-  const handleCustomize = (item: Product) => {
-    console.log('🔄 ShopGallery - Setting selected item ID:', item.id);
-    
-    // Set only the product ID in the context
-    setSelectedItem({ 
-      id: item.id
-    });
-    
-    // Save product ID to localStorage
-    localStorage.setItem('selectedProductId', item.id.toString());
-    console.log('💾 ShopGallery - Saved product ID to localStorage:', item.id);
-    
-    // Navigate to customization page
-    router.push('/customize-your-seat');
-  };
+  // TODO: Uncomment when customize page is ready
+  // const handleCustomize = (item: Product) => {
+  //   console.log('🔄 ShopGallery - Setting selected item ID:', item.id);
+  //   
+  //   // Set only the product ID in the context
+  //   setSelectedItem({ 
+  //     id: item.id
+  //   });
+  //   
+  //   // Save product ID to localStorage
+  //   localStorage.setItem('selectedProductId', item.id.toString());
+  //   console.log('💾 ShopGallery - Saved product ID to localStorage:', item.id);
+  //   
+  //   // Navigate to customization page
+  //   router.push('/customize-your-seat');
+  // };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
@@ -771,7 +772,11 @@ const ShopGallery = () => {
                            size="small"
                            onClick={(e) => {
                              e.stopPropagation();
-                             handleCustomize(item); // FUNCTION: Navigate to customize page with item details
+                             // TODO: Uncomment when customize page is ready
+                             // handleCustomize(item); // FUNCTION: Navigate to customize page with item details
+                             
+                             // Temporary: Show alert that feature is coming soon
+                             alert('Customize feature coming soon!');
                            }}
                                                        sx={{
                               borderColor: theme.palette.primary.main,
@@ -1289,8 +1294,12 @@ const ShopGallery = () => {
                           variant="outlined"
                           size="small"
                           onClick={() => {
-                            handleCustomize(selectedImage);
-                            handleCloseLightbox();
+                            // TODO: Uncomment when customize page is ready
+                            // handleCustomize(selectedImage);
+                            // handleCloseLightbox();
+                            
+                            // Temporary: Show alert that feature is coming soon
+                            alert('Customize feature coming soon!');
                           }}
                           sx={{
                             position: 'absolute',
@@ -1417,8 +1426,12 @@ const ShopGallery = () => {
                           variant="outlined"
                           size="medium"
                           onClick={() => {
-                            handleCustomize(selectedImage);
-                            handleCloseLightbox();
+                            // TODO: Uncomment when customize page is ready
+                            // handleCustomize(selectedImage);
+                            // handleCloseLightbox();
+                            
+                            // Temporary: Show alert that feature is coming soon
+                            alert('Customize feature coming soon!');
                           }}
                           sx={{
                             display: { xs: 'flex', sm: 'none' }, // Only show on mobile
