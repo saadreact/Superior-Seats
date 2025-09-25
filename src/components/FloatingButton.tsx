@@ -46,7 +46,7 @@ const FloatingButton = ({ onClick }: FloatingButtonProps) => {
       }}
     >
       <Tooltip
-        title="Build Your Own Seat"
+        title="Customize Feature Coming Soon"
         placement="left"
         arrow
         componentsProps={{

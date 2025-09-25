@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, AxiosError } from 'axios';
 
 // API base URL - can be configured via environment variables
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://superiorseats.ali-khalid.com/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ;
 
 // Contact form data interface
 export interface ContactFormData {

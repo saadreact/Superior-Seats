@@ -35,7 +35,6 @@ import {
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Visibility as ViewIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
   ArrowUpward as ArrowUpwardIcon,
@@ -182,9 +181,6 @@ const CustomersPage = () => {
     router.push(`/admin/customers/${customer.id}/edit`);
   };
 
-  const handleView = (customer: Customer) => {
-    router.push(`/admin/customers/${customer.id}`);
-  };
 
   const handleDelete = (customer: Customer) => {
     setCustomerToDelete(customer);
@@ -358,14 +354,6 @@ const CustomersPage = () => {
                           <Box sx={{ display: 'flex', gap: 0.5 }}>
                             <IconButton
                               size="small"
-                              onClick={() => handleView(customer)}
-                              title="View"
-                              sx={{ color: 'primary.main', p: 0.5 }}
-                            >
-                              <ViewIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              size="small"
                               onClick={() => handleEdit(customer)}
                               title="Edit"
                               sx={{ color: 'primary.main', p: 0.5 }}
@@ -491,16 +479,8 @@ const CustomersPage = () => {
                             {customer.createdAt.toLocaleDateString()}
                           </Typography>
                         </TableCell>
-                        <TableCell align="center" sx={{ minWidth: 120 }}>
+                        <TableCell align="center" sx={{ minWidth: 100 }}>
                           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleView(customer)}
-                              title="View"
-                              sx={{ color: 'primary.main' }}
-                            >
-                              <ViewIcon />
-                            </IconButton>
                             <IconButton
                               size="small"
                               onClick={() => handleEdit(customer)}

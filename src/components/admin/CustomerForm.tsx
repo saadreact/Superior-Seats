@@ -11,6 +11,7 @@ import {
   AddressFields 
 } from '@/components/common/FormComponents';
 import { apiService } from '@/utils/api';
+import { US_STATES } from '@/api/customers';
 
 interface CustomerFormProps {
   customer?: any;
@@ -43,6 +44,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     company_name: '',
     price_tier_id: 1,
     is_active: true,
+    // Shipping Address Fields
+    shipping_address: '',
+    shipping_city: '',
+    shipping_state: '',
+    shipping_zip: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -87,6 +93,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         company_name: customer.company_name || '',
         price_tier_id: customer.price_tier_id || 1,
         is_active: customer.is_active !== undefined ? customer.is_active : true,
+        // Shipping Address Fields
+        shipping_address: customer.shipping_address || '',
+        shipping_city: customer.shipping_city || '',
+        shipping_state: customer.shipping_state || '',
+        shipping_zip: customer.shipping_zip || '',
       });
     }
   }, [customer]);
@@ -273,11 +284,15 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isViewMode}
           />
 
-          <FormField
+          <SelectField
             name="state"
             label="State"
             value={formData.state}
             onChange={(value) => handleFieldChange('state', value)}
+            options={US_STATES.map(state => ({
+              value: state.value,
+              label: state.label
+            }))}
             error={allErrors.state}
             disabled={isViewMode}
           />
@@ -315,6 +330,58 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             required
             error={allErrors.price_tier_id}
             disabled={isViewMode || priceTiersLoading}
+          />
+        </Grid>
+      </Box>
+
+      {/* Shipping Address */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+          Shipping Address
+        </Typography>
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+          gap={{ xs: 2, md: 3 }}
+        >
+          <FormField
+            name="shipping_address"
+            label="Shipping Address"
+            value={formData.shipping_address}
+            onChange={(value) => handleFieldChange('shipping_address', value)}
+            error={allErrors.shipping_address}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="shipping_city"
+            label="Shipping City"
+            value={formData.shipping_city}
+            onChange={(value) => handleFieldChange('shipping_city', value)}
+            error={allErrors.shipping_city}
+            disabled={isViewMode}
+          />
+
+          <SelectField
+            name="shipping_state"
+            label="Shipping State"
+            value={formData.shipping_state}
+            onChange={(value) => handleFieldChange('shipping_state', value)}
+            options={US_STATES.map(state => ({
+              value: state.value,
+              label: state.label
+            }))}
+            error={allErrors.shipping_state}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="shipping_zip"
+            label="Shipping ZIP Code"
+            value={formData.shipping_zip}
+            onChange={(value) => handleFieldChange('shipping_zip', value)}
+            error={allErrors.shipping_zip}
+            disabled={isViewMode}
           />
         </Grid>
       </Box>

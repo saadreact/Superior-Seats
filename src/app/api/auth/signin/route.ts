@@ -12,9 +12,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     // Make request to the actual backend authentication service
-    const response = await fetch('https://superiorseats.ali-khalid.com/api/login', {
+    const response = await fetch(`${BASE_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

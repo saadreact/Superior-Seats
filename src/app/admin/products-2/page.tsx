@@ -262,7 +262,7 @@ const Products2Page = () => {
       return `https://superiorseats.ali-khalid.com${product.images[0]}`;
     }
     
-    return '/TruckImages/01.jpg';
+    return null; // No fallback image
   };
 
 
@@ -442,28 +442,44 @@ const Products2Page = () => {
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <Box
-                      component="img"
-                      src={getProductImage(product)}
-                      alt={product.name}
-                      sx={{
-                        maxWidth: '100%',
-                        maxHeight: '100%',
-                        width: 'auto',
-                        height: 'auto',
-                        objectFit: 'contain',
-                        objectPosition: 'center',
-                        transition: 'transform 0.3s ease',
-                        borderRadius: '4px',
-                        '&:hover': {
-                          transform: 'scale(1.02)'
-                        }
-                      }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/TruckImages/01.jpg';
-                      }}
-                    />
+                    {getProductImage(product) ? (
+                      <Box
+                        component="img"
+                        src={getProductImage(product)!}
+                        alt={product.name}
+                        sx={{
+                          maxWidth: '100%',
+                          maxHeight: '100%',
+                          width: 'auto',
+                          height: 'auto',
+                          objectFit: 'contain',
+                          objectPosition: 'center',
+                          transition: 'transform 0.3s ease',
+                          borderRadius: '4px',
+                          '&:hover': {
+                            transform: 'scale(1.02)'
+                          }
+                        }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#999',
+                        textAlign: 'center',
+                        p: 2
+                      }}>
+                        <Typography variant="body2" sx={{ fontSize: '0.75rem', mb: 1 }}>
+                          No Image
+                        </Typography>
+                      </Box>
+                    )}
                     
                     {/* Subtle border for better definition */}
                     <Box sx={{
@@ -664,29 +680,31 @@ const Products2Page = () => {
                           borderRadius: 1,
                           border: '1px solid #e0e0e0'
                         }}>
-                          <Box
-                            component="img"
-                            src={getProductImage(product)}
-                            alt={product.name}
-                            sx={{
-                              maxWidth: '100%',
-                              maxHeight: '100%',
-                              width: 'auto',
-                              height: 'auto',
-                              objectFit: 'contain',
-                              objectPosition: 'center',
-                              borderRadius: 1
-                            }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              // Show fallback when image fails to load
-                              const fallback = target.parentElement?.querySelector('.image-fallback');
-                              if (fallback) {
-                                (fallback as HTMLElement).style.display = 'flex';
-                              }
-                            }}
-                          />
+                          {getProductImage(product) && (
+                            <Box
+                              component="img"
+                              src={getProductImage(product)!}
+                              alt={product.name}
+                              sx={{
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                width: 'auto',
+                                height: 'auto',
+                                objectFit: 'contain',
+                                objectPosition: 'center',
+                                borderRadius: 1
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                // Show fallback when image fails to load
+                                const fallback = target.parentElement?.querySelector('.image-fallback');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                          )}
                           
                           {/* Fallback for when image is missing or fails to load */}
                           <Box
@@ -695,7 +713,7 @@ const Products2Page = () => {
                               width: '100%',
                               height: '100%',
                               bgcolor: 'grey.200',
-                              display: 'none',
+                              display: getProductImage(product) ? 'none' : 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               borderRadius: 1,

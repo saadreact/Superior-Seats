@@ -880,7 +880,7 @@ console.log("order",order)
                   location_id: locationId,
                   notes: `Payment for order #${order?.order_number}`,
                 };
-                const response = await fetch('https://superiorseats.ali-khalid.com/api/payments/charge', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/payments/charge`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',

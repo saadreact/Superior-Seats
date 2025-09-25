@@ -11,6 +11,8 @@ import {
   CardContent,
   useTheme,
   useMediaQuery,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import LogoButton from './LogoButton';
 import { motion } from 'framer-motion';
@@ -76,6 +78,9 @@ const HeroSection = () => {
   const [animationKey, setAnimationKey] = React.useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = React.useState(true);
   const [slideDirection, setSlideDirection] = React.useState<'right' | 'left'>('left');
+  
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!isAutoPlaying) return;
@@ -181,6 +186,18 @@ const HeroSection = () => {
     setIsDragging(false);
     // Resume auto-play after a delay
     setTimeout(() => setIsAutoPlaying(true), 3000);
+  };
+
+  // Snackbar handlers
+  const handleSnackbarOpen = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
 
@@ -323,7 +340,11 @@ const HeroSection = () => {
                               viewport={{ once: false, amount: 0.1 }}
                               transition={{ duration: 0.8, ease: "easeOut" }}
                             >
-                              <LogoButton onClick={() => router.push('/custom-seats')} />
+                              <LogoButton onClick={() => {
+                                // TODO: Uncomment when customize page is ready
+                                // router.push('/custom-seats');
+                                handleSnackbarOpen();
+                              }} />
                             </motion.div>
                       </Box>
                       
@@ -413,7 +434,11 @@ const HeroSection = () => {
                             >
                              <Button
                                variant="outlined"
-                               onClick={() => router.push('/custom-seats')}
+                               onClick={() => {
+                                 // TODO: Uncomment when customize page is ready
+                                 // router.push('/custom-seats');
+                                 handleSnackbarOpen();
+                               }}
                              sx={{
                              //  border: `1px solid ${theme.palette.primary.main}`,
                              border: '2px solid text.primary',
@@ -432,7 +457,7 @@ const HeroSection = () => {
                                // Removed hover effects as requested
                              }}
                            >
-                             Build Your Own Seat
+                             Customize Coming Soon
                                                         </Button>
                            </motion.div>
                           </Box>
@@ -519,8 +544,21 @@ const HeroSection = () => {
           />
         </Box>
 
-
-
+      {/* Snackbar for customize feature coming soon */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity="success" 
+          sx={{ width: '100%' }}
+        >
+          Customize feature is coming soon!
+        </Alert>
+      </Snackbar>
 
     </Box>
   );
