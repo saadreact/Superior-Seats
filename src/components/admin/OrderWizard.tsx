@@ -176,9 +176,15 @@ const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
 
 	const getUnitPrice = (productId: number) => {
 		const p = products.find(p => p.id === productId) as any;
-		const priceRaw = p?.price ?? p?.unit_price ?? 0;
-		const priceNum = typeof priceRaw === 'string' ? parseFloat(priceRaw) : Number(priceRaw || 0);
-		return isNaN(priceNum) ? 0 : priceNum;
+		if (!p) return 0;
+		try {
+			const { getEffectiveProductPrice } = require('@/utils/pricing');
+			return getEffectiveProductPrice(p, (window as any)?.__AUTH_USER__ || null);
+		} catch {
+			const priceRaw = p?.price ?? p?.unit_price ?? 0;
+			const priceNum = typeof priceRaw === 'string' ? parseFloat(priceRaw) : Number(priceRaw || 0);
+			return isNaN(priceNum) ? 0 : priceNum;
+		}
 	};
 
 	const basePriceFor = (productId: number) => getUnitPrice(productId);
