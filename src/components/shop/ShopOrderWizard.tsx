@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
   Box,
   Stepper,
@@ -30,6 +30,9 @@ import {
   MenuItem,
   Divider,
   InputAdornment,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon, Tune as TuneIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useAppSelector } from '@/store/hooks';
@@ -41,16 +44,19 @@ import { useRouter } from 'next/navigation';
 import AdminVariantsDrawer, { VariantSelections } from '@/components/admin/AdminVariantsDrawer';
 import { useDispatch } from 'react-redux';
 import { clearCart } from '@/store/cartSlice';
+import SquareCard, { SquareCardHandle } from '@/components/checkout/SquareCard';
+import shopNowApis, { PriceTier as ShopPriceTier, User as ShopUser } from '@/services/ShopNowApis';
 
 interface ProductOption { id: number; name: string; price?: any; sku?: string }
 interface VariationOption { id: number; name: string; price?: number }
 interface Address { street: string; city: string; state: string; postalCode: string; country: string }
-interface CartItem { itemId: string; productId: number; variationId?: number; name: string; quantity: number; unitPrice: number; total: number; totalPrice: number; variants?: VariantSelections }
+interface CartItem { itemId: string; productId: number; variationId?: number; name: string; quantity: number; unitPrice: number; total: number; totalPrice: number; variants?: VariantSelections; unitPriceLocked?: boolean }
 
 const steps = [
   'Select Products',
   'Billing & Shipping',
-  'Notes and Shipping Methods',
+  'Notes & Shipping',
+  'Payment',
   'Review & Submit',
 ];
 
@@ -61,6 +67,7 @@ export default function ShopOrderWizard() {
   const { user } = useAppSelector((s: any) => s.auth);
   const reduxCart = useSelector((s: RootState) => s.cart.items) as ReduxCartItem[];
   const dispatch = useDispatch();
+  const auth = useAppSelector((s: any) => s.auth);
 
   // Start at Select Products (skip Select Customer visually and logically)
   const [activeStep, setActiveStep] = useState(0);
@@ -83,6 +90,13 @@ export default function ShopOrderWizard() {
 
   const [notes, setNotes] = useState('');
   const [shippingMethod, setShippingMethod] = useState('Standard');
+  const [paymentOption, setPaymentOption] = useState<'cash' | 'card'>('cash');
+  const squareRef = useRef<SquareCardHandle | null>(null);
+  const [cardToken, setCardToken] = useState<string | null>(null);
+
+  // Price tier context (mimic /shop-now)
+  const [priceTiers, setPriceTiers] = useState<ShopPriceTier[]>([]);
+  const [userData, setUserData] = useState<ShopUser | null>(null);
 
   // Discount removed; tax is fixed at 7%
 
@@ -94,21 +108,39 @@ export default function ShopOrderWizard() {
       try {
         setLoading(true);
         setError(null);
-        const [productsRes, variationsRes] = await Promise.all([
+        const requests: Promise<any>[] = [
           apiService.getProducts({ per_page: 100 }),
           apiService.getVariations({ per_page: 200 }),
-        ]);
+          shopNowApis.getPriceTiers(),
+        ];
+        if (auth?.isAuthenticated) {
+          requests.push(shopNowApis.getCurrentUser());
+        }
+        const [productsRes, variationsRes, priceTiersRes, userRes] = await Promise.all(requests);
         const pData = productsRes?.data || productsRes || [];
         setProducts(Array.isArray(pData) ? pData : []);
         const vData = variationsRes?.data || variationsRes || [];
         setVariations(Array.isArray(vData) ? vData : []);
+        // Price tiers
+        const tiersPayload = priceTiersRes?.data ?? priceTiersRes ?? [];
+        setPriceTiers(Array.isArray(tiersPayload) ? tiersPayload : []);
+        // User data for tier selection
+        if (auth?.isAuthenticated) {
+          setUserData(userRes?.data || userRes || null);
+        } else {
+          setUserData(null);
+        }
 
         // Prefill items from cart
         if (reduxCart && reduxCart.length > 0) {
           setCartItems(() => reduxCart.map((ci) => {
             const productId = Number(ci.id);
             const product = (Array.isArray(pData) ? pData : []).find((p: any) => Number(p.id) === productId);
-            const unitPrice = product ? (typeof product.price === 'string' ? parseFloat(product.price) : Number(product.price || 0)) : parseFloat(String(ci.price).replace(/[$,]/g, '')) || 0;
+            const basePrice = product ? (typeof product.price === 'string' ? parseFloat(product.price) : Number(product.price || 0)) : parseFloat(String(ci.price).replace(/[$,]/g, '')) || 0;
+            // Prefer discounted price saved in cart (ShopNow adds discounted price to cart as formatted string)
+            const cartPriceNum = parseFloat(String(ci.price).replace(/[$,]/g, ''));
+            const computedDisplay = shopNowApis.getDisplayPrice(basePrice, !!auth?.isAuthenticated, userRes?.data || userRes || null, Array.isArray(tiersPayload) ? tiersPayload : []);
+            const unitPrice = !isNaN(cartPriceNum) && cartPriceNum > 0 ? cartPriceNum : (isNaN(computedDisplay) ? 0 : computedDisplay);
             const quantity = Number(ci.quantity) || 1;
             return {
               itemId: String(productId),
@@ -120,6 +152,7 @@ export default function ShopOrderWizard() {
               totalPrice: quantity * unitPrice,
               // If cart item already tracks variants, preserve them
               variants: (ci as any).variants || undefined,
+              unitPriceLocked: true,
             } as CartItem;
           }));
           // Immediately clear cart after importing items into the wizard
@@ -164,6 +197,23 @@ export default function ShopOrderWizard() {
     prefill();
   }, [user]);
 
+  // Recompute cart prices when tiers/user/auth change
+  useEffect(() => {
+    setCartItems(prev => prev.map(it => {
+      if (it.unitPriceLocked) {
+        return it;
+      }
+      const p = products.find(p => p.id === it.productId) as any;
+      const raw = p?.price ?? p?.unit_price ?? 0;
+      const base = typeof raw === 'string' ? parseFloat(raw) : Number(raw || 0);
+      const discounted = shopNowApis.getDisplayPrice(base, !!auth?.isAuthenticated, userData, priceTiers);
+      const qty = Number(it.quantity) || 0;
+      const unitPrice = isNaN(discounted) ? 0 : discounted;
+      const lineTotal = Math.max(0, (qty * unitPrice));
+      return { ...it, unitPrice, total: lineTotal, totalPrice: lineTotal };
+    }));
+  }, [priceTiers, userData, auth?.isAuthenticated, products]);
+
   const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
   const discount = 0;
   const tax = useMemo(() => (subTotal * 0.07), [subTotal]);
@@ -174,93 +224,6 @@ export default function ShopOrderWizard() {
     const priceRaw = p?.price ?? p?.unit_price ?? 0;
     const priceNum = typeof priceRaw === 'string' ? parseFloat(priceRaw) : Number(priceRaw || 0);
     return isNaN(priceNum) ? 0 : priceNum;
-  };
-
-  const handleAddItem = () => {
-    setCartItems(prev => ([...prev, { itemId: '', productId: 0, name: '', quantity: 1, unitPrice: 0, total: 0, totalPrice: 0 }]));
-  };
-  const handleRemoveItem = (index: number) => setCartItems(prev => prev.filter((_, i) => i !== index));
-  const updateItem = (index: number, updates: Partial<CartItem>) => {
-    setCartItems(prev => prev.map((it, i) => {
-      if (i !== index) return it;
-      const updated = { ...it, ...updates } as CartItem;
-      const qty = Number(updated.quantity) || 0;
-      const price = Number(updated.unitPrice) || 0;
-      const lineTotal = Math.max(0, (qty * price));
-      updated.total = lineTotal;
-      updated.totalPrice = lineTotal;
-      return updated;
-    }));
-  };
-
-  const canProceedFromStep = (stepIndex: number) => {
-    if (stepIndex === 0) return cartItems.length > 0 && cartItems.every(i => i.productId && i.quantity > 0 && i.unitPrice >= 0);
-    if (stepIndex === 1) return !!firstName && !!lastName && !!email && !!shippingAddress.street;
-    return true;
-  };
-
-  const handleNext = () => {
-    if (!canProceedFromStep(activeStep)) {
-      setError('Please complete required fields to continue.');
-      return;
-    }
-    setError(null);
-    setActiveStep(prev => prev + 1);
-  };
-  const handleBack = () => { setError(null); setActiveStep(prev => Math.max(0, prev - 1)); };
-
-  const submitOrder = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const payload = {
-        cartItems: cartItems.map(ci => ({
-          itemId: String(ci.productId || ci.itemId || ''),
-          productId: ci.productId,
-          variationId: ci.variationId,
-          name: ci.name || (products.find(p => p.id === ci.productId)?.name || 'Item'),
-          quantity: ci.quantity,
-          unitPrice: Number(ci.unitPrice) || 0,
-          total: ci.total,
-          totalPrice: ci.totalPrice,
-          variants: ci.variants ? Object.fromEntries(
-            Object.entries(ci.variants).map(([key, value]) => [key, value !== undefined && value !== null && value !== '' ? String(value) : ''])
-          ) : {},
-        })),
-        customerInfo: {
-          firstName,
-          lastName,
-          email: email || user?.email || '',
-          phone: phone || '',
-          shippingAddress: { ...shippingAddress },
-          billingAddress: { ...billingAddress },
-        },
-        paymentInfo: {
-          method: 'cash',
-          amountPaid: grandTotal,
-          currency: 'USD',
-        },
-        cartSummary: { subTotal, tax, discount: 0, grandTotal },
-        notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : ''].filter(Boolean).join(' '),
-      };
-      const response = await apiService.createOrder(payload as any);
-      let orderId: number | null = null;
-      if (response?.data?.id) orderId = response.data.id;
-      else if (response?.id) orderId = response.id;
-      else if (response?.data?.data?.id) orderId = response.data.data.id;
-      setCreatedOrderId(orderId);
-      setSuccessOpen(true);
-      try {
-        // Clear Redux cart if present to avoid duplicate ordering
-        const evt = new CustomEvent('clear-cart');
-        window.dispatchEvent(evt);
-      } catch {}
-
-    } catch (e: any) {
-      setError(e?.response?.data?.message || 'Failed to create order. Please try again.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const basePriceFor = (productId: number) => getUnitPrice(productId);
@@ -283,7 +246,9 @@ export default function ShopOrderWizard() {
                       const next: CartItem[] = [];
                       values.forEach(v => {
                         const existing = prev.find(ci => ci.productId === v.id);
-                        const unitPrice = getUnitPrice(v.id);
+                        const base = getUnitPrice(v.id);
+                        const display = shopNowApis.getDisplayPrice(base, !!auth?.isAuthenticated, userData, priceTiers);
+                        const unitPrice = isNaN(display) ? 0 : display;
                         next.push({
                           itemId: String(v.id),
                           productId: v.id,
@@ -293,6 +258,7 @@ export default function ShopOrderWizard() {
                           total: (existing?.quantity || 1) * unitPrice,
                           totalPrice: (existing?.quantity || 1) * unitPrice,
                           variants: existing?.variants,
+                          unitPriceLocked: existing?.unitPriceLocked || false,
                         });
                       });
                       return next;
@@ -320,7 +286,26 @@ export default function ShopOrderWizard() {
                             <TableCell align="center">
                               <Button size="small" startIcon={<TuneIcon />} onClick={() => { setDrawerRowIndex(idx); setDrawerOpen(true); }}>Details</Button>
                             </TableCell>
-                            <TableCell align="right">${it.unitPrice.toFixed(2)}</TableCell>
+                            <TableCell align="right">
+                              {(() => {
+                                const discounted = it.unitPrice;
+                                const discountPct = shopNowApis.getWholesaleDiscount(priceTiers as any, userData as any);
+                                const retailEst = discountPct > 0 ? (discounted / (1 - discountPct / 100)) : basePriceFor(it.productId);
+                                const hasDiscount = discountPct > 0 && retailEst > discounted + 0.009;
+                                return (
+                                  <Box>
+                                    <Typography variant="body2" component="div" sx={{ fontWeight: 600 }}>
+                                      ${discounted.toFixed(2)}
+                                    </Typography>
+                                    {hasDiscount && (
+                                      <Typography variant="caption" color="text.secondary" component="div">
+                                        <s>${retailEst.toFixed(2)}</s>
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                );
+                              })()}
+                            </TableCell>
                             <TableCell align="center" sx={{ width: 120 }}>
                               <TextField type="number" size="small" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} inputProps={{ min: 1, style: { textAlign: 'center' } }} />
                             </TableCell>
@@ -351,17 +336,17 @@ export default function ShopOrderWizard() {
                   <TextField fullWidth label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
                   <TextField fullWidth label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
                   <TextField fullWidth label="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                  <TextField fullWidth label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  <TextField fullWidth label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                 </Box>
 
                 <Divider />
                 <Typography variant="h6">Shipping Address</Typography>
                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
                   <TextField fullWidth label="Street" value={shippingAddress.street} onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })} required />
-                  <TextField fullWidth label="City" value={shippingAddress.city} onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })} />
-                  <TextField fullWidth label="State" value={shippingAddress.state} onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })} />
-                  <TextField fullWidth label="Postal Code" value={shippingAddress.postalCode} onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })} />
-                  <TextField fullWidth label="Country" value={shippingAddress.country} onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })} />
+                  <TextField fullWidth label="City" value={shippingAddress.city} onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })} required />
+                  <TextField fullWidth label="State" value={shippingAddress.state} onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })} required />
+                  <TextField fullWidth label="Postal Code" value={shippingAddress.postalCode} onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })} required />
+                  <TextField fullWidth label="Country" value={shippingAddress.country} onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })} required />
                 </Box>
 
                 <Divider />
@@ -371,10 +356,10 @@ export default function ShopOrderWizard() {
                 </Box>
                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
                   <TextField fullWidth label="Street" value={billingAddress.street} onChange={(e) => setBillingAddress({ ...billingAddress, street: e.target.value })} required />
-                  <TextField fullWidth label="City" value={billingAddress.city} onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })} />
-                  <TextField fullWidth label="State" value={billingAddress.state} onChange={(e) => setBillingAddress({ ...billingAddress, state: e.target.value })} />
-                  <TextField fullWidth label="Postal Code" value={billingAddress.postalCode} onChange={(e) => setBillingAddress({ ...billingAddress, postalCode: e.target.value })} />
-                  <TextField fullWidth label="Country" value={billingAddress.country} onChange={(e) => setBillingAddress({ ...billingAddress, country: e.target.value })} />
+                  <TextField fullWidth label="City" value={billingAddress.city} onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })} required />
+                  <TextField fullWidth label="State" value={billingAddress.state} onChange={(e) => setBillingAddress({ ...billingAddress, state: e.target.value })} required />
+                  <TextField fullWidth label="Postal Code" value={billingAddress.postalCode} onChange={(e) => setBillingAddress({ ...billingAddress, postalCode: e.target.value })} required />
+                  <TextField fullWidth label="Country" value={billingAddress.country} onChange={(e) => setBillingAddress({ ...billingAddress, country: e.target.value })} required />
                 </Box>
               </Box>
             </CardContent>
@@ -407,26 +392,54 @@ export default function ShopOrderWizard() {
         return (
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>Review</Typography>
-              <Box display="grid" gap={2}>
-                <Box>
-                  <Typography variant="subtitle2">Customer</Typography>
-                  <Typography>{`${firstName} ${lastName}`.trim() || 'Customer' }{email ? ` (${email})` : ''}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="subtitle2">Items</Typography>
-                  {cartItems.map((i, idx) => (
-                    <Box key={idx} display="flex" justifyContent="space-between">
-                      <Typography>{i.name || products.find(p => p.id === i.productId)?.name || 'Item'} x {i.quantity}</Typography>
-                      <Typography>${((i.quantity * i.unitPrice)).toFixed(2)}</Typography>
-                    </Box>
-                  ))}
-                  <Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap" mt={1}>
-                    <Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
-                    <Chip label={`Tax: $${tax.toFixed(2)} (7%)`} />
-                    <Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
+              <Box display="grid" gap={3}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Payment Information</Typography>
+                <Alert severity="info">💳 Choose your payment method</Alert>
+                <RadioGroup value={paymentOption} onChange={(e) => setPaymentOption(e.target.value as 'cash' | 'card')} sx={{ mb: 2 }}>
+                  <FormControlLabel value="cash" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Typography variant="body1" sx={{ fontWeight: 500 }}>💵 Cash on Delivery</Typography><Typography variant="body2" sx={{ color: 'text.secondary' }}>Pay when you receive your order</Typography></Box>} sx={{ mb: 1.5, p: 1.5, border: '1px solid', borderColor: paymentOption === 'cash' ? 'primary.main' : 'grey.300', borderRadius: 2, backgroundColor: paymentOption === 'cash' ? 'primary.50' : 'transparent', '&:hover': { backgroundColor: paymentOption === 'cash' ? 'primary.100' : 'grey.50' } }} />
+                  <FormControlLabel value="card" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Typography variant="body1" sx={{ fontWeight: 500 }}>💳 Credit/Debit Card</Typography><Typography variant="body2" sx={{ color: 'text.secondary' }}>Secure online payment</Typography></Box>} sx={{ p: 1.5, border: '1px solid', borderColor: paymentOption === 'card' ? 'primary.main' : 'grey.300', borderRadius: 2, backgroundColor: paymentOption === 'card' ? 'primary.50' : 'transparent', '&:hover': { backgroundColor: paymentOption === 'card' ? 'primary.100' : 'grey.50' } }} />
+                </RadioGroup>
+                {paymentOption === 'card' && (
+                  <Box>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Typography variant="h6" sx={{ mb: 1.5, fontWeight: 'bold' }}>Card Details</Typography>
+                    <SquareCard
+                    ref={squareRef}
+                    amount={grandTotal}
+                    onReady={() => setError(null)}
+                    onError={(msg) => setError(msg)}
+                  />
                   </Box>
+                )}
+              </Box>
+            </CardContent>
+          </Card>
+        );
+      case 4:
+        return (
+          <Card>
+            <CardContent>
+              <Box display="grid" gap={2}>
+                <Typography variant="h6">Review Order</Typography>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography>Subtotal</Typography>
+                  <Typography fontWeight={600}>${subTotal.toFixed(2)}</Typography>
                 </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography>Tax (7%)</Typography>
+                  <Typography fontWeight={600}>${tax.toFixed(2)}</Typography>
+                </Box>
+                <Divider />
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="h6">Grand Total</Typography>
+                  <Typography variant="h6">${grandTotal.toFixed(2)}</Typography>
+                </Box>
+                {/* <Box display="flex" justifyContent="flex-end" gap={1}>
+                  <Button variant="outlined" onClick={() => setActiveStep(0)}>Back</Button>
+                  <Button variant="contained" onClick={submitOrder} disabled={loading}>
+                    {loading ? 'Submitting...' : 'Submit Order'}
+                  </Button>
+                </Box> */}
               </Box>
             </CardContent>
           </Card>
@@ -434,6 +447,186 @@ export default function ShopOrderWizard() {
       default:
         return null;
     }
+  };
+
+  const canProceedFromStep = (stepIndex: number) => {
+    if (stepIndex === 0) return cartItems.length > 0 && cartItems.every(i => i.productId && i.quantity > 0 && i.unitPrice >= 0);
+    if (stepIndex === 1) {
+      const shippingOk = !!shippingAddress.street && !!shippingAddress.city && !!shippingAddress.state && !!shippingAddress.postalCode && !!shippingAddress.country;
+      const billingOk = !!billingAddress.street && !!billingAddress.city && !!billingAddress.state && !!billingAddress.postalCode && !!billingAddress.country;
+      return !!firstName && !!lastName && !!email && !!phone && shippingOk && billingOk;
+    }
+    // Payment step does not block navigation; processing happens on submit
+    return true;
+  };
+
+  // Clear stored token if switching to cash
+  useEffect(() => {
+    if (paymentOption === 'cash') setCardToken(null);
+  }, [paymentOption]);
+
+  const handleNext = async () => {
+    if (!canProceedFromStep(activeStep)) {
+      setError('Please complete required fields to continue.');
+      return;
+    }
+    // If leaving the Payment step, tokenize and store the card token
+    if (activeStep === 3) {
+      if (paymentOption === 'card') {
+        try {
+          if (!squareRef.current) {
+            setError('Payment form not ready. Please wait a second and try again.');
+            return;
+          }
+          const { token } = await squareRef.current.tokenize();
+          setCardToken(token);
+        } catch (e: any) {
+          setError(e?.message || 'Card tokenization failed. Please check your card details and try again.');
+          return;
+        }
+      } else {
+        setCardToken(null);
+      }
+    }
+    setError(null);
+    setActiveStep(prev => prev + 1);
+  };
+  const handleBack = () => { setError(null); setActiveStep(prev => Math.max(0, prev - 1)); };
+
+  const submitOrder = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Use stored token if card payment was selected
+      let usedCardToken: string | null = null;
+      if (paymentOption === 'card') {
+        if (!cardToken) {
+          setError('Card details are not ready. Please go back to Payment step and enter your card.');
+          setLoading(false);
+          return;
+        }
+        usedCardToken = cardToken;
+      }
+
+      const payload = {
+        cartItems: cartItems.map(ci => ({
+          itemId: String(ci.productId || ci.itemId || ''),
+          productId: ci.productId,
+          variationId: ci.variationId,
+          name: ci.name || (products.find(p => p.id === ci.productId)?.name || 'Item'),
+          quantity: ci.quantity,
+          unitPrice: Number(ci.unitPrice) || 0,
+          total: ci.total,
+          totalPrice: ci.totalPrice,
+          variants: ci.variants ? Object.fromEntries(
+            Object.entries(ci.variants).map(([key, value]) => [key, value !== undefined && value !== null && value !== '' ? String(value) : ''])
+          ) : {},
+        })),
+        customerInfo: {
+          firstName,
+          lastName,
+          email: email || user?.email || '',
+          phone: phone || '',
+          shippingAddress: { ...shippingAddress },
+          billingAddress: { ...billingAddress },
+        },
+        paymentInfo: {
+          method: paymentOption === 'card' ? 'square' : 'cash',
+          amountPaid: grandTotal,
+          currency: 'USD',
+        },
+        cartSummary: { subTotal, tax, discount: 0, grandTotal },
+        notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : ''].filter(Boolean).join(' '),
+      };
+
+      const response = await apiService.createOrder(payload as any);
+      let orderId: number | null = null;
+      if (response?.data?.order?.id) orderId = response?.data?.order?.id;
+      else if (response?.id) orderId = response.id;
+      else if (response?.data?.data?.id) orderId = response.data.data.id;
+
+      // If card selected, charge now (mirror view-order Pay button exactly using the just-created order data)
+      if (paymentOption === 'card' && orderId && usedCardToken) {
+        // Fetch fresh order to get server-computed totals and customer id
+        let freshOrder: any = null;
+        try {
+          const fetched = await apiService.getOrder(orderId);
+          freshOrder = (fetched as any).data || fetched;
+        } catch {}
+
+        const amountToCharge = Number(freshOrder?.total_amount ?? grandTotal);
+        const customerId = freshOrder?.customer?.id ?? user?.role?.id ?? null;
+        const orderNumber = freshOrder?.order_number ?? orderId;
+        const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string | undefined;
+
+        const chargeBody = {
+          customer_id: customerId,
+          order_id: orderId,
+          payment_method: 'square',
+          amount: amountToCharge,
+          token: usedCardToken,
+          location_id: locationId,
+          notes: `Payment for order #${orderNumber}`,
+        };
+
+        const chargeResp = await fetch('https://superiorseats.ali-khalid.com/api/payments/charge', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...(auth?.token ? { 'Authorization': `Bearer ${auth.token}` } : {}),
+          },
+          body: JSON.stringify(chargeBody),
+        });
+        const result = await chargeResp.json().catch(() => ({}));
+        if (!chargeResp.ok || result?.success === false) {
+          throw new Error(result?.error || result?.message || 'Payment charge failed');
+        }
+      }
+
+      setCreatedOrderId(orderId);
+      setSuccessOpen(true);
+      try {
+        const evt = new CustomEvent('clear-cart');
+        window.dispatchEvent(evt);
+      } catch {}
+
+    } catch (e: any) {
+      setError(e?.response?.data?.message || e?.message || 'Failed to create order. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddItem = () => {
+    setCartItems(prev => ([...prev, { itemId: '', productId: 0, name: '', quantity: 1, unitPrice: 0, total: 0, totalPrice: 0 }]));
+  };
+  const handleRemoveItem = (index: number) => setCartItems(prev => prev.filter((_, i) => i !== index));
+  // Close drawer if the selected row is removed or out of bounds
+  useEffect(() => {
+    if (drawerRowIndex === null) return;
+    if (drawerRowIndex < 0 || drawerRowIndex >= cartItems.length) {
+      setDrawerRowIndex(null);
+      setDrawerOpen(false);
+      return;
+    }
+    if (!cartItems[drawerRowIndex]) {
+      setDrawerRowIndex(null);
+      setDrawerOpen(false);
+    }
+  }, [cartItems, drawerRowIndex]);
+  const updateItem = (index: number, updates: Partial<CartItem>) => {
+    setCartItems(prev => prev.map((it, i) => {
+      if (i !== index) return it;
+      const updated = { ...it, ...updates } as CartItem;
+      const qty = Number(updated.quantity) || 0;
+      const price = Number(updated.unitPrice) || 0;
+      const lineTotal = Math.max(0, (qty * price));
+      updated.total = lineTotal;
+      updated.totalPrice = lineTotal;
+      return updated;
+    }));
   };
 
   return (
@@ -478,18 +671,20 @@ export default function ShopOrderWizard() {
       <AdminVariantsDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        productId={drawerRowIndex !== null ? cartItems[drawerRowIndex]?.productId || null : null}
-        basePrice={drawerRowIndex !== null ? basePriceFor(cartItems[drawerRowIndex]!.productId) : 0}
-        initialSelections={drawerRowIndex !== null ? (cartItems[drawerRowIndex!]?.variants || null) : null}
+        productId={(drawerRowIndex !== null && cartItems[drawerRowIndex]) ? (cartItems[drawerRowIndex].productId || null) : null}
+        basePrice={(drawerRowIndex !== null && cartItems[drawerRowIndex]) ? basePriceFor(cartItems[drawerRowIndex].productId) : 0}
+        initialSelections={(drawerRowIndex !== null && cartItems[drawerRowIndex]) ? (cartItems[drawerRowIndex].variants || null) : null}
         onPreview={({ newUnitPrice }) => {
           if (drawerRowIndex === null) return;
+          if (!cartItems[drawerRowIndex]) { setDrawerRowIndex(null); setDrawerOpen(false); return; }
           const row = drawerRowIndex;
           setCartItems(prev => prev.map((ci, i) => i !== row ? ci : { ...ci, unitPrice: newUnitPrice, total: (ci.quantity || 1) * newUnitPrice, totalPrice: (ci.quantity || 1) * newUnitPrice }));
         }}
         onApply={({ selections, newUnitPrice }) => {
           if (drawerRowIndex === null) return;
+          if (!cartItems[drawerRowIndex]) { setDrawerRowIndex(null); setDrawerOpen(false); return; }
           const row = drawerRowIndex;
-          setCartItems(prev => prev.map((ci, i) => i !== row ? ci : { ...ci, variants: selections, unitPrice: newUnitPrice, total: (ci.quantity || 1) * newUnitPrice, totalPrice: (ci.quantity || 1) * newUnitPrice }));
+          setCartItems(prev => prev.map((ci, i) => i !== row ? ci : { ...ci, variants: selections, unitPrice: newUnitPrice, total: (ci.quantity || 1) * newUnitPrice, totalPrice: (ci.quantity || 1) * newUnitPrice, unitPriceLocked: true }));
           setDrawerOpen(false);
         }}
       />

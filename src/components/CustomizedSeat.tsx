@@ -272,9 +272,17 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const calculateTotalPrice = () => {
     // Get base seat price from product data (handle different price formats)
     let baseSeatPrice = 0;
-    if (productData?.price) {
-      const priceStr = productData.price.toString().replace(/[$,]/g, '');
-      baseSeatPrice = parseFloat(priceStr) || 0;
+    if (productData) {
+      // Prefer tier-adjusted price if available
+      try {
+        const { getEffectiveProductPrice } = require('@/utils/pricing');
+        baseSeatPrice = getEffectiveProductPrice(productData, (window as any)?.__AUTH_USER__ || null);
+      } catch {
+        if (productData?.price) {
+          const priceStr = productData.price.toString().replace(/[$,]/g, '');
+          baseSeatPrice = parseFloat(priceStr) || 0;
+        }
+      }
     }
     
     // Get prices from API variation data using direct price field

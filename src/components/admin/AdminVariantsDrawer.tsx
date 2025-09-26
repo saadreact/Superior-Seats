@@ -4,6 +4,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { CustomizedSeatApi } from '@/services/CustomizedSeatApi';
 import Image from 'next/image';
+import { useAppSelector } from '@/store/hooks';
+import shopNowApis, { PriceTier as ShopPriceTier, User as ShopUser } from '@/services/ShopNowApis';
 
 export interface VariantSelections {
 	materialType?: string | number;
@@ -39,6 +41,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	onPreview, 
 	readOnly 
 }) => {
+	const auth = useAppSelector((s: any) => s.auth);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [variations, setVariations] = useState<any>(null);
@@ -54,17 +57,21 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		seatStyle: initialSelections?.seatStyle || '',
 		armType: initialSelections?.armType || '',
 	});
-	console.log('initialSelections', initialSelections, "selections",selections);
+	const [priceTiers, setPriceTiers] = useState<ShopPriceTier[]>([]);
+	const [userData, setUserData] = useState<ShopUser | null>(null);
 
-	// Load variations when drawer opens
+	// Load variations and pricing context when drawer opens
 	useEffect(() => {
 		if (!open || !productId) return;
-		
 		setLoading(true);
 		setError(null);
-		
-		CustomizedSeatApi.getProductById(productId)
-			.then(product => {
+
+		Promise.all([
+			CustomizedSeatApi.getProductById(productId),
+			shopNowApis.getPriceTiers(),
+			auth?.isAuthenticated ? shopNowApis.getCurrentUser() : Promise.resolve(null as any),
+		])
+			.then(([product, tiersRes, userRes]) => {
 				setVariations({
 					colors: product.colors || [],
 					material_types: product.material_types || [],
@@ -77,8 +84,10 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 					seat_styles: product.seat_styles || [],
 					item_types: product.item_types || [],
 				});
-				
-				// Set initial selections from props
+				const tiersPayload = (tiersRes as any)?.data ?? tiersRes ?? [];
+				setPriceTiers(Array.isArray(tiersPayload) ? tiersPayload : []);
+				setUserData((userRes as any)?.data || userRes || null);
+
 				if (initialSelections) {
 					setSelections({
 						materialType: initialSelections.materialType || '',
@@ -95,22 +104,22 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 				}
 			})
 			.catch(e => {
-				console.error('Failed to load variations', e);
+				console.error('Failed to load drawer data', e);
 				setError('Failed to load product variations');
 			})
-			.finally(() => {
-				setLoading(false);
-			});
-	}, [open, productId, initialSelections]);
+			.finally(() => setLoading(false));
+	}, [open, productId, initialSelections, auth?.isAuthenticated]);
 
 	const getItemPrice = (item: any): number => {
 		if (!item) return 0;
 		return parseFloat(item.price) || 0;
 	};
+	const getDisplayPrice = (value: number): number => {
+		return shopNowApis.getDisplayPrice(value, !!auth?.isAuthenticated, userData, priceTiers);
+	};
 
 	const getVariantPrice = (key: keyof VariantSelections): number => {
 		if (!variations || !selections[key]) return 0;
-		
 		const maps = {
 			materialType: variations.material_types,
 			color: variations.colors,
@@ -123,65 +132,81 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 			seatStyle: variations.seat_styles,
 			armType: variations.arm_types,
 		};
-		
 		const list = maps[key] || [];
 		const item = list.find((i: any) => i.id == selections[key]);
 		return getItemPrice(item);
 	};
+	const getVariantDisplayPrice = (key: keyof VariantSelections): number => {
+		const retail = getVariantPrice(key);
+		return getDisplayPrice(retail);
+	};
 
-	const totalPrice = useMemo(() => {
+	const totalRetailPrice = useMemo(() => {
 		if (!variations) return basePrice;
-		
-		const variantPrices = [
+		const variantRetail = [
 			'materialType', 'color', 'seatStitchPattern', 'reclineType', 
 			'lumbarType', 'heatOption', 'seatType', 'itemType', 
 			'seatStyle', 'armType'
 		].reduce((sum, key) => sum + getVariantPrice(key as keyof VariantSelections), 0);
-		
-		return Math.max(0, basePrice + variantPrices);
+		return Math.max(0, basePrice + variantRetail);
 	}, [variations, selections, basePrice]);
+
+	const totalDisplayPrice = useMemo(() => {
+		return getDisplayPrice(totalRetailPrice);
+	}, [totalRetailPrice, priceTiers, userData, auth?.isAuthenticated]);
 
 	const updateSelection = (key: keyof VariantSelections, value: any) => {
 		if (readOnly) return;
-		setSelections(prev => ({ ...prev, [key]: value }));
-		
+		const newSelections = { ...selections, [key]: value };
+		setSelections(newSelections);
 		if (onPreview) {
-			const newSelections = { ...selections, [key]: value };
-			const newPrice = basePrice + Object.keys(newSelections).reduce((sum, k) => {
-				if (!variations || !newSelections[k as keyof VariantSelections]) return sum;
-				const maps = {
-					materialType: variations.material_types,
-					color: variations.colors,
-					seatStitchPattern: variations.seat_stitch_patterns,
-					reclineType: variations.recline_types,
-					lumbarType: variations.lumbar_types,
-					heatOption: variations.heat_options,
-					seatType: variations.seat_types,
-					itemType: variations.item_types,
-					seatStyle: variations.seat_styles,
-					armType: variations.arm_types,
-				};
-				const list = maps[k as keyof typeof maps] || [];
-				const item = list.find((i: any) => i.id == newSelections[k as keyof VariantSelections]);
+			// Recompute retail and display for preview
+			const maps = {
+				materialType: variations?.material_types || [],
+				color: variations?.colors || [],
+				seatStitchPattern: variations?.seat_stitch_patterns || [],
+				reclineType: variations?.recline_types || [],
+				lumbarType: variations?.lumbar_types || [],
+				heatOption: variations?.heat_options || [],
+				seatType: variations?.seat_types || [],
+				itemType: variations?.item_types || [],
+				seatStyle: variations?.seat_styles || [],
+				armType: variations?.arm_types || [],
+			} as const;
+			const variantRetail = Object.keys(newSelections).reduce((sum, k) => {
+				const list = maps[k as keyof typeof maps];
+				if (!list) return sum;
+				const item = list.find((i: any) => i.id == (newSelections as any)[k]);
 				return sum + (parseFloat(item?.price) || 0);
 			}, 0);
-			
-			onPreview({ selections: newSelections, newUnitPrice: Math.max(0, newPrice) });
+			const retail = Math.max(0, basePrice + variantRetail);
+			const display = getDisplayPrice(retail);
+			onPreview({ selections: newSelections, newUnitPrice: display });
 		}
 	};
 
+	const renderPriceBadge = (retail: number) => {
+		const display = getDisplayPrice(retail);
+		if (display < retail - 0.009) {
+			return (
+				<Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+					<Typography variant="body2" sx={{ color: 'error.main', fontWeight: 700 }}>+${display.toFixed(2)}</Typography>
+					<Typography variant="caption" color="text.secondary"><s>${retail.toFixed(2)}</s></Typography>
+				</Box>
+			);
+		}
+		return (
+			<Typography variant="body2" sx={{ color: 'error.main', fontWeight: 700 }}>+${retail.toFixed(2)}</Typography>
+		);
+	};
+
 	const renderSelect = (key: keyof VariantSelections, label: string, options: any[]) => {
-		const price = getVariantPrice(key);
-		
+		const retail = getVariantPrice(key);
 		return (
 			<Box>
 				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
 					<Typography variant="body2">{label}:</Typography>
-					{price > 0 && (
-						<Typography variant="body2" sx={{ color: 'error.main', fontWeight: 700 }}>
-							+${price.toFixed(2)}
-						</Typography>
-					)}
+					{retail > 0 && renderPriceBadge(retail)}
 				</Box>
 				<FormControl fullWidth disabled={readOnly}>
 					<Select
@@ -202,14 +227,13 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	};
 
 	const renderMaterialGrid = () => {
-		const price = getVariantPrice('materialType');
-		
+		const retail = getVariantPrice('materialType');
 		return (
 			<Box>
 				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
 					<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Choose Your Material</Typography>
-					{price > 0 && (
-						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main' }} />
+					{retail > 0 && (
+						<Chip size="small" label={`+${getDisplayPrice(retail).toFixed(2)}`} sx={{ color: 'error.main' }} />
 					)}
 				</Box>
 				<Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)', md: 'repeat(5, 1fr)' }, gap: 1 }}>
@@ -265,14 +289,13 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	};
 
 	const renderColorGrid = () => {
-		const price = getVariantPrice('color');
-		
+		const retail = getVariantPrice('color');
 		return (
 			<Box>
 				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
 					<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Choose Your Color</Typography>
-					{price > 0 && (
-						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main' }} />
+					{retail > 0 && (
+						<Chip size="small" label={`+${getDisplayPrice(retail).toFixed(2)}`} sx={{ color: 'error.main' }} />
 					)}
 				</Box>
 				<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -319,14 +342,13 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	};
 
 	const renderStitchingGrid = () => {
-		const price = getVariantPrice('seatStitchPattern');
-		
+		const retail = getVariantPrice('seatStitchPattern');
 		return (
 			<Box>
 				<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
 					<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Choose Your Stitching Pattern</Typography>
-					{price > 0 && (
-						<Chip size="small" label={`+$${price.toFixed(2)}`} sx={{ color: 'error.main' }} />
+					{retail > 0 && (
+						<Chip size="small" label={`+${getDisplayPrice(retail).toFixed(2)}`} sx={{ color: 'error.main' }} />
 					)}
 				</Box>
 				<Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)' }, gap: 1 }}>
@@ -429,11 +451,16 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 							<>
 								<Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
 									<Typography variant="subtitle1">New Unit Price</Typography>
-									<Chip color="primary" label={`$${totalPrice.toFixed(2)}`} />
+									<Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+										<Chip color="primary" label={`$${totalDisplayPrice.toFixed(2)}`} />
+										{totalDisplayPrice < totalRetailPrice - 0.009 && (
+											<Typography variant="caption" color="text.secondary"><s>${totalRetailPrice.toFixed(2)}</s></Typography>
+										)}
+									</Box>
 								</Box>
 								<Box display="flex" justifyContent="flex-end" gap={1}>
 									<Button onClick={onClose}>Cancel</Button>
-									<Button variant="contained" onClick={() => onApply({ selections, newUnitPrice: totalPrice })}>
+									<Button variant="contained" onClick={() => onApply({ selections, newUnitPrice: totalDisplayPrice })}>
 										Apply
 									</Button>
 								</Box>
