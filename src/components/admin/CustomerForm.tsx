@@ -176,12 +176,12 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   return (
     <Box sx={{ pt: 2 }}>
       {/* Basic Information */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 1.5 }}>
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          mb: 2 
+          mb: 1 
         }}>
           <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
             Basic Information
@@ -195,7 +195,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         <Grid
           display="grid"
           gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-          gap={{ xs: 2, md: 3 }}
+          gap={{ xs: 1, md: 1.5 }}
         >
           <FormField
             name="first_name"
@@ -205,6 +205,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             required
             error={allErrors.first_name}
             disabled={isViewMode}
+               
           />
 
           <FormField
@@ -246,14 +247,14 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       </Box>
 
       {/* Contact Information */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+      <Box sx={{ mb: 1.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
           Contact Information
         </Typography>
         <Grid
           display="grid"
           gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-          gap={{ xs: 2, md: 3 }}
+          gap={{ xs: 1, md: 1.5 }}
         >
           <FormField
             name="phone"
@@ -295,19 +296,20 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             }))}
             error={allErrors.state}
             disabled={isViewMode}
+         
           />
         </Grid>
       </Box>
 
       {/* Business Information */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+      <Box sx={{ mb: 1.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
           Business Information
         </Typography>
         <Grid
           display="grid"
           gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-          gap={{ xs: 2, md: 3 }}
+          gap={{ xs: 1, md: 1.5 }}
         >
           <FormField
             name="company_name"
@@ -335,14 +337,14 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       </Box>
 
       {/* Shipping Address */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
+      <Box sx={{ mb: 1.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
           Shipping Address
         </Typography>
         <Grid
           display="grid"
           gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-          gap={{ xs: 2, md: 3 }}
+          gap={{ xs: 1, md: 1.5 }}
         >
           <FormField
             name="shipping_address"
