@@ -76,7 +76,12 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
         company_name: customerDataWithoutPassword.company_name || '',
         customer_type: 'retail', // Hardcoded like in create page
         price_tier_id: Number(customerDataWithoutPassword.price_tier_id) || 1,
-        is_active: Boolean(isActive)
+        is_active: Boolean(isActive),
+        // Shipping Address Fields
+        shipping_address: customerDataWithoutPassword.shipping_address || '',
+        shipping_city: customerDataWithoutPassword.shipping_city || '',
+        shipping_state: customerDataWithoutPassword.shipping_state || '',
+        shipping_zip: customerDataWithoutPassword.shipping_zip || ''
       };
       
       console.log('Sending customer data:', customerData);

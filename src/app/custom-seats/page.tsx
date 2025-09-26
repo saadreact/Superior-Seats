@@ -39,7 +39,7 @@ export default function CustomSeatsPage() {
         Customize Feature Coming Soon!
       </Typography>
       <Typography variant="h6" sx={{ mb: 4, color: 'text.secondary' }}>
-                We&apos;re working on bringing you an amazing seat customization experience.
+        We&apos;re working on bringing you an amazing seat customization experience.
       </Typography>
       <Button 
         variant="contained" 

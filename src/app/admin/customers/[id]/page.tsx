@@ -33,6 +33,8 @@ interface Customer {
   email: string;
   phone: string;
   address: string;
+  city?: string;
+  state?: string;
   company_name?: string;
   tax_id?: string;
   price_tier_id: number;
@@ -41,6 +43,11 @@ interface Customer {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  // Shipping Address Fields
+  shipping_address?: string;
+  shipping_city?: string;
+  shipping_state?: string;
+  shipping_zip?: string;
   user?: {
     id: number;
     email: string;
@@ -341,7 +348,7 @@ const ViewCustomerPage = () => {
                     <Typography variant="body2" color="text.secondary" sx={{ 
                       fontSize: { xs: '0.95rem', sm: '0.875rem' }
                     }}>
-                      Created
+                      Created Date
                     </Typography>
                     <Typography variant="body1" sx={{ 
                       fontWeight: 500,

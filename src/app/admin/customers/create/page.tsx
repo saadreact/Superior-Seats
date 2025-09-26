@@ -59,7 +59,12 @@ const CreateCustomerPage = () => {
         company_name: customer.company_name || '',
         customer_type: 'retail', // Hardcoded
         price_tier_id: Number(customer.price_tier_id) || 1,
-        is_active: Boolean(isActive)
+        is_active: Boolean(isActive),
+        // Shipping Address Fields
+        shipping_address: customer.shipping_address || '',
+        shipping_city: customer.shipping_city || '',
+        shipping_state: customer.shipping_state || '',
+        shipping_zip: customer.shipping_zip || ''
       };
       
       console.log('Creating customer with data:', customerData);
