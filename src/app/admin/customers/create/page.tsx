@@ -20,14 +20,20 @@ import {
   Divider,
   useTheme,
   useMediaQuery,
-  Stack
+  Stack,
+  Grid
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import CustomerForm from '@/components/admin/CustomerForm';
+import { 
+  FormField, 
+  SelectField, 
+  FormActions
+} from '@/components/common/FormComponents';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
 import { CustomerType } from '@/data/types';
+import { US_STATES } from '@/api/customers';
 
 const CreateCustomerPage = () => {
   const router = useRouter();
@@ -41,30 +47,130 @@ const CreateCustomerPage = () => {
   const [errorDialogTitle, setErrorDialogTitle] = useState<string>('');
   const [errorDialogMessage, setErrorDialogMessage] = useState<string>('');
   const [isActive, setIsActive] = useState<boolean>(true);
+  
+  // Form data state
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    company_name: '',
+    price_tier_id: 1,
+    is_active: true,
+    // Shipping Address Fields
+    shipping_address: '',
+    shipping_city: '',
+    shipping_state: '',
+    shipping_zip: '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [priceTiers, setPriceTiers] = useState<any[]>([]);
+  const [priceTiersLoading, setPriceTiersLoading] = useState(false);
 
-  const handleSubmit = async (customer: any) => {
+  // Load price tiers from API
+  const loadPriceTiers = async () => {
+    try {
+      setPriceTiersLoading(true);
+      const response = await apiService.getPriceTiers();
+      console.log('Price tiers loaded for customer form:', response);
+      setPriceTiers(response || []);
+    } catch (error) {
+      console.error('Error loading price tiers:', error);
+      setPriceTiers([]);
+    } finally {
+      setPriceTiersLoading(false);
+    }
+  };
+
+  // Load price tiers on component mount
+  useEffect(() => {
+    loadPriceTiers();
+  }, []);
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'First name is required';
+    }
+
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = 'Last name is required';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const getAllErrors = (): Record<string, string> => {
+    return { ...errors, ...serverErrors };
+  };
+
+  const handleFieldChange = (field: string, value: string | number | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear client-side error when user starts typing
+    if ((errors as any)[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    // Clear server-side error for this field if provided
+    if ((serverErrors as any)[field]) {
+      setServerErrors(prev => {
+        if (!(field in prev)) return prev;
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    setLoading(true);
     setAlert(null);
     setServerErrors({});
     try {
       // Create payload matching the backend schema exactly
       const customerData = {
-        first_name: customer.first_name || '',
-        last_name: customer.last_name || '',
-        email: customer.email || '',
-        password: customer.password || '', // Include password for create
-        phone: customer.phone || '',
-        address: customer.address || '',
-        city: customer.city || '',
-        state: customer.state || '',
-        company_name: customer.company_name || '',
+        first_name: formData.first_name || '',
+        last_name: formData.last_name || '',
+        email: formData.email || '',
+        password: formData.password || '', // Include password for create
+        phone: formData.phone || '',
+        address: formData.address || '',
+        city: formData.city || '',
+        state: formData.state || '',
+        company_name: formData.company_name || '',
         customer_type: 'retail', // Hardcoded
-        price_tier_id: Number(customer.price_tier_id) || 1,
+        price_tier_id: Number(formData.price_tier_id) || 1,
         is_active: Boolean(isActive),
         // Shipping Address Fields
-        shipping_address: customer.shipping_address || '',
-        shipping_city: customer.shipping_city || '',
-        shipping_state: customer.shipping_state || '',
-        shipping_zip: customer.shipping_zip || ''
+        shipping_address: formData.shipping_address || '',
+        shipping_city: formData.shipping_city || '',
+        shipping_state: formData.shipping_state || '',
+        shipping_zip: formData.shipping_zip || ''
       };
       
       console.log('Creating customer with data:', customerData);
@@ -107,6 +213,14 @@ const CreateCustomerPage = () => {
       return next;
     });
   };
+
+  // Generate price tier options for dropdown
+  const priceTierOptions = priceTiers.map(tier => ({
+    value: tier.id,
+    label: `${tier.display_name || tier.name} (${tier.discount_off_retail_price}% discount)`
+  }));
+
+  const allErrors = getAllErrors();
 
   const handleCloseErrorDialog = () => {
     setErrorDialogOpen(false);
@@ -170,13 +284,208 @@ const CreateCustomerPage = () => {
           </Box>
         ) : (
           <Paper sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            <CustomerForm
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              serverErrors={serverErrors}
-              onClearServerError={clearServerError}
-              statusToggle={statusToggle}
-            />
+            <Box sx={{ pt: 2 }}>
+              {/* Basic Information */}
+              <Box sx={{ mb: 1.5 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 1 
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    Basic Information
+                  </Typography>
+                  {statusToggle && (
+                    <Box sx={{ marginRight: 2 }}>
+                      {statusToggle}
+                    </Box>
+                  )}
+                </Box>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="first_name"
+                    label="First Name"
+                    value={formData.first_name}
+                    onChange={(value) => handleFieldChange('first_name', value)}
+                    required
+                    error={allErrors.first_name}
+                  />
+
+                  <FormField
+                    name="last_name"
+                    label="Last Name"
+                    value={formData.last_name}
+                    onChange={(value) => handleFieldChange('last_name', value)}
+                    required
+                    error={allErrors.last_name}
+                  />
+
+                  <FormField
+                    name="email"
+                    label="Email Address"
+                    value={formData.email}
+                    onChange={(value) => handleFieldChange('email', value)}
+                    type="email"
+                    required
+                    error={allErrors.email}
+                  />
+
+                  <FormField
+                    name="password"
+                    label="Password"
+                    value={formData.password}
+                    onChange={(value) => handleFieldChange('password', value)}
+                    type="password"
+                    required
+                    error={allErrors.password}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Contact Information */}
+              <Box sx={{ mb: 1.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+                  Contact Information
+                </Typography>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="phone"
+                    label="Phone Number"
+                    value={formData.phone}
+                    onChange={(value) => handleFieldChange('phone', value)}
+                    required
+                    error={allErrors.phone}
+                  />
+
+                  <FormField
+                    name="address"
+                    label="Address"
+                    value={formData.address}
+                    onChange={(value) => handleFieldChange('address', value)}
+                    required
+                    error={allErrors.address}
+                  />
+
+                  <FormField
+                    name="city"
+                    label="City"
+                    value={formData.city}
+                    onChange={(value) => handleFieldChange('city', value)}
+                    error={allErrors.city}
+                  />
+
+                  <SelectField
+                    name="state"
+                    label="State"
+                    value={formData.state}
+                    onChange={(value) => handleFieldChange('state', value)}
+                    options={US_STATES.map(state => ({
+                      value: state.value,
+                      label: state.label
+                    }))}
+                    error={allErrors.state}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Business Information */}
+              <Box sx={{ mb: 1.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+                  Business Information
+                </Typography>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="company_name"
+                    label="Company Name"
+                    value={formData.company_name}
+                    onChange={(value) => handleFieldChange('company_name', value)}
+                    error={allErrors.company_name}
+                  />
+
+                  <SelectField
+                    name="price_tier_id"
+                    label="Customer Price Tiers"
+                    value={formData.price_tier_id.toString()}
+                    onChange={(value) => handleFieldChange('price_tier_id', parseInt(value))}
+                    options={priceTierOptions.map(option => ({
+                      value: option.value.toString(),
+                      label: option.label
+                    }))}
+                    required
+                    error={allErrors.price_tier_id}
+                    disabled={priceTiersLoading}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Shipping Address */}
+              <Box sx={{ mb: 1.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+                  Shipping Address
+                </Typography>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="shipping_address"
+                    label="Shipping Address"
+                    value={formData.shipping_address}
+                    onChange={(value) => handleFieldChange('shipping_address', value)}
+                    error={allErrors.shipping_address}
+                  />
+
+                  <FormField
+                    name="shipping_city"
+                    label="Shipping City"
+                    value={formData.shipping_city}
+                    onChange={(value) => handleFieldChange('shipping_city', value)}
+                    error={allErrors.shipping_city}
+                  />
+
+                  <SelectField
+                    name="shipping_state"
+                    label="Shipping State"
+                    value={formData.shipping_state}
+                    onChange={(value) => handleFieldChange('shipping_state', value)}
+                    options={US_STATES.map(state => ({
+                      value: state.value,
+                      label: state.label
+                    }))}
+                    error={allErrors.shipping_state}
+                  />
+
+                  <FormField
+                    name="shipping_zip"
+                    label="Shipping ZIP Code"
+                    value={formData.shipping_zip}
+                    onChange={(value) => handleFieldChange('shipping_zip', value)}
+                    error={allErrors.shipping_zip}
+                  />
+                </Grid>
+              </Box>
+
+              <FormActions
+                onSave={handleSubmit}
+                onCancel={handleCancel}
+                loading={loading}
+                saveText="Create"
+              />
+            </Box>
           </Paper>
         )}
 

@@ -1,27 +1,5 @@
 'use client';
 
-/**
- * ShopGallery Component
- * 
- * Features:
- * - Displays products in a responsive grid layout
- * - Supports pagination and filtering
- * - Customer type-based pricing:
- *   - Retail customers: Shows standard pricing
- *   - Wholesale customers: Can be configured for different pricing
- * - User authentication integration
- * - Product customization and cart functionality
- * 
- * Customer Type Pricing Logic:
- * - Checks user authentication via ShopGalleryApi
- * - Fetches user data from /api/user endpoint
- * - Determines customer type (retail/wholesale)
- * - Applies appropriate pricing based on customer type
- * - Shows customer type indicator in UI
-
-
- */
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -924,10 +902,20 @@ const ShopNow = () => {
            {!loading && !error && (
             <Box sx={{ 
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)', xxl: 'repeat(4, 1fr)' },
+              gridTemplateColumns: { 
+                xs: '1fr', 
+                sm: 'repeat(2, 1fr)', 
+                md: 'repeat(3, 1fr)', 
+                lg: 'repeat(3, 1fr)', 
+                xl: 'repeat(4, 1fr)', 
+                xxl: 'repeat(4, 1fr)' 
+              },
               gap: { xs: 3, sm: 2, md: 3, lg: 4, xl: 3, xxl: 3 },
               justifyContent: 'center',
-              width: '100%'
+              width: '100%',
+              '@media (min-width: 1200px) and (max-width: 1535px)': {
+                gridTemplateColumns: 'repeat(3, 1fr) !important'
+              }
             }}>
             {currentItems.map((item, index) => (
               <Box key={item.id} sx={{ width: '100%' }}>

@@ -58,8 +58,8 @@ const AboutPage = () => {
         sx={{
           mt: { xs: '56px', sm: '64px', md: '64px' },
           height: { xs: '25vh', sm: '60vh', md: '70vh', lg: '50vh', xl: '40vh' },
-          backgroundImage: 'url(../TruckImages/Seatset.jpg)',
-          backgroundSize: 'cover',
+          backgroundImage: 'url(/Gallery/Truckimages/AboutBg.jpg)',
+          backgroundSize: '100% auto',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           color: 'white',

@@ -61,11 +61,12 @@ export const FormField: React.FC<FormFieldProps> = ({
     helperText={error}
     disabled={disabled}
     variant="outlined"
-    size={size}
+    size="small"
     sx={{ 
-      mb: size === 'small' ? 0 : 2,
+      mb: 1,
       width: '100%',
       '& .MuiOutlinedInput-root': {
+        height: '45px',
         borderRadius: 2,
         '&:hover .MuiOutlinedInput-notchedOutline': {
           borderColor: 'primary.main',
@@ -77,6 +78,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       },
       '& .MuiInputLabel-root': {
         fontWeight: 500,
+        marginTop: 0.5,
         '&.Mui-focused': {
           color: 'primary.main',
         },
@@ -84,6 +86,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       '& .MuiFormHelperText-root': {
         marginLeft: 0,
         marginTop: 0.5,
+        fontSize: '0.5rem',
       },
       ...sx,
     }}
@@ -113,8 +116,54 @@ export const SelectField: React.FC<SelectFieldProps> = ({
   disabled = false,
   size = 'medium',
 }) => (
-  <FormControl fullWidth sx={{ mb: size === 'small' ? 0 : 2, width: '100%', minWidth: 0 }} error={!!error}>
-    {label && <InputLabel sx={{ fontWeight: 500 }}>{label}</InputLabel>}
+  <FormControl 
+    fullWidth 
+    sx={{ 
+      mb: 1, 
+      width: '100%', 
+      minWidth: 0,
+      '& .MuiOutlinedInput-root': {
+        height: '45px',
+        borderRadius: 2,
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'primary.main',
+        },
+        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'primary.main',
+          borderWidth: 2,
+        },
+      },
+      '& .MuiInputLabel-root': {
+        fontWeight: 500,
+        marginTop: -0.5,
+        transform: 'translate(14px, 16px) scale(1)',
+        transformOrigin: 'top left',
+        '&.Mui-focused': {
+          color: 'primary.main',
+        },
+        '&.MuiInputLabel-shrink': {
+          transform: 'translate(14px, -9px) scale(0.75)',
+        },
+        '&.MuiInputLabel-outlined': {
+          transform: 'translate(14px, 16px) scale(1)',
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -6px) scale(0.75)',
+          },
+        },
+      },
+      '& .MuiFormHelperText-root': {
+        marginLeft: 0,
+        marginTop: 0.5,
+        fontSize: '0.5rem',
+      },
+    }} 
+    error={!!error}
+  >
+    {label && (
+      <InputLabel variant="outlined">
+        {label}
+      </InputLabel>
+    )}
     <Select
       name={name}
       value={value}
@@ -122,7 +171,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
       onChange={(e) => onChange(e.target.value)}
       required={required}
       disabled={disabled}
-      size={size}
+      size="small"
       MenuProps={{
         PaperProps: {
           sx: {
@@ -134,31 +183,6 @@ export const SelectField: React.FC<SelectFieldProps> = ({
               minHeight: 'auto',
               py: 1,
             },
-          },
-        },
-      }}
-      sx={{
-        width: '100%',
-        minWidth: 0,
-        '& .MuiSelect-select': {
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          minWidth: 0,
-        },
-        '& .MuiOutlinedInput-root': {
-          borderRadius: 2,
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'primary.main',
-          },
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'primary.main',
-            borderWidth: 2,
-          },
-        },
-        '& .MuiInputLabel-root': {
-          '&.Mui-focused': {
-            color: 'primary.main',
           },
         },
       }}
@@ -179,6 +203,20 @@ export const SelectField: React.FC<SelectFieldProps> = ({
         </MenuItem>
       ))}
     </Select>
+    {error && (
+      <Typography 
+        variant="caption" 
+        sx={{ 
+          color: 'error.main',
+          marginLeft: 0,
+          marginTop: 0.5,
+          fontSize: '0.5rem',
+          display: 'block',
+        }}
+      >
+        {error}
+      </Typography>
+    )}
   </FormControl>
 );
 
