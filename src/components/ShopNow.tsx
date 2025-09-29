@@ -581,6 +581,28 @@ const ShopNow = () => {
      return shopNowApis.processProductImages(product);
    };
 
+  
+
+  // Validate and filter product images to avoid invalid string values like 'null'/'undefined'
+  const isValidImageUrl = (url: string): boolean => {
+    if (typeof url !== 'string') return false;
+    const trimmed = url.trim();
+    if (!trimmed) return false;
+    const lower = trimmed.toLowerCase();
+    if (lower === 'null' || lower === 'undefined' || lower === 'n/a') return false;
+    return true;
+  };
+
+  const getValidImages = (product: Product): string[] => {
+    const images = getProductImages(product) || [];
+    return images.filter((u: string) => isValidImageUrl(u));
+  };
+
+  const getFirstValidImage = (product: Product): string | undefined => {
+    const images = getValidImages(product);
+    return images.length > 0 ? images[0] : undefined;
+  };
+
   // Touch/swipe functionality for mobile
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -635,8 +657,8 @@ const ShopNow = () => {
     dispatch(addItem({
       id: item.id,
       title: item.name,
-      price: effective.toString(),
-      image: getProductImages(item)[0] || '/placeholder-image.jpg',
+      price: item.price.toString(),
+      image: getFirstValidImage(item) || '/placeholder-image.jpg',
       description: item.description || '',
       category: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
     }));
@@ -954,32 +976,81 @@ const ShopNow = () => {
                   }}
                   onClick={() => handleImageClick(item, startIndex + index)}
                 >
-                  <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                    {getProductImages(item)[0] ? (
-                      <CardMedia
-                        component="img"
-                        height="250"
-                        image={getProductImages(item)[0]}
-                        alt={item.name}
-                        className="card-media"
-                        sx={{
-                          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          objectFit: 'contain',
-                          width: '100%',
-                          height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
-                          backgroundColor: '#f5f5f5',
-                          padding: { xs: '12px', sm: '8px', md: '6px' },
-                        }}
-                      />
+                  <Box sx={{ 
+                    position: 'relative', 
+                    overflow: 'hidden',
+                    height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 1,
+                  }}>
+                    {getFirstValidImage(item) ? (
+                      <>
+                        <CardMedia
+                          component="img"
+                          height="250"
+                          image={getFirstValidImage(item) as string}
+                          alt={item.name}
+                          className="card-media"
+                          onError={(e: any) => {
+                            const img = e.target as HTMLImageElement;
+                            img.style.display = 'none';
+                            const fallback = img.parentElement?.querySelector('.no-image-fallback');
+                            if (fallback) {
+                              (fallback as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                          sx={{
+                            transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            objectFit: 'contain',
+                            width: '100%',
+                            height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
+                            backgroundColor: '#f5f5f5',
+                            padding: { xs: '12px', sm: '8px', md: '6px' },
+                          }}
+                        />
+                        {/* Hidden fallback shown when image fails to load */}
+                        <Box
+                          className="no-image-fallback"
+                          sx={{
+                            display: 'none',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#f5f5f5',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: 1,
+                          }}
+                        >
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color: 'text.secondary',
+                              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                              fontWeight: 'medium',
+                              textAlign: 'center',
+                            }}
+                          >
+                            No Image
+                          </Typography>
+                        </Box>
+                      </>
                     ) : (
                       <Box
                         sx={{
-                          width: '100%',
-                          height: { xs: '220px', sm: '200px', md: '220px', lg: '250px' },
-                          backgroundColor: '#f5f5f5',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          backgroundColor: '#f5f5f5',
                           border: '1px solid #e0e0e0',
                           borderRadius: 1,
                         }}

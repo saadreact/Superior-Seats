@@ -81,7 +81,12 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
         shipping_address: customerDataWithoutPassword.shipping_address || '',
         shipping_city: customerDataWithoutPassword.shipping_city || '',
         shipping_state: customerDataWithoutPassword.shipping_state || '',
-        shipping_zip: customerDataWithoutPassword.shipping_zip || ''
+        shipping_zip: customerDataWithoutPassword.shipping_zip || '',
+        // Billing Address Fields
+        billing_address: customerDataWithoutPassword.billing_address || '',
+        billing_city: customerDataWithoutPassword.billing_city || '',
+        billing_state: customerDataWithoutPassword.billing_state || '',
+        billing_zip: customerDataWithoutPassword.billing_zip || ''
       };
       
       console.log('Sending customer data:', customerData);

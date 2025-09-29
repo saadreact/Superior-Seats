@@ -8,7 +8,8 @@ import {
   SelectField, 
   SwitchField, 
   FormActions,
-  AddressFields 
+  AddressFields,
+  PhoneField 
 } from '@/components/common/FormComponents';
 import { apiService } from '@/utils/api';
 import { US_STATES } from '@/api/customers';
@@ -49,6 +50,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     shipping_city: '',
     shipping_state: '',
     shipping_zip: '',
+    // Billing Address Fields
+    billing_address: '',
+    billing_city: '',
+    billing_state: '',
+    billing_zip: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -98,6 +104,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         shipping_city: customer.shipping_city || '',
         shipping_state: customer.shipping_state || '',
         shipping_zip: customer.shipping_zip || '',
+        // Billing Address Fields
+        billing_address: customer.billing_address || '',
+        billing_city: customer.billing_city || '',
+        billing_state: customer.billing_state || '',
+        billing_zip: customer.billing_zip || '',
       });
     }
   }, [customer]);
@@ -256,9 +267,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
           gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
           gap={{ xs: 1, md: 1.5 }}
         >
-          <FormField
+          <PhoneField
             name="phone"
-            label="Phone Number"
             value={formData.phone}
             onChange={(value) => handleFieldChange('phone', value)}
             required
@@ -348,7 +358,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         >
           <FormField
             name="shipping_address"
-            label="Shipping Address"
+            label="Address"
             value={formData.shipping_address}
             onChange={(value) => handleFieldChange('shipping_address', value)}
             error={allErrors.shipping_address}
@@ -357,7 +367,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
           <FormField
             name="shipping_city"
-            label="Shipping City"
+            label="City"
             value={formData.shipping_city}
             onChange={(value) => handleFieldChange('shipping_city', value)}
             error={allErrors.shipping_city}
@@ -366,7 +376,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
           <SelectField
             name="shipping_state"
-            label="Shipping State"
+            label="State"
             value={formData.shipping_state}
             onChange={(value) => handleFieldChange('shipping_state', value)}
             options={US_STATES.map(state => ({
@@ -379,10 +389,62 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
           <FormField
             name="shipping_zip"
-            label="Shipping ZIP Code"
+            label="ZIP Code"
             value={formData.shipping_zip}
             onChange={(value) => handleFieldChange('shipping_zip', value)}
             error={allErrors.shipping_zip}
+            disabled={isViewMode}
+          />
+        </Grid>
+      </Box>
+
+      {/* Billing Address */}
+      <Box sx={{ mb: 1.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+          Billing Address
+        </Typography>
+        <Grid
+          display="grid"
+          gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+          gap={{ xs: 1, md: 1.5 }}
+        >
+          <FormField
+            name="billing_address"
+            label="Address"
+            value={formData.billing_address}
+            onChange={(value) => handleFieldChange('billing_address', value)}
+            error={allErrors.billing_address}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="billing_city"
+            label="City"
+            value={formData.billing_city}
+            onChange={(value) => handleFieldChange('billing_city', value)}
+            error={allErrors.billing_city}
+            disabled={isViewMode}
+          />
+
+          <SelectField
+            name="billing_state"
+            label="State"
+            value={formData.billing_state}
+            onChange={(value) => handleFieldChange('billing_state', value)}
+            options={US_STATES.map(state => ({
+              value: state.value,
+              label: state.label
+            }))}
+            error={allErrors.billing_state}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="billing_zip"
+            label="ZIP Code"
+            value={formData.billing_zip}
+            onChange={(value) => handleFieldChange('billing_zip', value)}
+            error={allErrors.billing_zip}
             disabled={isViewMode}
           />
         </Grid>
