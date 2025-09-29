@@ -581,25 +581,7 @@ const ShopNow = () => {
      return shopNowApis.processProductImages(product);
    };
 
-  // Validate and filter product images to avoid invalid string values like 'null'/'undefined'
-  const isValidImageUrl = (url: string): boolean => {
-    if (typeof url !== 'string') return false;
-    const trimmed = url.trim();
-    if (!trimmed) return false;
-    const lower = trimmed.toLowerCase();
-    if (lower === 'null' || lower === 'undefined' || lower === 'n/a') return false;
-    return true;
-  };
-
-  const getValidImages = (product: Product): string[] => {
-    const images = getProductImages(product) || [];
-    return images.filter((u: string) => isValidImageUrl(u));
-  };
-
-  const getFirstValidImage = (product: Product): string | undefined => {
-    const images = getValidImages(product);
-    return images.length > 0 ? images[0] : undefined;
-  };
+  
 
   // Validate and filter product images to avoid invalid string values like 'null'/'undefined'
   const isValidImageUrl = (url: string): boolean => {
