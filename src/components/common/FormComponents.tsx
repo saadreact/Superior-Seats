@@ -16,6 +16,7 @@ import {
   Card,
   CardContent,
   Divider,
+  InputAdornment,
 } from '@mui/material';
 
 interface FormFieldProps {
@@ -92,6 +93,110 @@ export const FormField: React.FC<FormFieldProps> = ({
     }}
   />
 );
+
+interface PhoneFieldProps {
+  name: string;
+  label?: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  error?: string;
+  disabled?: boolean;
+  sx?: any;
+}
+
+export const PhoneField: React.FC<PhoneFieldProps> = ({
+  name,
+  label = 'Phone Number',
+  value,
+  onChange,
+  required = false,
+  error,
+  disabled = false,
+  sx,
+}) => {
+  const [isFocused, setIsFocused] = React.useState(false);
+
+  const handleChange = (raw: string) => {
+    const cleanValue = raw.replace(/[^\d\s\-\(\)]/g, '');
+    onChange(cleanValue);
+  };
+
+  return (
+    <TextField
+      fullWidth
+      name={name}
+      label={label}
+      type="tel"
+      value={value}
+      onChange={(e) => handleChange(e.target.value)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      required={required}
+      error={!!error}
+      helperText={error}
+      disabled={disabled}
+      variant="outlined"
+      size="small"
+      inputProps={{
+        inputMode: 'tel',
+        maxLength: 20,
+      }}
+      InputLabelProps={{
+        shrink: isFocused || Boolean(value),
+      }}
+      InputProps={{
+        notched: isFocused || Boolean(value),
+        startAdornment: (
+          <InputAdornment position="start">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pr: 1 }}>
+              <Typography variant="body2" sx={{ fontSize: '1rem' }}>🇺🇸</Typography>
+              <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>+1</Typography>
+              <Box sx={{ width: '1px', height: '20px', backgroundColor: 'rgba(0, 0, 0, 0.23)', ml: 0.5 }} />
+            </Box>
+          </InputAdornment>
+        ),
+      }}
+      sx={{
+        mb: 1,
+        width: '100%',
+        '& .MuiOutlinedInput-root': {
+          height: '45px',
+          borderRadius: 2,
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'primary.main',
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'primary.main',
+            borderWidth: 2,
+          },
+        },
+        '& .MuiInputLabel-root': {
+          fontWeight: 500,
+          marginTop: 0.5,
+          color: 'text.secondary',
+          transform: 'translate(60px, 8px) scale(1)',
+          '&.Mui-focused': {
+            color: 'primary.main',
+            transform: 'translate(14px, -9px) scale(0.75)',
+          },
+          '&.MuiFormLabel-filled': {
+            transform: 'translate(14px, -9px) scale(0.75)',
+          },
+        },
+        '& .MuiInputBase-input': {
+          paddingLeft: '8px !important',
+        },
+        '& .MuiFormHelperText-root': {
+          marginLeft: 0,
+          marginTop: 0.5,
+          fontSize: '0.5rem',
+        },
+        ...sx,
+      }}
+    />
+  );
+};
 
 interface SelectFieldProps {
   name: string;

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
+
 import {
   Dialog,
   DialogTitle,
@@ -184,6 +185,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   });
 
   const [countryCode] = useState('+1'); // Fixed to US code only
+  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -771,83 +773,97 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  type="tel"
-                  value={signUpForm.phone}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    // Only allow digits and basic formatting
-                    const cleanValue = value.replace(/[^\d\s\-\(\)]/g, '');
-                    setSignUpForm((prev) => ({
-                      ...prev,
-                      phone: cleanValue,
-                    }));
-                    // Clear errors for the field
-                    setErrors((prev) => ({ ...prev, phone: '' }));
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignUp();
-                    }
-                  }}
-                  error={!!errors.phone}
-                  helperText={errors.phone}
-                  variant="outlined"
-                  size="small"
-                  inputProps={{
-                    inputMode: 'tel',
-                    maxLength: 20
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Box sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: 0.5,
-                          pr: 1
-                        }}>
-                          <Typography variant="body2" sx={{ fontSize: '1rem' }}>
-                            🇺🇸
-                          </Typography>
-                          <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                            +1
-                          </Typography>
-                          <Box sx={{ 
-                            width: '1px', 
-                            height: '20px', 
-                            backgroundColor: 'rgba(0, 0, 0, 0.23)',
-                            ml: 0.5
-                          }} />
-                        </Box>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    mb: 2,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'text.secondary',
-                      transform: 'translate(60px, 8px) scale(1)',
-                      '&.Mui-focused': {
-                        color: 'primary.main',
-                        transform: 'translate(14px, -9px) scale(0.75)',
-                      },
-                      '&.MuiFormLabel-filled': {
-                        transform: 'translate(14px, -9px) scale(0.75)',
-                      },
-                    },
-                    '& .MuiInputBase-input': {
-                      paddingLeft: '8px !important',
-                    },
-                  }}
-                />
+<TextField
+      fullWidth
+      label="Phone Number"
+      type="tel"
+      value={signUpForm.phone}
+      onChange={(e) => {
+        const value = e.target.value;
+        // Only allow digits and basic formatting
+        const cleanValue = value.replace(/[^\d\s\-\(\)]/g, "");
+        setSignUpForm((prev) => ({
+          ...prev,
+          phone: cleanValue
+        }));
+        // Clear errors for the field
+        setErrors((prev) => ({ ...prev, phone: "" }));
+      }}
+      onKeyPress={(e) => {
+        if (e.key === "Enter") {
+          handleSignUp();
+        }
+      }}
+      onFocus={() => setIsPhoneFocused(true)}
+      onBlur={() => setIsPhoneFocused(false)}
+      error={!!errors.phone}
+      helperText={errors.phone}
+      variant="outlined"
+      size="small"
+      inputProps={{
+        inputMode: "tel",
+        maxLength: 20
+      }}
+      InputLabelProps={{
+        shrink: isPhoneFocused || Boolean(signUpForm.phone) // shrink only on focus or if value exists
+      }}
+      InputProps={{
+        notched: isPhoneFocused || Boolean(signUpForm.phone), // notch only on focus or if value exists
+        startAdornment: (
+          <InputAdornment position="start">
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                pr: 1
+              }}
+            >
+              <Typography variant="body2" sx={{ fontSize: "1rem" }}>
+                🇺🇸
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ fontSize: "0.75rem", fontWeight: 500 }}
+              >
+                +1
+              </Typography>
+              <Box
+                sx={{
+                  width: "1px",
+                  height: "20px",
+                  backgroundColor: "rgba(0, 0, 0, 0.23)",
+                  ml: 0.5
+                }}
+              />
+            </Box>
+          </InputAdornment>
+        )
+      }}
+      sx={{
+        mb: 2,
+        ...commonTextFieldStyles,
+        "& .MuiFormHelperText-root": {
+          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          marginLeft: 0
+        },
+        "& .MuiInputLabel-root": {
+          color: "text.secondary",
+          transform: "translate(60px, 8px) scale(1)",
+          "&.Mui-focused": {
+            color: "primary.main",
+            transform: "translate(14px, -9px) scale(0.75)"
+          },
+          "&.MuiFormLabel-filled": {
+            transform: "translate(14px, -9px) scale(0.75)"
+          }
+        },
+        "& .MuiInputBase-input": {
+          paddingLeft: "8px !important"
+        }
+      }}
+    />
+
 
                 <TextField
                   fullWidth

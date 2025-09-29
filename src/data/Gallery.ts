@@ -1,56 +1,54 @@
 // Type definitions
 export interface WorkImage {
   id: number;
-  title: string;
   image: string;
-  description: string;
 }
 
 // Work pictures - you can add your actual work images here
 export const workPictures: WorkImage[] = [
-  { id: 1, title: 'Custom Car Interior', image: '/Gallery/01.png', description: 'Luxury car seat restoration' },
-  { id: 2, title: 'Truck Seat Upgrade', image: '/Gallery/02.png', description: 'Commercial truck seat modification' },
-  { id: 3, title: 'Boat Seat Project', image: '/Gallery/03.png', description: 'Marine seating solution' },
+  { id: 1, image: '/Gallery/01.png' },
+  { id: 2, image: '/Gallery/02.png' },
+  { id: 3, image: '/Gallery/03.png' },
 
 
  
-  { id: 7, title: 'Luxury Upgrade', image: '/Gallery/07.png', description: 'Premium material upgrade' },
-  { id: 8, title: 'Custom Stitching', image: '/Gallery/08.png', description: 'Hand-stitched details' },
-  { id: 9, title: 'Ergonomic Design', image: '/Gallery/09.png', description: 'Comfort-focused seating' },
-  { id: 10, title: 'Custom Car Interior', image: '/Gallery/10.png', description: 'Luxury car seat restoration' },
-  { id: 11, title: 'Truck Seat Upgrade', image: '/Gallery/11.png', description: 'Commercial truck seat modification' },
+  { id: 7, image: '/Gallery/07.png' },
+  { id: 8, image: '/Gallery/08.png' },
+  { id: 9, image: '/Gallery/09.png' },
+  { id: 10, image: '/Gallery/10.png' },
+  { id: 11, image: '/Gallery/11.png' },
  
  
-  { id: 14, title: 'Classic Car Restoration', image: '/Gallery/14.png', description: 'Vintage car seat restoration' },
+  { id: 14, image: '/Gallery/14.png' },
  
 
-  { id: 17, title: 'Custom Stitching', image: '/Gallery/17.png', description: 'Hand-stitched details' },
-  { id: 18, title: 'Ergonomic Design', image: '/Gallery/18.png', description: 'Comfort-focused seating' },
-  { id: 19, title: 'Custom Car Interior', image: '/Gallery/19.png', description: 'Luxury car seat restoration' },
-  { id: 20, title: 'Truck Seat Upgrade', image: '/Gallery/20.png', description: 'Commercial truck seat modification' },
+  { id: 17, image: '/Gallery/17.png' },
+  { id: 18, image: '/Gallery/18.png' },
+  { id: 19, image: '/Gallery/19.png' },
+  { id: 20, image: '/Gallery/20.png' },
  
-  { id: 22, title: 'Motorcycle Custom', image: '/Gallery/22.png', description: 'Custom bike seat design' },
-  { id: 23, title: 'Classic Car Restoration', image: '/Gallery/23.png', description: 'Vintage car seat restoration' },
+  { id: 22, image: '/Gallery/22.png' },
+  { id: 23, image: '/Gallery/23.png' },
  
-  { id: 25, title: 'Luxury Upgrade', image: '/Gallery/25.png', description: 'Premium material upgrade' },
-  { id: 26, title: 'Custom Stitching', image: '/Gallery/26.png', description: 'Hand-stitched details' },
-  { id: 27, title: 'Ergonomic Design', image: '/Gallery/27.png', description: 'Comfort-focused seating' },
-  { id: 28, title: 'Custom Car Interior', image: '/Gallery/28.png', description: 'Luxury car seat restoration' },
-  { id: 29, title: 'Truck Seat Upgrade', image: '/Gallery/29.png', description: 'Commercial truck seat modification' },
+  { id: 25, image: '/Gallery/25.png' },
+  { id: 26, image: '/Gallery/26.png' },
+  { id: 27, image: '/Gallery/27.png' },
+  { id: 28, image: '/Gallery/28.png' },
+  { id: 29, image: '/Gallery/29.png' },
 
 
   
 ]; 
 export const workPicturesTruck: WorkImage[] = [
-  { id: 1, title: 'Truck Seat Customization', image: '/Gallery/Truckimages/truck01.jpg', description: 'Professional truck seat modification' },
-  { id: 2, title: 'Heavy Duty Truck Interior', image: '/Gallery/Truckimages/truck02.jpg', description: 'Commercial truck seat upgrade' },
-  { id: 3, title: 'Truck Seat Restoration', image: '/Gallery/Truckimages/truck03.jpg', description: 'Vintage truck seat restoration' },
-  { id: 4, title: 'Modern Truck Interior', image: '/Gallery/Truckimages/truck04.jpg', description: 'Contemporary truck seating design' },
-  { id: 5, title: 'Luxury Truck Upgrade', image: '/Gallery/Truckimages/truck05.jpg', description: 'Premium truck seat materials' },
-  { id: 6, title: 'Truck Seat Fabrication', image: '/Gallery/Truckimages/truck06.jpg', description: 'Custom truck seat fabrication' },
-  { id: 7, title: 'Truck Interior Design', image: '/Gallery/Truckimages/truck07.jpg', description: 'Professional truck interior design' },
-  { id: 8, title: 'Truck Seat Installation', image: '/Gallery/Truckimages/truck08.jpg', description: 'Expert truck seat installation' },
-  { id: 9, title: 'Truck Seat Maintenance', image: '/Gallery/Truckimages/truck09.jpg', description: 'Truck seat maintenance and care' },
-  { id: 10, title: 'Truck Seat Repair', image: '/Gallery/Truckimages/truck10.jpg', description: 'Truck seat repair services' },
-  { id: 11, title: 'Truck Seat Replacement', image: '/Gallery/Truckimages/truck11.jpg', description: 'Complete truck seat replacement' },
+  { id: 1, image: '/Gallery/Truckimages/truck01.jpg' },
+  { id: 2, image: '/Gallery/Truckimages/truck02.jpg' },
+  { id: 3, image: '/Gallery/Truckimages/truck03.jpg' },
+  { id: 4, image: '/Gallery/Truckimages/truck04.jpg' },
+  { id: 5, image: '/Gallery/Truckimages/truck05.jpg' },
+  { id: 6, image: '/Gallery/Truckimages/truck06.jpg' },
+  { id: 7, image: '/Gallery/Truckimages/truck07.jpg' },
+  { id: 8, image: '/Gallery/Truckimages/truck08.jpg' },
+  { id: 9, image: '/Gallery/Truckimages/truck09.jpg' },
+  { id: 10, image: '/Gallery/Truckimages/truck10.jpg' },
+  { id: 11, image: '/Gallery/Truckimages/truck11.jpg' },
 ]; 
