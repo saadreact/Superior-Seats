@@ -231,6 +231,7 @@ class ApiService {
       // Clear all authentication related data
       localStorage.removeItem('auth_token');
       localStorage.removeItem('token_generated_at');
+      localStorage.removeItem('last_activity_timestamp');
       localStorage.removeItem('persist:auth');
       localStorage.removeItem('user');
       localStorage.removeItem('auth');
@@ -401,6 +402,11 @@ class ApiService {
   // Initialize auto-refresh if user is already authenticated
   initializeAutoRefresh(): void {
     if (this.isAuthenticated()) {
+      // Check if token generation time exists, if not, set it to current time
+      if (typeof window !== 'undefined' && !localStorage.getItem('token_generated_at')) {
+        localStorage.setItem('token_generated_at', Date.now().toString());
+        console.log('🔄 Set token generation time for existing token');
+      }
       this.startAutoRefresh();
     }
   }

@@ -28,7 +28,8 @@ import AdminLayout from '@/components/AdminLayout';
 import { 
   FormField, 
   SelectField, 
-  FormActions
+  FormActions,
+  PhoneField
 } from '@/components/common/FormComponents';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
@@ -66,6 +67,11 @@ const CreateCustomerPage = () => {
     shipping_city: '',
     shipping_state: '',
     shipping_zip: '',
+    // Billing Address Fields
+    billing_address: '',
+    billing_city: '',
+    billing_state: '',
+    billing_zip: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [priceTiers, setPriceTiers] = useState<any[]>([]);
@@ -170,7 +176,12 @@ const CreateCustomerPage = () => {
         shipping_address: formData.shipping_address || '',
         shipping_city: formData.shipping_city || '',
         shipping_state: formData.shipping_state || '',
-        shipping_zip: formData.shipping_zip || ''
+        shipping_zip: formData.shipping_zip || '',
+        // Billing Address Fields
+        billing_address: formData.billing_address || '',
+        billing_city: formData.billing_city || '',
+        billing_state: formData.billing_state || '',
+        billing_zip: formData.billing_zip || ''
       };
       
       console.log('Creating customer with data:', customerData);
@@ -357,9 +368,8 @@ const CreateCustomerPage = () => {
                   gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
                   gap={{ xs: 1, md: 1.5 }}
                 >
-                  <FormField
+                  <PhoneField
                     name="phone"
-                    label="Phone Number"
                     value={formData.phone}
                     onChange={(value) => handleFieldChange('phone', value)}
                     required
@@ -443,7 +453,7 @@ const CreateCustomerPage = () => {
                 >
                   <FormField
                     name="shipping_address"
-                    label="Shipping Address"
+                    label="Address"
                     value={formData.shipping_address}
                     onChange={(value) => handleFieldChange('shipping_address', value)}
                     error={allErrors.shipping_address}
@@ -451,7 +461,7 @@ const CreateCustomerPage = () => {
 
                   <FormField
                     name="shipping_city"
-                    label="Shipping City"
+                    label="City"
                     value={formData.shipping_city}
                     onChange={(value) => handleFieldChange('shipping_city', value)}
                     error={allErrors.shipping_city}
@@ -459,7 +469,7 @@ const CreateCustomerPage = () => {
 
                   <SelectField
                     name="shipping_state"
-                    label="Shipping State"
+                    label="State"
                     value={formData.shipping_state}
                     onChange={(value) => handleFieldChange('shipping_state', value)}
                     options={US_STATES.map(state => ({
@@ -471,10 +481,58 @@ const CreateCustomerPage = () => {
 
                   <FormField
                     name="shipping_zip"
-                    label="Shipping ZIP Code"
+                    label="ZIP Code"
                     value={formData.shipping_zip}
                     onChange={(value) => handleFieldChange('shipping_zip', value)}
                     error={allErrors.shipping_zip}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Billing Address */}
+              <Box sx={{ mb: 1.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+                  Billing Address
+                </Typography>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="billing_address"
+                    label="Address"
+                    value={formData.billing_address}
+                    onChange={(value) => handleFieldChange('billing_address', value)}
+                    error={allErrors.billing_address}
+                  />
+
+                  <FormField
+                    name="billing_city"
+                    label="City"
+                    value={formData.billing_city}
+                    onChange={(value) => handleFieldChange('billing_city', value)}
+                    error={allErrors.billing_city}
+                  />
+
+                  <SelectField
+                    name="billing_state"
+                    label="State"
+                    value={formData.billing_state}
+                    onChange={(value) => handleFieldChange('billing_state', value)}
+                    options={US_STATES.map(state => ({
+                      value: state.value,
+                      label: state.label
+                    }))}
+                    error={allErrors.billing_state}
+                  />
+
+                  <FormField
+                    name="billing_zip"
+                    label="ZIP Code"
+                    value={formData.billing_zip}
+                    onChange={(value) => handleFieldChange('billing_zip', value)}
+                    error={allErrors.billing_zip}
                   />
                 </Grid>
               </Box>

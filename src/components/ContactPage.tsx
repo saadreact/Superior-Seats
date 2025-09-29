@@ -16,6 +16,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import InputAdornment from '@mui/material/InputAdornment';
 import { Person, Business, Send, Phone, Email, LocationOn, AccessTime } from '@mui/icons-material';
 import { contactInfo, initialFormData, ContactFormData } from '@/data/ContactPage';
 import { sendContactForm } from '@/services/contactpageapi';
@@ -49,6 +50,7 @@ const ContactPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('success');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
 
   // Ensure form data is always valid (no null/undefined values)
   useEffect(() => {
@@ -352,24 +354,54 @@ const ContactPage = () => {
                        ...commonTextFieldStyles,
                      }}
                    />
-                                     <TextField
-                     label="Phone"
-                     value={formData.phone}
-                     onChange={handleInputChange('phone')}
-                     required
-                     variant="outlined"
-                     size="small"
-                     error={!!errors.phone}
-                     helperText={errors.phone}
-                     inputProps={{
-                       inputMode: 'numeric',
-                       pattern: '[0-9]*'
-                     }}
-                     sx={{
-                       flex: 1,
-                       ...commonTextFieldStyles,
-                     }}
-                   />
+                  <TextField
+                    label="Phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange('phone')}
+                    onFocus={() => setIsPhoneFocused(true)}
+                    onBlur={() => setIsPhoneFocused(false)}
+                    required
+                    variant="outlined"
+                    size="small"
+                    error={!!errors.phone}
+                    helperText={errors.phone}
+                    inputProps={{
+                      inputMode: 'tel',
+                      maxLength: 20,
+                    }}
+                    InputLabelProps={{
+                      shrink: isPhoneFocused || Boolean(formData.phone),
+                    }}
+                    InputProps={{
+                      notched: isPhoneFocused || Boolean(formData.phone),
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pr: 1 }}>
+                            <Typography variant="body2" sx={{ fontSize: '1rem' }}>🇺🇸</Typography>
+                            <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>+1</Typography>
+                            <Box sx={{ width: '1px', height: '20px', backgroundColor: 'rgba(0, 0, 0, 0.23)', ml: 0.5 }} />
+                          </Box>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      flex: 1,
+                      ...commonTextFieldStyles,
+                      '& .MuiInputLabel-root': {
+                        transform: 'translate(60px, 5.5px) scale(1)',
+                        '&.Mui-focused': {
+                          transform: 'translate(14px, -9px) scale(0.75)'
+                        },
+                        '&.MuiFormLabel-filled': {
+                          transform: 'translate(14px, -9px) scale(0.75)'
+                        }
+                      },
+                      '& .MuiInputBase-input': {
+                        paddingLeft: '8px !important'
+                      }
+                    }}
+                  />
                 </Box>
 
                                  {/* Company Field */}

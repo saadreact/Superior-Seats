@@ -9,7 +9,7 @@ class TokenManager {
   private refreshInterval: NodeJS.Timeout | null = null;
   private activityTimeout: NodeJS.Timeout | null = null;
   private lastActivity: number = Date.now();
-  private readonly REFRESH_THRESHOLD = 5 * 60 * 1000; // 5 minutes in milliseconds
+  private readonly REFRESH_THRESHOLD = 10 * 60 * 1000; // 5 minutes in milliseconds
   private readonly ACTIVITY_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
   private readonly ACTIVITY_CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
 
@@ -21,6 +21,9 @@ class TokenManager {
   private initializeTokenManagement() {
     if (typeof window === 'undefined') return;
 
+    // Check for expired tokens from previous sessions first
+    this.checkForExpiredTokensOnStartup();
+    
     // Start token refresh monitoring
     this.startTokenRefreshMonitoring();
     
@@ -31,11 +34,16 @@ class TokenManager {
   private setupActivityTracking() {
     if (typeof window === 'undefined') return;
 
+    // Initialize last activity from storage or current time
+    this.initializeLastActivity();
+
     // Track user activity
     const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
     
     const updateActivity = () => {
       this.lastActivity = Date.now();
+      // Store last activity timestamp in localStorage for persistence across sessions
+      localStorage.setItem('last_activity_timestamp', this.lastActivity.toString());
       console.log('TokenManager: User activity detected, updating last activity timestamp');
     };
 
@@ -46,6 +54,20 @@ class TokenManager {
 
     // Check activity periodically
     this.startActivityMonitoring();
+  }
+
+  private initializeLastActivity() {
+    if (typeof window === 'undefined') return;
+
+    const storedActivity = localStorage.getItem('last_activity_timestamp');
+    if (storedActivity) {
+      this.lastActivity = parseInt(storedActivity);
+      console.log(`TokenManager: Restored last activity from ${new Date(this.lastActivity).toLocaleString()}`);
+    } else {
+      this.lastActivity = Date.now();
+      localStorage.setItem('last_activity_timestamp', this.lastActivity.toString());
+      console.log('TokenManager: Initialized last activity timestamp');
+    }
   }
 
   private startTokenRefreshMonitoring() {
@@ -70,6 +92,74 @@ class TokenManager {
 
     if (timeSinceLastActivity > this.ACTIVITY_TIMEOUT) {
       console.log('TokenManager: User inactive for 1 hour, logging out');
+      this.forceLogout();
+    }
+  }
+
+  private checkForExpiredTokensOnStartup() {
+    console.log('TokenManager: Checking for expired tokens from previous sessions...');
+    
+    const token = this.getStoredToken();
+    if (!token) {
+      console.log('TokenManager: No stored token found');
+      return;
+    }
+
+    try {
+      const tokenData = this.decodeToken(token);
+      if (!tokenData) {
+        console.log('TokenManager: Invalid token format, clearing storage');
+        this.forceLogout();
+        return;
+      }
+
+      const now = Math.floor(Date.now() / 1000);
+      const timeUntilExpiry = tokenData.exp - now;
+      
+      console.log(`TokenManager: Token expires in ${Math.round(timeUntilExpiry)} seconds`);
+
+      // If token is expired or expires within 5 minutes, clear it
+      if (timeUntilExpiry <= 300) { // 5 minutes
+        console.log('TokenManager: Token expired or expires soon, clearing storage');
+        this.forceLogout();
+        return;
+      }
+
+      // Check if user has been away for more than 1 hour (based on token generation time)
+      const tokenGeneratedAt = localStorage.getItem('token_generated_at');
+      if (tokenGeneratedAt) {
+        const generatedTime = parseInt(tokenGeneratedAt);
+        const timeSinceGeneration = Date.now() - generatedTime;
+        const oneHourInMs = 60 * 60 * 1000;
+        
+        console.log(`TokenManager: Time since token generation: ${Math.round(timeSinceGeneration / 1000 / 60)} minutes`);
+        
+        if (timeSinceGeneration > oneHourInMs) {
+          console.log('TokenManager: Token is older than 1 hour, clearing storage');
+          this.forceLogout();
+          return;
+        }
+      }
+
+      // Check if user has been inactive for more than 1 hour (based on last activity)
+      const lastActivityTimestamp = localStorage.getItem('last_activity_timestamp');
+      if (lastActivityTimestamp) {
+        const lastActivity = parseInt(lastActivityTimestamp);
+        const timeSinceLastActivity = Date.now() - lastActivity;
+        const oneHourInMs = 60 * 60 * 1000;
+        
+        console.log(`TokenManager: Time since last activity: ${Math.round(timeSinceLastActivity / 1000 / 60)} minutes`);
+        
+        if (timeSinceLastActivity > oneHourInMs) {
+          console.log('TokenManager: User has been inactive for more than 1 hour, clearing storage');
+          this.forceLogout();
+          return;
+        }
+      }
+
+      console.log('TokenManager: Token is valid and recent, continuing with session');
+    } catch (error) {
+      console.error('TokenManager: Error checking token on startup:', error);
       this.forceLogout();
     }
   }
@@ -189,6 +279,11 @@ class TokenManager {
       this.activityTimeout = null;
     }
 
+    // Clear activity tracking data
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('last_activity_timestamp');
+    }
+
     // Force logout through API service
     apiService.forceLogout();
     
@@ -258,6 +353,35 @@ class TokenManager {
       clearInterval(this.activityTimeout);
       this.activityTimeout = null;
     }
+  }
+
+  // Public method for testing token expiry scenarios
+  public simulateExtendedAbsence() {
+    console.log('TokenManager: Simulating extended absence...');
+    
+    // Set last activity to 2 hours ago
+    const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+    localStorage.setItem('last_activity_timestamp', twoHoursAgo.toString());
+    
+    // Set token generation time to 2 hours ago
+    localStorage.setItem('token_generated_at', twoHoursAgo.toString());
+    
+    console.log('TokenManager: Extended absence simulated. Next app restart will clear tokens.');
+  }
+
+  // Public method to get current token and activity status
+  public getTokenStatus() {
+    const token = this.getStoredToken();
+    const tokenGeneratedAt = localStorage.getItem('token_generated_at');
+    const lastActivityTimestamp = localStorage.getItem('last_activity_timestamp');
+    
+    return {
+      hasToken: !!token,
+      tokenGeneratedAt: tokenGeneratedAt ? new Date(parseInt(tokenGeneratedAt)).toLocaleString() : null,
+      lastActivity: lastActivityTimestamp ? new Date(parseInt(lastActivityTimestamp)).toLocaleString() : null,
+      timeSinceGeneration: tokenGeneratedAt ? Math.round((Date.now() - parseInt(tokenGeneratedAt)) / 1000 / 60) : null,
+      timeSinceActivity: lastActivityTimestamp ? Math.round((Date.now() - parseInt(lastActivityTimestamp)) / 1000 / 60) : null
+    };
   }
 }
 

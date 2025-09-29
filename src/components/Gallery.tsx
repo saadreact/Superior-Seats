@@ -239,7 +239,7 @@ const Gallery = () => {
                 {item.image && item.image.trim() !== '' ? (
                   <LazyImage
                     src={item.image}
-                    alt={item.title}
+                    alt={`Gallery image ${item.id}`}
                     fill
                     style={{
                       objectFit: 'cover',
@@ -285,18 +285,7 @@ const Gallery = () => {
                     p: 2,
                   }}
                 >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      fontSize: '0.9rem',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    {item.title}
-                  </Typography>
-                  <ZoomIn sx={{ fontSize: 20, mt: 1 }} />
+                  <ZoomIn sx={{ fontSize: 20 }} />
                 </Box>
               </Box>
             ))}
@@ -327,7 +316,7 @@ const Gallery = () => {
                 {item.image && item.image.trim() !== '' ? (
                   <LazyImage
                     src={item.image}
-                    alt={item.title}
+                    alt={`Gallery image ${item.id}`}
                     fill
                     style={{
                       objectFit: 'cover',
@@ -373,18 +362,7 @@ const Gallery = () => {
                     p: 2,
                   }}
                 >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      fontSize: '0.9rem',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    {item.title}
-                  </Typography>
-                  <ZoomIn sx={{ fontSize: 20, mt: 1 }} />
+                  <ZoomIn sx={{ fontSize: 20 }} />
                 </Box>
               </Box>
             ))}
@@ -474,7 +452,7 @@ const Gallery = () => {
                   {item.image && item.image.trim() !== '' ? (
                     <img
                       src={item.image}
-                      alt={item.title}
+                      alt={`Gallery image ${item.id}`}
                       style={{
                         position: 'absolute',
                         top: 0,
@@ -536,45 +514,6 @@ const Gallery = () => {
                     <ZoomIn sx={{ fontSize: 20 }} />
                   </Box>
                   
-                  {/* Image Overlay with Title */}
-                  <Box
-                    className="image-overlay"
-                    sx={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
-                      color: 'white',
-                      p: 3,
-                      opacity: 0,
-                      transform: 'translateY(20px)',
-                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                  >
-                                         <Typography
-                       variant="body1"
-                       sx={{
-                         fontWeight: 'bold',
-                         fontSize: '1.1rem',
-                         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                         mb: 1,
-                       }}
-                     >
-                       {item.title}
-                     </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        opacity: 0.9,
-                        fontSize: '0.9rem',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {item.description}
-                    </Typography>
-                  </Box>
                 </Box>
               </Box>
             ))}
@@ -620,7 +559,7 @@ const Gallery = () => {
               {selectedImage.image && selectedImage.image.trim() !== '' ? (
                 <Image
                   src={selectedImage.image}
-                  alt={selectedImage.title}
+                  alt={`Gallery image ${selectedImage.id}`}
                   width={800}
                   height={600}
                   style={{
@@ -647,46 +586,6 @@ const Gallery = () => {
                 </Box>
               )}
               
-              {/* Image Details Overlay - No Background */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: 'transparent',
-                  color: 'black',
-                  p: { xs: 2, sm: 3, md: 4 },
-                  transform: 'translateY(0)',
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
-                    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
-                    mb: { xs: 0.5, sm: 1 },
-                    lineHeight: 1.3,
-                    color: 'black',
-                  }}
-                >
-                  {selectedImage.title}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    opacity: 0.8,
-                    fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' },
-                    textShadow: '0 1px 2px rgba(255,255,255,0.6)',
-                    lineHeight: 1.5,
-                    maxWidth: '80%',
-                    color: 'text.secondary',
-                  }}
-                >
-                  {selectedImage.description}
-                </Typography>
-              </Box>
             </Box>
           )}
         </DialogContent>
