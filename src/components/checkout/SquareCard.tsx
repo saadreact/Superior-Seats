@@ -10,9 +10,11 @@ interface SquareCardProps {
 	amount: number;
 	applicationId?: string;
 	locationId?: string;
+	onReady?: () => void;
+	onError?: (message: string) => void;
 }
 
-const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount, applicationId, locationId: locationIdProp }, ref) => {
+const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount, applicationId, locationId: locationIdProp, onReady, onError }, ref) => {
 	const [isReady, setIsReady] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const paymentsRef = useRef<any>(null);
@@ -23,7 +25,10 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 
 	const appId = applicationId || (process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID as string | undefined);
 	const locationId = locationIdProp || (process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string | undefined);
-	const env = (process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT || 'sandbox').toLowerCase();
+	// Prefer explicit env var if valid; otherwise infer from appId prefix
+	const explicitEnv = (process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT || '').toLowerCase();
+	const inferredEnv = appId && appId.startsWith('sandbox-') ? 'sandbox' : 'production';
+	const env = explicitEnv === 'sandbox' || explicitEnv === 'production' ? explicitEnv : inferredEnv;
 	const sdkSrc = env === 'production'
 		? 'https://web.squarecdn.com/v1/square.js'
 		: 'https://sandbox.web.squarecdn.com/v1/square.js';
@@ -76,7 +81,7 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 					// @ts-ignore
 					window.__square_sdk_loaded__ = true;
 				};
-				s.onerror = () => setError('Failed to load Square SDK script. Check network and Allowed domains.');
+				s.onerror = () => { const msg = 'Failed to load Square SDK script. Check network and Allowed Domains.'; setError(msg); try { onError?.(msg); } catch { /* noop */ } };
 				document.head.appendChild(s);
 			}
 			return false;
@@ -96,9 +101,15 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 				cardRef.current = await paymentsRef.current.card();
 				await cardRef.current.attach(`#${containerId}`);
 				setIsReady(true);
+				try { onReady?.(); } catch { /* noop */ }
 			} catch (e: any) {
 				console.error('Square init error', e);
-				setError(e?.message || 'Failed to initialize card form. Ensure your domain is allowed in Square dashboard.');
+				const hint = env === 'sandbox'
+					? 'Verify you are using SANDBOX appId/locationId and your current domain (including port) is allowed in Square Dashboard.'
+					: 'Verify you are using PRODUCTION appId/locationId and the domain is allowed in Square Dashboard.';
+				const msg = e?.message || `Failed to initialize card form. ${hint}`;
+				setError(msg);
+				try { onError?.(msg); } catch { /* noop */ }
 			}
 		};
 
@@ -119,7 +130,11 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 
 		// Fallback timeout error after 30s
 		timeoutTimer = setTimeout(() => {
-			if (!isReady) setError('Web Payments SDK was unable to be initialized in time. Please check network and Allowed domains, and try again.');
+			if (!isReady) {
+				const msg = 'Web Payments SDK was unable to be initialized in time. Check network, environment, and Allowed Domains.';
+				setError(msg);
+				try { onError?.(msg); } catch { /* noop */ }
+			}
 		}, 30000);
 
 		return () => {
@@ -130,7 +145,7 @@ const SquareCard = React.forwardRef<SquareCardHandle, SquareCardProps>(({ amount
 			} catch { /* noop */ }
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [appId, locationId]);
+	}, [appId, locationId, sdkSrc]);
 
 	return (
 		<>

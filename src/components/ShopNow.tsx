@@ -224,10 +224,16 @@ const ShopNow = () => {
       console.log('🔄 ShopNow - Not on ShopGallery page, skipping products fetch');
       return;
     }
+    if ((fetchProducts as any).__inFlight) {
+      console.log('⏳ ShopNow - fetchProducts already in-flight, skipping');
+      return;
+    }
+    (fetchProducts as any).__inFlight = true;
     
     // If a specific category is selected but categories are not loaded yet, wait
     if (selectedMainCategory !== 'all' && categories.length === 0) {
       console.log('⏳ ShopNow - Waiting for categories to load before fetching products for category:', selectedMainCategory);
+      (fetchProducts as any).__inFlight = false;
       return;
     }
     
@@ -335,6 +341,7 @@ const ShopNow = () => {
     }
     
     setLoading(false);
+    (fetchProducts as any).__inFlight = false;
   }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, categories, extractCategoriesFromProducts]);
 
   // Function to refresh all APIs (price tiers, user data, categories)
@@ -344,6 +351,11 @@ const ShopNow = () => {
       console.log('🔄 ShopGallery - Not on ShopGallery page, skipping API refresh');
       return;
     }
+    if ((refreshAllApis as any).__inFlight) {
+      console.log('⏳ ShopNow - refreshAllApis already in-flight, skipping');
+      return;
+    }
+    (refreshAllApis as any).__inFlight = true;
     
     console.log('🔄 ShopGallery - Refreshing all APIs...');
     
@@ -396,6 +408,7 @@ const ShopNow = () => {
       setUserData(null);
       setUserLoading(false);
     }
+    (refreshAllApis as any).__inFlight = false;
   }, [isAuthenticated, isOnShopGalleryPage, fetchPriceTiers, fetchAllCategories]);
 
   // Effect to fetch products when filters or pagination change
@@ -588,6 +601,26 @@ const ShopNow = () => {
     return images.length > 0 ? images[0] : undefined;
   };
 
+  // Validate and filter product images to avoid invalid string values like 'null'/'undefined'
+  const isValidImageUrl = (url: string): boolean => {
+    if (typeof url !== 'string') return false;
+    const trimmed = url.trim();
+    if (!trimmed) return false;
+    const lower = trimmed.toLowerCase();
+    if (lower === 'null' || lower === 'undefined' || lower === 'n/a') return false;
+    return true;
+  };
+
+  const getValidImages = (product: Product): string[] => {
+    const images = getProductImages(product) || [];
+    return images.filter((u: string) => isValidImageUrl(u));
+  };
+
+  const getFirstValidImage = (product: Product): string | undefined => {
+    const images = getValidImages(product);
+    return images.length > 0 ? images[0] : undefined;
+  };
+
   // Touch/swipe functionality for mobile
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -638,6 +671,7 @@ const ShopNow = () => {
 
 
   const handleAddToCart = (item: Product) => {
+    const effective = getBestPriceTier(item)?.finalPrice ?? parseFloat(item.price.toString());
     dispatch(addItem({
       id: item.id,
       title: item.name,
