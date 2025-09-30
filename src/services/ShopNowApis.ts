@@ -590,9 +590,9 @@ class ShopNowApis {
       return 0;
     }
     
-    // Find the user's specific price tier
+    // Find the user's specific price tier (treat missing is_active as active)
     const userPriceTier = priceTiers.find(tier => 
-      tier.id === userData.role!.price_tier_id && tier.is_active
+      tier.id === userData.role!.price_tier_id && (tier.is_active !== false)
     );
     
     if (!userPriceTier) {
