@@ -40,6 +40,7 @@ import {
 import { apiService } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 import AdminVariantsDrawer, { VariantSelections } from './AdminVariantsDrawer';
+import shopNowApis, { PriceTier as ShopPriceTier } from '@/services/ShopNowApis';
 
 interface CustomerOption {
 	id: number;
@@ -48,12 +49,15 @@ interface CustomerOption {
 	name?: string | null;
 	email: string;
 	phone?: string;
+	price_tier?: { id: number } | null;
+	price_tier_id?: number | null;
 }
 
 interface ProductOption {
 	id: number;
 	name: string;
-	price?: number;
+	price?: number | string;
+	unit_price?: number | string;
 }
 
 interface CartItem {
@@ -101,6 +105,7 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 	// Data sets
 	const [customers, setCustomers] = useState<CustomerOption[]>([]);
 	const [products, setProducts] = useState<ProductOption[]>([]);
+	const [priceTiers, setPriceTiers] = useState<ShopPriceTier[]>([]);
 
 	// Step 1: customer
 	const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
@@ -112,12 +117,21 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [drawerRowIndex, setDrawerRowIndex] = useState<number | null>(null);
 
-const getUnitPrice = (productId: number) => {
-  const p: any = products.find(p => p.id === productId);
-  const raw = p?.price ?? (p as any)?.unit_price ?? 0;
-  const n = typeof raw === 'string' ? parseFloat(raw) : Number(raw || 0);
-  return isNaN(n) ? 0 : n;
-};
+	const getRetailPrice = (productId: number) => {
+		const p: any = products.find(p => p.id === productId);
+		const raw = p?.price ?? p?.unit_price ?? 0;
+		const n = typeof raw === 'string' ? parseFloat(raw) : Number(raw || 0);
+		return isNaN(n) ? 0 : n;
+	};
+	const getDiscountedPrice = (productId: number) => {
+		const base = getRetailPrice(productId);
+		const tierId = selectedCustomer?.price_tier_id || (selectedCustomer?.price_tier as any)?.id || null;
+		if (tierId && priceTiers.length > 0) {
+			const fakeUser: any = { role: { price_tier_id: tierId } };
+			return shopNowApis.getDisplayPrice(base, true, fakeUser, priceTiers);
+		}
+		return base;
+	};
 
 	const handleClose = () => {
 		setDrawerOpen(false);
@@ -148,9 +162,10 @@ const getUnitPrice = (productId: number) => {
 			try {
 				setLoading(true);
 				setError(null);
-				const [customersRes, productsRes] = await Promise.all([
+				const [customersRes, productsRes, tiersRes] = await Promise.all([
 					apiService.getCustomers({ per_page: 100 }),
 					apiService.getProducts({ per_page: 100 }),
+					shopNowApis.getPriceTiers(),
 				]);
 
 				const cDataRaw = (customersRes && (customersRes.data?.data || customersRes.data || customersRes)) as any;
@@ -159,6 +174,9 @@ const getUnitPrice = (productId: number) => {
 
 				const pData = productsRes?.data || productsRes || [];
 				setProducts(Array.isArray(pData) ? pData : []);
+
+				const tiersPayload = tiersRes?.data ?? tiersRes ?? [];
+				setPriceTiers(Array.isArray(tiersPayload) ? tiersPayload : []);
 
 				// Prefill from order
 				if (order) {
@@ -177,13 +195,13 @@ const getUnitPrice = (productId: number) => {
 					
 					// Extract phone from multiple possible locations
 					const phone = custInfo?.phone || 
-								 (ord as any)?.customer?.phone || 
-								 matched?.phone || 
-								 (ord as any)?.addresses?.[0]?.phone || 
-								 (ord as any)?.shippingAddress?.phone || 
-								 (ord as any)?.billingAddress?.phone || 
-								 (ord as any)?.shipping_address?.phone || 
-								 (ord as any)?.billing_address?.phone || '';
+						 (ord as any)?.customer?.phone || 
+						 matched?.phone || 
+						 (ord as any)?.addresses?.[0]?.phone || 
+						 (ord as any)?.shippingAddress?.phone || 
+						 (ord as any)?.billingAddress?.phone || 
+						 (ord as any)?.shipping_address?.phone || 
+						 (ord as any)?.billing_address?.phone || '';
 					
 					setFirstName(firstName);
 					setLastName(lastName);
@@ -294,6 +312,16 @@ const getUnitPrice = (productId: number) => {
 		};
 		load();
 	}, [order]);
+
+	// Recompute prices on customer tier change (do not change locked unit prices)
+	useEffect(() => {
+		setCartItems(prev => prev.map(it => {
+			const newUnit = getDiscountedPrice(it.productId);
+			const qty = Number(it.quantity) || 0;
+			const line = Math.max(0, qty * newUnit);
+			return { ...it, unitPrice: newUnit, total: line, totalPrice: line };
+		}));
+	}, [selectedCustomer, priceTiers, products]);
 
 	// Derived totals
 	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
@@ -465,7 +493,7 @@ const getUnitPrice = (productId: number) => {
 											const next: CartItem[] = [];
 											values.forEach(v => {
 												const existing = prev.find(ci => ci.productId === v.id);
-												const unitPrice = getUnitPrice(v.id);
+												const unitPrice = getDiscountedPrice(v.id);
 												next.push({
 													itemId: String(v.id),
 													productId: v.id,
@@ -490,7 +518,7 @@ const getUnitPrice = (productId: number) => {
 											<Chip
 												{...getTagProps({ index })}
 												key={option.id}
-												label={`${option.name} - $${(Number(option.price) || 0).toFixed(2)}`}
+												label={`${option.name} - $${(Number((option as any).price) || 0).toFixed(2)}`}
 												size="small"
 											/>
 										))
@@ -524,9 +552,9 @@ const getUnitPrice = (productId: number) => {
 																size="small" 
 																startIcon={<TuneIcon />} 
 																onClick={() => {
-																	setDrawerRowIndex(idx);
-																	setDrawerOpen(true);
-																}}
+																setDrawerRowIndex(idx);
+																setDrawerOpen(true);
+															}}
 															>
 																Details
 															</Button>
@@ -597,29 +625,6 @@ const getUnitPrice = (productId: number) => {
 				return (
 					<Card>
 						<CardContent>
-							<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '2fr 1fr' }} gap={2}>
-								<TextField fullWidth multiline minRows={4} label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-								<Box>
-									<FormControl fullWidth>
-										<InputLabel>Shipping Method</InputLabel>
-										<Select label="Shipping Method" value={shippingMethod} onChange={(e) => setShippingMethod(String(e.target.value))}>
-											<MenuItem value="Standard">Standard</MenuItem>
-											<MenuItem value="Express">Express</MenuItem>
-											<MenuItem value="Overnight">Overnight</MenuItem>
-										</Select>
-									</FormControl>
-									<Box mt={2} width="100%">
-										<TextField type="number" fullWidth disabled label="Tax" value={7}  InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
-									</Box>
-								</Box>
-							</Box>
-						</CardContent>
-					</Card>
-				);
-			case 4:
-				return (
-					<Card>
-						<CardContent>
 							<Typography variant="h6" gutterBottom>Review</Typography>
 							<Box display="grid" gap={2}>
 								<Box>
@@ -631,22 +636,22 @@ const getUnitPrice = (productId: number) => {
 									{cartItems.map((i, idx) => (
 										<Box key={idx} display="flex" justifyContent="space-between">
 											<Typography>{i.name || products.find(p => p.id === i.productId)?.name || 'Item'} x {i.quantity}</Typography>
-											<Typography>${((i.quantity * i.unitPrice)).toFixed(2)}</Typography>
+											<Typography>{`$${(i.quantity * i.unitPrice).toFixed(2)}`}</Typography>
 										</Box>
 									))}
-																									<Divider sx={{ my: 1 }} />
-																<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
-																	<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
-																	<Chip label={`Tax: $${computedTax.toFixed(2)} (7%)`} />
-																	<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
-																</Box>
-														</Box>
-													</Box>
-												</CardContent>
-											</Card>
-										);
-									default:
-										return null;
+									<Divider sx={{ my: 1 }} />
+									<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
+										<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
+										<Chip label={`Tax: $${computedTax.toFixed(2)} (7%)`} />
+										<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
+									</Box>
+								</Box>
+							</Box>
+						</CardContent>
+					</Card>
+				);
+			default:
+				return null;
 		}
 	};
 
@@ -680,7 +685,7 @@ const getUnitPrice = (productId: number) => {
 						open={drawerOpen}
 						onClose={handleClose}
 						productId={cartItems[drawerRowIndex].productId}
-						basePrice={getUnitPrice(cartItems[drawerRowIndex].productId)}
+						basePrice={getRetailPrice(cartItems[drawerRowIndex].productId)}
 						initialSelections={cartItems[drawerRowIndex].variants}
 						onPreview={({ newUnitPrice }) => {
 							if (drawerRowIndex === null) return;
@@ -704,6 +709,7 @@ const getUnitPrice = (productId: number) => {
 							}));
 							handleClose();
 						}}
+						customerTierId={selectedCustomer?.price_tier_id || (selectedCustomer?.price_tier as any)?.id || undefined}
 					/>
 				)}
 
