@@ -29,6 +29,8 @@ interface AdminVariantsDrawerProps {
 	onApply: (payload: { selections: VariantSelections; newUnitPrice: number }) => void;
 	onPreview?: (payload: { selections: VariantSelections; newUnitPrice: number }) => void;
 	readOnly?: boolean;
+	// New: when provided, use this customer's price tier for discounting instead of logged-in user
+	customerTierId?: number;
 }
 
 const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({ 
@@ -39,7 +41,8 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	basePrice = 0, 
 	onApply, 
 	onPreview, 
-	readOnly 
+	readOnly,
+	customerTierId,
 }) => {
 	const auth = useAppSelector((s: any) => s.auth);
 	const [loading, setLoading] = useState(false);
@@ -115,6 +118,11 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		return parseFloat(item.price) || 0;
 	};
 	const getDisplayPrice = (value: number): number => {
+		// If admin passed a customerTierId, prefer that for discounting
+		if (customerTierId && priceTiers.length > 0) {
+			const fakeUser: any = { role: { price_tier_id: customerTierId } };
+			return shopNowApis.getDisplayPrice(value, true, fakeUser, priceTiers);
+		}
 		return shopNowApis.getDisplayPrice(value, !!auth?.isAuthenticated, userData, priceTiers);
 	};
 
@@ -153,7 +161,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 
 	const totalDisplayPrice = useMemo(() => {
 		return getDisplayPrice(totalRetailPrice);
-	}, [totalRetailPrice, priceTiers, userData, auth?.isAuthenticated]);
+	}, [totalRetailPrice, priceTiers, userData, auth?.isAuthenticated, customerTierId]);
 
 	const updateSelection = (key: keyof VariantSelections, value: any) => {
 		if (readOnly) return;
@@ -421,9 +429,9 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 						{renderMaterialGrid()}
 						{renderColorGrid()}
 						{renderStitchingGrid()}
-
+					
 						<Divider />
-
+					
 						<Box>
 							<Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Variation</Typography>
 							<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 1.5 }}>
@@ -432,9 +440,9 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 								{renderSelect('heatOption', 'Heat Option', variations?.heat_options || [])}
 							</Box>
 						</Box>
-
+					
 						<Divider />
-
+					
 						<Box>
 							<Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Seat</Typography>
 							<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
@@ -444,7 +452,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 								{renderSelect('armType', 'Arm Type', variations?.arm_types || [])}
 							</Box>
 						</Box>
-
+					
 						<Divider />
 						
 						{!readOnly && (
