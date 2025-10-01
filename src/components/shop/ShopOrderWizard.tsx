@@ -139,8 +139,9 @@ export default function ShopOrderWizard() {
             const basePrice = product ? (typeof product.price === 'string' ? parseFloat(product.price) : Number(product.price || 0)) : parseFloat(String(ci.price).replace(/[$,]/g, '')) || 0;
             // Prefer discounted price saved in cart (ShopNow adds discounted price to cart as formatted string)
             const cartPriceNum = parseFloat(String(ci.price).replace(/[$,]/g, ''));
-            const computedDisplay = shopNowApis.getDisplayPrice(basePrice, !!auth?.isAuthenticated, userRes?.data || userRes || null, Array.isArray(tiersPayload) ? tiersPayload : []);
-            const unitPrice = !isNaN(cartPriceNum) && cartPriceNum > 0 ? cartPriceNum : (isNaN(computedDisplay) ? 0 : computedDisplay);
+            const effectiveTier = product ? shopNowApis.getBestPriceTierForProduct(product as any, (auth?.isAuthenticated ? (userRes?.data || userRes || null) : null) as any) : null;
+            const computedDisplay = effectiveTier?.finalPrice ?? shopNowApis.getDisplayPrice(basePrice, !!auth?.isAuthenticated, userRes?.data || userRes || null, Array.isArray(tiersPayload) ? tiersPayload : []);
+            const unitPrice = !isNaN(cartPriceNum) && cartPriceNum > 0 ? cartPriceNum : (isNaN(Number(computedDisplay)) ? 0 : Number(computedDisplay));
             const quantity = Number(ci.quantity) || 1;
             return {
               itemId: String(productId),
@@ -247,8 +248,11 @@ export default function ShopOrderWizard() {
                       values.forEach(v => {
                         const existing = prev.find(ci => ci.productId === v.id);
                         const base = getUnitPrice(v.id);
-                        const display = shopNowApis.getDisplayPrice(base, !!auth?.isAuthenticated, userData, priceTiers);
-                        const unitPrice = isNaN(display) ? 0 : display;
+                        // Prefer product-specific pivot price when available for this user tier
+                        const product = products.find(p => p.id === v.id) as any;
+                        const effectiveTier = shopNowApis.getBestPriceTierForProduct(product, userData as any);
+                        const display = effectiveTier?.finalPrice ?? shopNowApis.getDisplayPrice(base, !!auth?.isAuthenticated, userData, priceTiers);
+                        const unitPrice = isNaN(Number(display)) ? 0 : Number(display);
                         next.push({
                           itemId: String(v.id),
                           productId: v.id,

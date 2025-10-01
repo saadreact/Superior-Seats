@@ -524,10 +524,11 @@ const ShopNow = () => {
 
   const handleAddToCart = (item: Product) => {
     const effective = getBestPriceTier(item)?.finalPrice ?? parseFloat(item.price.toString());
+    const priceString = Number.isFinite(effective) ? effective.toFixed(2) : parseFloat(item.price.toString()).toFixed(2);
     dispatch(addItem({
       id: item.id,
       title: item.name,
-      price: item.price.toString(),
+      price: priceString,
       image: getFirstValidImage(item) || '/placeholder-image.jpg',
       description: item.description || '',
       category: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',

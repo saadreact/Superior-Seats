@@ -770,12 +770,22 @@ const OrdersPage = () => {
                             <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                               <IconButton
                                 size="small"
-                                onClick={() => handleEdit(order.id)}
-                                title="Edit"
+                                onClick={() => handleView(order.id)}
+                                title="View"
                                 sx={{ color: 'primary.main' }}
                               >
-                                <EditIcon />
+                                <ViewIcon />
                               </IconButton>
+                              {String(order.payment_status || '').toLowerCase() !== 'paid' && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleEdit(order.id)}
+                                  title="Edit"
+                                  sx={{ color: 'primary.main' }}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              )}
                               <IconButton
                                 size="small"
                                 onClick={() => confirmDelete(order)}
@@ -847,9 +857,11 @@ const OrdersPage = () => {
                       <IconButton size="small" onClick={() => handleView(order.id)} sx={{ color: 'primary.main' }}>
                         <ViewIcon />
                       </IconButton>
-                      <IconButton size="small" onClick={() => handleEdit(order.id)} sx={{ color: 'primary.main' }}>
-                        <EditIcon />
-                      </IconButton>
+                      {String(order.payment_status || '').toLowerCase() !== 'paid' && (
+                        <IconButton size="small" onClick={() => handleEdit(order.id)} sx={{ color: 'primary.main' }}>
+                          <EditIcon />
+                        </IconButton>
+                      )}
                       <IconButton size="small" onClick={() => confirmDelete(order)} color="error">
                         <DeleteIcon />
                       </IconButton>
