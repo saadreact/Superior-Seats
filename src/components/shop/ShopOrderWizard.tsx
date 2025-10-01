@@ -73,6 +73,7 @@ export default function ShopOrderWizard() {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [qtyErrors, setQtyErrors] = useState<Record<number, string>>({});
 
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [variations, setVariations] = useState<VariationOption[]>([]);
@@ -217,8 +218,9 @@ export default function ShopOrderWizard() {
 
   const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
   const discount = 0;
-  const tax = useMemo(() => (subTotal * 0.07), [subTotal]);
-  const grandTotal = useMemo(() => Math.max(0, subTotal - discount + tax), [subTotal, discount, tax]);
+  const shippingCost = 350;
+  const tax = useMemo(() => (shippingAddress.state === 'Indiana' ? (subTotal * 0.07) : 0), [subTotal, shippingAddress.state]);
+  const grandTotal = useMemo(() => Math.max(0, subTotal - discount + tax + shippingCost), [subTotal, discount, tax, shippingCost]);
 
   const getUnitPrice = (productId: number) => {
     const p = products.find(p => p.id === productId) as any;
@@ -279,7 +281,7 @@ export default function ShopOrderWizard() {
                           <TableCell align="center">Variants</TableCell>
                           <TableCell align="right">Unit Price</TableCell>
                           <TableCell align="center">Quantity</TableCell>
-                          <TableCell align="right">Line Total</TableCell>
+                          <TableCell align="right">Total</TableCell>
                           <TableCell align="center">Action</TableCell>
                         </TableRow>
                       </TableHead>
@@ -311,7 +313,19 @@ export default function ShopOrderWizard() {
                               })()}
                             </TableCell>
                             <TableCell align="center" sx={{ width: 120 }}>
-                              <TextField type="number" size="small" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} inputProps={{ min: 1, style: { textAlign: 'center' } }} />
+                              <TextField type="number" size="small" value={it.quantity} onChange={(e) => {
+                                const qty = Math.max(1, Number(e.target.value) || 1);
+                                const stock = Number((products.find(p => p.id === it.productId) as any)?.stock ?? Infinity);
+                                const finiteStock = Number.isFinite(stock) && stock > 0 ? stock : Infinity;
+                                if (qty > finiteStock) {
+                                  setQtyErrors(prev => ({ ...prev, [idx]: `Max available stock: ${finiteStock}` }));
+                                } else {
+                                  setQtyErrors(prev => { const next = { ...prev }; delete next[idx]; return next; });
+                                }
+                                const stockLimit = Number.isFinite(stock) && stock > 0 ? stock : Infinity;
+                            // Do not auto-clamp; keep user entry, but track error separately
+                            updateItem(idx, { quantity: qty });
+                              }} inputProps={{ min: 1, style: { textAlign: 'center' } }} error={!!qtyErrors[idx]} helperText={qtyErrors[idx] || ''} />
                             </TableCell>
                             <TableCell align="right">${(it.quantity * it.unitPrice).toFixed(2)}</TableCell>
                             <TableCell align="center"><IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton></TableCell>
@@ -323,7 +337,12 @@ export default function ShopOrderWizard() {
                 ) : (
                   <Box textAlign="center" py={3} color="text.secondary">No items selected.</Box>
                 )}
-                <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
+                {Object.keys(qtyErrors).length > 0 && (
+                  <Box sx={{ color: 'error.main', mt: 1 }}>
+                    Please correct quantities exceeding available stock before continuing.
+                  </Box>
+                )}
+                <Box display="flex" justifyContent="flex-end" alignItems="center" mt={1}>
                   <Chip color="primary" label={`SubTotal: $${subTotal.toFixed(2)}`} />
                 </Box>
               </Box>
@@ -348,7 +367,12 @@ export default function ShopOrderWizard() {
                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
                   <TextField fullWidth label="Street" value={shippingAddress.street} onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })} required />
                   <TextField fullWidth label="City" value={shippingAddress.city} onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })} required />
-                  <TextField fullWidth label="State" value={shippingAddress.state} onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })} required />
+                  <FormControl fullWidth>
+                    <InputLabel>State</InputLabel>
+                    <Select label="State" value={shippingAddress.state} onChange={(e) => setShippingAddress({ ...shippingAddress, state: String(e.target.value) })}>
+                      {['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'].map(s => (<MenuItem key={s} value={s}>{s}</MenuItem>))}
+                    </Select>
+                  </FormControl>
                   <TextField fullWidth label="Postal Code" value={shippingAddress.postalCode} onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })} required />
                   <TextField fullWidth label="Country" value={shippingAddress.country} onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })} required />
                 </Box>
@@ -361,7 +385,12 @@ export default function ShopOrderWizard() {
                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
                   <TextField fullWidth label="Street" value={billingAddress.street} onChange={(e) => setBillingAddress({ ...billingAddress, street: e.target.value })} required />
                   <TextField fullWidth label="City" value={billingAddress.city} onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })} required />
-                  <TextField fullWidth label="State" value={billingAddress.state} onChange={(e) => setBillingAddress({ ...billingAddress, state: e.target.value })} required />
+                  <FormControl fullWidth>
+                    <InputLabel>State</InputLabel>
+                    <Select label="State" value={billingAddress.state} onChange={(e) => setBillingAddress({ ...billingAddress, state: String(e.target.value) })}>
+                      {['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'].map(s => (<MenuItem key={s} value={s}>{s}</MenuItem>))}
+                    </Select>
+                  </FormControl>
                   <TextField fullWidth label="Postal Code" value={billingAddress.postalCode} onChange={(e) => setBillingAddress({ ...billingAddress, postalCode: e.target.value })} required />
                   <TextField fullWidth label="Country" value={billingAddress.country} onChange={(e) => setBillingAddress({ ...billingAddress, country: e.target.value })} required />
                 </Box>
@@ -374,19 +403,22 @@ export default function ShopOrderWizard() {
           <Card>
             <CardContent>
               <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '2fr 1fr' }} gap={2}>
-                <TextField fullWidth multiline minRows={4} label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                <TextField fullWidth multiline minRows={6} label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} helperText={`${notes.length}/500`} inputProps={{ maxLength: 500 }} />
                 <Box>
                   <FormControl fullWidth>
                     <InputLabel>Shipping Method</InputLabel>
                     <Select label="Shipping Method" value={shippingMethod} onChange={(e) => setShippingMethod(String(e.target.value))}>
-                      <MenuItem value="Standard">Standard</MenuItem>
-                      <MenuItem value="Express">Express</MenuItem>
-                      <MenuItem value="Overnight">Overnight</MenuItem>
+                      <MenuItem value="Standard">Standard (5-7 business days)</MenuItem>
+                      <MenuItem value="Express">Express (2-3 business days)</MenuItem>
+                      <MenuItem value="Overnight">Overnight (1 business day)</MenuItem>
                     </Select>
                   </FormControl>
                   <Box mt={2} width="100%">
-                    <TextField type="number" fullWidth disabled label="Tax" value={7}  InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+                    <TextField type="number" fullWidth disabled label="Tax" value={shippingAddress.state === 'Indiana' ? 7 : 0}  InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+                    <Box sx={{ mt: 1 }}>
+                      <TextField type="number" fullWidth disabled label="Shipping Cost" value={350} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                     </Box>
+                  </Box>
                 </Box>
               </Box>
             </CardContent>
@@ -454,7 +486,14 @@ export default function ShopOrderWizard() {
   };
 
   const canProceedFromStep = (stepIndex: number) => {
-    if (stepIndex === 0) return cartItems.length > 0 && cartItems.every(i => i.productId && i.quantity > 0 && i.unitPrice >= 0);
+    if (stepIndex === 0) {
+      const hasInvalidQty = cartItems.some((i, idx) => {
+        const stock = Number((products.find(p => p.id === i.productId) as any)?.stock ?? Infinity);
+        return Number.isFinite(stock) && stock > 0 && i.quantity > stock;
+      });
+      if (hasInvalidQty) return false;
+      return cartItems.length > 0 && cartItems.every(i => i.productId && i.quantity > 0 && i.unitPrice >= 0);
+    }
     if (stepIndex === 1) {
       const shippingOk = !!shippingAddress.street && !!shippingAddress.city && !!shippingAddress.state && !!shippingAddress.postalCode && !!shippingAddress.country;
       const billingOk = !!billingAddress.street && !!billingAddress.city && !!billingAddress.state && !!billingAddress.postalCode && !!billingAddress.country;
@@ -471,7 +510,11 @@ export default function ShopOrderWizard() {
 
   const handleNext = async () => {
     if (!canProceedFromStep(activeStep)) {
-      setError('Please complete required fields to continue.');
+      if (Object.keys(qtyErrors).length > 0) {
+        setError('Some items exceed available stock. Please correct them to continue.');
+      } else {
+        setError('Please complete required fields to continue.');
+      }
       return;
     }
     // If leaving the Payment step, tokenize and store the card token
@@ -678,6 +721,7 @@ export default function ShopOrderWizard() {
         productId={(drawerRowIndex !== null && cartItems[drawerRowIndex]) ? (cartItems[drawerRowIndex].productId || null) : null}
         basePrice={(drawerRowIndex !== null && cartItems[drawerRowIndex]) ? basePriceFor(cartItems[drawerRowIndex].productId) : 0}
         initialSelections={(drawerRowIndex !== null && cartItems[drawerRowIndex]) ? (cartItems[drawerRowIndex].variants || null) : null}
+        initialDisplayPrice={(drawerRowIndex !== null && cartItems[drawerRowIndex]) ? cartItems[drawerRowIndex].unitPrice : undefined}
         onPreview={({ newUnitPrice }) => {
           if (drawerRowIndex === null) return;
           if (!cartItems[drawerRowIndex]) { setDrawerRowIndex(null); setDrawerOpen(false); return; }
@@ -691,6 +735,7 @@ export default function ShopOrderWizard() {
           setCartItems(prev => prev.map((ci, i) => i !== row ? ci : { ...ci, variants: selections, unitPrice: newUnitPrice, total: (ci.quantity || 1) * newUnitPrice, totalPrice: (ci.quantity || 1) * newUnitPrice, unitPriceLocked: true }));
           setDrawerOpen(false);
         }}
+        customerTierId={(userData as any)?.role?.price_tier_id || (auth?.user?.role?.price_tier_id)}
       />
     </Box>
   );

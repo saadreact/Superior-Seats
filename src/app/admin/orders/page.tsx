@@ -744,8 +744,8 @@ const OrdersPage = () => {
                           <TableCell>
                             <Stack spacing={0.5}>
                               <Chip
-                                label={order.payment_status || 'Unknown'}
-                                color={getPaymentStatusColor(order.payment_status) as any}
+                                label={mapPaymentStatus(order.payment_status) || 'pending'}
+                                color={getPaymentStatusColor(mapPaymentStatus(order.payment_status)) as any}
                                 size="small"
                                 sx={{ textTransform: 'capitalize' }}
                               />
@@ -833,8 +833,8 @@ const OrdersPage = () => {
                         <Typography variant="caption" color="text.secondary">Payment</Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Chip 
-                            label={order.payment_status || 'Unknown'} 
-                            color={getPaymentStatusColor(order.payment_status) as any} 
+                            label={mapPaymentStatus(order.payment_status) || 'pending'} 
+                            color={getPaymentStatusColor(mapPaymentStatus(order.payment_status)) as any} 
                             size="small" 
                             sx={{ textTransform: 'capitalize' }} 
                           />
