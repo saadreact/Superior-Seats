@@ -31,6 +31,8 @@ interface AdminVariantsDrawerProps {
 	readOnly?: boolean;
 	// New: when provided, use this customer's price tier for discounting instead of logged-in user
 	customerTierId?: number;
+	// New: use this price for initial display before any interaction (e.g., already-discounted unit price)
+	initialDisplayPrice?: number;
 }
 
 const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({ 
@@ -43,6 +45,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	onPreview, 
 	readOnly,
 	customerTierId,
+	initialDisplayPrice,
 }) => {
 	const auth = useAppSelector((s: any) => s.auth);
 	const [loading, setLoading] = useState(false);
@@ -62,6 +65,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	});
 	const [priceTiers, setPriceTiers] = useState<ShopPriceTier[]>([]);
 	const [userData, setUserData] = useState<ShopUser | null>(null);
+	const [hasInteracted, setHasInteracted] = useState(false);
 
 	// Load variations and pricing context when drawer opens
 	useEffect(() => {
@@ -160,11 +164,16 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	}, [variations, selections, basePrice]);
 
 	const totalDisplayPrice = useMemo(() => {
-		return getDisplayPrice(totalRetailPrice);
-	}, [totalRetailPrice, priceTiers, userData, auth?.isAuthenticated, customerTierId]);
+		const computed = getDisplayPrice(totalRetailPrice);
+		if (!hasInteracted && typeof initialDisplayPrice === 'number' && !Number.isNaN(initialDisplayPrice)) {
+			return initialDisplayPrice;
+		}
+		return computed;
+	}, [totalRetailPrice, priceTiers, userData, auth?.isAuthenticated, customerTierId, hasInteracted, initialDisplayPrice]);
 
 	const updateSelection = (key: keyof VariantSelections, value: any) => {
 		if (readOnly) return;
+		setHasInteracted(true);
 		const newSelections = { ...selections, [key]: value };
 		setSelections(newSelections);
 		if (onPreview) {

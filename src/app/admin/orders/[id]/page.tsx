@@ -116,12 +116,22 @@ interface Order {
     customer_type?: string;
     company_name?: string;
     phone?: string;
+    role?: {
+      price_tier?: {
+        display_name?: string;
+      };
+      price_tier_name?: string;
+    };
   };
   customer?: {
     firstName?: string;
     lastName?: string;
     email?: string;
     phone?: string;
+    price_tier?: {
+      display_name?: string;
+    };
+    price_tier_name?: string;
   };
   customer_email?: string;
   vehicle_configuration?: {
@@ -211,6 +221,7 @@ const OrderViewPage = () => {
   const [isPaying, setIsPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const auth = useAppSelector((s: any) => s.auth);
+  const [payMethod, setPayMethod] = useState<'cash' | 'card'>('card');
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -475,6 +486,16 @@ console.log("order",order)
             >
               Update Status
             </Button>
+            {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
+              <Button
+                variant="outlined"
+                startIcon={<PaymentIcon />}
+                onClick={() => { setPayError(null); setPayMethod('card'); setPayDialogOpen(true); }}
+                size="small"
+              >
+                Add Payment
+              </Button>
+            )}
             {order?.invoice_number && (
               <Button
                 variant="outlined"
@@ -532,7 +553,7 @@ console.log("order",order)
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2">Payment Status:</Typography>
                   <Chip
-                    label={order?.payment_status || 'Unknown'}
+                    label={(order?.payment_status || 'pending')}
                     color={getPaymentStatusColor(order?.payment_status) as any}
                     size="small"
                     sx={{ textTransform: 'capitalize' }}
@@ -544,12 +565,6 @@ console.log("order",order)
                     <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
                       {order?.payment_method?.replace('_', ' ')}
                     </Typography>
-                  </Box>
-                )}
-                {/* Change Payment Method link - visible when not paid */}
-                {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button size="small" variant="text" onClick={() => setPayDialogOpen(true)}>Change Payment Method</Button>
                   </Box>
                 )}
                 {order?.invoice_number && (
@@ -603,6 +618,13 @@ console.log("order",order)
                   variant="outlined"
                   sx={{ alignSelf: 'flex-start', textTransform: 'capitalize' }}
                 />
+                {(() => {
+                  const tierName = (order as any)?.user?.role?.price_tier?.display_name || (order as any)?.user?.role?.price_tier_name || (order as any)?.customer?.price_tier?.display_name || (order as any)?.customer?.price_tier_name;
+                  if (!tierName) return null;
+                  return (
+                    <Chip label={`Price Tier: ${tierName}`} size="small" sx={{ alignSelf: 'flex-start' }} />
+                  );
+                })()}
               </Stack>
             </CardContent>
           </Card>
@@ -851,9 +873,9 @@ console.log("order",order)
 
         {/* Payment Dialog */}
         <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>Change Payment Method</DialogTitle>
+          <DialogTitle>Add Payment</DialogTitle>
           <DialogContent>
-            <Typography variant="body2" sx={{ mb: 1 }}>Enter new payment method to charge ${formatCurrency(order?.total_amount || 0).replace('$','')}.</Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>Enter card details to charge {formatCurrency(order?.total_amount || 0)}.</Typography>
             <SquareCard
               ref={squareRef}
               amount={Number(order?.total_amount || 0)}
@@ -891,33 +913,8 @@ console.log("order",order)
                 });
                 const result = await response.json();
                 if (!response.ok || result?.success === false) throw new Error(result?.error || result?.message || 'Payment failed');
-                // Update local state immediately
                 setOrder(prev => prev ? ({ ...prev, payment_status: 'paid', payment_method: 'square' }) : prev);
                 setPayDialogOpen(false);
-                // Refetch order to sync latest data; fallback to refresh
-                try {
-                  const refreshed = await apiService.getOrder(getOrderIdNum());
-                  const raw = (refreshed as any).data || refreshed;
-                  const mapped = {
-                    ...raw,
-                    items: (raw?.items || []).map((item: any) => ({
-                      id: item.id,
-                      product_id: item.product_id,
-                      variation_id: item.variation_id || 0,
-                      quantity: item.quantity,
-                      unit_price: item.unit_price,
-                      discount_amount: item.discount_amount || 0,
-                      total: item.total,
-                      variants: item.variants || {},
-                      product: { name: item.product?.name || item.name, category: item.product?.category },
-                      variation: item.variation,
-                    })),
-                  } as any;
-                  setOrder(mapped);
-                  try { router.refresh?.(); } catch { /* noop */ }
-                } catch {
-                  try { router.refresh?.(); } catch { window.location.reload(); }
-                }
               } catch (e: any) {
                 setPayError(e?.message || 'Payment processing failed');
               } finally {
