@@ -465,11 +465,11 @@ const Gallery = () => {
                       }}
                       className="gallery-image"
                       onError={(e) => {
-                        console.error('Image failed to load:', item.image);
+                   
                         e.currentTarget.style.display = 'none';
                       }}
                       onLoad={() => {
-                        console.log('Image loaded successfully:', item.image);
+                     
                       }}
                     />
                   ) : (

@@ -31,8 +31,9 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { loginUser, registerUser, clearError } from '@/store/authSlice';
+import { loginUser, registerUser, clearError, logoutUser } from '@/store/authSlice';
 import { apiService } from '@/utils/api';
+import TwoFactorAuthModal from './TwoFactorAuthModal';
 
 // Zod validation schemas
 const signInSchema = z.object({
@@ -160,6 +161,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+
+  // Two-factor authentication state
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [pendingLoginEmail, setPendingLoginEmail] = useState('');
 
   // Redux state
   const dispatch = useAppDispatch();
@@ -314,7 +319,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         severity: 'error',
       });
     } else if (loginUser.fulfilled.match(result)) {
-      setJustAuthenticated(true);
+      // Store login data temporarily and show 2FA modal
+      // Don't set justAuthenticated yet - wait for 2FA verification
+      setPendingLoginEmail(signInForm.email);
+      setShowTwoFactor(true);
     }
   };
 
@@ -368,6 +376,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     setJustAuthenticated(false);
     setShowForgotPassword(false);
     setForgotPasswordEmail('');
+    setShowTwoFactor(false);
+    setPendingLoginEmail('');
     // Reset country code to default
   };
 
@@ -424,6 +434,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     } finally {
       setForgotPasswordLoading(false);
     }
+  };
+
+  const handleTwoFactorSuccess = () => {
+    setShowTwoFactor(false);
+    setJustAuthenticated(true);
+    setSnackbar({
+      open: true,
+      message: 'Two-factor authentication successful! Login completed.',
+      severity: 'success',
+    });
+  };
+
+  const handleTwoFactorClose = () => {
+    setShowTwoFactor(false);
+    setPendingLoginEmail('');
+    // If user closes 2FA modal without completing verification, log them out
+    // since they haven't completed the full authentication process
+    dispatch(logoutUser());
   };
 
   // Common field styles - matching ContactPage exactly
@@ -1208,6 +1236,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
           </Box>
         </DialogContent>
       </Dialog>
+
+      {/* Two-Factor Authentication Modal */}
+      <TwoFactorAuthModal
+        open={showTwoFactor}
+        onClose={handleTwoFactorClose}
+        onSuccess={handleTwoFactorSuccess}
+        email={pendingLoginEmail}
+      />
 
       {/* Snackbar for notifications */}
       <Snackbar

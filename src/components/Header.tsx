@@ -67,7 +67,7 @@ const Header = () => {
 
   // Update current path when pathname changes
   useEffect(() => {
-    console.log('Pathname changed:', pathname);
+  
     setCurrentPath(pathname);
   }, [pathname]);
   
@@ -119,10 +119,7 @@ const Header = () => {
   };
 
   const handleEditProfile = () => {
-    console.log('🔧 Edit Profile clicked. User data:', user);
-    console.log('🔧 User ID:', user?.id, 'Customer ID:', user?.customer_id);
-    console.log('🔧 User email:', user?.email);
-    console.log('🔧 User object keys:', Object.keys(user || {}));
+   
     setEditProfileModalOpen(true);
     handleUserMenuClose();
   };
