@@ -72,26 +72,17 @@ const ShopNow = () => {
   // Debug: Log environment variables in development
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔧 ShopNow - Environment check:', {
-        NODE_ENV: process.env.NODE_ENV,
-        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-        pathname: pathname,
-        isOnShopGalleryPage: isOnShopGalleryPage
-      });
     }
   }, [pathname, isOnShopGalleryPage]);
 
   // Debug: Monitor for unexpected navigation changes
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      console.log('🚨 ShopNow - Page is about to unload/reload');
     };
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        console.log('🚨 ShopNow - Page became hidden');
       } else {
-        console.log('🚨 ShopNow - Page became visible');
       }
     };
 
@@ -142,25 +133,20 @@ const ShopNow = () => {
     // Function to fetch price tiers
   const fetchPriceTiers = useCallback(async () => {
     if (!isOnShopGalleryPage) {
-      console.log('🔄 ShopGallery - Not on ShopGallery page, skipping price tiers fetch');
       return;
     }
 
     try {
       setPriceTiersLoading(true);
-      console.log('💰 ShopGallery - Fetching price tiers...');
       
       const response = await shopNowApis.getPriceTiers();
       
       if (response.status === 'success' && response.data) {
         setPriceTiers(response.data);
-        console.log('✅ ShopGallery - Price tiers loaded:', response.data);
       } else {
-        console.warn('⚠️ ShopGallery - Price tiers API returned non-success status:', response);
         setPriceTiers([]); // Set empty array as fallback
       }
     } catch (error) {
-      console.warn('⚠️ ShopGallery - Error fetching price tiers, using fallback:', error);
       setPriceTiers([]); // Set empty array as fallback
       // Don't throw error to prevent breaking the app
     } finally {
@@ -205,39 +191,32 @@ const ShopNow = () => {
     }
 
     try {
-      console.log('📂 ShopNow - Fetching all categories...');
       const response = await shopNowApis.getProducts({ page: 1, limit: 1000 }); // Get a large number to get all products
       
       if (response.status === 'success' && response.data) {
         const extractedCategories = extractCategoriesFromProducts(response.data);
         setCategories(extractedCategories);
-        console.log('📂 ShopNow - All categories loaded:', extractedCategories);
       }
     } catch (error) {
-      console.warn('⚠️ ShopNow - Error fetching all categories:', error);
     }
   }, [isOnShopGalleryPage, categories.length, extractCategoriesFromProducts]);
 
   // Function to fetch products with server-side pagination and filtering
   const fetchProducts = useCallback(async () => {
     if (!isOnShopGalleryPage) {
-      console.log('🔄 ShopNow - Not on ShopGallery page, skipping products fetch');
       return;
     }
     if ((fetchProducts as any).__inFlight) {
-      console.log('⏳ ShopNow - fetchProducts already in-flight, skipping');
       return;
     }
     (fetchProducts as any).__inFlight = true;
     
     // If a specific category is selected but categories are not loaded yet, wait
     if (selectedMainCategory !== 'all' && categories.length === 0) {
-      console.log('⏳ ShopNow - Waiting for categories to load before fetching products for category:', selectedMainCategory);
       (fetchProducts as any).__inFlight = false;
       return;
     }
     
-    console.log('🚀 ShopNow - Fetching products with server-side pagination...');
     setLoading(true);
     setError(null);
     
@@ -259,40 +238,20 @@ const ShopNow = () => {
         const selectedCategory = categories.find(cat => cat && cat.slug === selectedMainCategory);
         if (selectedCategory) {
           apiParams.category_id = selectedCategory.id;
-          console.log('🔍 ShopNow - Filtering by category:', {
-            categorySlug: selectedMainCategory,
-            categoryId: selectedCategory.id,
-            categoryName: selectedCategory.name,
-            availableCategories: categories.map(cat => ({ id: cat.id, slug: cat.slug, name: cat.name }))
-          });
         } else {
-          console.warn('⚠️ ShopNow - Category not found in categories list:', {
-            selectedCategory: selectedMainCategory,
-            availableCategories: categories.map(cat => ({ id: cat.id, slug: cat.slug, name: cat.name }))
-          });
           // Don't add category_id if category not found, this will show all products
         }
       }
       
-      console.log('📡 ShopNow - API params:', apiParams);
       
       // Add userData to API params
       apiParams.userData = userData;
       
       const productsResponse = await shopNowApis.getProducts(apiParams);
-      console.log('✅ ShopNow - Products API Response:', productsResponse);
       
       // Debug: Log first product's price tiers to see the structure
       if (productsResponse.data && productsResponse.data.length > 0) {
         const firstProduct = productsResponse.data[0];
-        console.log('🔍 ShopNow - First product price tiers debug:', {
-          productId: firstProduct.id,
-          productName: firstProduct.name,
-          priceTiers: firstProduct.price_tiers,
-          priceTiersLength: firstProduct.price_tiers?.length || 0,
-          userData: userData,
-          userRoleId: userData?.role?.id || userData?.role_id
-        });
       }
       
       if (productsResponse.status === 'success' && productsResponse.data) {
@@ -303,36 +262,21 @@ const ShopNow = () => {
         // Set pagination metadata
         if (productsResponse.meta?.pagination) {
           setPaginationMeta(productsResponse.meta.pagination);
-          console.log('📄 ShopNow - Pagination meta:', productsResponse.meta.pagination);
         }
         
-        console.log('📦 ShopNow - Products loaded:', productsResponse.data.length);
       } else {
-        console.warn('⚠️ ShopNow - Products API returned non-success status:', productsResponse);
         setApiProducts([]);
         setPaginationMeta(null);
       }
     } catch (error: any) {
-      console.error('❌ ShopNow - Error fetching products:', {
-        error: error,
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data,
-        url: error?.config?.url
-      });
-      
       // Handle specific error cases
       if (error?.response?.status === 401) {
-        console.error('🚨 ShopNow - 401 Unauthorized - User may need to re-authenticate');
         setError('Authentication required. Please log in again.');
       } else if (error?.response?.status === 403) {
-        console.error('🚨 ShopNow - 403 Forbidden - User may not have permission');
         setError('Access denied. You may not have permission to view these products.');
       } else if (error?.response?.status >= 500) {
-        console.error('🚨 ShopNow - Server error');
         setError('Server error. Please try again later.');
       } else {
-        console.warn('⚠️ ShopNow - Other error, using fallback');
         setError('Failed to load products. Please try again.');
       }
       
@@ -348,63 +292,41 @@ const ShopNow = () => {
   const refreshAllApis = useCallback(async () => {
     // Only refresh APIs if we're on the ShopGallery page
     if (!isOnShopGalleryPage) {
-      console.log('🔄 ShopGallery - Not on ShopGallery page, skipping API refresh');
       return;
     }
     if ((refreshAllApis as any).__inFlight) {
-      console.log('⏳ ShopNow - refreshAllApis already in-flight, skipping');
       return;
     }
     (refreshAllApis as any).__inFlight = true;
     
-    console.log('🔄 ShopGallery - Refreshing all APIs...');
     
     // Fetch all categories first
     try {
       await fetchAllCategories();
     } catch (error) {
-      console.warn('⚠️ ShopNow - Categories API call failed:', error);
     }
     
     // Fetch price tiers
     try {
       await fetchPriceTiers();
     } catch (error) {
-      console.warn('⚠️ ShopNow - Price tiers API call failed:', error);
     }
     
     // Fetch user data if authenticated
     if (isAuthenticated) {
-      console.log('✅ User is authenticated, fetching user data...');
       setUserLoading(true);
       try {
         const userResponse = await shopNowApis.getCurrentUser();
-        console.log('👤 User data fetched:', userResponse);
-        console.log('👤 User role details:', {
-          roleId: userResponse?.role?.id || userResponse?.role_id,
-          roleName: userResponse?.role?.name,
-          customerType: userResponse?.customer_type || userResponse?.role?.customer_type,
-          fullUserData: userResponse
-        });
         setUserData(userResponse);
       } catch (userError: any) {
-        console.error('❌ ShopGallery - Error fetching user data:', {
-          error: userError,
-          status: userError?.response?.status,
-          statusText: userError?.response?.statusText,
-          data: userError?.response?.data
-        });
-        
         // Don't redirect on user data fetch failure, just clear user data
         if (userError?.response?.status === 401) {
-          console.log('🔄 ShopGallery - User authentication expired, clearing user data');
         }
         setUserData(null);
       } finally {
         setUserLoading(false);
       }
     } else {
-      console.log('🔓 User is not authenticated - Shop Now will show products without user-specific pricing');
       setUserData(null);
       setUserLoading(false);
     }
@@ -414,7 +336,6 @@ const ShopNow = () => {
   // Effect to fetch products when filters or pagination change
   useEffect(() => {
     if (isOnShopGalleryPage) {
-      console.log('🔄 ShopNow - Fetching products due to filter/pagination change');
       fetchProducts();
     }
   }, [fetchProducts, isOnShopGalleryPage]);
@@ -422,7 +343,6 @@ const ShopNow = () => {
   // Effect to fetch products when categories are loaded and a specific category is selected
   useEffect(() => {
     if (isOnShopGalleryPage && selectedMainCategory !== 'all' && categories.length > 0) {
-      console.log('🔄 ShopNow - Categories loaded, fetching products for selected category:', selectedMainCategory);
       fetchProducts();
     }
   }, [categories, selectedMainCategory, isOnShopGalleryPage, fetchProducts]);
@@ -430,20 +350,16 @@ const ShopNow = () => {
   // Effect to refresh APIs when authentication state changes (only if on ShopGallery page)
   useEffect(() => {
     if (isOnShopGalleryPage) {
-      console.log('🔄 ShopGallery - Authentication state changed:', { isAuthenticated, user });
       refreshAllApis();
     } else {
-      console.log('🔄 ShopGallery - Authentication state changed but not on ShopGallery page, skipping refresh');
     }
   }, [isAuthenticated, user, refreshAllApis, isOnShopGalleryPage]);
 
   // Initial load effect (only if on ShopGallery page)
   useEffect(() => {
     if (isOnShopGalleryPage) {
-      console.log('🚀 ShopGallery - Initial load on ShopGallery page');
       refreshAllApis();
     } else {
-      console.log('🚀 ShopGallery - Initial load but not on ShopGallery page, skipping');
     }
   }, [isOnShopGalleryPage, refreshAllApis]); // Only depend on page check
 
@@ -464,44 +380,13 @@ const ShopNow = () => {
 
   // Get best price tier for a product
   const getBestPriceTier = (product: Product) => {
-    console.log('🔍 ShopNow - Getting price tier for product:', {
-      productId: product.id,
-      productName: product.name,
-      hasPriceTiers: !!product.price_tiers,
-      priceTiersLength: product.price_tiers?.length || 0,
-      userData: userData,
-      userRoleId: userData?.role?.id || userData?.role_id,
-      userRoleIdType: typeof (userData?.role?.id || userData?.role_id),
-      isAuthenticated: isAuthenticated,
-      priceTiersData: product.price_tiers,
-      priceTiersStructure: product.price_tiers?.map(tier => ({
-        id: tier.id,
-        idType: typeof tier.id,
-        name: tier.name,
-        hasPivot: !!tier.pivot,
-        priceAdjustment: tier.pivot?.price_adjustment
-      }))
-    });
-    
     const result = shopNowApis.getBestPriceTierForProduct(product, userData);
-    console.log('🔍 ShopNow - Price tier result:', result);
     return result;
   };
 
   // Debug logging for user state
   useEffect(() => {
     if (isOnShopGalleryPage) {
-      console.log('🔄 ShopGallery - User state updated:', {
-        userData,
-        userRoleId: userData?.role?.id || userData?.role_id,
-        userRoleIdType: typeof (userData?.role?.id || userData?.role_id),
-        userRoleStructure: userData?.role,
-        isRetail: isRetailCustomer(),
-        isAuthenticated: shopNowApis.isAuthenticated(),
-        reduxIsAuthenticated: isAuthenticated,
-        currentPage: isOnShopGalleryPage,
-        priceTiers: priceTiers
-      });
     }
   }, [userData, isAuthenticated, isOnShopGalleryPage, priceTiers]);
 
@@ -517,23 +402,8 @@ const ShopNow = () => {
      // Debug logging for filtering
    useEffect(() => {
      if (isOnShopGalleryPage) {
-       console.log('🔍 ShopGallery - Server-side Filtering Debug:', {
-         selectedMainCategory,
-         showSpecialOnly,
-         totalProducts: apiProducts.length,
-         currentPage,
-         itemsPerPage,
-         paginationMeta
-       });
-       
        // Log available categories from API
        if (categories && categories.length > 0) {
-         console.log('📂 ShopGallery - Available categories from API:', categories.map(cat => ({
-           id: cat.id,
-           name: cat.name,
-           slug: cat.slug,
-           is_active: cat.is_active
-         })));
        }
      }
    }, [selectedMainCategory, showSpecialOnly, apiProducts.length, categories, isOnShopGalleryPage, currentPage, itemsPerPage, paginationMeta]);
@@ -667,18 +537,12 @@ const ShopNow = () => {
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
   const handleCustomize = (item: Product) => {
-    console.log('🔄 ShopNow - Setting selected item ID:', item.id);
     
     // Set only the product ID in the context
     setSelectedItem({ 
       id: item.id
     });
     
-    // Navigate to customization page
-    // TODO: Uncomment when customize page is ready
-    // router.push('/customize-your-seat');
-    
-    // Temporary: Show alert that feature is coming soon
     alert('Customize feature coming soon!');
   };
 

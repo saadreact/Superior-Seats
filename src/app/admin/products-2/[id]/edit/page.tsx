@@ -199,11 +199,6 @@ const EditProduct2Page = () => {
         productApi.getProduct(parseInt(id)),
       ]);
 
-      console.log('🔍 Product API Response:', productRes);
-      console.log('🔍 Product variations:', productRes?.variations);
-      console.log('🔍 Product images:', productRes?.images);
-      console.log('🔍 Product primary_image:', productRes?.primary_image);
-      
       // Convert API responses to the expected format { id, name, price }
       const convertToFormFormat = (items: any[], hasPrice = true) => 
         Array.isArray(items) ? items.map(item => ({ 
@@ -728,8 +723,7 @@ const EditProduct2Page = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     
-    console.log('📁 handleImageChange called with files:', files);
-    console.log('📁 Files count:', files.length);
+  
     
     // Validate files
     const validFiles = files.filter(file => {
@@ -742,7 +736,7 @@ const EditProduct2Page = () => {
       
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
       if (!validTypes.includes(file.type)) {
-        console.log('❌ Invalid file type:', file.type);
+      
         setErrors(prev => ({
           ...prev,
           images: 'Please select valid image files (JPEG, PNG, or GIF)',
@@ -751,7 +745,7 @@ const EditProduct2Page = () => {
       }
       
       if (file.size > 2 * 1024 * 1024) {
-        console.log('❌ File too large:', file.size);
+      
         setErrors(prev => ({
           ...prev,
           images: 'Image size must be less than 2MB',
@@ -763,13 +757,11 @@ const EditProduct2Page = () => {
       return true;
     });
     
-    console.log('📁 Valid files count:', validFiles.length);
-    console.log('📁 Valid files:', validFiles);
+ 
     
     setFormData(prev => {
       const newImages = [...prev.images, ...validFiles];
-      console.log('📁 Setting new images array:', newImages);
-      console.log('📁 New images count:', newImages.length);
+    
       return {
         ...prev,
         images: newImages,
@@ -947,21 +939,9 @@ const EditProduct2Page = () => {
         image_data: productData.image_data,
         existing_images: (productData as any).existing_images,
       });
-      console.log('🔄 VERIFY: No deleted_image_ids in payload:', !productData.hasOwnProperty('deleted_image_ids'));
-      console.log('🔄 Existing images count:', existingImages.length);
-      console.log('🔄 New images count:', formData.images.length);
-      console.log('🔄 Total images in payload:', existingImages.length + formData.images.length);
-      console.log('🔄 Backend will combine existing + new images into single image_data[] array');
+ 
       
-      // Debug: Check if images are actually present
-      console.log('🔄 FormData.images length:', formData.images.length);
-      console.log('🔄 FormData.images:', formData.images);
-      console.log('🔄 FormData.images type:', typeof formData.images);
-      console.log('🔄 FormData.images is array:', Array.isArray(formData.images));
-      console.log('🔄 ProductData.images length:', productData.images?.length);
-      console.log('🔄 ProductData.images:', productData.images);
-      console.log('🔄 ProductData.images type:', typeof productData.images);
-      console.log('🔄 ProductData.images is array:', Array.isArray(productData.images));
+   
       
       // Check each image individually
       if (productData.images && productData.images.length > 0) {

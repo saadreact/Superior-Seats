@@ -5,6 +5,7 @@ import { SelectedItemProvider } from '@/contexts/SelectedItemContext';
 import ReduxProvider from '@/components/ReduxProvider';
 import Script from 'next/script';
 import AutoRefreshInitializer from '@/components/AutoRefreshInitializer';
+import UserStatusChecker from '@/components/UserStatusChecker';
 
 // import FloatingButtonWrapper from '@/components/FloatingButtonWrapper';
 import './globals.css';
@@ -44,6 +45,7 @@ export default function RootLayout({
           <ThemeRegistry>
             <SelectedItemProvider>
               <AutoRefreshInitializer />
+              <UserStatusChecker />
               {children}
               {/* <FloatingButtonWrapper /> */}
             </SelectedItemProvider>
