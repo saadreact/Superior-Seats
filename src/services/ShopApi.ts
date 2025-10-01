@@ -93,16 +93,13 @@ class ShopApi {
       if (min_price) queryParams.append('min_price', min_price.toString());
       if (max_price) queryParams.append('max_price', max_price.toString());
 
-      console.log('🛍️ ShopApi - getProducts called with params:', params);
-      console.log('🔗 Request URL:', `${this.baseUrl}/products?${queryParams.toString()}`);
+     
 
       const response = await api.get<ApiResponse<Product[]>>(
         `${this.baseUrl}/products?${queryParams.toString()}`
       );
 
-      console.log('✅ ShopApi - getProducts response:', response.data);
-      console.log('📊 Products count:', response.data.data?.length || 0);
-      console.log('📄 Pagination:', response.data.meta?.pagination);
+   
 
       return response.data;
     } catch (error) {
@@ -116,15 +113,13 @@ class ShopApi {
    */
   async getProduct(id: number): Promise<ApiResponse<Product>> {
     try {
-      console.log('🛍️ ShopApi - getProduct called with ID:', id);
-      console.log('🔗 Request URL:', `${this.baseUrl}/products/${id}`);
+    
 
       const response = await api.get<ApiResponse<Product>>(
         `${this.baseUrl}/products/${id}`
       );
 
-      console.log('✅ ShopApi - getProduct response:', response.data);
-      console.log('📦 Product details:', response.data.data);
+   
 
       return response.data;
     } catch (error) {
@@ -140,7 +135,7 @@ class ShopApi {
     category: string,
     params: Omit<ShopApiParams, 'category'> = {}
   ): Promise<ApiResponse<Product[]>> {
-    console.log('🛍️ ShopApi - getProductsByCategory called with category:', category, 'and params:', params);
+  
     return this.getProducts({ ...params, category });
   }
 
@@ -151,7 +146,7 @@ class ShopApi {
     searchTerm: string,
     params: Omit<ShopApiParams, 'search'> = {}
   ): Promise<ApiResponse<Product[]>> {
-    console.log('🛍️ ShopApi - searchProducts called with search term:', searchTerm, 'and params:', params);
+  
     return this.getProducts({ ...params, search: searchTerm });
   }
 
@@ -163,7 +158,7 @@ class ShopApi {
     maxPrice: number,
     params: Omit<ShopApiParams, 'min_price' | 'max_price'> = {}
   ): Promise<ApiResponse<Product[]>> {
-    console.log('🛍️ ShopApi - getProductsByPriceRange called with minPrice:', minPrice, 'maxPrice:', maxPrice, 'and params:', params);
+
     return this.getProducts({ ...params, min_price: minPrice, max_price: maxPrice });
   }
 
@@ -174,7 +169,7 @@ class ShopApi {
     vehicleTrim: string,
     params: Omit<ShopApiParams, 'vehicle_trim'> = {}
   ): Promise<ApiResponse<Product[]>> {
-    console.log('🛍️ ShopApi - getProductsByVehicleTrim called with vehicleTrim:', vehicleTrim, 'and params:', params);
+ 
     return this.getProducts({ ...params, vehicle_trim: vehicleTrim });
   }
 
@@ -183,16 +178,13 @@ class ShopApi {
    */
   async getCategories(): Promise<ApiResponse<string[]>> {
     try {
-      console.log('🛍️ ShopApi - getCategories called');
-      console.log('🔗 Request URL:', `${this.baseUrl}/categories`);
+     
 
       const response = await api.get<ApiResponse<string[]>>(
         `${this.baseUrl}/categories`
       );
 
-      console.log('✅ ShopApi - getCategories response:', response.data);
-      console.log('📂 Categories count:', response.data.data?.length || 0);
-      console.log('📂 Categories list:', response.data.data);
+ 
 
       return response.data;
     } catch (error) {
@@ -206,16 +198,13 @@ class ShopApi {
    */
   async getVehicleTrims(): Promise<ApiResponse<string[]>> {
     try {
-      console.log('🛍️ ShopApi - getVehicleTrims called');
-      console.log('🔗 Request URL:', `${this.baseUrl}/vehicle-trims`);
+
 
       const response = await api.get<ApiResponse<string[]>>(
         `${this.baseUrl}/vehicle-trims`
       );
 
-      console.log('✅ ShopApi - getVehicleTrims response:', response.data);
-      console.log('🚗 Vehicle trims count:', response.data.data?.length || 0);
-      console.log('🚗 Vehicle trims list:', response.data.data);
+
 
       return response.data;
     } catch (error) {

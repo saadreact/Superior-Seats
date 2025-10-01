@@ -233,7 +233,6 @@ class ProductApi {
         total: 0,
       };
     } catch (error: any) {
-      console.error("Error fetching products:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch products"
       );
@@ -255,7 +254,6 @@ class ProductApi {
       }
       throw new Error("Invalid response structure");
     } catch (error: any) {
-      console.error("Error fetching product:", error);
       if (error.response?.status === 404) {
         throw new Error("Product not found");
       }
@@ -366,16 +364,9 @@ class ProductApi {
 
       // Handle images according to backend API specification
       if (data.images && data.images.length > 0) {
-        console.log("🔄 Processing images for create:", data.images.length, "files");
         
         // Send images as array of files (backend expects array<string> for image files)
         data.images.forEach((file, index) => {
-          console.log(`🔄 Adding image ${index}:`, {
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            isFile: file instanceof File
-          });
           
           // Backend expects images as array of files
           formData.append('images[]', file);
@@ -387,33 +378,25 @@ class ProductApi {
             formData.append(`image_data[${index}].alt_text`, imageMeta.alt_text || "");
             formData.append(`image_data[${index}].caption`, imageMeta.caption || "");
             formData.append(`image_data[${index}].set_primary`, imageMeta.set_primary ? "1" : "0");
-            console.log(`🔄 Added image_data[${index}].set_primary = ${imageMeta.set_primary ? "1" : "0"}`);
           });
-          console.log("🔄 Image metadata added to FormData");
         } else {
           // Default image metadata if not provided
           data.images.forEach((_, index) => {
             formData.append(`image_data[${index}].alt_text`, `Product image ${index + 1}`);
             formData.append(`image_data[${index}].caption`, `Product image ${index + 1}`);
             formData.append(`image_data[${index}].set_primary`, index === 0 ? "1" : "0");
-            console.log(`🔄 Added image_data[${index}].set_primary = ${index === 0 ? "1" : "0"}`);
           });
-          console.log("🔄 Default image metadata added to FormData");
         }
-        
-        console.log("🔄 Images and metadata added to FormData");
       } else {
-        console.log("🔄 No images to process for create");
+        
       }
 
       // Debug: Log FormData contents
-      console.log("🔄 Creating product with FormData:");
-      console.log("🔄 FormData entries count:", Array.from(formData.entries()).length);
       for (let [key, value] of formData.entries()) {
         if (value instanceof File) {
-          console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          
         } else {
-          console.log(`  ${key}: ${value}`);
+          
         }
       }
       
@@ -421,20 +404,13 @@ class ProductApi {
       const imageEntries = Array.from(formData.entries()).filter(([key, value]) => 
         key.includes('image') && value instanceof File
       );
-      console.log("🔄 Image entries in FormData:", imageEntries.length);
       imageEntries.forEach(([key, value]) => {
         if (value instanceof File) {
-          console.log(`  Image entry: ${key} = File(${value.name}, ${value.size} bytes)`);
+          
         } else {
-          console.log(`  Image entry: ${key} = ${value}`);
+          
         }
       });
-      
-      // Debug: Check FormData type
-      console.log("🔄 FormData constructor:", formData.constructor.name);
-      console.log("🔄 FormData is FormData:", formData instanceof FormData);
-      console.log("🔄 API endpoint:", "/products");
-      console.log("🔄 Request method: POST");
 
       const response = await api.post("/products", formData, {
         headers: {
@@ -444,10 +420,8 @@ class ProductApi {
         // Ensure FormData is not transformed
         transformRequest: [(data) => {
           if (data instanceof FormData) {
-            console.log("🔄 FormData being sent directly to API");
             return data;
           }
-          console.log("🔄 Non-FormData being sent:", typeof data);
           return data;
         }],
         // Add timeout and other options
@@ -461,13 +435,6 @@ class ProductApi {
       }
       return response.data;
     } catch (error: any) {
-      console.error("Error creating product:", error);
-      console.error("Error response:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-      console.error("Error config:", error.config);
-      console.error("Request headers:", error.config?.headers);
-      console.error("Request data type:", typeof error.config?.data);
-      console.error("Request data is FormData:", error.config?.data instanceof FormData);
 
       if (
         error.response?.data?.message?.includes("Duplicate entry") ||
@@ -617,7 +584,7 @@ class ProductApi {
             isNewImage: false
           });
         });
-        console.log("🔄 Added existing images to combined image_data array");
+        
       }
 
       // Add new images metadata
@@ -630,7 +597,7 @@ class ProductApi {
             isNewImage: true
           });
         });
-        console.log("🔄 Added new images metadata to combined image_data array");
+        
       }
 
       // Add all image_data to FormData
@@ -641,49 +608,37 @@ class ProductApi {
         formData.append(`image_data[${index}].alt_text`, imageData.alt_text);
         formData.append(`image_data[${index}].caption`, imageData.caption);
         formData.append(`image_data[${index}].set_primary`, imageData.set_primary ? "1" : "0");
-        console.log(`🔄 Update: Added image_data[${index}] = ${imageData.image_path || 'new image'}`);
+        
       });
 
 
       // Handle new images according to backend API specification
       if (data.images && data.images.length > 0) {
-        console.log("🔄 Processing new images for update:", data.images.length, "files");
         data.images.forEach((file, index) => {
           if (file instanceof File) {
-            console.log(`🔄 Adding new image ${index}:`, {
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              isFile: file instanceof File
-            });
+            
             
             // Backend expects images as array of files
             formData.append('images[]', file);
             
-            console.log(`🔄 Added new image ${index} to FormData`);
+            
           }
         });
-        console.log("🔄 New images added to FormData");
       } else {
-        console.log("🔄 No new images to process for update");
+        
       }
 
       // Use POST with _method: PUT for FormData (Laravel convention)
       formData.append("_method", "PUT");
 
       // Debug: Log FormData contents
-      console.log(`🔄 Updating product ${id} with FormData:`);
       for (let [key, value] of formData.entries()) {
         if (value instanceof File) {
-          console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          
         } else {
-          console.log(`  ${key}: ${value}`);
+          
         }
       }
-      
-      // Debug: Check FormData type
-      console.log("🔄 FormData constructor:", formData.constructor.name);
-      console.log("🔄 FormData is FormData:", formData instanceof FormData);
 
       const response = await api.post(`/products/${id}`, formData, {
         headers: {
@@ -707,13 +662,6 @@ class ProductApi {
       }
       return response.data;
     } catch (error: any) {
-      console.error("Error updating product:", error);
-      console.error("Error response:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-      console.error("Error config:", error.config);
-      console.error("Request headers:", error.config?.headers);
-      console.error("Request data type:", typeof error.config?.data);
-      console.error("Request data is FormData:", error.config?.data instanceof FormData);
 
       if (error.response?.status === 404) {
         throw new Error("Product not found");
@@ -751,7 +699,6 @@ class ProductApi {
     try {
       await api.delete(`/products/${id}`);
     } catch (error: any) {
-      console.error("Error deleting product:", error);
       if (error.response?.status === 404) {
         throw new Error("Product not found");
       }
@@ -773,7 +720,6 @@ class ProductApi {
       const response = await api.get("/categories");
       return response.data?.data || response.data || [];
     } catch (error: any) {
-      console.error("Error fetching categories:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch categories"
       );
@@ -803,7 +749,6 @@ class ProductApi {
       }
       return data;
     } catch (error: any) {
-      console.error("Error fetching seat types:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch seat types"
       );
@@ -833,7 +778,6 @@ class ProductApi {
       }
       return data;
     } catch (error: any) {
-      console.error("Error fetching arm types:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch arm types"
       );
@@ -850,7 +794,6 @@ class ProductApi {
         response.data?.data?.data || response.data?.data || response.data || []
       );
     } catch (error: any) {
-      console.error("Error fetching lumbar types:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch lumbar types"
       );
@@ -867,7 +810,6 @@ class ProductApi {
         response.data?.data?.data || response.data?.data || response.data || []
       );
     } catch (error: any) {
-      console.error("Error fetching recline types:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch recline types"
       );
@@ -884,7 +826,6 @@ class ProductApi {
         response.data?.data?.data || response.data?.data || response.data || []
       );
     } catch (error: any) {
-      console.error("Error fetching heat options:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch heat options"
       );
@@ -901,7 +842,6 @@ class ProductApi {
         response.data?.data?.data || response.data?.data || response.data || []
       );
     } catch (error: any) {
-      console.error("Error fetching material types:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch material types"
       );
@@ -918,7 +858,6 @@ class ProductApi {
         response.data?.data?.data || response.data?.data || response.data || []
       );
     } catch (error: any) {
-      console.error("Error fetching stitch patterns:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch stitch patterns"
       );
@@ -950,7 +889,6 @@ class ProductApi {
       }
       return data;
     } catch (error: any) {
-      console.error("Error fetching seat styles:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch seat styles"
       );
@@ -980,7 +918,6 @@ class ProductApi {
       }
       return data;
     } catch (error: any) {
-      console.error("Error fetching item types:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch item types"
       );
@@ -995,7 +932,6 @@ class ProductApi {
       const response = await api.get("/colors");
       return response.data?.data || response.data || [];
     } catch (error: any) {
-      console.error("Error fetching colors:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch colors"
       );
@@ -1010,7 +946,6 @@ class ProductApi {
       const response = await api.get("/price-tiers");
       return response.data?.data || response.data || [];
     } catch (error: any) {
-      console.error("Error fetching price tiers:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch price tiers"
       );
@@ -1115,7 +1050,6 @@ class ProductApi {
    */
   async getVehicleMakes(): Promise<any[]> {
     try {
-      console.log('🚗 Fetching vehicle makes...');
       const response = await fetch(`${this.baseUrl}/vehicle-makes`, {
         method: 'GET',
         headers: this.getHeaders(),
@@ -1126,10 +1060,8 @@ class ProductApi {
       }
 
       const data = await response.json();
-      console.log('✅ Vehicle makes fetched successfully:', data);
       return data.data || data;
     } catch (error) {
-      console.error('❌ Error fetching vehicle makes:', error);
       throw error;
     }
   }
@@ -1139,7 +1071,6 @@ class ProductApi {
    */
   async getVehicleModels(makeId: number): Promise<any[]> {
     try {
-      console.log(`🚗 Fetching vehicle models for make ID: ${makeId}...`);
       const response = await fetch(`${this.baseUrl}/vehicle-makes/${makeId}/models`, {
         method: 'GET',
         headers: this.getHeaders(),
@@ -1150,10 +1081,8 @@ class ProductApi {
       }
 
       const data = await response.json();
-      console.log('✅ Vehicle models fetched successfully:', data);
       return data.data || data;
     } catch (error) {
-      console.error('❌ Error fetching vehicle models:', error);
       throw error;
     }
   }
