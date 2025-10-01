@@ -43,6 +43,7 @@ import {
   Notes as NotesIcon,
   Update as UpdateIcon,
   Tune as TuneIcon,
+  Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { apiService } from '@/utils/api';
 import { useRouter, useParams } from 'next/navigation';
@@ -135,6 +136,7 @@ export default function ShopOrderViewPage() {
   const [payError, setPayError] = useState<string | null>(null);
   const auth = useAppSelector((s: any) => s.auth);
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const [payMethod, setPayMethod] = useState<'cash' | 'card'>('card');
   useEffect(() => {
     const fetchOrder = async () => {
       try {
@@ -267,6 +269,16 @@ export default function ShopOrderViewPage() {
               <Typography variant="body2" color="text.secondary">Created on {order?.created_at ? formatDate(order.created_at) : 'Unknown date'}</Typography>
             </Box>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+              {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
+                <Button
+                  variant="outlined"
+                  startIcon={<PaymentIcon />}
+                  onClick={() => { setPayError(null); setPayMethod('card'); setPayDialogOpen(true); }}
+                  size="small"
+                >
+                  Add Payment
+                </Button>
+              )}
               {order?.invoice_number && (
                 <Button
                   variant="outlined"
@@ -309,17 +321,12 @@ export default function ShopOrderViewPage() {
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="body2">Payment Status:</Typography>
-                    <Chip label={order?.payment_status || 'Unknown'} color={getPaymentStatusColor(order?.payment_status) as any} size="small" sx={{ textTransform: 'capitalize' }} />
+                    <Chip label={(order?.payment_status || 'pending')} color={getPaymentStatusColor(order?.payment_status) as any} size="small" sx={{ textTransform: 'capitalize' }} />
                   </Box>
                   {order?.payment_method && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2">Payment Method:</Typography>
                       <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{order?.payment_method?.replace('_', ' ')}</Typography>
-                    </Box>
-                  )}
-                  {String(order?.payment_status || '').toLowerCase() !== 'paid' && (
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <Button size="small" variant="text" onClick={() => setPayDialogOpen(true)}>Pay Now</Button>
                     </Box>
                   )}
                   {order?.invoice_number && (
@@ -348,6 +355,13 @@ export default function ShopOrderViewPage() {
                   {(order?.user?.phone || order?.customer?.phone) && (<Typography variant="body2" color="text.secondary">📞 {order?.user?.phone || order?.customer?.phone}</Typography>)}
                   {order?.user?.company_name && (<Typography variant="body2" color="text.secondary">🏢 {order?.user?.company_name}</Typography>)}
                   <Chip label={order?.user?.customer_type || 'Unknown'} size="small" variant="outlined" sx={{ alignSelf: 'flex-start', textTransform: 'capitalize' }} />
+                  {(() => {
+                    const tierName = (order as any)?.user?.role?.price_tier?.display_name || (order as any)?.user?.role?.price_tier_name || (order as any)?.customer?.price_tier?.display_name || (order as any)?.customer?.price_tier_name;
+                    if (!tierName) return null;
+                    return (
+                      <Chip label={`Price Tier: ${tierName}`} size="small" sx={{ alignSelf: 'flex-start' }} />
+                    );
+                  })()}
                 </Stack>
               </CardContent>
             </Card>
@@ -462,6 +476,58 @@ export default function ShopOrderViewPage() {
             readOnly={true}
             onApply={() => {}}
           />
+
+          <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle>Add Payment</DialogTitle>
+            <DialogContent>
+              <Typography variant="body2" sx={{ mb: 1 }}>Enter card details to charge {formatCurrency(order?.total_amount || 0)}.</Typography>
+              <SquareCard
+                ref={squareRef}
+                amount={Number(order?.total_amount || 0)}
+                applicationId={process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID as string}
+                locationId={process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string}
+              />
+              {payError && (<Alert severity="error" sx={{ mt: 1 }}>{payError}</Alert>)}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setPayDialogOpen(false)} disabled={isPaying}>Cancel</Button>
+              <Button variant="contained" disabled={isPaying} onClick={async () => {
+                try {
+                  setIsPaying(true);
+                  setPayError(null);
+                  if (!squareRef.current) throw new Error('Payment form not ready');
+                  const { token } = await squareRef.current.tokenize();
+                  const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID as string | undefined;
+                  const body = {
+                    customer_id: (order as any)?.customer?.id || null,
+                    order_id: getOrderIdNum(),
+                    payment_method: 'square',
+                    amount: Number(order?.total_amount || 0),
+                    token,
+                    location_id: locationId,
+                    notes: `Payment for order #${order?.order_number}`,
+                  };
+                  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/payments/charge`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      ...(auth?.token ? { 'Authorization': `Bearer ${auth.token}` } : {}),
+                    },
+                    body: JSON.stringify(body),
+                  });
+                  const result = await response.json();
+                  if (!response.ok || result?.success === false) throw new Error(result?.error || result?.message || 'Payment failed');
+                  setOrder(prev => prev ? ({ ...prev, payment_status: 'paid', payment_method: 'square' }) : prev);
+                  setPayDialogOpen(false);
+                } catch (e: any) {
+                  setPayError(e?.message || 'Payment processing failed');
+                } finally {
+                  setIsPaying(false);
+                }
+              }}>Charge</Button>
+            </DialogActions>
+          </Dialog>
 
 
         </Box>

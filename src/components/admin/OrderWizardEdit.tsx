@@ -325,8 +325,9 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 
 	// Derived totals
 	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
-	const computedTax = useMemo(() => subTotal * 0.07, [subTotal]);
-	const grandTotal = useMemo(() => Math.max(0, subTotal + computedTax), [subTotal, computedTax]);
+	const shippingCost = 350;
+	const computedTax = useMemo(() => (shippingAddress.state === 'Indiana' ? subTotal * 0.07 : 0), [subTotal, shippingAddress.state]);
+	const grandTotal = useMemo(() => Math.max(0, subTotal + computedTax + shippingCost), [subTotal, computedTax, shippingCost]);
 
 	const handleAddItem = () => {
 		setCartItems(prev => ([
@@ -539,7 +540,7 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 													<TableCell align="center">Variants</TableCell>
 													<TableCell align="right">Unit Price</TableCell>
 													<TableCell align="center">Quantity</TableCell>
-													<TableCell align="right">Line Total</TableCell>
+													<TableCell align="right">Total</TableCell>
 													<TableCell align="center">Action</TableCell>
 												</TableRow>
 											</TableHead>
@@ -561,7 +562,10 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 														</TableCell>
 														<TableCell align="right">${it.unitPrice.toFixed(2)}</TableCell>
 														<TableCell align="center" sx={{ width: 120 }}>
-															<TextField type="number" size="small" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} inputProps={{ min: 1, style: { textAlign: 'center' } }} />
+															<TextField type="number" size="small" value={it.quantity} onChange={(e) => {
+																const qty = Math.max(1, Number(e.target.value) || 1);
+																updateItem(idx, { quantity: qty });
+															}} inputProps={{ min: 1, style: { textAlign: 'center' } }} />
 														</TableCell>
 														<TableCell align="right">${(it.quantity * it.unitPrice).toFixed(2)}</TableCell>
 														<TableCell align="center"><IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton></TableCell>
@@ -600,7 +604,14 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 								<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
 									<TextField fullWidth label="Street" value={shippingAddress.street} onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })} required />
 									<TextField fullWidth label="City" value={shippingAddress.city} onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })} />
-									<TextField fullWidth label="State" value={shippingAddress.state} onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })} />
+									<FormControl fullWidth>
+										<InputLabel>State</InputLabel>
+										<Select label="State" value={shippingAddress.state} onChange={(e) => setShippingAddress({ ...shippingAddress, state: String(e.target.value) })}>
+											{['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'].map(s => (
+												<MenuItem key={s} value={s}>{s}</MenuItem>
+											))}
+										</Select>
+									</FormControl>
 									<TextField fullWidth label="Postal Code" value={shippingAddress.postalCode} onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })} />
 									<TextField fullWidth label="Country" value={shippingAddress.country} onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })} />
 								</Box>
@@ -613,7 +624,14 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 								<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
 									<TextField fullWidth label="Street" value={billingAddress.street} onChange={(e) => setBillingAddress({ ...billingAddress, street: e.target.value })} required />
 									<TextField fullWidth label="City" value={billingAddress.city} onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })} />
-									<TextField fullWidth label="State" value={billingAddress.state} onChange={(e) => setBillingAddress({ ...billingAddress, state: e.target.value })} />
+									<FormControl fullWidth>
+										<InputLabel>State</InputLabel>
+										<Select label="State" value={billingAddress.state} onChange={(e) => setBillingAddress({ ...billingAddress, state: String(e.target.value) })}>
+											{['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'].map(s => (
+												<MenuItem key={s} value={s}>{s}</MenuItem>
+											))}
+										</Select>
+									</FormControl>
 									<TextField fullWidth label="Postal Code" value={billingAddress.postalCode} onChange={(e) => setBillingAddress({ ...billingAddress, postalCode: e.target.value })} />
 									<TextField fullWidth label="Country" value={billingAddress.country} onChange={(e) => setBillingAddress({ ...billingAddress, country: e.target.value })} />
 								</Box>
@@ -642,7 +660,8 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 									<Divider sx={{ my: 1 }} />
 									<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
 										<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
-										<Chip label={`Tax: $${computedTax.toFixed(2)} (7%)`} />
+										<Chip label={`Tax: $${computedTax.toFixed(2)} (${shippingAddress.state === 'Indiana' ? '7%' : '0%'})`} />
+										<Chip label={`Shipping: $${shippingCost.toFixed(2)}`} />
 										<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
 									</Box>
 								</Box>
