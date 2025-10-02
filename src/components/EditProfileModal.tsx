@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  TextField,
   Button,
   Typography,
   Box,
@@ -16,11 +15,17 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
-  InputAdornment,
-  MenuItem,
+  Grid,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { apiService } from "@/utils/api";
+import { 
+  FormField, 
+  SelectField, 
+  PhoneField,
+  FormActions
+} from '@/components/common/FormComponents';
+import { US_STATES } from '@/api/customers';
 
 // Zod validation schema - only editable fields
 const profileSchema = z.object({
@@ -32,6 +37,15 @@ const profileSchema = z.object({
   city: z.string().min(2, "City must be at least 2 characters"),
   state: z.string().min(2, "State must be at least 2 characters"),
   company_name: z.string().min(2, "Company name must be at least 2 characters"),
+  // Address fields
+  shipping_address: z.string().optional(),
+  shipping_city: z.string().optional(),
+  shipping_state: z.string().optional(),
+  shipping_zip: z.string().optional(),
+  billing_address: z.string().optional(),
+  billing_city: z.string().optional(),
+  billing_state: z.string().optional(),
+  billing_zip: z.string().optional(),
 });
 
 interface EditProfileModalProps {
@@ -81,6 +95,16 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     city: "",
     state: "",
     company_name: "",
+    // Shipping Address Fields
+    shipping_address: "",
+    shipping_city: "",
+    shipping_state: "",
+    shipping_zip: "",
+    // Billing Address Fields
+    billing_address: "",
+    billing_city: "",
+    billing_state: "",
+    billing_zip: "",
   });
 
   const theme = useTheme();
@@ -122,6 +146,23 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       const customer = response.data?.data || response.data || response;
       console.log("🔍 Extracted customer data:", customer);
 
+      // Extract addresses from the addresses array and add them as direct properties
+      if (customer.addresses && Array.isArray(customer.addresses)) {
+        const shippingAddress = customer.addresses.find((addr: any) => addr.type === 'shipping');
+        const billingAddress = customer.addresses.find((addr: any) => addr.type === 'billing');
+        
+        // Add address data as direct properties for the form
+        customer.shipping_address = shippingAddress?.street || '';
+        customer.shipping_city = shippingAddress?.city || '';
+        customer.shipping_state = shippingAddress?.state || '';
+        customer.shipping_zip = shippingAddress?.postal_code || '';
+        
+        customer.billing_address = billingAddress?.street || '';
+        customer.billing_city = billingAddress?.city || '';
+        customer.billing_state = billingAddress?.state || '';
+        customer.billing_zip = billingAddress?.postal_code || '';
+      }
+
       // Store non-editable values from API response
       setCustomerData({
         customer_type: customer.customer_type || "retail",
@@ -141,6 +182,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       if (existingPhone.startsWith("US +1")) {
         // Remove +1 prefix for US numbers
         phoneNumber = existingPhone.substring(2);
+      } else if (existingPhone.startsWith("+1")) {
+        // Remove +1 prefix for US numbers
+        phoneNumber = existingPhone.substring(2);
       } else if (existingPhone.startsWith("+")) {
         // For other country codes, just remove the + and first digit
         phoneNumber = existingPhone.substring(2);
@@ -157,6 +201,16 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         city: customer.city || "",
         state: customer.state || "",
         company_name: customer.company_name || "",
+        // Shipping Address Fields
+        shipping_address: customer.shipping_address || "",
+        shipping_city: customer.shipping_city || "",
+        shipping_state: customer.shipping_state || "",
+        shipping_zip: customer.shipping_zip || "",
+        // Billing Address Fields
+        billing_address: customer.billing_address || "",
+        billing_city: customer.billing_city || "",
+        billing_state: customer.billing_state || "",
+        billing_zip: customer.billing_zip || "",
       };
 
       console.log("🔍 Setting form data from API:", formDataToSet);
@@ -180,51 +234,42 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     }
   };
 
-  const handleInputChange =
-    (field: string) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = event.target.value;
 
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-
-      // Clear errors for the field
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    };
-
-  const handleFieldChange =
-    (field: string) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = event.target.value;
-
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-
-      // Clear errors for the field
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    };
+  const handleFieldChange = (field: string, value: string | number | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear client-side error when user starts typing
+    if ((errors as any)[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
 
   const validateForm = () => {
-    try {
-      profileSchema.parse(formData);
-      setErrors({});
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: { [key: string]: string } = {};
-        error.issues.forEach((err) => {
-          if (err.path && err.path.length > 0) {
-            newErrors[err.path[0] as string] = err.message;
-          }
-        });
-        setErrors(newErrors);
-      }
-      return false;
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'First name is required';
     }
+
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = 'Last name is required';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
@@ -240,7 +285,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
-        phone: `${countryCode}${formData.phone}`,
+        phone: `+1${formData.phone}`,
         address: formData.address,
         city: formData.city,
         state: formData.state,
@@ -249,6 +294,26 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         price_tier_id: customerData?.price_tier_id || 1,
         is_active:
           customerData?.is_active !== undefined ? customerData.is_active : true,
+        // Shipping Address Object
+        shipping_address: {
+          street: formData.shipping_address || '',
+          city: formData.shipping_city || '',
+          state: formData.shipping_state || '',
+          postal_code: formData.shipping_zip || '',
+          country: 'US',
+          phone: `+1${formData.phone}`,
+          is_default: true
+        },
+        // Billing Address Object
+        billing_address: {
+          street: formData.billing_address || '',
+          city: formData.billing_city || '',
+          state: formData.billing_state || '',
+          postal_code: formData.billing_zip || '',
+          country: 'US',
+          phone: `+1${formData.phone}`,
+          is_default: true
+        }
       };
 
       // Use the centralized API service
@@ -307,105 +372,22 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  // Common field styles - matching AuthModal exactly
-  const commonTextFieldStyles = {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      height: "35px",
-      backgroundColor: "rgba(255,255,255,0.8)",
-      "&:hover fieldset": {
-        borderColor: "primary.main",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "primary.main",
-        borderWidth: 2,
-      },
-      "&.Mui-focused": {
-        backgroundColor: "white",
-      },
-    },
-    "& .MuiInputLabel-root": {
-      color: "text.secondary",
-      transform: "translate(14px, 8px) scale(1)",
-      "&.Mui-focused": {
-        color: "primary.main",
-        transform: "translate(14px, -9px) scale(0.75)",
-      },
-      "&.MuiFormLabel-filled": {
-        transform: "translate(14px, -9px) scale(0.75)",
-      },
-    },
-  };
-
-  // List of US states for the dropdown
-  const US_STATES = [
-    { code: "AL", name: "Alabama" },
-    { code: "AK", name: "Alaska" },
-    { code: "AZ", name: "Arizona" },
-    { code: "AR", name: "Arkansas" },
-    { code: "CA", name: "California" },
-    { code: "CO", name: "Colorado" },
-    { code: "CT", name: "Connecticut" },
-    { code: "DE", name: "Delaware" },
-    { code: "FL", name: "Florida" },
-    { code: "GA", name: "Georgia" },
-    { code: "HI", name: "Hawaii" },
-    { code: "ID", name: "Idaho" },
-    { code: "IL", name: "Illinois" },
-    { code: "IN", name: "Indiana" },
-    { code: "IA", name: "Iowa" },
-    { code: "KS", name: "Kansas" },
-    { code: "KY", name: "Kentucky" },
-    { code: "LA", name: "Louisiana" },
-    { code: "ME", name: "Maine" },
-    { code: "MD", name: "Maryland" },
-    { code: "MA", name: "Massachusetts" },
-    { code: "MI", name: "Michigan" },
-    { code: "MN", name: "Minnesota" },
-    { code: "MS", name: "Mississippi" },
-    { code: "MO", name: "Missouri" },
-    { code: "MT", name: "Montana" },
-    { code: "NE", name: "Nebraska" },
-    { code: "NV", name: "Nevada" },
-    { code: "NH", name: "New Hampshire" },
-    { code: "NJ", name: "New Jersey" },
-    { code: "NM", name: "New Mexico" },
-    { code: "NY", name: "New York" },
-    { code: "NC", name: "North Carolina" },
-    { code: "ND", name: "North Dakota" },
-    { code: "OH", name: "Ohio" },
-    { code: "OK", name: "Oklahoma" },
-    { code: "OR", name: "Oregon" },
-    { code: "PA", name: "Pennsylvania" },
-    { code: "RI", name: "Rhode Island" },
-    { code: "SC", name: "South Carolina" },
-    { code: "SD", name: "South Dakota" },
-    { code: "TN", name: "Tennessee" },
-    { code: "TX", name: "Texas" },
-    { code: "UT", name: "Utah" },
-    { code: "VT", name: "Vermont" },
-    { code: "VA", name: "Virginia" },
-    { code: "WA", name: "Washington" },
-    { code: "WV", name: "West Virginia" },
-    { code: "WI", name: "Wisconsin" },
-    { code: "WY", name: "Wyoming" },
-  ];
 
   return (
     <>
       <Dialog
         open={open}
         onClose={handleClose}
-        maxWidth="sm"
+        maxWidth="lg"
         fullWidth
         fullScreen={isMobile}
         PaperProps={{
           sx: {
             borderRadius: isMobile ? 0 : 2,
             minHeight: isMobile ? "100vh" : "auto",
-            maxWidth: isMobile ? "100%" : "450px",
-            width: isMobile ? "100%" : "90%",
-            maxHeight: isMobile ? "100vh" : "90vh",
+            maxWidth: isMobile ? "100%" : "1200px",
+            width: isMobile ? "100%" : "95%",
+            maxHeight: isMobile ? "100vh" : "95vh",
             overflow: "hidden",
           },
         }}
@@ -415,7 +397,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            pb: 1,
+            pb: 0,
             px: { xs: 2, sm: 3 },
             pt: { xs: 2, sm: 2.5 },
             borderBottom: "1px solid",
@@ -476,320 +458,272 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           ) : (
             <Box
               sx={{
-                p: { xs: 3, sm: 4, md: 1, lg: 0.5, xl: 1, xxl: 1 },
-                pb: { xs: 4, sm: 5, md: 3, lg: 2, xl: 3, xxl: 3 },
-                maxWidth: "400px",
-                mx: "auto",
-                width: "100%",
+                height: "100%",
+                overflow: "auto",
+                backgroundColor: "#fafafa",
+                minHeight: "70vh",
+                p: { xs: 2, sm: 3, md: 2, lg: 2, xl: 2 },
               }}
             >
-              <Typography
-                variant="h6"
-                sx={{
-                  mb: 1.5,
-                  fontWeight: 600,
-                  fontSize: { xs: "1rem", sm: "1.125rem" },
-                  textAlign: "center",
-                  color: "text.primary",
-                }}
-              >
-                Update your profile
-              </Typography>
-
-              <TextField
-                fullWidth
-                label="First Name"
-                type="text"
-                value={formData.first_name}
-                onChange={handleFieldChange("first_name")}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.first_name}
-                helperText={errors.first_name}
-                variant="outlined"
-                size="small"
-                sx={{
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  "& .MuiFormHelperText-root": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Last Name"
-                type="text"
-                value={formData.last_name}
-                onChange={handleFieldChange("last_name")}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.last_name}
-                helperText={errors.last_name}
-                variant="outlined"
-                size="small"
-                sx={{
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  "& .MuiFormHelperText-root": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Phone Number"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Only allow digits and basic formatting
-                  const cleanValue = value.replace(/[^\d\s\-\(\)]/g, '');
-                  setFormData((prev) => ({
-                    ...prev,
-                    phone: cleanValue,
-                  }));
-                  // Clear errors for the field
-                  setErrors((prev) => ({ ...prev, phone: "" }));
-                }}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.phone}
-                helperText={errors.phone}
-                variant="outlined"
-                size="small"
-                inputProps={{
-                  inputMode: "tel",
-                  maxLength: 20
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 0.5,
-                        pr: 1
-                      }}>
-                        <Typography variant="body2" sx={{ fontSize: '1rem' }}>
-                          🇺🇸
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                          +1
-                        </Typography>
-                        <Box sx={{ 
-                          width: '1px', 
-                          height: '20px', 
-                          backgroundColor: 'rgba(0, 0, 0, 0.23)',
-                          ml: 0.5
-                        }} />
-                      </Box>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  "& .MuiFormHelperText-root": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    marginLeft: 0,
-                  },
-                  "& .MuiInputLabel-root": {
-                    color: "text.secondary",
-                    transform: "translate(60px, 8px) scale(1)",
-                    "&.Mui-focused": {
-                      color: "primary.main",
-                      transform: "translate(14px, -9px) scale(0.75)",
-                    },
-                    "&.MuiFormLabel-filled": {
-                      transform: "translate(14px, -9px) scale(0.75)",
-                    },
-                  },
-                  "& .MuiInputBase-input": {
-                    paddingLeft: "8px !important",
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={handleFieldChange("email")}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.email}
-                helperText={errors.email}
-                variant="outlined"
-                size="small"
-                sx={{
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  "& .MuiFormHelperText-root": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Address"
-                type="text"
-                value={formData.address}
-                onChange={handleFieldChange("address")}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.address}
-                helperText={errors.address}
-                variant="outlined"
-                size="small"
-                sx={{
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  "& .MuiFormHelperText-root": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="City"
-                type="text"
-                value={formData.city}
-                onChange={handleFieldChange("city")}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.city}
-                helperText={errors.city}
-                variant="outlined"
-                size="small"
-                sx={{
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  "& .MuiFormHelperText-root": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
-              <TextField
-                select
-                fullWidth
-                label="State"
-                value={formData.state}
-                onChange={handleFieldChange("state")}
-                variant="outlined"
-                size="small"
-                sx={{
-                  mb: 2,
-                  ...commonTextFieldStyles,
-                  "& .MuiFormHelperText-root": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    marginLeft: 0,
-                  },
-                }}
-              >
-                <MenuItem value="">Select State</MenuItem>
-                {US_STATES.map((state) => (
-                  <MenuItem key={state.code} value={state.name}>
-                    {state.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                fullWidth
-                label="Company Name"
-                type="text"
-                value={formData.company_name}
-                onChange={handleFieldChange("company_name")}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit();
-                  }
-                }}
-                error={!!errors.company_name}
-                helperText={errors.company_name}
-                variant="outlined"
-                size="small"
-                sx={{
-                  mb: 3,
-                  ...commonTextFieldStyles,
-                  "& .MuiFormHelperText-root": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    marginLeft: 0,
-                  },
-                }}
-              />
-
               <Box
                 sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  width: "100%",
+                  backgroundColor: "white",
+                  borderRadius: 2,
+                  p: { xs: 2, sm: 3, md: 4, lg: 2, xl: 2 },
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  maxWidth: "100%",
+                  mx: "auto",
                 }}
               >
-                <Button
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={saving}
-                  size="medium"
-                  disableRipple={false}
-                  TouchRippleProps={{
-                    center: true,
-                    color: "rgba(255, 255, 255, 0.3)",
-                  }}
-                  sx={{
-                    px: { xs: 4, sm: 6 },
-                    py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 },
-                    borderRadius: 2,
-                    textTransform: "none",
-                    letterSpacing: 0.5,
-                    transition: "all 0.3s ease",
-                    minWidth: { xs: 160, sm: 180 },
-                    width: { xs: "100%", sm: "auto" },
-                    boxShadow: "none",
-                    "&:hover": {
-                      boxShadow: "none",
-                    },
-                    "& .MuiTouchRipple-root": {
-                      borderRadius: 2,
-                    },
-                  }}
+              {/* Basic Information */}
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 1 }}>
+                  Basic Information
+                </Typography>
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
                 >
-                  {saving ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    "Update Profile"
-                  )}
-                </Button>
+                  <FormField
+                    name="first_name"
+                    label="First Name"
+                    value={formData.first_name}
+                    onChange={(value) => handleFieldChange('first_name', value)}
+                    required
+                    error={errors.first_name}
+                  />
+
+                  <FormField
+                    name="last_name"
+                    label="Last Name"
+                    value={formData.last_name}
+                    onChange={(value) => handleFieldChange('last_name', value)}
+                    required
+                    error={errors.last_name}
+                  />
+
+                  <FormField
+                    name="email"
+                    label="Email Address"
+                    value={formData.email}
+                    onChange={(value) => handleFieldChange('email', value)}
+                    type="email"
+                    required
+                    error={errors.email}
+                  />
+
+                  <PhoneField
+                    name="phone"
+                    value={formData.phone}
+                    onChange={(value) => handleFieldChange('phone', value)}
+                    required
+                    error={errors.phone}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Contact Information */}
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+                  Contact Information
+                </Typography>
+                
+                {/* Address Row */}
+                <Box sx={{ mb: 1.5 }}>
+                  <FormField
+                    name="address"
+                    label="Address"
+                    value={formData.address}
+                    onChange={(value) => handleFieldChange('address', value)}
+                    required
+                    error={errors.address}
+                  />
+                </Box>
+
+                {/* City, State, Company Name Row */}
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="city"
+                    label="City"
+                    value={formData.city}
+                    onChange={(value) => handleFieldChange('city', value)}
+                    error={errors.city}
+                  />
+
+                  <SelectField
+                    name="state"
+                    label="State"
+                    value={formData.state}
+                    onChange={(value) => handleFieldChange('state', value)}
+                    options={US_STATES.map(state => ({
+                      value: state.value,
+                      label: state.label
+                    }))}
+                    error={errors.state}
+                  />
+
+                  <FormField
+                    name="company_name"
+                    label="Company Name"
+                    value={formData.company_name}
+                    onChange={(value) => handleFieldChange('company_name', value)}
+                    error={errors.company_name}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Shipping Address */}
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+                  Shipping Address
+                </Typography>
+                
+                {/* Address Row */}
+                <Box sx={{ mb: 1.5 }}>
+                  <FormField
+                    name="shipping_address"
+                    label="Address"
+                    value={formData.shipping_address}
+                    onChange={(value) => handleFieldChange('shipping_address', value)}
+                    error={errors.shipping_address}
+                  />
+                </Box>
+
+                {/* City, State, ZIP Code Row */}
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="shipping_city"
+                    label="City"
+                    value={formData.shipping_city}
+                    onChange={(value) => handleFieldChange('shipping_city', value)}
+                    error={errors.shipping_city}
+                  />
+
+                  <SelectField
+                    name="shipping_state"
+                    label="State"
+                    value={formData.shipping_state}
+                    onChange={(value) => handleFieldChange('shipping_state', value)}
+                    options={US_STATES.map(state => ({
+                      value: state.value,
+                      label: state.label
+                    }))}
+                    error={errors.shipping_state}
+                  />
+
+                  <FormField
+                    name="shipping_zip"
+                    label="ZIP Code"
+                    value={formData.shipping_zip}
+                    onChange={(value) => handleFieldChange('shipping_zip', value)}
+                    error={errors.shipping_zip}
+                  />
+                </Grid>
+              </Box>
+
+              {/* Billing Address */}
+              <Box sx={{ mb: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 1 
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    Billing Address
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        billing_address: prev.shipping_address,
+                        billing_city: prev.shipping_city,
+                        billing_state: prev.shipping_state,
+                        billing_zip: prev.shipping_zip
+                      }));
+                    }}
+                    sx={{
+                      borderColor: 'primary.main',
+                      color: 'primary.main',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      textTransform: 'none',
+                      minWidth: { xs: 'auto', sm: '140px' },
+                      height: { xs: 32, sm: 36 },
+                      '&:hover': {
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                        borderColor: 'primary.main',
+                      },
+                    }}
+                  >
+                    Copy from Shipping
+                  </Button>
+                </Box>
+                {/* Address Row */}
+                <Box sx={{ mb: 1.5 }}>
+                  <FormField
+                    name="billing_address"
+                    label="Address"
+                    value={formData.billing_address}
+                    onChange={(value) => handleFieldChange('billing_address', value)}
+                    error={errors.billing_address}
+                  />
+                </Box>
+
+                {/* City, State, ZIP Code Row */}
+                <Grid
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                  gap={{ xs: 1, md: 1.5 }}
+                >
+                  <FormField
+                    name="billing_city"
+                    label="City"
+                    value={formData.billing_city}
+                    onChange={(value) => handleFieldChange('billing_city', value)}
+                    error={errors.billing_city}
+                  />
+
+                  <SelectField
+                    name="billing_state"
+                    label="State"
+                    value={formData.billing_state}
+                    onChange={(value) => handleFieldChange('billing_state', value)}
+                    options={US_STATES.map(state => ({
+                      value: state.value,
+                      label: state.label
+                    }))}
+                    error={errors.billing_state}
+                  />
+
+                  <FormField
+                    name="billing_zip"
+                    label="ZIP Code"
+                    value={formData.billing_zip}
+                    onChange={(value) => handleFieldChange('billing_zip', value)}
+                    error={errors.billing_zip}
+                  />
+                </Grid>
+              </Box>
+
+                <FormActions
+                  onSave={handleSubmit}
+                  onCancel={handleClose}
+                  loading={saving}
+                  saveText="Update Profile"
+                  cancelText="Cancel"
+                />
               </Box>
             </Box>
           )}

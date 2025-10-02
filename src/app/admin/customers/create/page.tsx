@@ -172,16 +172,26 @@ const CreateCustomerPage = () => {
         customer_type: 'retail', // Hardcoded
         price_tier_id: Number(formData.price_tier_id) || 1,
         is_active: Boolean(isActive),
-        // Shipping Address Fields
-        shipping_address: formData.shipping_address || '',
-        shipping_city: formData.shipping_city || '',
-        shipping_state: formData.shipping_state || '',
-        shipping_zip: formData.shipping_zip || '',
-        // Billing Address Fields
-        billing_address: formData.billing_address || '',
-        billing_city: formData.billing_city || '',
-        billing_state: formData.billing_state || '',
-        billing_zip: formData.billing_zip || ''
+        // Shipping Address Object
+        shipping_address: {
+          street: formData.shipping_address || '',
+          city: formData.shipping_city || '',
+          state: formData.shipping_state || '',
+          postal_code: formData.shipping_zip || '',
+          country: 'US',
+          phone: formData.phone || '',
+          is_default: true
+        },
+        // Billing Address Object
+        billing_address: {
+          street: formData.billing_address || '',
+          city: formData.billing_city || '',
+          state: formData.billing_state || '',
+          postal_code: formData.billing_zip || '',
+          country: 'US',
+          phone: formData.phone || '',
+          is_default: true
+        }
       };
       
       console.log('Creating customer with data:', customerData);

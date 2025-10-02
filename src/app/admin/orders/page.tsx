@@ -37,7 +37,8 @@ import {
   Fade,
   ListItemIcon,
   ListItemText,
-  TablePagination,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 
 import {
@@ -126,6 +127,8 @@ interface OrderStatistics {
 const OrdersPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [orders, setOrders] = useState<Order[]>([]);
   const [statistics, setStatistics] = useState<OrderStatistics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -139,7 +142,7 @@ const OrdersPage = () => {
 
   // Pagination states
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [totalCount, setTotalCount] = useState(0);
 
   // Filter states - Updated to match customer list structure
@@ -527,6 +530,20 @@ const OrdersPage = () => {
             severity={alert.type} 
             sx={{ mb: 2 }}
             onClose={() => setAlert(null)}
+            action={
+              alert.type === 'error' ? (
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    setAlert(null);
+                    fetchOrders();
+                  }}
+                >
+                  Retry
+                </Button>
+              ) : undefined
+            }
           >
             {alert.message}
           </Alert>
@@ -871,18 +888,172 @@ const OrdersPage = () => {
               </Box>
             </Box>
 
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25, 50]}
-              component="div"
-              count={totalCount}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={(_, newPageZeroBased) => setPage(newPageZeroBased)}
-              onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value, 10));
-                setPage(0);
-              }}
-            />
+            {/* Desktop Pagination */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              p: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+              flexWrap: 'wrap',
+              gap: 2
+            }}>
+              {/* Left side - Items per page input */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Items per page:
+                </Typography>
+                <TextField
+                  type="number"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 15;
+                    if (value > 0 && value <= 100) {
+                      setRowsPerPage(value);
+                      setPage(0);
+                    }
+                  }}
+                  size="small"
+                  sx={{ 
+                    minWidth: 80,
+                    maxWidth: 100,
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center'
+                    }
+                  }}
+                  inputProps={{
+                    min: 1,
+                    max: 100,
+                    step: 1
+                  }}
+                />
+              </Box>
+              
+              {/* Center - Page info */}
+              <Typography variant="body2" color="text.secondary">
+                Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} orders
+              </Typography>
+              
+              {/* Right side - Navigation controls */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page === 0}
+                  onClick={() => setPage(page - 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+                
+                <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                  Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                  onClick={() => setPage(page + 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
+            </Box>
+            
+            {/* Mobile Pagination - shown only on mobile */}
+            {isMobile && totalCount > 0 && (
+              <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                {/* Pagination Info */}
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} orders
+                </Typography>
+                
+                {/* Navigation Controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page === 0}
+                    onClick={() => setPage(page - 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Previous
+                  </Button>
+                  
+                  <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                  </Typography>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                    onClick={() => setPage(page + 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                </Box>
+                
+                {/* Items per page input */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Items per page:
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 15;
+                      if (value > 0 && value <= 100) {
+                        setRowsPerPage(value);
+                        setPage(0);
+                      }
+                    }}
+                    size="small"
+                    sx={{ 
+                      minWidth: 80,
+                      maxWidth: 100,
+                      '& .MuiInputBase-input': {
+                        textAlign: 'center'
+                      }
+                    }}
+                    inputProps={{
+                      min: 1,
+                      max: 100,
+                      step: 1
+                    }}
+                  />
+                </Box>
+              </Box>
+            )}
           </>
         )}
 

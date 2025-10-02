@@ -45,6 +45,23 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
         
         // The API returns nested data structure: response.data.data
         const customerData = response.data?.data || response.data;
+        
+        // Extract addresses from the addresses array and add them as direct properties
+        if (customerData.addresses && Array.isArray(customerData.addresses)) {
+          const shippingAddress = customerData.addresses.find((addr: any) => addr.type === 'shipping');
+          const billingAddress = customerData.addresses.find((addr: any) => addr.type === 'billing');
+          
+          // Add address data as direct properties for the form
+          customerData.shipping_address = shippingAddress?.street || '';
+          customerData.shipping_city = shippingAddress?.city || '';
+          customerData.shipping_state = shippingAddress?.state || '';
+          customerData.shipping_zip = shippingAddress?.postal_code || '';
+          
+          customerData.billing_address = billingAddress?.street || '';
+          customerData.billing_city = billingAddress?.city || '';
+          customerData.billing_state = billingAddress?.state || '';
+          customerData.billing_zip = billingAddress?.postal_code || '';
+        }
 
         setCustomer(customerData);
         setIsActive(customerData.is_active !== undefined ? customerData.is_active : true);
@@ -61,32 +78,39 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
 
   const handleSubmit = async (updatedCustomer: any) => {
     try {
-      // Remove empty password field for updates
-      const { password, ...customerDataWithoutPassword } = updatedCustomer;
-      
       // Create payload matching the backend schema exactly
       const customerData = {
-        first_name: customerDataWithoutPassword.first_name || '',
-        last_name: customerDataWithoutPassword.last_name || '',
-        email: customerDataWithoutPassword.email || '',
-        phone: customerDataWithoutPassword.phone || '',
-        address: customerDataWithoutPassword.address || '',
-        city: customerDataWithoutPassword.city || '',
-        state: customerDataWithoutPassword.state || '',
-        company_name: customerDataWithoutPassword.company_name || '',
+        first_name: updatedCustomer.first_name || '',
+        last_name: updatedCustomer.last_name || '',
+        email: updatedCustomer.email || '',
+        phone: updatedCustomer.phone || '',
+        address: updatedCustomer.address || '',
+        city: updatedCustomer.city || '',
+        state: updatedCustomer.state || '',
+        company_name: updatedCustomer.company_name || '',
         customer_type: 'retail', // Hardcoded like in create page
-        price_tier_id: Number(customerDataWithoutPassword.price_tier_id) || 1,
+        price_tier_id: Number(updatedCustomer.price_tier_id) || 1,
         is_active: Boolean(isActive),
-        // Shipping Address Fields
-        shipping_address: customerDataWithoutPassword.shipping_address || '',
-        shipping_city: customerDataWithoutPassword.shipping_city || '',
-        shipping_state: customerDataWithoutPassword.shipping_state || '',
-        shipping_zip: customerDataWithoutPassword.shipping_zip || '',
-        // Billing Address Fields
-        billing_address: customerDataWithoutPassword.billing_address || '',
-        billing_city: customerDataWithoutPassword.billing_city || '',
-        billing_state: customerDataWithoutPassword.billing_state || '',
-        billing_zip: customerDataWithoutPassword.billing_zip || ''
+        // Shipping Address Object
+        shipping_address: {
+          street: updatedCustomer.shipping_address || '',
+          city: updatedCustomer.shipping_city || '',
+          state: updatedCustomer.shipping_state || '',
+          postal_code: updatedCustomer.shipping_zip || '',
+          country: 'US',
+          phone: updatedCustomer.phone || '',
+          is_default: true
+        },
+        // Billing Address Object
+        billing_address: {
+          street: updatedCustomer.billing_address || '',
+          city: updatedCustomer.billing_city || '',
+          state: updatedCustomer.billing_state || '',
+          postal_code: updatedCustomer.billing_zip || '',
+          country: 'US',
+          phone: updatedCustomer.phone || '',
+          is_default: true
+        }
       };
       
       console.log('Sending customer data:', customerData);
