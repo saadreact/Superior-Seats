@@ -424,12 +424,16 @@ export default function ShopOrderViewPage() {
                           <TableCell colSpan={3} />
                           <TableCell align="right">
                             <Typography variant="body1" fontWeight={600}>Subtotal:</Typography>
-                            {tax > 0 && (<Typography variant="body2">Tax:</Typography>)}
+                            {order?.shipping_address?.state === 'Indiana' && (
+                                <Typography variant="body2">Tax:</Typography>
+                            )}
                             <Typography variant="h6" fontWeight={600} color="primary">Total:</Typography>
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body1" fontWeight={600}>{formatCurrency(sub)}</Typography>
-                            {tax > 0 && (<Typography variant="body2">+{formatCurrency(tax)} {taxPct ? `(${taxPct.toFixed(2)}%)` : ''}</Typography>)}
+                            {order?.shipping_address?.state === 'Indiana' && (
+                               <Typography variant="body2">+{formatCurrency(tax)} {taxPct ? `(${taxPct.toFixed(2)}%)` : ''}</Typography>
+                            )}
                             <Typography variant="h6" fontWeight={600} color="primary">{formatCurrency(order?.total_amount || (sub + tax))}</Typography>
                           </TableCell>
                         </TableRow>
