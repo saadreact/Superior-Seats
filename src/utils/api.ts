@@ -586,26 +586,49 @@ class ApiService {
           }
         },
         
-        // Transform cart items to order items
-        items: (newOrder.cartItems || []).map((cartItem: any, index: number) => ({
-          id: index + 1, // Generate sequential IDs
-          product_id: parseInt(cartItem.itemId) || 0,
-          variation_id: 0, // Set to 0 since backend doesn't provide variationId in GET response
-          quantity: cartItem.quantity || 0,
-          unit_price: cartItem.unitPrice || 0,
-          discount_amount: 0, // Not available per item in new format
-          total: cartItem.totalPrice || 0,
-          variants: cartItem.variants || {}, // Preserve variants from new API
-          product: {
-            name: cartItem.name || 'Unknown Product',
-            category: 'Unknown Category' // Not available in new format
-          },
-          variation: {
-            name: cartItem.name || 'Unknown Variation', // Use item name as variation name
-            material_type: 'Unknown Material',
-            color: 'Unknown Color'
-          }
-        })),
+        // Transform items: prefer orderItems (has product + category), fallback to cartItems
+        items: (() => {
+          const itemsFromOrderItems = Array.isArray(newOrder.orderItems)
+            ? newOrder.orderItems.map((it: any) => ({
+                id: it.id,
+                product_id: Number(it.productId || it.product?.id || it.itemId || 0),
+                variation_id: Number(it.variationId || 0),
+                quantity: Number(it.quantity || 0),
+                unit_price: Number(it.unitPrice || it.price || 0),
+                discount_amount: Number(it.discountAmount || 0),
+                total: Number(it.totalPrice || it.total || ((Number(it.quantity || 0) * Number(it.unitPrice || it.price || 0)) - Number(it.discountAmount || 0))),
+                variants: it.variants || it.variantDetails || {},
+                product: {
+                  name: it.product?.name || it.name || 'Unknown Product',
+                  category: it.product?.category || (typeof it.category === 'string' ? it.category : (it.category || 'Unknown Category')),
+                },
+                variation: it.variation || { name: it.variationName || 'Variation', material_type: it.material_type, color: it.color },
+              }))
+            : [];
+
+          if (itemsFromOrderItems.length > 0) return itemsFromOrderItems;
+
+          // Fallback to cartItems when orderItems are not available
+          return (newOrder.cartItems || []).map((cartItem: any, index: number) => ({
+            id: index + 1, // Generate sequential IDs
+            product_id: parseInt(cartItem.itemId) || 0,
+            variation_id: 0, // Set to 0 since backend doesn't provide variationId in GET response
+            quantity: cartItem.quantity || 0,
+            unit_price: cartItem.unitPrice || 0,
+            discount_amount: 0, // Not available per item in new format
+            total: cartItem.totalPrice || 0,
+            variants: cartItem.variants || {}, // Preserve variants from new API
+            product: {
+              name: cartItem.name || 'Unknown Product',
+              category: 'Unknown Category' // Not available in new format
+            },
+            variation: {
+              name: cartItem.name || 'Unknown Variation', // Use item name as variation name
+              material_type: 'Unknown Material',
+              color: 'Unknown Color'
+            }
+          }));
+        })(),
         
         // Vehicle configuration is not in the new format
         vehicle_configuration: undefined
