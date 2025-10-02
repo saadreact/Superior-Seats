@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box, Grid, Typography, Divider } from '@mui/material';
+import { Button } from '@mui/material';
 import { Customer, CustomerType } from '@/data/types';
 import { 
   FormField, 
@@ -84,6 +85,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   useEffect(() => {
     if (customer) {
       console.log('Customer data for form:', customer);
+      console.log('Shipping address data:', customer.shipping_address);
+      console.log('Billing address data:', customer.billing_address);
       const name: string = customer.name || '';
       const firstNameFromName = name.split(' ')[0] || '';
       const lastNameFromName = name.split(' ').slice(1).join(' ') || '';
@@ -99,16 +102,28 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         company_name: customer.company_name || '',
         price_tier_id: customer.price_tier_id || 1,
         is_active: customer.is_active !== undefined ? customer.is_active : true,
-        // Shipping Address Fields
-        shipping_address: customer.shipping_address || '',
-        shipping_city: customer.shipping_city || '',
-        shipping_state: customer.shipping_state || '',
-        shipping_zip: customer.shipping_zip || '',
-        // Billing Address Fields
-        billing_address: customer.billing_address || '',
-        billing_city: customer.billing_city || '',
-        billing_state: customer.billing_state || '',
-        billing_zip: customer.billing_zip || '',
+        // Shipping Address Fields - extract from nested object or use direct properties
+        shipping_address: customer.shipping_address?.street || customer.shipping_address || '',
+        shipping_city: customer.shipping_address?.city || customer.shipping_city || '',
+        shipping_state: customer.shipping_address?.state || customer.shipping_state || '',
+        shipping_zip: customer.shipping_address?.postal_code || customer.shipping_zip || '',
+        // Billing Address Fields - extract from nested object or use direct properties
+        billing_address: customer.billing_address?.street || customer.billing_address || '',
+        billing_city: customer.billing_address?.city || customer.billing_city || '',
+        billing_state: customer.billing_address?.state || customer.billing_state || '',
+        billing_zip: customer.billing_address?.postal_code || customer.billing_zip || '',
+      });
+      
+      // Log the form data to see what's being set
+      console.log('Form data being set:', {
+        shipping_address: customer.shipping_address?.street || customer.shipping_address || '',
+        shipping_city: customer.shipping_address?.city || customer.shipping_city || '',
+        shipping_state: customer.shipping_address?.state || customer.shipping_state || '',
+        shipping_zip: customer.shipping_address?.postal_code || customer.shipping_zip || '',
+        billing_address: customer.billing_address?.street || customer.billing_address || '',
+        billing_city: customer.billing_address?.city || customer.billing_city || '',
+        billing_state: customer.billing_address?.state || customer.billing_state || '',
+        billing_zip: customer.billing_address?.postal_code || customer.billing_zip || '',
       });
     }
   }, [customer]);
@@ -240,20 +255,15 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isViewMode}
           />
 
-          {!customer && (
-            <>
-              <FormField
-                name="password"
-                label="Password"
-                value={formData.password}
-                onChange={(value) => handleFieldChange('password', value)}
-                type="password"
-                required
-                error={allErrors.password}
-                disabled={isViewMode}
-              />
-            </>
-          )}
+          <FormField
+            name="password"
+            label="Update Password"
+            value={formData.password}
+            onChange={(value) => handleFieldChange('password', value)}
+            type="password"
+            error={allErrors.password}
+            disabled={isViewMode}
+          />
         </Grid>
       </Box>
 
@@ -400,9 +410,46 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
       {/* Billing Address */}
       <Box sx={{ mb: 1.5 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
-          Billing Address
-        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 1 
+        }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+            Billing Address
+          </Typography>
+          {!isViewMode && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                setFormData(prev => ({
+                  ...prev,
+                  billing_address: prev.shipping_address,
+                  billing_city: prev.shipping_city,
+                  billing_state: prev.shipping_state,
+                  billing_zip: prev.shipping_zip
+                }));
+              }}
+              sx={{
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                textTransform: 'none',
+                minWidth: { xs: 'auto', sm: '140px' },
+                height: { xs: 32, sm: 36 },
+                '&:hover': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  borderColor: 'primary.main',
+                },
+              }}
+            >
+              Copy from Shipping
+            </Button>
+          )}
+        </Box>
         <Grid
           display="grid"
           gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}

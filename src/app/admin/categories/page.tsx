@@ -61,36 +61,73 @@ const CategoriesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const loadCategories = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const params: Record<string, any> = {};
-      if (searchTerm) params.search = searchTerm;
+      // Build API parameters for server-side pagination
+      const params: Record<string, any> = {
+        page: page + 1, // API uses 1-based pagination, but MUI uses 0-based
+        limit: rowsPerPage
+      };
+      
+      // Add optional search parameter
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
+      
+      console.log('🔍 Loading categories with params:', params);
       
       const response = await apiService.getCategories(params);
+      console.log('🔍 API Response:', response);
       
-      // Handle the response structure
+      // Handle the API response structure
       if (response && response.data) {
         setCategories(response.data);
+        // Update total count for pagination from the meta.pagination object
+        if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+          setTotalCount(response.meta.pagination.total);
+        } else if (response.meta && response.meta.total) {
+          setTotalCount(response.meta.total);
+        } else if (response.total !== undefined) {
+          setTotalCount(response.total);
+        } else if (response.data && Array.isArray(response.data)) {
+          // If no total count provided, use the length of current data
+          // This is not ideal for server-side pagination but prevents errors
+          setTotalCount(response.data.length);
+        }
       } else if (Array.isArray(response)) {
         setCategories(response);
+        setTotalCount(response.length);
       } else {
         setCategories([]);
+        setTotalCount(0);
       }
     } catch (err: any) {
-      if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        setError('Please log in to access this page');
+      console.error('Error loading categories:', err);
+      
+      if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+        setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+        // Redirect to home page where user can login
+        setTimeout(() => {
+          router.push('/');
+        }, 3000);
+      } else if (err.response?.status === 403) {
+        setError('Access denied. You do not have permission to view categories.');
+      } else if (err.response?.status === 404) {
+        setError('Categories endpoint not found. Please contact support.');
+      } else if (err.response?.status >= 500) {
+        setError('Server error. Please try again later.');
       } else {
         setError(err.message || 'Failed to load categories. Please try again later.');
       }
-      console.error('Error loading categories:', err);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, [page, rowsPerPage, searchTerm, router]);
 
   useEffect(() => {
     loadCategories();
@@ -137,24 +174,9 @@ const CategoriesPage = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newRowsPerPage = parseInt(event.target.value, 10);
-    if (newRowsPerPage > 0 && newRowsPerPage <= 100) {
-      setRowsPerPage(newRowsPerPage);
-      setPage(0);
-    }
-  };
 
-  // Filter and paginate data
-  const filteredData = categories.filter(category =>
-    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    category.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const paginatedData = filteredData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  // No client-side filtering needed since we're using server-side pagination
+  // The categories array already contains the paginated data from the server
 
   return (
     <AdminLayout title="Categories">
@@ -221,15 +243,6 @@ const CategoriesPage = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : categories.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No categories found
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Category" to create your first category.'}
-            </Typography>
-          </Paper>
         ) : (
           <Paper sx={{ overflow: 'hidden' }}>
             <TableContainer>
@@ -244,67 +257,80 @@ const CategoriesPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedData.map((category) => (
-                    <TableRow 
-                      key={category.id}
-                      sx={{ 
-                        '&:hover': { backgroundColor: 'action.hover' },
-                        transition: 'background-color 0.2s ease'
-                      }}
-                    >
-                      <TableCell>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {category.name}
+                  {categories.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} sx={{ textAlign: 'center', py: 4 }}>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          {searchTerm ? 'No categories found matching your search' : 'No categories found'}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary"
-                          sx={{
-                            maxWidth: 300,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {category.description || 'No description available'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={category.is_active ? 'Active' : 'Inactive'}
-                          size="small"
-                          color={category.is_active ? 'success' : 'default'}
-                        />
-                      </TableCell>
-                      <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {new Date(category.created_at).toLocaleDateString()}
+                          {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Category" to create your first category.'}
                         </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEdit(category)}
-                            title="Edit"
-                            sx={{ color: 'primary.main' }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDelete(category)}
-                            title="Delete"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    categories.map((category) => (
+                      <TableRow 
+                        key={category.id}
+                        sx={{ 
+                          '&:hover': { backgroundColor: 'action.hover' },
+                          transition: 'background-color 0.2s ease'
+                        }}
+                      >
+                        <TableCell>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {category.name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{
+                              maxWidth: 300,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {category.description || 'No description available'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={category.is_active ? 'Active' : 'Inactive'}
+                            size="small"
+                            color={category.is_active ? 'success' : 'default'}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {new Date(category.created_at).toLocaleDateString()}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEdit(category)}
+                              title="Edit"
+                              sx={{ color: 'primary.main' }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(category)}
+                              title="Delete"
+                              color="error"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -315,7 +341,7 @@ const CategoriesPage = () => {
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, p: 2 }}>
                 {/* Pagination Info */}
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, filteredData.length)} of {filteredData.length} categories
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} categories
                 </Typography>
                 
                 {/* Navigation Controls */}
@@ -337,13 +363,13 @@ const CategoriesPage = () => {
                   </Button>
                   
                   <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
-                    Page {page + 1} of {Math.ceil(filteredData.length / rowsPerPage)}
+                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
                   </Typography>
                   
                   <Button
                     variant="outlined"
                     size="small"
-                    disabled={page >= Math.ceil(filteredData.length / rowsPerPage) - 1}
+                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
                     onClick={() => setPage(page + 1)}
                     sx={{
                       minWidth: 'auto',
@@ -365,7 +391,13 @@ const CategoriesPage = () => {
                   <TextField
                     type="number"
                     value={rowsPerPage}
-                    onChange={handleChangeRowsPerPage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 10;
+                      if (value > 0 && value <= 100) {
+                        setRowsPerPage(value);
+                        setPage(0);
+                      }
+                    }}
                     size="small"
                     sx={{ 
                       minWidth: 80,
@@ -402,7 +434,13 @@ const CategoriesPage = () => {
                   <TextField
                     type="number"
                     value={rowsPerPage}
-                    onChange={handleChangeRowsPerPage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 10;
+                      if (value > 0 && value <= 100) {
+                        setRowsPerPage(value);
+                        setPage(0);
+                      }
+                    }}
                     size="small"
                     sx={{ 
                       minWidth: 80,
@@ -421,7 +459,7 @@ const CategoriesPage = () => {
                 
                 {/* Center - Page info */}
                 <Typography variant="body2" color="text.secondary">
-                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, filteredData.length)} of {filteredData.length} categories
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} categories
                 </Typography>
                 
                 {/* Right side - Navigation controls */}
@@ -443,13 +481,13 @@ const CategoriesPage = () => {
                   </Button>
                   
                   <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
-                    Page {page + 1} of {Math.ceil(filteredData.length / rowsPerPage)}
+                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
                   </Typography>
                   
                   <Button
                     variant="outlined"
                     size="small"
-                    disabled={page >= Math.ceil(filteredData.length / rowsPerPage) - 1}
+                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
                     onClick={() => setPage(page + 1)}
                     sx={{
                       minWidth: 'auto',

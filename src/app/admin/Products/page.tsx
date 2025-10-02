@@ -20,7 +20,6 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  Dialog,
   FormControlLabel,
   Checkbox,
   Card,
@@ -131,9 +130,6 @@ const Products2Page = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-  const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showShopSpecialOnly, setShowShopSpecialOnly] = useState(false);
@@ -224,27 +220,35 @@ const Products2Page = () => {
   };
 
 
-  const handleDelete = (product: Product) => {
-    setProductToDelete(product);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (productToDelete) {
-      try {
-        setDeleting(true);
-        await apiService.deleteProduct(productToDelete.id);
-        setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
-        setAlert({ type: 'success', message: 'Product deleted successfully' });
-      } catch (err: any) {
-        setError(err.message || 'Failed to delete product');
-        console.error('Error deleting product:', err);
-      } finally {
-        setDeleting(false);
-      }
+  const handleDelete = async (product: Product) => {
+    if (!product.is_active) {
+      setAlert({ type: 'error', message: 'Product is already inactive' });
+      return;
     }
-    setIsDeleteDialogOpen(false);
-    setProductToDelete(null);
+    
+    try {
+      // Send all product data with is_active set to false
+      await apiService.updateProduct(product.id, {
+        name: product.name,
+        description: product.description,
+        price: parseFloat(product.price),
+        stock: product.stock,
+        category_id: product.category_id || undefined,
+        is_active: false
+      });
+      // Update the product in the local state
+      setProducts(prev => prev.map(p => 
+        p.id === product.id 
+          ? { ...p, is_active: false }
+          : p
+      ));
+      setAlert({ type: 'success', message: 'Product deleted successfully' });
+      // Optionally refetch to refresh totals
+      loadProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      setAlert({ type: 'error', message: 'Failed to delete product' });
+    }
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -605,7 +609,8 @@ const Products2Page = () => {
                         <IconButton
                           size="small"
                           onClick={() => handleDelete(product)}
-                          title="Delete"
+                          title={product.is_active ? "Delete" : "Already inactive"}
+                          disabled={!product.is_active}
                           sx={{ 
                             color: 'error.main',
                             bgcolor: 'rgba(211, 47, 47, 0.1)',
@@ -862,8 +867,9 @@ const Products2Page = () => {
                           <IconButton
                             size="small"
                             onClick={() => handleDelete(product)}
-                            title="Delete"
+                            title={product.is_active ? "Delete" : "Already inactive"}
                             color="error"
+                            disabled={!product.is_active}
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -965,28 +971,6 @@ const Products2Page = () => {
         )}
 
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={isDeleteDialogOpen}
-          onClose={() => setIsDeleteDialogOpen(false)}
-        >
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Confirm Delete
-            </Typography>
-            <Typography sx={{ mb: 3 }}>
-              Are you sure you want to delete &quot;{productToDelete?.name}&quot;? This action cannot be undone.
-            </Typography>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
-              Cancel
-            </Button>
-            <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
-              {deleting ? 'Deleting...' : 'Delete'}
-            </Button>
-            </Stack>
-          </Box>
-        </Dialog>
       </Box>
     </AdminLayout>
   );

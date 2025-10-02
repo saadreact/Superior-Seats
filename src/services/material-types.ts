@@ -6,8 +6,14 @@ class MaterialTypesService {
   async getMaterialTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/material-types', { params });
-      // Handle nested data structure: response.data.data.data
-      return response.data?.data?.data || response.data?.data || response.data || [];
+      
+      // Handle different response structures similar to Products API
+      if (response.data && response.data.data) {
+        return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
+      }
+      return { data: [], meta: {} };
     } catch (error: any) {
       console.error('Error fetching material types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch material types');

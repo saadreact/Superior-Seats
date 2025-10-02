@@ -1015,8 +1015,8 @@ const ShopNow = () => {
                     {(() => {
                       const priceTierInfo = getBestPriceTier(item);
                       
-                      if (priceTierInfo) {
-                        // Show price tier pricing for wholesale customers
+                      if (priceTierInfo && priceTierInfo.discountPercentage > 0) {
+                        // Show price tier pricing for wholesale customers with discount
                         return (
                       <Box
                         sx={{
@@ -1076,7 +1076,7 @@ const ShopNow = () => {
                       </Box>
                         );
                       } else {
-                        // Show regular price for retail customers or products without price tiers
+                        // Show regular price for retail customers, products without price tiers, or 0% discount price tiers
                         return (
                       <Chip
                             label={`$${parseFloat(item.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
@@ -1439,8 +1439,8 @@ const ShopNow = () => {
                      {(() => {
                        const priceTierInfo = getBestPriceTier(selectedImage);
                        
-                       if (priceTierInfo) {
-                         // Show price tier pricing for wholesale customers
+                       if (priceTierInfo && priceTierInfo.discountPercentage > 0) {
+                         // Show price tier pricing for wholesale customers with discount
                          return (
                        <Box
                          sx={{
@@ -1506,7 +1506,7 @@ const ShopNow = () => {
                        </Box>
                          );
                        } else {
-                         // Show regular price for retail customers or products without price tiers
+                         // Show regular price for retail customers, products without price tiers, or 0% discount price tiers
                          return (
                        <Chip
                              label={`$${parseFloat(selectedImage.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}

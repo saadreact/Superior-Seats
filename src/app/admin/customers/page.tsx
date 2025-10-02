@@ -15,10 +15,6 @@ import {
   Paper,
   IconButton,
   Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Alert,
   CircularProgress,
   TablePagination,
@@ -53,8 +49,6 @@ const CustomersPage = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerTypes, setCustomerTypes] = useState<CustomerType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Pagination state
@@ -182,26 +176,40 @@ const CustomersPage = () => {
   };
 
 
-  const handleDelete = (customer: Customer) => {
-    setCustomerToDelete(customer);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (customerToDelete) {
-      try {
-        await apiService.deleteCustomer(parseInt(customerToDelete.id));
-        setCustomers(prev => prev.filter(c => c.id !== customerToDelete.id));
-        setAlert({ type: 'success', message: 'Customer deleted successfully' });
-        // Optionally refetch to refresh totals
-        fetchCustomers(currentPage, rowsPerPage);
-      } catch (error) {
-        console.error('Error deleting customer:', error);
-        setAlert({ type: 'error', message: 'Failed to delete customer' });
-      }
+  const handleDelete = async (customer: Customer) => {
+    if (!customer.isActive) {
+      setAlert({ type: 'error', message: 'Customer is already inactive' });
+      return;
     }
-    setIsDeleteDialogOpen(false);
-    setCustomerToDelete(null);
+    
+    try {
+      // Send all customer data with is_active set to false
+      await apiService.updateCustomer(parseInt(customer.id), {
+        first_name: customer.firstName,
+        last_name: customer.lastName,
+        name: `${customer.firstName} ${customer.lastName}`.trim(),
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address.street,
+        city: customer.address.city,
+        state: customer.address.state,
+        company_name: customer.company,
+        customer_type: 'retail',
+        is_active: false
+      });
+      // Update the customer in the local state
+      setCustomers(prev => prev.map(c => 
+        c.id === customer.id 
+          ? { ...c, isActive: false }
+          : c
+      ));
+      setAlert({ type: 'success', message: 'Customer deleted successfully' });
+      // Optionally refetch to refresh totals
+      fetchCustomers(currentPage, rowsPerPage);
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      setAlert({ type: 'error', message: 'Failed to delete customer' });
+    }
   };
 
   const handleChangePage = (_: unknown, newPageZeroBased: number) => {
@@ -373,6 +381,7 @@ const CustomersPage = () => {
                               onClick={() => handleDelete(customer)}
                               title="Delete"
                               color="error"
+                              disabled={!customer.isActive}
                               sx={{ p: 0.5 }}
                             >
                               <DeleteIcon fontSize="small" />
@@ -502,6 +511,7 @@ const CustomersPage = () => {
                               onClick={() => handleDelete(customer)}
                               title="Delete"
                               color="error"
+                              disabled={!customer.isActive}
                             >
                               <DeleteIcon />
                             </IconButton>
@@ -673,55 +683,6 @@ const CustomersPage = () => {
               )}
             </Box>
 
-            {/* Delete Confirmation Dialog */}
-            <Dialog
-              open={isDeleteDialogOpen}
-              onClose={() => setIsDeleteDialogOpen(false)}
-              fullWidth
-              maxWidth="sm"
-              PaperProps={{
-                sx: {
-                  mx: { xs: 2, sm: 'auto' },
-                  width: { xs: 'calc(100% - 32px)', sm: 'auto' }
-                }
-              }}
-            >
-              <DialogTitle>Confirm Delete</DialogTitle>
-              <DialogContent>
-                <Typography>
-                  Are you sure you want to delete &quot;{customerToDelete?.firstName} {customerToDelete?.lastName}&quot;? This action cannot be undone.
-                </Typography>
-              </DialogContent>
-              <DialogActions>
-                <Stack 
-                  direction={{ xs: 'column', sm: 'row' }} 
-                  spacing={2} 
-                  sx={{ 
-                    width: '100%',
-                    '& .MuiButton-root': {
-                      minHeight: { xs: 44, sm: 'auto' },
-                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
-                    }
-                  }}
-                >
-                  <Button 
-                    onClick={() => setIsDeleteDialogOpen(false)}
-                    fullWidth={isMobile}
-                    variant={isMobile ? 'outlined' : 'text'}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={confirmDelete} 
-                    color="error" 
-                    variant="contained"
-                    fullWidth={isMobile}
-                  >
-                    Delete
-                  </Button>
-                </Stack>
-              </DialogActions>
-            </Dialog>
 
           </>
         )}
