@@ -601,7 +601,7 @@ const OrderWizard: React.FC = () => {
 					<Card>
 						<CardContent>
 							<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '2fr 1fr' }} gap={2}>
-								<TextField fullWidth multiline minRows={6} label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+								<TextField fullWidth multiline minRows={shippingAddress.state === 'Indiana' ? 6:4} label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
 								<Box>
 									<FormControl fullWidth>
 										<InputLabel>Shipping Method</InputLabel>
@@ -612,7 +612,9 @@ const OrderWizard: React.FC = () => {
 										</Select>
 									</FormControl>
 									<Box mt={2} width="100%">
-									   <TextField type="number" fullWidth disabled label="Tax" value={shippingAddress.state === 'Indiana' ? 7 : 0}  InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+									   {shippingAddress.state === 'Indiana' && (
+										   <TextField type="number" fullWidth disabled label="Tax" value={7} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+									   )}
 									   <Box sx={{ mt: 1 }}>
 										 <TextField type="number" fullWidth disabled label="Shipping Cost" value={shippingCost} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
 									   </Box>
@@ -664,8 +666,10 @@ const OrderWizard: React.FC = () => {
 									<Divider sx={{ my: 1 }} />
 									<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
 										<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
+										{shippingAddress.state === 'Indiana' && (
 										<Chip label={`Tax: $${tax.toFixed(2)} (${shippingAddress.state === 'Indiana' ? '7%' : '0%'})`} />
-										<Chip label={`Shipping: $${shippingCost.toFixed(2)}`} />
+									   )}
+										<Chip label={`Shipping cost: $${shippingCost.toFixed(2)}`} />
 										<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
 									</Box>
 								</Box>

@@ -660,8 +660,10 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 									<Divider sx={{ my: 1 }} />
 									<Box display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
 										<Chip label={`Subtotal: $${subTotal.toFixed(2)}`} />
+										{shippingAddress.state === 'Indiana' && (
 										<Chip label={`Tax: $${computedTax.toFixed(2)} (${shippingAddress.state === 'Indiana' ? '7%' : '0%'})`} />
-										<Chip label={`Shipping: $${shippingCost.toFixed(2)}`} />
+									   )}
+										<Chip label={`Shipping cost: $${shippingCost.toFixed(2)}`} />
 										<Chip color="primary" label={`Grand Total: $${grandTotal.toFixed(2)}`} />
 									</Box>
 								</Box>
