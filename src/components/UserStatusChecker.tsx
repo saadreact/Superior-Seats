@@ -46,7 +46,7 @@ const UserStatusChecker = () => {
               console.log('🚨 User account is inactive, forcing logout');
               
               // Show alert with the message
-              alert('Your account has been deactivated. Please contact support for assistance.');
+              alert('Your account has been deactivated. Please contact system Administrator.');
               
               // Dispatch logout action
               await dispatch(logoutUser());
@@ -67,7 +67,7 @@ const UserStatusChecker = () => {
               console.log('🚨 User account is inactive (from 401 error), forcing logout');
               
               // Show alert with the message
-              alert('Your account has been deactivated. Please contact support for assistance.');
+              alert('Your account has been deactivated. Please contact system Administrator.');
               
               // Dispatch logout action
               await dispatch(logoutUser());

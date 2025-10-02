@@ -1132,17 +1132,13 @@ const ShopNow = () => {
                       >
                    
                         
-               {/* CUSTOMIZE BUTTON: New button to navigate to customize page */}
+               {/* DETAILS BUTTON: Opens the product modal */}
                          <Button
                            variant="outlined"
                            size="small"
                            onClick={(e) => {
                              e.stopPropagation();
-                             // TODO: Uncomment when customize page is ready
-                             // handleCustomize(item); // FUNCTION: Navigate to customize page with item details
-                             
-                             // Temporary: Show snackbar that feature is coming soon
-                             handleSnackbarOpen();
+                             handleImageClick(item, startIndex + index);
                            }}
                                                        sx={{
                               borderColor: theme.palette.primary.main,

@@ -471,7 +471,7 @@ const EditProduct2Page = () => {
   };
 
   const handleBackToList = () => {
-    router.push('/admin/products-2');
+    router.push('/admin/Products');
   };
 
   const handleChange = (field: keyof ProductPage2Form) => (

@@ -491,9 +491,44 @@ const CreateCustomerPage = () => {
 
               {/* Billing Address */}
               <Box sx={{ mb: 1.5 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
-                  Billing Address
-                </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 1 
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    Billing Address
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        billing_address: prev.shipping_address,
+                        billing_city: prev.shipping_city,
+                        billing_state: prev.shipping_state,
+                        billing_zip: prev.shipping_zip
+                      }));
+                    }}
+                    sx={{
+                      borderColor: theme.palette.primary.main,
+                      color: theme.palette.primary.main,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      textTransform: 'none',
+                      minWidth: { xs: 'auto', sm: '140px' },
+                      height: { xs: 32, sm: 36 },
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.main,
+                        color: 'white',
+                        borderColor: theme.palette.primary.main,
+                      },
+                    }}
+                  >
+                    Copy from Shipping
+                  </Button>
+                </Box>
                 <Grid
                   display="grid"
                   gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
