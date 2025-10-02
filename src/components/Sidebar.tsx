@@ -96,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     {
       text: 'Products',
       icon: <Inventory2Icon />,
-      href: '/admin/products-2',
+      href: '/admin/Products',
     },
     {
       text: 'Price Tiers',
@@ -217,11 +217,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       return pathname === '/admin';
     }
     // For exact matching to prevent Products 2 from highlighting Products
-    if (href === '/admin/products') {
-      return pathname === '/admin/products' || pathname.startsWith('/admin/products/');
+    if (href === '/admin/Products') {
+      return pathname === '/admin/Products' || pathname.startsWith('/admin/Products/');
     }
-    if (href === '/admin/products-2') {
-      return pathname === '/admin/products-2' || pathname.startsWith('/admin/products-2/');
+    if (href === '/admin/Products') {
+      return pathname === '/admin/Products' || pathname.startsWith('/admin/Products/');
     }
     return pathname.startsWith(href);
   };

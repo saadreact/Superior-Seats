@@ -233,7 +233,7 @@ const CreateProduct2Page = () => {
   };
 
   const handleBackToList = () => {
-    router.push('/admin/products-2');
+    router.push('/admin/Products');
   };
 
   const handleChange = (field: keyof ProductPage2Form) => (
@@ -708,7 +708,7 @@ const CreateProduct2Page = () => {
       };
 
       // Debug: Log the data being sent
-      console.log('🔄 Products-2 data being sent to new productApi:', {
+      console.log('🔄 Products data being sent to new productApi:', {
         ...productData,
         images: productData.images?.map(file => `File(${file.name}, ${file.size} bytes)`)
       });

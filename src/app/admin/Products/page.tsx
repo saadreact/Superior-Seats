@@ -169,14 +169,24 @@ const Products2Page = () => {
       // Handle the API response structure
       if (response && response.data) {
         setProducts(response.data);
-        // Update total count for pagination if available
-        if (response.total !== undefined) {
+        // Update total count for pagination from the meta.pagination object
+        if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+          setTotalCount(response.meta.pagination.total);
+        } else if (response.meta && response.meta.total) {
+          setTotalCount(response.meta.total);
+        } else if (response.total !== undefined) {
           setTotalCount(response.total);
+        } else if (response.data && Array.isArray(response.data)) {
+          // If no total count provided, use the length of current data
+          // This is not ideal for server-side pagination but prevents errors
+          setTotalCount(response.data.length);
         }
       } else if (Array.isArray(response)) {
         setProducts(response);
+        setTotalCount(response.length);
       } else {
         setProducts([]);
+        setTotalCount(0);
       }
     } catch (err: any) {
       console.error('Error loading products:', err);
@@ -206,11 +216,11 @@ const Products2Page = () => {
   }, [loadProducts]);
 
   const handleAdd = () => {
-    router.push('/admin/products-2/create');
+    router.push('/admin/Products/create');
   };
 
   const handleEdit = (product: Product) => {
-    router.push(`/admin/products-2/${product.id}/edit`);
+    router.push(`/admin/Products/${product.id}/edit`);
   };
 
 
@@ -617,28 +627,81 @@ const Products2Page = () => {
             </Box>
             
             {/* Mobile Pagination */}
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={totalCount}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                sx={{
-                  '& .MuiTablePagination-toolbar': {
-                    paddingLeft: 0,
-                    paddingRight: 0,
-                    flexWrap: 'wrap',
-                    gap: 1
-                  },
-                  '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                    color: 'text.secondary',
-                    fontSize: '0.875rem'
-                  }
-                }}
-              />
+            <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              {/* Pagination Info */}
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} products
+              </Typography>
+              
+              {/* Navigation Controls */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page === 0}
+                  onClick={() => handleChangePage({} as any, page - 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+                
+                <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                  Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                  onClick={() => handleChangePage({} as any, page + 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
+              
+              {/* Items per page input */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Items per page:
+                </Typography>
+                <TextField
+                  type="number"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 10;
+                    if (value > 0 && value <= 100) {
+                      setRowsPerPage(value);
+                      setPage(0);
+                    }
+                  }}
+                  size="small"
+                  sx={{ 
+                    minWidth: 80,
+                    maxWidth: 100,
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center'
+                    }
+                  }}
+                  inputProps={{
+                    min: 1,
+                    max: 100,
+                    step: 1
+                  }}
+                />
+              </Box>
             </Box>
           </Box>
         ) : (
@@ -813,23 +876,91 @@ const Products2Page = () => {
             </TableContainer>
             
             {/* Desktop Pagination */}
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={totalCount}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
-                borderTop: 1,
-                borderColor: 'divider',
-                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  color: 'text.secondary',
-                  fontSize: '0.875rem'
-                }
-              }}
-            />
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              p: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+              flexWrap: 'wrap',
+              gap: 2
+            }}>
+              {/* Left side - Items per page input */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Items per page:
+                </Typography>
+                <TextField
+                  type="number"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 10;
+                    if (value > 0 && value <= 100) {
+                      setRowsPerPage(value);
+                      setPage(0);
+                    }
+                  }}
+                  size="small"
+                  sx={{ 
+                    minWidth: 80,
+                    maxWidth: 100,
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center'
+                    }
+                  }}
+                  inputProps={{
+                    min: 1,
+                    max: 100,
+                    step: 1
+                  }}
+                />
+              </Box>
+              
+              {/* Center - Page info */}
+              <Typography variant="body2" color="text.secondary">
+                Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} products
+              </Typography>
+              
+              {/* Right side - Navigation controls */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page === 0}
+                  onClick={() => handleChangePage({} as any, page - 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+                
+                <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                  Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                  onClick={() => handleChangePage({} as any, page + 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
+            </Box>
           </Paper>
         )}
 

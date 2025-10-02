@@ -59,7 +59,7 @@ const CustomersPage = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1); // 1-based for API
-  const [rowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [lastPage, setLastPage] = useState(1);
 
@@ -206,6 +206,14 @@ const CustomersPage = () => {
 
   const handleChangePage = (_: unknown, newPageZeroBased: number) => {
     setCurrentPage(newPageZeroBased + 1);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    if (newRowsPerPage > 0 && newRowsPerPage <= 100) {
+      setRowsPerPage(newRowsPerPage);
+      setCurrentPage(1);
+    }
   };
 
   const SortableHeader = ({ 
@@ -509,24 +517,160 @@ const CustomersPage = () => {
 
             {/* Pagination Controls */}
             <Box sx={{ mt: 2 }}>
-              <TablePagination
-                component="div"
-                count={totalItems}
-                page={Math.max(0, currentPage - 1)}
-                onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                rowsPerPageOptions={[]}
-                sx={{
-                  '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                    color: 'text.secondary',
-                    fontSize: isMobile ? '0.75rem' : '0.875rem'
-                  },
-                  '& .MuiTablePagination-toolbar': {
-                    flexWrap: isMobile ? 'wrap' : 'nowrap',
-                    gap: isMobile ? 1 : 0
-                  }
-                }}
-              />
+              {isMobile ? (
+                /* Mobile Pagination */
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  {/* Pagination Info */}
+                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                    Showing {Math.max(1, (currentPage - 1) * rowsPerPage + 1)} to {Math.min(currentPage * rowsPerPage, totalItems)} of {totalItems} customers
+                  </Typography>
+                  
+                  {/* Navigation Controls */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      sx={{
+                        minWidth: 'auto',
+                        px: 2,
+                        '&:disabled': {
+                          opacity: 0.5
+                        }
+                      }}
+                    >
+                      Previous
+                    </Button>
+                    
+                    <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                      Page {currentPage} of {lastPage}
+                    </Typography>
+                    
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      disabled={currentPage >= lastPage}
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      sx={{
+                        minWidth: 'auto',
+                        px: 2,
+                        '&:disabled': {
+                          opacity: 0.5
+                        }
+                      }}
+                    >
+                      Next
+                    </Button>
+                  </Box>
+                  
+                  {/* Items per page input */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Items per page:
+                    </Typography>
+                    <TextField
+                      type="number"
+                      value={rowsPerPage}
+                      onChange={handleChangeRowsPerPage}
+                      size="small"
+                      sx={{ 
+                        minWidth: 80,
+                        maxWidth: 100,
+                        '& .MuiInputBase-input': {
+                          textAlign: 'center'
+                        }
+                      }}
+                      inputProps={{
+                        min: 1,
+                        max: 100,
+                        step: 1
+                      }}
+                    />
+                  </Box>
+                </Box>
+              ) : (
+                /* Desktop Pagination */
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  p: 2,
+                  borderTop: 1,
+                  borderColor: 'divider',
+                  flexWrap: 'wrap',
+                  gap: 2
+                }}>
+                  {/* Left side - Items per page input */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Items per page:
+                    </Typography>
+                    <TextField
+                      type="number"
+                      value={rowsPerPage}
+                      onChange={handleChangeRowsPerPage}
+                      size="small"
+                      sx={{ 
+                        minWidth: 80,
+                        maxWidth: 100,
+                        '& .MuiInputBase-input': {
+                          textAlign: 'center'
+                        }
+                      }}
+                      inputProps={{
+                        min: 1,
+                        max: 100,
+                        step: 1
+                      }}
+                    />
+                  </Box>
+                  
+                  {/* Center - Page info */}
+                  <Typography variant="body2" color="text.secondary">
+                    Showing {Math.max(1, (currentPage - 1) * rowsPerPage + 1)} to {Math.min(currentPage * rowsPerPage, totalItems)} of {totalItems} customers
+                  </Typography>
+                  
+                  {/* Right side - Navigation controls */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      sx={{
+                        minWidth: 'auto',
+                        px: 2,
+                        '&:disabled': {
+                          opacity: 0.5
+                        }
+                      }}
+                    >
+                      Previous
+                    </Button>
+                    
+                    <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                      Page {currentPage} of {lastPage}
+                    </Typography>
+                    
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      disabled={currentPage >= lastPage}
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      sx={{
+                        minWidth: 'auto',
+                        px: 2,
+                        '&:disabled': {
+                          opacity: 0.5
+                        }
+                      }}
+                    >
+                      Next
+                    </Button>
+                  </Box>
+                </Box>
+              )}
             </Box>
 
             {/* Delete Confirmation Dialog */}
