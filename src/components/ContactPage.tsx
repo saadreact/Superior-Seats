@@ -19,7 +19,6 @@ import {
 import InputAdornment from '@mui/material/InputAdornment';
 import { Person, Business, Send, Phone, Email, LocationOn, AccessTime } from '@mui/icons-material';
 import { contactInfo, initialFormData, ContactFormData } from '@/data/ContactPage';
-import { sendContactForm } from '@/services/contactpageapi';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -150,8 +149,8 @@ const ContactPage = () => {
       // Set loading state
       setIsSubmitting(true);
       
-      // Prepare the data for API
-      const apiData = {
+      // Prepare email data
+      const emailData = {
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
         email: validatedData.email,
@@ -161,16 +160,33 @@ const ContactPage = () => {
         message: validatedData.message,
       };
       
-      // Make API call using the service
-      const result = await sendContactForm(apiData);
+      // Create email content
+      const emailSubject = `Contact Form: ${emailData.subject}`;
+      const emailBody = `
+      Hello Superior Seating LLC
+
+Name: ${emailData.firstName} ${emailData.lastName}
+Email: ${emailData.email}
+Phone: ${emailData.phone}
+Company: ${emailData.company || 'Not provided'}
+Message:
+${emailData.message}
+  This message was sent from the Superior Seating LLC website contact form.
+      `.trim();
       
-      // Handle success
-      if (result.success) {
-        setSnackbarMessage('Thank you! Your message has been sent successfully. We\'ll get back to you soon.');
-        setSnackbarSeverity('success');
-        setSnackbarOpen(true);
-        
-        // Reset form with safety check
+      // Create mailto link
+      const mailtoLink = `mailto:info@superiorseats.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+      
+      // Open email client
+      window.open(mailtoLink, '_blank');
+      
+      // Show success message
+      setSnackbarMessage('Your email client is opening with a pre-filled message. Please send the email to complete your inquiry.');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      
+      // Reset form after a short delay
+      setTimeout(() => {
         setFormData({
           firstName: '',
           lastName: '',
@@ -181,17 +197,12 @@ const ContactPage = () => {
           message: ''
         });
         setErrors({} as ContactFormErrors);
-      } else {
-        // Handle API error
-        setSnackbarMessage(result.message || 'An error occurred while sending your message. Please try again.');
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-      }
+      }, 2000);
       
     } catch (error: unknown) {
-      console.error('Form submission error:', error);
+      console.error('Form validation error:', error);
       
-      let errorMessage = 'An error occurred while sending your message. Please try again.';
+      let errorMessage = 'Please fix the errors in the form and try again.';
       
       if (error instanceof z.ZodError) {
         // Validation error
@@ -509,7 +520,7 @@ const ContactPage = () => {
                         },
                       }}
                     >
-                     {isSubmitting ? 'Sending...' : 'Send Message'}
+                     {isSubmitting ? 'Opening Email...' : 'Send Message'}
                    </Button>
                                      <Typography
                      variant="caption"
@@ -521,7 +532,7 @@ const ContactPage = () => {
                        px: { xs: 2, sm: 0 },
                      }}
                    >
-                     We&apos;ll get back to you within 24 hours
+                     Click "Send Message" to open your email client with a pre-filled message
                    </Typography>
                 </Box>
               </Box>

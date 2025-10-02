@@ -176,7 +176,7 @@ const ProductDetailPage = () => {
   }, [loadProduct]);
 
   const handleBack = () => {
-    router.push('/admin/products-2');
+    router.push('/admin/Products');
   };
 
   const getProductImages = (product: Product) => {

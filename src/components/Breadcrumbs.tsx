@@ -50,7 +50,7 @@ const pageTitles: { [key: string]: string } = {
   '/checkout': 'Checkout',
   '/admin': 'Admin Panel',
   '/admin/customers': 'Customers',
-  '/admin/products': 'Products',
+  '/admin/Products': 'Products',
   '/admin/orders': 'Orders',
   '/admin/categories': 'Categories',
   '/admin/variations': 'Variations',

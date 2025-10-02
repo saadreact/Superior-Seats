@@ -189,26 +189,101 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   }}>
                     <Box sx={{ display: 'flex', p: { xs: 2, sm: 2.5, md: 3 } }}>
                                              {/* Item Image */}
-                       <CardMedia
-                         component="img"
-                         sx={{
-                           width: { xs: 70, sm: 80, md: 90 },
-                           height: { xs: 70, sm: 80, md: 90 },
-                           borderRadius: { xs: 1.5, sm: 2 },
-                           objectFit: 'contain',
-                           objectPosition: 'center',
-                           mr: { xs: 2, sm: 2.5, md: 3 },
-                           boxShadow: { xs: '0 1px 4px rgba(0,0,0,0.08)', sm: '0 2px 8px rgba(0,0,0,0.1)' },
-                           backgroundColor: '#f8f9fa',
-                           border: '1px solid rgba(0,0,0,0.05)',
-                           display: 'flex',
-                           alignItems: 'center',
-                           justifyContent: 'center',
-                           overflow: 'hidden',
-                         }}
-                         image={item.image}
-                         alt={item.title}
-                       />
+                      <Box sx={{ 
+                        position: 'relative', 
+                        width: { xs: 70, sm: 80, md: 90 },
+                        height: { xs: 70, sm: 80, md: 90 },
+                        borderRadius: { xs: 1.5, sm: 2 },
+                        mr: { xs: 2, sm: 2.5, md: 3 },
+                        boxShadow: { xs: '0 1px 4px rgba(0,0,0,0.08)', sm: '0 2px 8px rgba(0,0,0,0.1)' },
+                        backgroundColor: '#f8f9fa',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                        overflow: 'hidden',
+                      }}>
+                        {item.image && item.image !== '/placeholder-image.jpg' ? (
+                          <>
+                            <CardMedia
+                              component="img"
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                objectPosition: 'center',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              image={item.image}
+                              alt={item.title}
+                              onError={(e: any) => {
+                                const img = e.target as HTMLImageElement;
+                                img.style.display = 'none';
+                                const fallback = img.parentElement?.querySelector('.cart-no-image-fallback');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                            {/* Hidden fallback shown when image fails to load */}
+                            <Box
+                              className="cart-no-image-fallback"
+                              sx={{
+                                display: 'none',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid rgba(0,0,0,0.05)',
+                                borderRadius: { xs: 1.5, sm: 2 },
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: 'text.secondary',
+                                  fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.75rem' },
+                                  fontWeight: 'medium',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                No Image
+                              </Typography>
+                            </Box>
+                          </>
+                        ) : (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: '#f8f9fa',
+                              border: '1px solid rgba(0,0,0,0.05)',
+                              borderRadius: { xs: 1.5, sm: 2 },
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: 'text.secondary',
+                                fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.75rem' },
+                                fontWeight: 'medium',
+                                textAlign: 'center',
+                              }}
+                            >
+                              No Image
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
                       
                       {/* Item Details */}
                       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
