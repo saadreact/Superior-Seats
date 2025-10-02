@@ -23,6 +23,8 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Close,
@@ -327,6 +329,8 @@ const ShopGallery = () => {
 
 
 
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', severity: 'success' });
+
   const handleAddToCart = (item: Product) => {
     dispatch(addItem({
       id: item.id,
@@ -336,6 +340,7 @@ const ShopGallery = () => {
       description: item.description || '',
       category: shopNowApis.getCategoryName(item.category) || 'seat',
     }));
+    setSnackbar({ open: true, message: 'Added to cart', severity: 'success' });
   };
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
@@ -1468,6 +1473,12 @@ const ShopGallery = () => {
       </Dialog>
       
       <Footer />
+
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

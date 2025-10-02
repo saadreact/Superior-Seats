@@ -533,6 +533,7 @@ const ShopNow = () => {
       description: item.description || '',
       category: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
     }));
+    handleSnackbarOpen();
   };
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
@@ -1892,7 +1893,7 @@ const ShopNow = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Snackbar for customize feature coming soon */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
@@ -1904,7 +1905,7 @@ const ShopNow = () => {
           severity="success" 
           sx={{ width: '100%' }}
         >
-          Customize feature is coming soon!
+          Added to cart
         </Alert>
       </Snackbar>
       
