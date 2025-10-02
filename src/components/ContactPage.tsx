@@ -532,7 +532,7 @@ ${emailData.message}
                        px: { xs: 2, sm: 0 },
                      }}
                    >
-                     Click "Send Message" to open your email client with a pre-filled message
+                     Click Send Message to open your email client with a pre-filled message
                    </Typography>
                 </Box>
               </Box>
