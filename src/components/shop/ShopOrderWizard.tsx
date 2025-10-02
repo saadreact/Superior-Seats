@@ -403,7 +403,7 @@ export default function ShopOrderWizard() {
           <Card>
             <CardContent>
               <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '2fr 1fr' }} gap={2}>
-                <TextField fullWidth multiline minRows={6} label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} helperText={`${notes.length}/500`} inputProps={{ maxLength: 500 }} />
+                <TextField fullWidth multiline minRows={shippingAddress.state === 'Indiana' ? 6:4} label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} helperText={`${notes.length}/500`} inputProps={{ maxLength: 500 }} />
                 <Box>
                   <FormControl fullWidth>
                     <InputLabel>Shipping Method</InputLabel>
@@ -414,7 +414,9 @@ export default function ShopOrderWizard() {
                     </Select>
                   </FormControl>
                   <Box mt={2} width="100%">
+                  {shippingAddress.state === 'Indiana' && (
                     <TextField type="number" fullWidth disabled label="Tax" value={shippingAddress.state === 'Indiana' ? 7 : 0}  InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} />
+									   )}
                     <Box sx={{ mt: 1 }}>
                       <TextField type="number" fullWidth disabled label="Shipping Cost" value={350} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                     </Box>
@@ -461,9 +463,15 @@ export default function ShopOrderWizard() {
                   <Typography>Subtotal</Typography>
                   <Typography fontWeight={600}>${subTotal.toFixed(2)}</Typography>
                 </Box>
+                {shippingAddress.state === 'Indiana' && (
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                   <Typography>Tax (7%)</Typography>
                   <Typography fontWeight={600}>${tax.toFixed(2)}</Typography>
+                </Box>
+									   )}
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography>Shipping Cost</Typography>
+                  <Typography fontWeight={600}>${shippingCost.toFixed(2)}</Typography>
                 </Box>
                 <Divider />
                 <Box display="flex" justifyContent="space-between" alignItems="center">
