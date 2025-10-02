@@ -22,7 +22,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -57,35 +56,73 @@ const SeatTypesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const loadSeatTypes = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const params: Record<string, any> = {};
-      if (searchTerm) params.search = searchTerm;
+      // Build API parameters for server-side pagination
+      const params: Record<string, any> = {
+        page: page + 1, // API uses 1-based pagination, but MUI uses 0-based
+        per_page: rowsPerPage
+      };
+      
+      // Add optional search parameter
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
+      
+      console.log('🔍 Loading seat types with params:', params);
       
       const response = await apiService.getSeatTypes(params);
+      console.log('🔍 API Response:', response);
       
+      // Handle the API response structure
       if (response && response.data) {
         setSeatTypes(response.data);
+        // Update total count for pagination from the meta.pagination object
+        if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+          setTotalCount(response.meta.pagination.total);
+        } else if (response.meta && response.meta.total) {
+          setTotalCount(response.meta.total);
+        } else if (response.total !== undefined) {
+          setTotalCount(response.total);
+        } else if (response.data && Array.isArray(response.data)) {
+          // If no total count provided, use the length of current data
+          // This is not ideal for server-side pagination but prevents errors
+          setTotalCount(response.data.length);
+        }
       } else if (Array.isArray(response)) {
         setSeatTypes(response);
+        setTotalCount(response.length);
       } else {
         setSeatTypes([]);
+        setTotalCount(0);
       }
     } catch (err: any) {
-      if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        setError('Please log in to access this page');
+      console.error('Error loading seat types:', err);
+      
+      if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+        setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+        // Redirect to home page where user can login
+        setTimeout(() => {
+          router.push('/');
+        }, 3000);
+      } else if (err.response?.status === 403) {
+        setError('Access denied. You do not have permission to view seat types.');
+      } else if (err.response?.status === 404) {
+        setError('Seat types endpoint not found. Please contact support.');
+      } else if (err.response?.status >= 500) {
+        setError('Server error. Please try again later.');
       } else {
         setError(err.message || 'Failed to load seat types. Please try again later.');
       }
-      console.error('Error loading seat types:', err);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, [page, rowsPerPage, searchTerm, router]);
 
   useEffect(() => {
     loadSeatTypes();
@@ -216,7 +253,7 @@ const SeatTypesPage = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : seatTypes.length === 0 ? (
+        ) : totalCount === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No seat types found
@@ -237,9 +274,7 @@ const SeatTypesPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {seatTypes
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((seatType) => (
+                  {seatTypes.map((seatType) => (
                     <TableRow 
                       key={seatType.id}
                       sx={{ 
@@ -292,24 +327,172 @@ const SeatTypesPage = () => {
               </Table>
             </TableContainer>
             
-            {/* Pagination */}
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={seatTypes.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
-                borderTop: 1,
-                borderColor: 'divider',
-                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  color: 'text.secondary',
-                  fontSize: '0.875rem'
-                }
-              }}
-            />
+            {/* Desktop Pagination */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              p: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+              flexWrap: 'wrap',
+              gap: 2
+            }}>
+              {/* Left side - Items per page input */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Items per page:
+                </Typography>
+                <TextField
+                  type="number"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 10;
+                    if (value > 0 && value <= 100) {
+                      setRowsPerPage(value);
+                      setPage(0);
+                    }
+                  }}
+                  size="small"
+                  sx={{ 
+                    minWidth: 80,
+                    maxWidth: 100,
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center'
+                    }
+                  }}
+                  inputProps={{
+                    min: 1,
+                    max: 100,
+                    step: 1
+                  }}
+                />
+              </Box>
+              
+              {/* Center - Page info */}
+              <Typography variant="body2" color="text.secondary">
+                Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} seat types
+              </Typography>
+              
+              {/* Right side - Navigation controls */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page === 0}
+                  onClick={() => handleChangePage({} as any, page - 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+                
+                <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                  Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                  onClick={() => handleChangePage({} as any, page + 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
+            </Box>
+            
+            {/* Mobile Pagination - shown only on mobile */}
+            {isMobile && totalCount > 0 && (
+              <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                {/* Pagination Info */}
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} seat types
+                </Typography>
+                
+                {/* Navigation Controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page === 0}
+                    onClick={() => handleChangePage({} as any, page - 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Previous
+                  </Button>
+                  
+                  <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                  </Typography>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                    onClick={() => handleChangePage({} as any, page + 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                </Box>
+                
+                {/* Items per page input */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Items per page:
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 10;
+                      if (value > 0 && value <= 100) {
+                        setRowsPerPage(value);
+                        setPage(0);
+                      }
+                    }}
+                    size="small"
+                    sx={{ 
+                      minWidth: 80,
+                      maxWidth: 100,
+                      '& .MuiInputBase-input': {
+                        textAlign: 'center'
+                      }
+                    }}
+                    inputProps={{
+                      min: 1,
+                      max: 100,
+                      step: 1
+                    }}
+                  />
+                </Box>
+              </Box>
+            )}
           </Paper>
         )}
 

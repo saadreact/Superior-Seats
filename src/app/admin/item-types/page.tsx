@@ -22,7 +22,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -57,35 +56,73 @@ const ItemTypesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const loadItemTypes = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const params: Record<string, any> = {};
-      if (searchTerm) params.search = searchTerm;
+      // Build API parameters for server-side pagination
+      const params: Record<string, any> = {
+        page: page + 1, // API uses 1-based pagination, but MUI uses 0-based
+        per_page: rowsPerPage
+      };
+      
+      // Add optional search parameter
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
+      
+      console.log('🔍 Loading item types with params:', params);
       
       const response = await apiService.getItemTypes(params);
+      console.log('🔍 API Response:', response);
       
+      // Handle the API response structure
       if (response && response.data) {
         setItemTypes(response.data);
+        // Update total count for pagination from the meta.pagination object
+        if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+          setTotalCount(response.meta.pagination.total);
+        } else if (response.meta && response.meta.total) {
+          setTotalCount(response.meta.total);
+        } else if (response.total !== undefined) {
+          setTotalCount(response.total);
+        } else if (response.data && Array.isArray(response.data)) {
+          // If no total count provided, use the length of current data
+          // This is not ideal for server-side pagination but prevents errors
+          setTotalCount(response.data.length);
+        }
       } else if (Array.isArray(response)) {
         setItemTypes(response);
+        setTotalCount(response.length);
       } else {
         setItemTypes([]);
+        setTotalCount(0);
       }
     } catch (err: any) {
-      if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        setError('Please log in to access this page');
+      console.error('Error loading item types:', err);
+      
+      if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+        setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+        // Redirect to home page where user can login
+        setTimeout(() => {
+          router.push('/');
+        }, 3000);
+      } else if (err.response?.status === 403) {
+        setError('Access denied. You do not have permission to view item types.');
+      } else if (err.response?.status === 404) {
+        setError('Item types endpoint not found. Please contact support.');
+      } else if (err.response?.status >= 500) {
+        setError('Server error. Please try again later.');
       } else {
         setError(err.message || 'Failed to load item types. Please try again later.');
       }
-      console.error('Error loading item types:', err);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, [page, rowsPerPage, searchTerm, router]);
 
   useEffect(() => {
     loadItemTypes();
@@ -175,9 +212,9 @@ const ItemTypesPage = () => {
             />
             
             {/* Results count for mobile */}
-            {isMobile && itemtypess.length > 0 && (
+            {isMobile && totalCount > 0 && (
               <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
-                {itemtypess.length} item type{itemtypess.length !== 1 ? 's' : ''} found
+                {totalCount} item type{totalCount !== 1 ? 's' : ''} found
               </Typography>
             )}
           </Box>
@@ -238,7 +275,7 @@ const ItemTypesPage = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : itemtypess.length === 0 ? (
+        ) : totalCount === 0 ? (
           <Paper sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No item types found
@@ -252,9 +289,7 @@ const ItemTypesPage = () => {
             {/* Mobile Card View */}
             {isMobile ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {itemtypess
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((itemtypes) => (
+                {itemtypess.map((itemtypes) => (
                     <Paper key={itemtypes.id} sx={{ p: 2 }}>
                       <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
                         {/* Content */}
@@ -310,9 +345,7 @@ const ItemTypesPage = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {itemtypess
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((itemtypes) => (
+                      {itemtypess.map((itemtypes) => (
                         <TableRow 
                           key={itemtypes.id}
                           sx={{ 
@@ -367,28 +400,172 @@ const ItemTypesPage = () => {
               </Paper>
             )}
             
-            {/* Pagination */}
-            <TablePagination
-              rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
-              component="div"
-              count={itemtypess.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
+            {/* Desktop Pagination */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              p: 2,
                 borderTop: 1,
                 borderColor: 'divider',
-                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  color: 'text.secondary',
-                  fontSize: isMobile ? '0.75rem' : '0.875rem'
-                },
-                '& .MuiTablePagination-toolbar': {
-                  flexWrap: isMobile ? 'wrap' : 'nowrap',
-                  gap: isMobile ? 1 : 0
-                }
-              }}
-            />
+              flexWrap: 'wrap',
+              gap: 2
+            }}>
+              {/* Left side - Items per page input */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Items per page:
+                </Typography>
+                <TextField
+                  type="number"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 10;
+                    if (value > 0 && value <= 100) {
+                      setRowsPerPage(value);
+                      setPage(0);
+                    }
+                  }}
+                  size="small"
+                  sx={{ 
+                    minWidth: 80,
+                    maxWidth: 100,
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center'
+                    }
+                  }}
+                  inputProps={{
+                    min: 1,
+                    max: 100,
+                    step: 1
+                  }}
+                />
+              </Box>
+              
+              {/* Center - Page info */}
+              <Typography variant="body2" color="text.secondary">
+                Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} item types
+              </Typography>
+              
+              {/* Right side - Navigation controls */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page === 0}
+                  onClick={() => handleChangePage({} as any, page - 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+                
+                <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                  Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                  onClick={() => handleChangePage({} as any, page + 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
+            </Box>
+            
+            {/* Mobile Pagination - shown only on mobile */}
+            {isMobile && totalCount > 0 && (
+              <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                {/* Pagination Info */}
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} item types
+                </Typography>
+                
+                {/* Navigation Controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page === 0}
+                    onClick={() => handleChangePage({} as any, page - 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Previous
+                  </Button>
+                  
+                  <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                  </Typography>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                    onClick={() => handleChangePage({} as any, page + 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                </Box>
+                
+                {/* Items per page input */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Items per page:
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 10;
+                      if (value > 0 && value <= 100) {
+                        setRowsPerPage(value);
+                        setPage(0);
+                      }
+                    }}
+                    size="small"
+                    sx={{ 
+                      minWidth: 80,
+                      maxWidth: 100,
+                      '& .MuiInputBase-input': {
+                        textAlign: 'center'
+                      }
+                    }}
+                    inputProps={{
+                      min: 1,
+                      max: 100,
+                      step: 1
+                    }}
+                  />
+                </Box>
+              </Box>
+            )}
           </>
         )}
 

@@ -21,7 +21,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
   Dialog,
   Tooltip,
 } from '@mui/material';
@@ -86,7 +85,9 @@ const ColorsPage = () => {
   
   // Pagination state
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMorePages, setHasMorePages] = useState(false);
 
   // Helper function to get calculated price tiers for display
   const getCalculatedPriceTiers = (color: Color): CalculatedPriceTier[] => {
@@ -123,35 +124,58 @@ const ColorsPage = () => {
       setLoading(true);
       setError(null);
       
-      const params: Record<string, any> = {};
-      if (searchTerm) params.search = searchTerm;
+      const params: Record<string, any> = {
+        page: page + 1, // API uses 1-based pagination
+        per_page: rowsPerPage
+      };
+      if (searchTerm.trim()) params.search = searchTerm.trim();
       
+      console.log('🎨 Colors - API call params:', params);
       const response = await apiService.getColors(params);
+      console.log('🎨 Colors - API Response:', response);
       
-      // Handle the response structure
-      if (response && response.data) {
+      if (response && response.data && Array.isArray(response.data)) {
         setColors(response.data);
+        // Extract total count from meta object
+        const total = response.meta?.total || 
+                     response.meta?.pagination?.total || 
+                     response.meta?.last_page * rowsPerPage || 
+                     response.data.length;
+        setTotalCount(total);
+        console.log('📊 Setting total count:', total);
+        
+        // Set hasMorePages from the API response
+        const morePages = response.meta?.pagination?.has_more_pages === true;
+        setHasMorePages(morePages);
+        console.log('📊 Setting hasMorePages to:', morePages, 'from response.meta.pagination.has_more_pages:', response.meta?.pagination?.has_more_pages);
       } else if (Array.isArray(response)) {
         setColors(response);
+        setTotalCount(response.length);
+        setHasMorePages(false);
       } else {
         setColors([]);
+        setTotalCount(0);
+        setHasMorePages(false);
       }
     } catch (err: any) {
+      setColors([]);
+      setTotalCount(0);
+      setHasMorePages(false);
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         setError('Please log in to access this page');
       } else {
         setError(err.message || 'Failed to load colors. Please try again later.');
       }
-      console.error('Error loading colors:', err);
+      console.error('❌ Error loading colors:', err);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, [page, rowsPerPage, searchTerm]);
 
   const loadColorVendors = useCallback(async () => {
     try {
       const response = await apiService.getColorVendors();
-      setColorVendors(response || []);
+      setColorVendors(response?.data || []);
     } catch (err: any) {
       console.error('Error loading color vendors:', err);
       setColorVendors([]);
@@ -173,6 +197,7 @@ const ColorsPage = () => {
     loadColorVendors();
     loadPriceTiers();
   }, [loadColors, loadColorVendors, loadPriceTiers]);
+
 
   const handleAdd = () => {
     router.push('/admin/colors/create');
@@ -200,10 +225,6 @@ const ColorsPage = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
 
 
 
@@ -265,9 +286,9 @@ const ColorsPage = () => {
             />
             
             {/* Results count for mobile */}
-            {isMobile && colors.length > 0 && (
+            {isMobile && totalCount > 0 && (
               <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
-                {colors.length} color{colors.length !== 1 ? 's' : ''} found
+                {totalCount} color{totalCount !== 1 ? 's' : ''} found
               </Typography>
             )}
           </Box>
@@ -303,7 +324,22 @@ const ColorsPage = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  loadColors();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
@@ -313,8 +349,8 @@ const ColorsPage = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
-        ) : colors.length === 0 ? (
-          <Paper sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center' }}>
+        ) : totalCount === 0 ? (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No colors found
             </Typography>
@@ -327,9 +363,7 @@ const ColorsPage = () => {
             {/* Mobile Card View */}
             {isMobile ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {colors
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((color) => (
+                {colors.map((color) => (
                     <Paper key={color.id} sx={{ p: 2 }}>
                       <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
                         {/* Color Swatch */}
@@ -390,7 +424,7 @@ const ColorsPage = () => {
                           </Typography>
                           
                           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                            Vendor: {colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown'}
+                            Vendor: {Array.isArray(colorVendors) ? colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown' : 'Unknown'}
                           </Typography>
                           
                           <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', mb: 1 }}>
@@ -483,9 +517,7 @@ const ColorsPage = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {colors
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((color) => (
+                      {colors.map((color) => (
                         <TableRow 
                           key={color.id}
                           sx={{ 
@@ -531,7 +563,7 @@ const ColorsPage = () => {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" color="text.secondary">
-                              {colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown'}
+                              {Array.isArray(colorVendors) ? colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown' : 'Unknown'}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -632,28 +664,172 @@ const ColorsPage = () => {
               </Paper>
             )}
             
-            {/* Pagination */}
-            <TablePagination
-              rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
-              component="div"
-              count={colors.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
-                borderTop: 1,
-                borderColor: 'divider',
-                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  color: 'text.secondary',
-                  fontSize: isMobile ? '0.75rem' : '0.875rem'
-                },
-                '& .MuiTablePagination-toolbar': {
-                  flexWrap: isMobile ? 'wrap' : 'nowrap',
-                  gap: isMobile ? 1 : 0
-                }
-              }}
-            />
+            {/* Desktop Pagination */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              p: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+              flexWrap: 'wrap',
+              gap: 2
+            }}>
+              {/* Left side - Items per page input */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Items per page:
+                </Typography>
+                <TextField
+                  type="number"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 15;
+                    if (value > 0 && value <= 100) {
+                      setRowsPerPage(value);
+                      setPage(0);
+                    }
+                  }}
+                  size="small"
+                  sx={{ 
+                    minWidth: 80,
+                    maxWidth: 100,
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center'
+                    }
+                  }}
+                  inputProps={{
+                    min: 1,
+                    max: 100,
+                    step: 1
+                  }}
+                />
+              </Box>
+              
+              {/* Center - Page info */}
+              <Typography variant="body2" color="text.secondary">
+                Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} colors
+              </Typography>
+              
+              {/* Right side - Navigation controls */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={page === 0}
+                  onClick={() => handleChangePage({} as any, page - 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+                
+                <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                  Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={!hasMorePages}
+                  onClick={() => handleChangePage({} as any, page + 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
+            </Box>
+            
+            {/* Mobile Pagination - shown only on mobile */}
+            {isMobile && totalCount > 0 && (
+              <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                {/* Pagination Info */}
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} colors
+                </Typography>
+                
+                {/* Navigation Controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page === 0}
+                    onClick={() => handleChangePage({} as any, page - 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Previous
+                  </Button>
+                  
+                  <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                  </Typography>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={!hasMorePages}
+                    onClick={() => handleChangePage({} as any, page + 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                </Box>
+                
+                {/* Items per page input */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Items per page:
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 15;
+                      if (value > 0 && value <= 100) {
+                        setRowsPerPage(value);
+                        setPage(0);
+                      }
+                    }}
+                    size="small"
+                    sx={{ 
+                      minWidth: 80,
+                      maxWidth: 100,
+                      '& .MuiInputBase-input': {
+                        textAlign: 'center'
+                      }
+                    }}
+                    inputProps={{
+                      min: 1,
+                      max: 100,
+                      step: 1
+                    }}
+                  />
+                </Box>
+              </Box>
+            )}
           </>
         )}
 

@@ -1971,15 +1971,13 @@ class ApiService {
       const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
       const response = await api.get(`/colors${queryString ? `?${queryString}` : ''}`);
       
-      // Handle the actual API response structure
-      if (response.data && response.data.data && response.data.data.data) {
-        return response.data.data.data;
-      } else if (response.data && response.data.data) {
-        return response.data.data;
-      } else if (response.data) {
+      // Return the complete response structure to preserve pagination metadata
+      if (response.data && response.data.data) {
         return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
       }
-      return [];
+      return { data: [], meta: {} };
     } catch (error: any) {
       console.error('Error fetching colors:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch colors');
@@ -2314,7 +2312,12 @@ class ApiService {
   async getColorVendors(params?: Record<string, any>) {
     try {
       const response = await api.get('/color-vendors', { params });
-      return response.data?.data || response.data || [];
+      if (response.data && response.data.data) {
+        return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
+      }
+      return { data: [], meta: {} };
     } catch (error: any) {
       console.error('Error fetching color vendors:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch color vendors');
@@ -2465,8 +2468,14 @@ class ApiService {
   async getItemTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/item-types', { params });
-      // Handle nested data structure: response.data.data.data
-      return response.data?.data?.data || response.data?.data || response.data || [];
+      
+      // Handle different response structures similar to Products API
+      if (response.data && response.data.data) {
+        return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
+      }
+      return { data: [], meta: {} };
     } catch (error: any) {
       console.error('Error fetching item types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch item types');
@@ -2566,8 +2575,14 @@ class ApiService {
   async getSeatTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/seat-types', { params });
-      // Handle nested data structure: response.data.data.data
-      return response.data?.data?.data || response.data?.data || response.data || [];
+      
+      // Handle different response structures similar to Products API
+      if (response.data && response.data.data) {
+        return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
+      }
+      return { data: [], meta: {} };
     } catch (error: any) {
       console.error('Error fetching seat types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch seat types');
@@ -2715,7 +2730,14 @@ class ApiService {
   async getSeatStyles(params?: Record<string, any>) {
     try {
       const response = await api.get('/seat-styles', { params });
-      return response.data?.data || response.data || [];
+      
+      // Handle different response structures similar to Products API
+      if (response.data && response.data.data) {
+        return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
+      }
+      return { data: [], meta: {} };
     } catch (error: any) {
       console.error('Error fetching seat styles:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch seat styles');

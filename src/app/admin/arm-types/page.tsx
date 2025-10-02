@@ -21,7 +21,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
   Chip,
   Tooltip} from '@mui/material';
 import {
@@ -85,6 +84,7 @@ const ArmTypesPage = () => {
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Helper function to get arm type image URL
   const getArmTypeImage = (armType: ArmType) => {
@@ -129,8 +129,16 @@ const ArmTypesPage = () => {
       setLoading(true);
       setError(null);
       
-      const params: Record<string, any> = {};
-      if (searchTerm) params.search = searchTerm;
+      // Build API parameters for server-side pagination
+      const params: Record<string, any> = {
+        page: page + 1, // API uses 1-based pagination, but MUI uses 0-based
+        limit: rowsPerPage
+      };
+      
+      // Add optional search parameter
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
       
       const response = await apiService.getArmTypes(params);
       
@@ -139,10 +147,24 @@ const ArmTypesPage = () => {
       // Handle the response structure
       if (response && response.data) {
         setArmTypes(response.data);
+        // Update total count for pagination from the meta.pagination object
+        if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+          setTotalCount(response.meta.pagination.total);
+        } else if (response.meta && response.meta.total) {
+          setTotalCount(response.meta.total);
+        } else if (response.total !== undefined) {
+          setTotalCount(response.total);
+        } else if (response.data && Array.isArray(response.data)) {
+          // If no total count provided, use the length of current data
+          // This is not ideal for server-side pagination but prevents errors
+          setTotalCount(response.data.length);
+        }
       } else if (Array.isArray(response)) {
         setArmTypes(response);
+        setTotalCount(response.length);
       } else {
         setArmTypes([]);
+        setTotalCount(0);
       }
     } catch (err: any) {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
@@ -154,7 +176,7 @@ const ArmTypesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, [page, rowsPerPage, searchTerm]);
 
   useEffect(() => {
     loadArmTypes();
@@ -266,7 +288,7 @@ const ArmTypesPage = () => {
             {/* Results count for mobile */}
             {isMobile && armTypes.length > 0 && (
               <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
-                {armTypes.length} arm type{armTypes.length !== 1 ? 's' : ''} found
+                Showing {armTypes.length} of {totalCount} arm types
               </Typography>
             )}
           </Box>
@@ -326,9 +348,7 @@ const ArmTypesPage = () => {
             {/* Mobile Card View */}
             {isMobile ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {armTypes
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((armType) => (
+                {armTypes.map((armType) => (
                     <Paper key={armType.id} sx={{ p: 2 }}>
                       <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
                         {/* Image */}
@@ -510,9 +530,7 @@ const ArmTypesPage = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {armTypes
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((armType) => (
+                      {armTypes.map((armType) => (
                         <TableRow 
                           key={armType.id}
                           sx={{ 
@@ -695,28 +713,174 @@ const ArmTypesPage = () => {
               </Paper>
             )}
             
-            {/* Pagination */}
-            <TablePagination
-              rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
-              component="div"
-              count={armTypes.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
+            {/* Mobile Pagination */}
+            {isMobile && (
+              <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                {/* Pagination Info */}
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} arm types
+                </Typography>
+                
+                {/* Navigation Controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page === 0}
+                    onClick={() => handleChangePage({} as any, page - 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Previous
+                  </Button>
+                  
+                  <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                  </Typography>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                    onClick={() => handleChangePage({} as any, page + 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                </Box>
+                
+                {/* Items per page input */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Items per page:
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 10;
+                      if (value > 0 && value <= 100) {
+                        setRowsPerPage(value);
+                        setPage(0);
+                      }
+                    }}
+                    size="small"
+                    sx={{ 
+                      minWidth: 80,
+                      maxWidth: 100,
+                      '& .MuiInputBase-input': {
+                        textAlign: 'center'
+                      }
+                    }}
+                    inputProps={{
+                      min: 1,
+                      max: 100,
+                      step: 1
+                    }}
+                  />
+                </Box>
+              </Box>
+            )}
+            
+            {/* Desktop Pagination */}
+            {!isMobile && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                p: 2,
                 borderTop: 1,
                 borderColor: 'divider',
-                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  color: 'text.secondary',
-                  fontSize: isMobile ? '0.75rem' : '0.875rem'
-                },
-                '& .MuiTablePagination-toolbar': {
-                  flexWrap: isMobile ? 'wrap' : 'nowrap',
-                  gap: isMobile ? 1 : 0
-                }
-              }}
-            />
+                flexWrap: 'wrap',
+                gap: 2
+              }}>
+                {/* Left side - Items per page input */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Items per page:
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 10;
+                      if (value > 0 && value <= 100) {
+                        setRowsPerPage(value);
+                        setPage(0);
+                      }
+                    }}
+                    size="small"
+                    sx={{ 
+                      minWidth: 80,
+                      maxWidth: 100,
+                      '& .MuiInputBase-input': {
+                        textAlign: 'center'
+                      }
+                    }}
+                    inputProps={{
+                      min: 1,
+                      max: 100,
+                      step: 1
+                    }}
+                  />
+                </Box>
+                
+                {/* Center - Page info */}
+                <Typography variant="body2" color="text.secondary">
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} arm types
+                </Typography>
+                
+                {/* Right side - Navigation controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page === 0}
+                    onClick={() => handleChangePage({} as any, page - 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Previous
+                  </Button>
+                  
+                  <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                  </Typography>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                    onClick={() => handleChangePage({} as any, page + 1)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      '&:disabled': {
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                </Box>
+              </Box>
+            )}
           </>
         )}
 
