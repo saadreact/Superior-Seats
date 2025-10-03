@@ -591,7 +591,7 @@ export default function ShopOrderWizard() {
           amountPaid: grandTotal,
           currency: 'USD',
         },
-        cartSummary: { subTotal, tax, discount: 0, grandTotal },
+        cartSummary: { subTotal, tax, discount: 0, grandTotal, shippingCost: 350 },
         notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : ''].filter(Boolean).join(' '),
       };
 
