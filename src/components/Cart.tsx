@@ -15,6 +15,8 @@ import {
   useTheme,
   useMediaQuery,
   Tooltip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Close,
@@ -29,6 +31,7 @@ import { removeItem, updateQuantity } from '@/store/cartSlice';
 import { CartItem } from '@/store/cartSlice';
 import { useAppSelector } from '@/store/hooks';
 import AuthModal from './AuthModal';
+import { apiService } from '@/utils/api';
 
 interface CartProps {
   open: boolean;
@@ -46,11 +49,23 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
   // Auth modal state
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
 
-  const handleQuantityChange = (id: number, currentQuantity: number, change: number) => {
+  const [stockError, setStockError] = React.useState<string | null>(null);
+
+  const handleQuantityChange = async (id: number, currentQuantity: number, change: number) => {
     const newQuantity = currentQuantity + change;
-    if (newQuantity > 0) {
-      dispatch(updateQuantity({ id, quantity: newQuantity }));
+    if (newQuantity <= 0) return;
+    // On increment, validate against stock from API
+    if (change > 0) {
+      try {
+        const product = await apiService.getProduct(id as any);
+        const stock = Number((product as any)?.stock ?? NaN);
+        if (Number.isFinite(stock) && stock >= 0 && newQuantity > stock) {
+          setStockError(`Only ${stock} in stock for this product.`);
+          return;
+        }
+      } catch {}
     }
+    dispatch(updateQuantity({ id, quantity: newQuantity }));
   };
 
   const formatPrice = (price: string, quantity: number) => {
@@ -60,6 +75,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
   };
 
   return (
+    <>
     <Drawer
       anchor="right"
       open={open}
@@ -533,6 +549,13 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
         onClose={() => setAuthModalOpen(false)} 
       />
     </Drawer>
+    {/* Stock error snackbar */}
+    <Snackbar open={!!stockError} autoHideDuration={3000} onClose={() => setStockError(null)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+      <Alert onClose={() => setStockError(null)} severity="error" sx={{ width: '100%' }}>
+        {stockError}
+      </Alert>
+    </Snackbar>
+    </>
   );
 };
 
