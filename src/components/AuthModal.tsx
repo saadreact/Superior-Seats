@@ -456,11 +456,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   //   dispatch(logoutUser());
   // };
 
-  // Common field styles - matching ContactPage exactly
+  // Common field styles - matching EditProfileModal field sizes
   const commonTextFieldStyles = {
     '& .MuiOutlinedInput-root': {
       borderRadius: 2,
-      height: '35px',
+      height: '48px', // Increased from 35px to match EditProfileModal
       backgroundColor: 'rgba(255,255,255,0.8)',
       '&:hover fieldset': {
         borderColor: 'primary.main',
@@ -475,7 +475,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     },
     '& .MuiInputLabel-root': {
       color: 'text.secondary',
-      transform: 'translate(14px, 8px) scale(1)',
+      transform: 'translate(14px, 12px) scale(1)', // Adjusted for larger height
       '&.Mui-focused': {
         color: 'primary.main',
         transform: 'translate(14px, -9px) scale(0.75)',
@@ -483,6 +483,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
       '&.MuiFormLabel-filled': {
         transform: 'translate(14px, -9px) scale(0.75)',
       },
+    },
+    '& .MuiInputBase-input': {
+      padding: '12px 14px', // Increased padding to match EditProfileModal
     },
   };
 
@@ -550,7 +553,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         </DialogTitle>
 
         <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Box sx={{ borderBottom: 0.5, borderColor: 'divider' }}>
             <Tabs
               value={tabValue}
               onChange={handleTabChange}
@@ -579,8 +582,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
           <Box sx={{ overflow: 'hidden' }}>
             <TabPanel value={tabValue} index={0}>
               <Box sx={{ 
-                p: { xs: 3, sm: 4, md: 3, lg: 3, xl: 3, xxl: 3},
-                pb: { xs: 4, sm: 5, md: 4, lg: 4, xl: 4, xxl: 4},
+                p: { xs: 3, sm: 4, md: 1, lg: 1, xl: 1, xxl: 1},
+                pb: { xs: 4, sm: 5, md: 1, lg: 1, xl: 1, xxl: 1},
                 maxWidth: '600px',
                 mx: 'auto',
                 width: '100%'
@@ -598,122 +601,130 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   Sign in to your account
                 </Typography>
 
-                <TextField
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  value={signInForm.email}
-                  onChange={handleSignInChange('email')}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignIn();
-                    }
-                  }}
-                  error={!!errors.email}
-                  helperText={errors.email}
-                  variant="outlined"
-                  size="small"
-                  sx={{ 
-                    mb: 2,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                  }}
-                />
-
-                <TextField
-                  fullWidth
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={signInForm.password}
-                  onChange={handleSignInChange('password')}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignIn();
-                    }
-                  }}
-                  error={!!errors.password}
-                  helperText={errors.password}
-                  variant="outlined"
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          size="small"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    mb: 1,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                  }}
-                />
-
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 3 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'primary.main',
-                      cursor: 'pointer',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      textDecoration: 'underline',
-                      '&:hover': {
-                        color: 'primary.dark',
+                <Box sx={{ mx: { xs: 2, sm: 3, md: 4, lg: 3, xl: 3 } }}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    value={signInForm.email}
+                    onChange={handleSignInChange('email')}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSignIn();
+                      }
+                    }}
+                    error={!!errors.email}
+                    helperText={errors.email}
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      mb: 2,
+                      ...commonTextFieldStyles,
+                      '& .MuiFormHelperText-root': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        marginLeft: 0,
                       },
                     }}
-                    onClick={() => {
-                      console.log('Forgot password button clicked');
-                      setShowForgotPassword(true);
-                    }}
-                  >
-                    Forgot Password?
-                  </Typography>
+                  />
                 </Box>
 
-                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                  <Button
-                    variant="contained"
-                    onClick={handleSignIn}
-                    disabled={loading}
-                    size="medium"
-                    disableRipple={false}
-                    TouchRippleProps={{
-                      center: true,
-                      color: 'rgba(255, 255, 255, 0.3)',
+                <Box sx={{ mx: { xs: 2, sm: 3, md: 4, lg: 3, xl: 3 } }}>
+                  <TextField
+                    fullWidth
+                    label="Password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={signInForm.password}
+                    onChange={handleSignInChange('password')}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSignIn();
+                      }
                     }}
-                    sx={{
-                      px: { xs: 4, sm: 6 },
-                      py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 },
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      letterSpacing: 0.5,
-                      transition: 'all 0.3s ease',
-                      minWidth: { xs: 160, sm: 180 },
-                      width: { xs: '100%', sm: 'auto' },
-                      boxShadow: 'none',
-                      '&:hover': {
-                        boxShadow: 'none',
+                    error={!!errors.password}
+                    helperText={errors.password}
+                    variant="outlined"
+                    size="small"
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            size="small"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ 
+                      mb: 0.5,
+                      ...commonTextFieldStyles,
+                      '& .MuiFormHelperText-root': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        marginLeft: 0,
                       },
-                      '& .MuiTouchRipple-root': {
+                    }}
+                  />
+                  
+                  {/* Forgot Password Link - positioned right under password field */}
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 3 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'primary.main',
+                        cursor: 'pointer',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        textDecoration: 'underline',
+                        '&:hover': {
+                          color: 'primary.dark',
+                        },
+                      }}
+                      onClick={() => {
+                        console.log('Forgot password button clicked');
+                        setShowForgotPassword(true);
+                      }}
+                    >
+                      Forgot Password?
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ mx: { xs: 2, sm: 3, md: 4, lg: 4, xl: 4 } }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleSignIn}
+                      disabled={loading}
+                      size="medium"
+                      disableRipple={false}
+                      TouchRippleProps={{
+                        center: true,
+                        color: 'rgba(255, 255, 255, 0.3)',
+                      }}
+                      sx={{
+                        px: { xs: 4, sm: 6 },
+                        py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 ,},
+                        mb: 3,
                         borderRadius: 2,
-                      },
-                    }}
-                  >
-                    {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign In'}
-                  </Button>
+                        textTransform: 'none',
+                        letterSpacing: 0.5,
+                        transition: 'all 0.3s ease',
+                        minWidth: { xs: 160, sm: 180 },
+                        width: { xs: '100%', sm: 'auto' },
+                        boxShadow: 'none',
+                        '&:hover': {
+                          boxShadow: 'none',
+                        },
+                        '& .MuiTouchRipple-root': {
+                          borderRadius: 2,
+                        },
+                      }}
+                    >
+                      {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign In'}
+                    </Button>
+                  </Box>
                 </Box>
               </Box>
             </TabPanel>
@@ -879,7 +890,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         },
         "& .MuiInputLabel-root": {
           color: "text.secondary",
-          transform: "translate(60px, 8px) scale(1)",
+          transform: "translate(60px, 12px) scale(1)", // Adjusted for larger height
           "&.Mui-focused": {
             color: "primary.main",
             transform: "translate(14px, -9px) scale(0.75)"
@@ -889,7 +900,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
           }
         },
         "& .MuiInputBase-input": {
-          paddingLeft: "8px !important"
+          paddingLeft: "8px !important",
+          padding: "12px 14px 12px 8px" // Increased padding to match other fields
         }
       }}
     />

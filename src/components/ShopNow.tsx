@@ -104,6 +104,7 @@ const ShopNow = () => {
   const [modalImageIndex, setModalImageIndex] = useState(0); // For multiple images in modal
   const [showSpecialOnly, setShowSpecialOnly] = useState(false); // Special products filter
   const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
+  const [snackbarMessage, setSnackbarMessage] = useState('Added to cart'); // Snackbar message
 
   // API State
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
@@ -533,7 +534,7 @@ const ShopNow = () => {
       description: item.description || '',
       category: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
     }));
-    handleSnackbarOpen();
+    handleSnackbarOpen('Added to cart');
   };
 
   // NEW FUNCTION: Handles item selection and navigation to customization page
@@ -555,7 +556,8 @@ const ShopNow = () => {
   };
 
   // Snackbar handlers
-  const handleSnackbarOpen = () => {
+  const handleSnackbarOpen = (message: string = 'Added to cart') => {
+    setSnackbarMessage(message);
     setSnackbarOpen(true);
   };
 
@@ -1273,27 +1275,6 @@ const ShopNow = () => {
               {paginationMeta ? `Showing ${startIndex} to ${endIndex} of ${paginationMeta.total} products` : `Showing ${filteredImages.length} product${filteredImages.length !== 1 ? 's' : ''}`}
               </Typography>
 
-            {/* Debug Info - Remove this in production */}
-            {process.env.NODE_ENV === 'development' && (
-              <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: 1,
-                alignItems: { xs: 'center', sm: 'flex-start' },
-                width: { xs: '100%', sm: 'auto' },
-              }}>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    color: 'text.disabled',
-                    fontSize: '0.7rem',
-                    textAlign: { xs: 'center', sm: 'left' },
-                  }}
-                >
-                  Debug: Page {currentPage}/{totalPages} | Items: {itemsPerPage} | Meta: {paginationMeta ? 'Yes' : 'No'}
-                </Typography>
-              </Box>
-            )}
 
             {/* Pagination Controls - Always show */}
               <Box sx={{ 
@@ -1551,41 +1532,85 @@ const ShopNow = () => {
                         const images = getProductImages(selectedImage);
                         if (images && images.length > 0 && modalImageIndex < images.length) {
                           return (
-                            <Image
-                              src={images[modalImageIndex]}
-                              alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
-                              width={800}
-                              height={600}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                maxWidth: '100%',
-                                maxHeight: '100%',
-                                objectFit: 'contain',
-                                objectPosition: 'center',
-                              }}
-                              priority
-                            />
+                            <>
+                              <Image
+                                src={images[modalImageIndex]}
+                                alt={`${selectedImage.name || 'Product'} - Image ${modalImageIndex + 1}`}
+                                width={800}
+                                height={600}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  maxWidth: '100%',
+                                  maxHeight: '100%',
+                                  objectFit: 'contain',
+                                  objectPosition: 'center',
+                                }}
+                                priority
+                                onError={(e: any) => {
+                                  const img = e.target as HTMLImageElement;
+                                  img.style.display = 'none';
+                                  const fallback = img.parentElement?.querySelector('.modal-no-image-fallback');
+                                  if (fallback) {
+                                    (fallback as HTMLElement).style.display = 'flex';
+                                  }
+                                }}
+                              />
+                              {/* Hidden fallback shown when image fails to load */}
+                              <Box
+                                className="modal-no-image-fallback"
+                                sx={{
+                                  display: 'none',
+                                  position: 'absolute',
+                                  top: '50%',
+                                  left: '50%',
+                                  transform: 'translate(-50%, -50%)',
+                                  width: '50%',
+                                  height: '50%',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  backgroundColor: '#f5f5f5',
+                                  border: '1px solid #e0e0e0',
+                                  borderRadius: 1,
+                                }}
+                              >
+                                <Typography
+                                  variant="body1"
+                                  sx={{
+                                    color: 'text.secondary',
+                                    fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                                    fontWeight: 'medium',
+                                    textAlign: 'center',
+                                  }}
+                                >
+                                  No Image
+                                </Typography>
+                              </Box>
+                            </>
                           );
                         } else {
                           return (
                             <Box
                               sx={{
-                                width: '100%',
-                                height: '100%',
+                                width: '50%',
+                                height: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 backgroundColor: '#f5f5f5',
                                 border: '1px solid #e0e0e0',
                                 borderRadius: 1,
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
                               }}
                             >
                               <Typography
-                                variant="h5"
+                                variant="body1"
                                 sx={{
                                   color: 'text.secondary',
-                                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
                                   fontWeight: 'medium',
                                   textAlign: 'center',
                                 }}
@@ -1702,7 +1727,7 @@ const ShopNow = () => {
                             // handleCloseLightbox();
                             
                             // Temporary: Show snackbar that feature is coming soon
-                            handleSnackbarOpen();
+                            handleSnackbarOpen('This Feature coming Soon');
                           }}
                           sx={{
                             position: 'absolute',
@@ -1835,7 +1860,7 @@ const ShopNow = () => {
                             // handleCloseLightbox();
                             
                             // Temporary: Show snackbar that feature is coming soon
-                            handleSnackbarOpen();
+                            handleSnackbarOpen('This Feature coming Soon');
                           }}
                           sx={{
                             display: { xs: 'flex', sm: 'none' }, // Only show on mobile
@@ -1905,7 +1930,7 @@ const ShopNow = () => {
           severity="success" 
           sx={{ width: '100%' }}
         >
-          Added to cart
+          {snackbarMessage}
         </Alert>
       </Snackbar>
       
