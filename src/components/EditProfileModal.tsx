@@ -462,7 +462,28 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 overflow: "auto",
                 backgroundColor: "#fafafa",
                 minHeight: "70vh",
+                maxHeight: { 
+                  xs: "none", 
+                  sm: "none", 
+                  md: "80vh", 
+                  lg: "85vh", 
+                  xl: "90vh" 
+                },
                 p: { xs: 2, sm: 3, md: 2, lg: 2, xl: 2 },
+                '&::-webkit-scrollbar': {
+                  width: '8px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: '#f1f1f1',
+                  borderRadius: '4px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: '#c1c1c1',
+                  borderRadius: '4px',
+                  '&:hover': {
+                    backgroundColor: '#a8a8a8',
+                  },
+                },
               }}
             >
               <Box

@@ -64,8 +64,9 @@ const ShopNow = () => {
   const { setSelectedItem } = useSelectedItem(); // Destructure setSelectedItem from context
   const router = useRouter(); // Initialize Next.js router for navigation
   
-  // Redux selectors for authentication state
+  // Redux selectors for authentication state and cart
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth) || {};
+  const cartItems = useSelector((state: RootState) => state.cart.items) || [];
   
   // Check if we're on the ShopGallery or Shop Now page
   const isOnShopGalleryPage = pathname === '/ShopGallery' || pathname === '/shop-now';
