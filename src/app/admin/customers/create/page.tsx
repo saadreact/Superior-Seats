@@ -7,20 +7,11 @@ import {
   Button, 
   Alert, 
   CircularProgress, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  List, 
-  ListItem, 
-  ListItemText, 
   FormControlLabel, 
   Switch,
   Paper,
-  Divider,
   useTheme,
   useMediaQuery,
-  Stack,
   Grid
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
@@ -44,9 +35,6 @@ const CreateCustomerPage = () => {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
-  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
-  const [errorDialogTitle, setErrorDialogTitle] = useState<string>('');
-  const [errorDialogMessage, setErrorDialogMessage] = useState<string>('');
   const [isActive, setIsActive] = useState<boolean>(true);
   
   // Form data state
@@ -73,7 +61,6 @@ const CreateCustomerPage = () => {
     billing_state: '',
     billing_zip: '',
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [priceTiers, setPriceTiers] = useState<any[]>([]);
   const [priceTiersLoading, setPriceTiersLoading] = useState(false);
 
@@ -97,49 +84,12 @@ const CreateCustomerPage = () => {
     loadPriceTiers();
   }, []);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.first_name.trim()) {
-      newErrors.first_name = 'First name is required';
-    }
-
-    if (!formData.last_name.trim()) {
-      newErrors.last_name = 'Last name is required';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    }
-
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const getAllErrors = (): Record<string, string> => {
-    return { ...errors, ...serverErrors };
+    return { ...serverErrors };
   };
 
   const handleFieldChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear client-side error when user starts typing
-    if ((errors as any)[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
     // Clear server-side error for this field if provided
     if ((serverErrors as any)[field]) {
       setServerErrors(prev => {
@@ -152,8 +102,6 @@ const CreateCustomerPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
-
     setLoading(true);
     setAlert(null);
     setServerErrors({});
@@ -205,17 +153,27 @@ const CreateCustomerPage = () => {
         if (data?.errors && typeof data.errors === 'object') {
           Object.entries(data.errors).forEach(([field, messages]: [string, any]) => {
             const arr = Array.isArray(messages) ? messages : [String(messages)];
-            if (arr.length > 0) fieldErrors[field] = String(arr[0]);
+            if (arr.length > 0) {
+              // Map backend field names to frontend field names
+              let frontendFieldName = field;
+              
+              // Handle nested address field errors
+              if (field === 'billing_address.street') frontendFieldName = 'billing_address';
+              else if (field === 'billing_address.city') frontendFieldName = 'billing_city';
+              else if (field === 'billing_address.state') frontendFieldName = 'billing_state';
+              else if (field === 'billing_address.postal_code') frontendFieldName = 'billing_zip';
+              else if (field === 'shipping_address.street') frontendFieldName = 'shipping_address';
+              else if (field === 'shipping_address.city') frontendFieldName = 'shipping_city';
+              else if (field === 'shipping_address.state') frontendFieldName = 'shipping_state';
+              else if (field === 'shipping_address.postal_code') frontendFieldName = 'shipping_zip';
+              
+              fieldErrors[frontendFieldName] = String(arr[0]);
+            }
           });
         }
         setServerErrors(fieldErrors);
-        setErrorDialogTitle(data.message || 'Validation failed');
-        setErrorDialogMessage('Please review the highlighted fields below.');
-        setErrorDialogOpen(true);
       } else {
-        setErrorDialogTitle('Request failed');
-        setErrorDialogMessage(data?.message || 'Something went wrong while creating the customer.');
-        setErrorDialogOpen(true);
+        setAlert({ type: 'error', message: data?.message || 'Something went wrong while creating the customer.' });
       }
     } finally {
       setLoading(false);
@@ -243,9 +201,6 @@ const CreateCustomerPage = () => {
 
   const allErrors = getAllErrors();
 
-  const handleCloseErrorDialog = () => {
-    setErrorDialogOpen(false);
-  };
 
   const statusToggle = (
     <FormControlLabel
@@ -592,62 +547,6 @@ const CreateCustomerPage = () => {
           </Paper>
         )}
 
-        <Dialog 
-          open={errorDialogOpen} 
-          onClose={handleCloseErrorDialog} 
-          fullWidth 
-          maxWidth="sm"
-          PaperProps={{
-            sx: {
-              mx: { xs: 2, sm: 'auto' },
-              width: { xs: 'calc(100% - 32px)', sm: 'auto' }
-            }
-          }}
-        >
-          <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-            {errorDialogTitle}
-          </DialogTitle>
-          <DialogContent dividers>
-            <Typography variant="body2" sx={{ 
-              mb: 2,
-              fontSize: { xs: '1rem', sm: '0.875rem' }
-            }}>
-              {errorDialogMessage}
-            </Typography>
-            {Object.keys(serverErrors).length > 0 && (
-              <List dense>
-                {Object.entries(serverErrors).map(([field, message]) => (
-                  <ListItem key={field} disableGutters>
-                    <ListItemText
-                      primary={message}
-                      secondary={field.replace(/_/g, ' ')}
-                      primaryTypographyProps={{ 
-                        color: 'error',
-                        fontSize: { xs: '0.95rem', sm: '0.875rem' }
-                      }}
-                      secondaryTypographyProps={{
-                        fontSize: { xs: '0.85rem', sm: '0.75rem' }
-                      }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button 
-              onClick={handleCloseErrorDialog} 
-              variant="contained"
-              sx={{
-                minHeight: { xs: 44, sm: 'auto' },
-                fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                width: { xs: '100%', sm: 'auto' }
-              }}
-            >
-              OK
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Box>
     </AdminLayout>
   );
