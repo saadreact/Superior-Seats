@@ -284,16 +284,14 @@ const PriceTiersPage = () => {
                             >
                               <EditIcon />
                             </IconButton>
-                            {![1, 2].includes(Number(priceTier.id)) && (
-                              <IconButton
-                                size="small"
-                                onClick={() => handlePriceTierDelete(priceTier)}
-                                title="Delete"
-                                color="error"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            )}
+                            <IconButton
+                              size="small"
+                              onClick={() => handlePriceTierDelete(priceTier)}
+                              title="Delete"
+                              color="error"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
                           </Box>
                         </TableCell>
                       </TableRow>
@@ -352,16 +350,14 @@ const PriceTiersPage = () => {
                       >
                         <EditIcon />
                       </IconButton>
-                      {![1, 2].includes(Number(priceTier.id)) && (
-                        <IconButton
-                          size="small"
-                          onClick={() => handlePriceTierDelete(priceTier)}
-                          title="Delete"
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      )}
+                      <IconButton
+                        size="small"
+                        onClick={() => handlePriceTierDelete(priceTier)}
+                        title="Delete"
+                        color="error"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
                     </Box>
                   </Paper>
                 ))}

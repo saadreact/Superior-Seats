@@ -57,7 +57,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     billing_state: '',
     billing_zip: '',
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [priceTiers, setPriceTiers] = useState<any[]>([]);
   const [priceTiersLoading, setPriceTiersLoading] = useState(false);
@@ -128,46 +127,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     }
   }, [customer]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.first_name.trim()) {
-      newErrors.first_name = 'First name is required';
-    }
-
-    if (!formData.last_name.trim()) {
-      newErrors.last_name = 'Last name is required';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!customer && !formData.password.trim()) {
-      newErrors.password = 'Password is required';
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    }
-
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const getAllErrors = (): Record<string, string> => {
-    return { ...errors, ...serverErrors };
+    return { ...serverErrors };
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
-
     setLoading(true);
     try {
       await onSubmit(formData);
@@ -180,10 +144,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
   const handleFieldChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear client-side error when user starts typing
-    if ((errors as any)[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
     // Clear server-side error for this field if provided
     if (onClearServerError && (serverErrors as any)[field]) {
       onClearServerError(field);

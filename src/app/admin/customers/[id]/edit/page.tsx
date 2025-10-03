@@ -35,6 +35,7 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
   const [loading, setLoading] = React.useState(true);
   const [alert, setAlert] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isActive, setIsActive] = React.useState<boolean>(true);
+  const [serverErrors, setServerErrors] = React.useState<Record<string, string>>({});
   const resolvedParams = React.use(params);
 
   React.useEffect(() => {
@@ -78,6 +79,10 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
 
   const handleSubmit = async (updatedCustomer: any) => {
     try {
+      // Clear previous errors
+      setAlert(null);
+      setServerErrors({});
+      
       // Create payload matching the backend schema exactly
       const customerData = {
         first_name: updatedCustomer.first_name || '',
@@ -121,16 +126,71 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
       console.error('Error updating customer:', error);
       console.error('Error response:', error?.response?.data);
       
-      // Show more detailed error message
-      const errorMessage = error?.response?.data?.message || 
-                          error?.response?.data?.error || 
-                          'Failed to update customer';
-      setAlert({ type: 'error', message: errorMessage });
+      const data = error?.response?.data;
+      
+      // Handle validation errors (422 status) with field-specific errors
+      if (error.response?.status === 422 && data?.errors) {
+        const fieldErrors: Record<string, string> = {};
+        Object.entries(data.errors).forEach(([field, messages]: [string, any]) => {
+          const arr = Array.isArray(messages) ? messages : [String(messages)];
+          if (arr.length > 0) fieldErrors[field] = String(arr[0]);
+        });
+        setServerErrors(fieldErrors);
+      } 
+      // Handle backend error response with status: "error"
+      else if (data?.status === 'error' && data?.errors) {
+        const fieldErrors: Record<string, string> = {};
+        Object.entries(data.errors).forEach(([field, messages]: [string, any]) => {
+          const arr = Array.isArray(messages) ? messages : [String(messages)];
+          if (arr.length > 0) {
+            // Map backend field names to frontend field names
+            let frontendFieldName = field;
+            
+            // Handle nested address field errors
+            if (field === 'billing_address.street') frontendFieldName = 'billing_address';
+            else if (field === 'billing_address.city') frontendFieldName = 'billing_city';
+            else if (field === 'billing_address.state') frontendFieldName = 'billing_state';
+            else if (field === 'billing_address.postal_code') frontendFieldName = 'billing_zip';
+            else if (field === 'shipping_address.street') frontendFieldName = 'shipping_address';
+            else if (field === 'shipping_address.city') frontendFieldName = 'shipping_city';
+            else if (field === 'shipping_address.state') frontendFieldName = 'shipping_state';
+            else if (field === 'shipping_address.postal_code') frontendFieldName = 'shipping_zip';
+            
+            fieldErrors[frontendFieldName] = String(arr[0]);
+          }
+        });
+        setServerErrors(fieldErrors);
+      }
+      // Handle other error responses
+      else {
+        let errorMessage = 'Failed to update customer';
+        
+        if (data) {
+          if (data.message) {
+            errorMessage = data.message;
+          } else if (data.error) {
+            errorMessage = data.error;
+          } else if (typeof data === 'string') {
+            errorMessage = data;
+          }
+        }
+        
+        setAlert({ type: 'error', message: errorMessage });
+      }
     }
   };
 
   const handleCancel = () => {
     router.push('/admin/customers');
+  };
+
+  const clearServerError = (field: string) => {
+    setServerErrors(prev => {
+      if (!(field in prev)) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   const statusToggle = (
@@ -196,6 +256,8 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
               onSubmit={handleSubmit}
               onCancel={handleCancel}
               statusToggle={statusToggle}
+              serverErrors={serverErrors}
+              onClearServerError={clearServerError}
             />
           </Paper>
         ) : (
@@ -216,7 +278,4 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
     </AdminLayout>
   );
 };
-
-
-
 export default EditCustomerPage; 
