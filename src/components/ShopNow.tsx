@@ -28,6 +28,7 @@ import {
   FormControlLabel,
   Snackbar,
   Alert,
+  TextField,
 } from '@mui/material';
 import {
   Close,
@@ -100,7 +101,7 @@ const ShopNow = () => {
   const [selectedImage, setSelectedImage] = useState<Product | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);   // cards per page - server-side pagination
+  const [itemsPerPage, setItemsPerPage] = useState(10);   // cards per page - server-side pagination
   const [modalImageIndex, setModalImageIndex] = useState(0); // For multiple images in modal
   const [showSpecialOnly, setShowSpecialOnly] = useState(false); // Special products filter
   const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
@@ -287,7 +288,7 @@ const ShopNow = () => {
     
     setLoading(false);
     (fetchProducts as any).__inFlight = false;
-  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, categories, extractCategoriesFromProducts]);
+  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, categories, userData]);
 
   // Function to refresh all APIs (price tiers, user data, categories)
   const refreshAllApis = useCallback(async () => {
@@ -1324,6 +1325,64 @@ const ShopNow = () => {
                       },
                     },
                   }}
+                />
+
+                {/* Items Per Page Input Field */}
+                <TextField
+                  size="small"
+                  type="number"
+                  value={itemsPerPage}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    const newItemsPerPage = parseInt(value, 10);
+                    
+                    // Validate input: must be a positive number between 1 and 100
+                    if (!isNaN(newItemsPerPage) && newItemsPerPage > 0 && newItemsPerPage <= 100) {
+                      setItemsPerPage(newItemsPerPage);
+                      setCurrentPage(1); // Reset to first page when items per page changes
+                      // Scroll to top when items per page changes
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      // The useEffect will automatically trigger a new API call with the new items per page
+                    }
+                  }}
+                  inputProps={{
+                    min: 1,
+                    max: 100,
+                    step: 1,
+                  }}
+                  sx={{
+                    width: { xs: 80, sm: 100 },
+                    '& .MuiOutlinedInput-root': {
+                      height: { xs: 32, sm: 40 },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      backgroundColor: 'white',
+                      '& fieldset': {
+                        borderColor: theme.palette.primary.main,
+                      },
+                      '&:hover fieldset': {
+                        borderColor: theme.palette.primary.dark,
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: theme.palette.primary.main,
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center',
+                      padding: { xs: '6px 8px', sm: '8px 12px' },
+                      // Hide the spinner arrows
+                      '&::-webkit-outer-spin-button': {
+                        WebkitAppearance: 'none',
+                        margin: 0,
+                      },
+                      '&::-webkit-inner-spin-button': {
+                        WebkitAppearance: 'none',
+                        margin: 0,
+                      },
+                      // For Firefox
+                      MozAppearance: 'textfield',
+                    },
+                  }}
+                  placeholder="10"
                 />
                 
                                  <Button
