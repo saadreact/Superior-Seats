@@ -361,7 +361,7 @@ const OrderWizard: React.FC = () => {
 					billingAddress: { ...billingAddress },
 				},
 				paymentInfo: { method: paymentOption === 'card' ? 'square' : 'cash', amountPaid: grandTotal, currency: 'USD' },
-				cartSummary: { subTotal, tax, discount: 0, grandTotal },
+				cartSummary: { subTotal, tax, discount: 0, grandTotal, shippingCost: 350 },
 				notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : ''].filter(Boolean).join(' '),
 			};
 

@@ -556,7 +556,8 @@ const OrderForm: React.FC<OrderFormProps> = ({
           subTotal: Number((formData.total_amount || 0) - (formData.tax_amount || 0)),
           tax: Number(formData.tax_amount) || 0,
           discount: 0,
-          grandTotal: Number(formData.total_amount) || 0
+          grandTotal: Number(formData.total_amount) || 0,
+          shippingCost: 350
         },
         notes: formData.notes || '',
         vehicleConfigurationId: formData.vehicle_configuration_id ? parseInt(formData.vehicle_configuration_id) : undefined

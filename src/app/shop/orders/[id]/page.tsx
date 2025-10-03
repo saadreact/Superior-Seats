@@ -84,6 +84,8 @@ interface Order {
   customer_email?: string;
   vehicle_configuration?: any;
   items?: OrderItem[];
+  shippingCost?: number;
+  shipping_cost?: number;
 }
 
 export default function ShopOrderViewPage() {
@@ -419,11 +421,13 @@ export default function ShopOrderViewPage() {
                       const sub = computeSubtotal(order?.items || []);
                       const tax = Number(order?.tax_amount || (sub * 0.07));
                       const taxPct = safePercent(tax, sub);
+                      const shippingCost = Number(order?.shipping_cost || order?.shippingCost || 350)
                       return (
                         <TableRow>
                           <TableCell colSpan={3} />
                           <TableCell align="right">
                             <Typography variant="body1" fontWeight={600}>Subtotal:</Typography>
+                            <Typography variant="body1" fontWeight={600}>Shipping cost:</Typography>
                             {order?.shipping_address?.state === 'Indiana' && (
                                 <Typography variant="body2">Tax:</Typography>
                             )}
@@ -431,10 +435,11 @@ export default function ShopOrderViewPage() {
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body1" fontWeight={600}>{formatCurrency(sub)}</Typography>
+                            <Typography variant="body1" fontWeight={600}>{formatCurrency(shippingCost)}</Typography>
                             {order?.shipping_address?.state === 'Indiana' && (
                                <Typography variant="body2">+{formatCurrency(tax)} {taxPct ? `(${taxPct.toFixed(2)}%)` : ''}</Typography>
                             )}
-                            <Typography variant="h6" fontWeight={600} color="primary">{formatCurrency(order?.total_amount || (sub + tax))}</Typography>
+                            <Typography variant="h6" fontWeight={600} color="primary">{formatCurrency(order?.total_amount || (sub + tax + shippingCost))}</Typography>
                           </TableCell>
                         </TableRow>
                       );
