@@ -65,7 +65,7 @@ const ShopNow = () => {
   const router = useRouter(); // Initialize Next.js router for navigation
   
   // Redux selectors for authentication state
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth) || {};
   
   // Check if we're on the ShopGallery or Shop Now page
   const isOnShopGalleryPage = pathname === '/ShopGallery' || pathname === '/shop-now';
@@ -1327,63 +1327,44 @@ const ShopNow = () => {
                   }}
                 />
 
-                {/* Items Per Page Input Field */}
-                <TextField
-                  size="small"
-                  type="number"
-                  value={itemsPerPage}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    const newItemsPerPage = parseInt(value, 10);
-                    
-                    // Validate input: must be a positive number between 1 and 100
-                    if (!isNaN(newItemsPerPage) && newItemsPerPage > 0 && newItemsPerPage <= 100) {
+                {/* Items Per Page Select Dropdown */}
+                <FormControl size="small" sx={{ width: { xs: 80, sm: 100 } }}>
+                  <Select
+                    value={itemsPerPage.toString()}
+                    onChange={(event: any) => {
+                      const newItemsPerPage = parseInt(event.target.value, 10);
                       setItemsPerPage(newItemsPerPage);
                       setCurrentPage(1); // Reset to first page when items per page changes
                       // Scroll to top when items per page changes
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                       // The useEffect will automatically trigger a new API call with the new items per page
-                    }
-                  }}
-                  inputProps={{
-                    min: 1,
-                    max: 100,
-                    step: 1,
-                  }}
-                  sx={{
-                    width: { xs: 80, sm: 100 },
-                    '& .MuiOutlinedInput-root': {
+                    }}
+                    sx={{
                       height: { xs: 32, sm: 40 },
                       fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                       backgroundColor: 'white',
-                      '& fieldset': {
+                      '& .MuiOutlinedInput-notchedOutline': {
                         borderColor: theme.palette.primary.main,
                       },
-                      '&:hover fieldset': {
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: theme.palette.primary.dark,
                       },
-                      '&.Mui-focused fieldset': {
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                         borderColor: theme.palette.primary.main,
                       },
-                    },
-                    '& .MuiInputBase-input': {
-                      textAlign: 'center',
-                      padding: { xs: '6px 8px', sm: '8px 12px' },
-                      // Hide the spinner arrows
-                      '&::-webkit-outer-spin-button': {
-                        WebkitAppearance: 'none',
-                        margin: 0,
+                      '& .MuiSelect-select': {
+                        textAlign: 'center',
+                        padding: { xs: '6px 8px', sm: '8px 12px' },
                       },
-                      '&::-webkit-inner-spin-button': {
-                        WebkitAppearance: 'none',
-                        margin: 0,
-                      },
-                      // For Firefox
-                      MozAppearance: 'textfield',
-                    },
-                  }}
-                  placeholder="10"
-                />
+                    }}
+                  >
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={15}>15</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={100}>100</MenuItem>
+                  </Select>
+                </FormControl>
                 
                                  <Button
                    variant="outlined"
