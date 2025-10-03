@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
 	Box,
 	Stepper,
@@ -30,6 +30,9 @@ import {
 	TableCell,
 	TableBody,
 	InputAdornment,
+	RadioGroup,
+	FormControlLabel,
+	Radio,
 } from '@mui/material';
 import {
 	Add as AddIcon,
@@ -37,6 +40,7 @@ import {
 	CheckCircle as CheckCircleIcon,
 	Tune as TuneIcon,
 } from '@mui/icons-material';
+import SquareCard, { SquareCardHandle } from '@/components/checkout/SquareCard';
 import { apiService } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 import AdminVariantsDrawer, { VariantSelections } from './AdminVariantsDrawer';
@@ -90,6 +94,7 @@ const steps = [
 	'Select Products',
 	'Billing & Shipping',
 	'Notes and Shipping Methods',
+	'Payment',
 	'Review & Submit',
 ];
 
@@ -149,6 +154,12 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 	// Step 4: notes and shipping method
 	const [notes, setNotes] = useState('');
 	const [shippingMethod, setShippingMethod] = useState('Standard');
+
+	// Step 5: Payment
+	const [paymentOption, setPaymentOption] = useState<'cash' | 'card'>('cash');
+	const squareRef = useRef<SquareCardHandle | null>(null);
+	const [cardToken, setCardToken] = useState<string | null>(null);
+	const [paymentReady, setPaymentReady] = useState(false);
 
 	// Summary
 	const [tax, setTax] = useState<number>(0);
@@ -323,6 +334,20 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 		}));
 	}, [selectedCustomer, priceTiers, products]);
 
+	// Reset readiness when we land on the Payment step
+	useEffect(() => {
+		const paymentStepIndex = steps.findIndex((s) => s === 'Payment');
+		if (activeStep === paymentStepIndex) {
+			setPaymentReady(false);
+			setCardToken(null);
+		}
+	}, [activeStep]);
+
+	// Clear stored token if switching to cash
+	useEffect(() => {
+		if (paymentOption === 'cash') setCardToken(null);
+	}, [paymentOption]);
+
 	// Derived totals
 	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
 	const shippingCost = 350;
@@ -360,10 +385,32 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 		return true;
 	};
 
-	const handleNext = () => {
+	const handleNext = async () => {
 		if (!canProceedFromStep(activeStep)) {
 			setError('Please complete required fields to continue.');
 			return;
+		}
+		// Determine current payment step index dynamically
+		const paymentStepIndex = steps.findIndex((s) => s === 'Payment');
+		// If leaving the Payment step, tokenize and store the card token
+		if (activeStep === paymentStepIndex) {
+			if (paymentOption === 'card') {
+				if (!paymentReady) {
+					setError('Payment form not ready. Please wait a second and try again.');
+					return;
+				}
+				try {
+					if (!squareRef.current) {
+						setError('Payment form not ready. Please wait a second and try again.');
+						return;
+					}
+					const { token } = await squareRef.current.tokenize();
+					setCardToken(token);
+				} catch (e: any) {
+					setError(e?.message || 'Failed to tokenize card.');
+					return;
+				}
+			}
 		}
 		setError(null);
 		setActiveStep((prev) => prev + 1);
@@ -378,6 +425,17 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 		try {
 			setLoading(true);
 			setError(null);
+
+			// Use stored token if card payment was selected (same as shop flow)
+			let usedCardToken: string | null = null;
+			if (paymentOption === 'card') {
+				if (!cardToken) {
+					setError('Card details are not ready. Please go back to Payment step and enter the card.');
+					setLoading(false);
+					return;
+				}
+				usedCardToken = cardToken;
+			}
 
 			// Build old-format payload for updateOrder (it will transform internally)
 			const fallbackCustomer = selectedCustomer || ({} as any);
@@ -395,9 +453,10 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 				shipping_address: { ...shippingAddress },
 				billing_address: { ...billingAddress },
 				notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : ''].filter(Boolean).join(' '),
-				payment_method: 'cash',
+				payment_method: paymentOption === 'card' ? 'square' : 'cash',
 				discount_amount: 0,
 				tax_amount: computedTax,
+				shipping_cost: shippingCost,
 				items: cartItems.map(ci => ({
 					product_id: ci.productId,
 					variation_id: ci.variationId,
@@ -643,7 +702,90 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 				return (
 					<Card>
 						<CardContent>
-							<Typography variant="h6" gutterBottom>Review</Typography>
+							<Box display="grid" gap={2}>
+								<Typography variant="h6">Notes and Shipping Methods</Typography>
+								<Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '2fr 1fr' }} gap={2}>
+									<TextField 
+										fullWidth 
+										multiline 
+										minRows={4} 
+										label="Notes" 
+										value={notes} 
+										onChange={(e) => setNotes(e.target.value)} 
+										helperText={`${notes.length}/500`} 
+										inputProps={{ maxLength: 500 }} 
+									/>
+									<Box>
+										<FormControl fullWidth>
+											<InputLabel>Shipping Method</InputLabel>
+											<Select 
+												label="Shipping Method" 
+												value={shippingMethod} 
+												onChange={(e) => setShippingMethod(String(e.target.value))}
+											>
+												<MenuItem value="Standard">Standard (5-7 business days)</MenuItem>
+												<MenuItem value="Express">Express (2-3 business days)</MenuItem>
+												<MenuItem value="Overnight">Overnight (1 business day)</MenuItem>
+											</Select>
+										</FormControl>
+										<Box mt={2} width="100%">
+											{shippingAddress.state === 'Indiana' && (
+												<TextField 
+													type="number" 
+													fullWidth 
+													disabled 
+													label="Tax" 
+													value={shippingAddress.state === 'Indiana' ? 7 : 0}  
+													InputProps={{ 
+														endAdornment: <InputAdornment position="end">%</InputAdornment> 
+													}} 
+												/>
+											)}
+											<Box sx={{ mt: 1 }}>
+												<TextField 
+													type="number" 
+													fullWidth 
+													disabled 
+													label="Shipping Cost" 
+													value={350} 
+													InputProps={{ 
+														startAdornment: <InputAdornment position="start">$</InputAdornment> 
+													}} 
+												/>
+											</Box>
+										</Box>
+									</Box>
+								</Box>
+							</Box>
+						</CardContent>
+					</Card>
+				);
+			case 4:
+				return (
+					<Card>
+						<CardContent>
+							<Typography variant="h6">Payment</Typography>
+							<Box display="grid" gap={2}>
+								<FormControl component="fieldset">
+									<RadioGroup row value={paymentOption} onChange={(e) => setPaymentOption(e.target.value as any)}>
+										<FormControlLabel value="card" control={<Radio />} label="Card" />
+										<FormControlLabel value="cash" control={<Radio />} label="Cash" />
+									</RadioGroup>
+								</FormControl>
+								{paymentOption === 'card' && (
+									<Box>
+										<SquareCard ref={squareRef} amount={grandTotal} onReady={() => setPaymentReady(true)} onError={(msg) => setError(msg)} />
+									</Box>
+								)}
+							</Box>
+						</CardContent>
+					</Card>
+				);
+			case 5:
+				return (
+					<Card>
+						<CardContent>
+							<Typography variant="h6" gutterBottom>Review & Submit</Typography>
 							<Box display="grid" gap={2}>
 								<Box>
 									<Typography variant="subtitle2">Customer</Typography>
@@ -695,7 +837,7 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 			<Box display="flex" justifyContent="space-between" mt={2}>
 				<Button disabled={activeStep === 0 || loading} onClick={handleBack} variant="outlined">Back</Button>
 				{activeStep < steps.length - 1 ? (
-					<Button variant="contained" onClick={handleNext} disabled={loading}>Next</Button>
+					<Button variant="contained" onClick={handleNext} disabled={loading || (activeStep === steps.findIndex((s) => s === 'Payment') && paymentOption === 'card' && !paymentReady)}>Next</Button>
 				) : (
 					<Button variant="contained" color="primary" onClick={submitUpdate} disabled={loading}>Update Order</Button>
 				)}

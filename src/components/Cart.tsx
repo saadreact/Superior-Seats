@@ -66,7 +66,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: { xs: '100%', sm: 400, md: 450 },
+          width: { xs: '100%', sm: 420, md: 480 },
           backgroundColor: '#ffffff',
           boxShadow: { xs: '-4px 0 16px rgba(0, 0, 0, 0.1)', sm: '-8px 0 32px rgba(0, 0, 0, 0.15)' },
           borderLeft: '1px solid rgba(0, 0, 0, 0.08)',
@@ -173,7 +173,12 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
           </Box>
         ) : (
           <>
-            <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, sm: 2.5, md: 3 } }}>
+            <Box sx={{ 
+              flex: 1, 
+              overflow: 'auto', 
+              p: { xs: 1.5, sm: 2, md: 2.5 },
+              pr: { xs: 0.5, sm: 1, md: 1.5 } // Minimal padding on right to prevent cutoff
+            }}>
               <List sx={{ p: 0 }}>
                 {items.map((item: CartItem) => (
                   <Card key={item.id} sx={{ 
@@ -187,18 +192,24 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                       transform: 'translateY(-1px)'
                     }
                   }}>
-                    <Box sx={{ display: 'flex', p: { xs: 2, sm: 2.5, md: 3 } }}>
-                                             {/* Item Image */}
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      p: { xs: 1.5, sm: 2, md: 2.5 },
+                      pr: { xs: 0.5, sm: 1, md: 1.5 }, // Minimal padding on right
+                      gap: { xs: 1.5, sm: 2, md: 2.5 }
+                    }}>
+                      {/* Item Image */}
                       <Box sx={{ 
                         position: 'relative', 
-                        width: { xs: 70, sm: 80, md: 90 },
-                        height: { xs: 70, sm: 80, md: 90 },
+                        width: { xs: 60, sm: 70, md: 80 },
+                        height: { xs: 60, sm: 70, md: 80 },
                         borderRadius: { xs: 1.5, sm: 2 },
-                        mr: { xs: 2, sm: 2.5, md: 3 },
                         boxShadow: { xs: '0 1px 4px rgba(0,0,0,0.08)', sm: '0 2px 8px rgba(0,0,0,0.1)' },
                         backgroundColor: '#f8f9fa',
                         border: '1px solid rgba(0,0,0,0.05)',
                         overflow: 'hidden',
+                        flexShrink: 0
                       }}>
                         {item.image && item.image !== '/placeholder-image.jpg' ? (
                           <>
@@ -286,52 +297,64 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                       </Box>
                       
                       {/* Item Details */}
-                      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                                 <Box>
-                           <Tooltip 
-                             title={item.title}
-                             placement="top"
-                             arrow
-                             sx={{
-                               '& .MuiTooltip-tooltip': {
-                                 backgroundColor: 'rgba(0, 0, 0, 0.87)',
-                                 color: 'white',
-                                 fontSize: '0.875rem',
-                                 padding: '8px 12px',
-                                 borderRadius: '4px',
-                                 maxWidth: '300px',
-                                 wordWrap: 'break-word',
-                                 whiteSpace: 'pre-wrap',
-                                 textAlign: 'center',
-                               },
-                               '& .MuiTooltip-arrow': {
-                                 color: 'rgba(0, 0, 0, 0.87)',
-                               }
-                             }}
-                           >
-                             <Typography variant="subtitle1" sx={{ 
-                               fontWeight: 600, 
-                               mb: 1.5,
-                               fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },
-                               color: '#1a1a1a',
-                               lineHeight: 1.3,
-                               wordWrap: 'break-word',
-                               overflowWrap: 'break-word',
-                               hyphens: 'auto',
-                               display: '-webkit-box',
-                               WebkitLineClamp: 2,
-                               WebkitBoxOrient: 'vertical',
-                               overflow: 'hidden',
-                               textOverflow: 'ellipsis',
-                               cursor: 'help'
-                             }}>
-                               {item.title}
-                             </Typography>
-                           </Tooltip>
-                         </Box>
+                      <Box sx={{ 
+                        flex: 1, 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        justifyContent: 'center',
+                        minHeight: { xs: 60, sm: 70, md: 80 }
+                      }}>
+                        {/* Product Title */}
+                        <Box sx={{ mb: 2 }}>
+                          <Tooltip 
+                            title={item.title}
+                            placement="top"
+                            arrow
+                            sx={{
+                              '& .MuiTooltip-tooltip': {
+                                backgroundColor: 'rgba(0, 0, 0, 0.87)',
+                                color: 'white',
+                                fontSize: '0.875rem',
+                                padding: '8px 12px',
+                                borderRadius: '4px',
+                                maxWidth: '300px',
+                                wordWrap: 'break-word',
+                                whiteSpace: 'pre-wrap',
+                                textAlign: 'center',
+                              },
+                              '& .MuiTooltip-arrow': {
+                                color: 'rgba(0, 0, 0, 0.87)',
+                              }
+                            }}
+                          >
+                            <Typography variant="subtitle1" sx={{ 
+                              fontWeight: 600, 
+                              fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },
+                              color: '#1a1a1a',
+                              lineHeight: 1.3,
+                              wordWrap: 'break-word',
+                              overflowWrap: 'break-word',
+                              hyphens: 'auto',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              cursor: 'help'
+                            }}>
+                              {item.title}
+                            </Typography>
+                          </Tooltip>
+                        </Box>
                         
-                        {/* Quantity Controls */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+                        {/* Bottom Row: Quantity Controls and Price */}
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between',
+                          mt: 'auto'
+                        }}>
+                          {/* Quantity Controls */}
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <IconButton
                               size="small"
@@ -377,11 +400,11 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                             </IconButton>
                           </Box>
                           
+                          {/* Price */}
                           <Typography variant="subtitle2" sx={{ 
                             fontWeight: 700,
                             fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
-                            color: 'primary.main',
-                            ml: { xs: 1, sm: 1.5, md: 2 }
+                            color: 'primary.main'
                           }}>
                             {formatPrice(item.price, item.quantity)}
                           </Typography>
@@ -389,23 +412,32 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                       </Box>
                       
                       {/* Remove Button */}
-                      <IconButton
-                        onClick={() => dispatch(removeItem(item.id))}
-                        sx={{ 
-                          color: '#f44336',
-                          width: { xs: 32, sm: 34, md: 36 },
-                          height: { xs: 32, sm: 34, md: 36 },
-                          borderRadius: '50%',
-                          transition: 'all 0.2s ease',
-                          '&:hover': { 
-                            backgroundColor: 'rgba(244, 67, 54, 0.08)',
-                            transform: 'scale(1.1)',
-                            color: '#d32f2f'
-                          }
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                      <Box sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: { xs: 36, sm: 40, md: 44 }, // Ensure enough space
+                        height: { xs: 60, sm: 70, md: 80 }, // Match item height
+                        flexShrink: 0
+                      }}>
+                        <IconButton
+                          onClick={() => dispatch(removeItem(item.id))}
+                          sx={{ 
+                            color: '#f44336',
+                            width: { xs: 32, sm: 34, md: 36 },
+                            height: { xs: 32, sm: 34, md: 36 },
+                            borderRadius: '50%',
+                            transition: 'all 0.2s ease',
+                            '&:hover': { 
+                              backgroundColor: 'rgba(244, 67, 54, 0.08)',
+                              transform: 'scale(1.1)',
+                              color: '#d32f2f'
+                            }
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Box>
 
                     </Box>
                   </Card>
@@ -426,7 +458,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                   fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
                   color: '#1a1a1a'
                 }}>
-                  Total ({totalItems} items):
+                  Total ({items.reduce((sum, item) => sum + item.quantity, 0)} items):
                 </Typography>
                 <Typography variant="h6" sx={{ 
                   fontWeight: 700, 

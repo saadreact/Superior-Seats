@@ -39,7 +39,7 @@ const cartSlice = createSlice({
         state.items.push({ ...action.payload, quantity: 1 });
       }
 
-      state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
+      state.totalItems = state.items.length;
       state.totalPrice = state.items.reduce((sum, item) => {
         const price = parseFloat(item.price.replace(/[$,]/g, ''));
         return sum + (price * item.quantity);
@@ -49,7 +49,7 @@ const cartSlice = createSlice({
     removeItem: (state, action: PayloadAction<number>) => {
       state.items = state.items.filter(item => item.id !== action.payload);
 
-      state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
+      state.totalItems = state.items.length;
       state.totalPrice = state.items.reduce((sum, item) => {
         const price = parseFloat(item.price.replace(/[$,]/g, ''));
         return sum + (price * item.quantity);
@@ -61,7 +61,7 @@ const cartSlice = createSlice({
       if (item) {
         item.quantity = action.payload.quantity;
 
-        state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
+        state.totalItems = state.items.length;
         state.totalPrice = state.items.reduce((sum, item) => {
           const price = parseFloat(item.price.replace(/[$,]/g, ''));
           return sum + (price * item.quantity);

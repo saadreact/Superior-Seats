@@ -149,6 +149,7 @@ interface Order {
     };
   };
   items?: OrderItem[];
+  shipping_cost?: number;
 }
 
 const OrderViewPage = () => {
@@ -718,12 +719,17 @@ console.log("order",order)
                     const sub = computeSubtotal(order?.items || []);
                     const tax = Number(order?.tax_amount || (sub * 0.07));
                     const taxPct = safePercent(tax, sub);
+                    const shippingCost = Number(order?.shipping_cost || 350);
+                    const total = order?.total_amount || (sub + tax + shippingCost);
                     return (
                       <TableRow>
                         <TableCell colSpan={3} />
                         <TableCell align="right">
                           <Typography variant="body1" fontWeight={600}>
                             Subtotal:
+                          </Typography>
+                          <Typography variant="body2">
+                            Shipping:
                           </Typography>
                           {tax > 0 && (
                             <Typography variant="body2">
@@ -738,13 +744,16 @@ console.log("order",order)
                           <Typography variant="body1" fontWeight={600}>
                             {formatCurrency(sub)}
                           </Typography>
+                          <Typography variant="body2">
+                            +{formatCurrency(shippingCost)}
+                          </Typography>
                           {tax > 0 && (
                             <Typography variant="body2">
                               +{formatCurrency(tax)} {taxPct ? `(${taxPct.toFixed(2)}%)` : ''}
                             </Typography>
                           )}
                           <Typography variant="h6" fontWeight={600} color="primary">
-                            {formatCurrency(order?.total_amount || (sub + tax))}
+                            {formatCurrency(total)}
                           </Typography>
                         </TableCell>
                       </TableRow>

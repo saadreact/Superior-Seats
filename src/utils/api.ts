@@ -523,6 +523,7 @@ class ApiService {
         },
         // Add formatted versions for display
         shipping_address_formatted: this.formatAddress(newOrder.customerInfo?.shippingAddress),
+        shippingCost: newOrder.shippingCost || 0,
         billing_address_formatted: this.formatAddress(newOrder.customerInfo?.billingAddress),
         notes: newOrder.notes || '',
         invoice_number: newOrder.invoiceNumber || '',
