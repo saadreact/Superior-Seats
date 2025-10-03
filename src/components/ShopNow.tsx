@@ -525,6 +525,22 @@ const ShopNow = () => {
 
 
   const handleAddToCart = (item: Product) => {
+    // Prevent adding when stock is missing or zero
+    const stock = Number((item as any)?.stock ?? NaN);
+    if (!Number.isFinite(stock) || stock <= 0) {
+      setSnackbarOpen(true);
+      setTimeout(() => setSnackbarOpen(false), 2000);
+      return;
+    }
+    // Enforce stock across repeated add clicks by checking existing cart qty
+    try {
+      const currentQty = (cartItems || []).filter((it: any) => Number(it.id) === Number(item.id)).reduce((s: number, it: any) => s + (Number(it.quantity) || 0), 0) || 0;
+      if (currentQty + 1 > stock) {
+        setSnackbarOpen(true);
+        setTimeout(() => setSnackbarOpen(false), 2000);
+        return;
+      }
+    } catch {}
     const effective = getBestPriceTier(item)?.finalPrice ?? parseFloat(item.price.toString());
     const priceString = Number.isFinite(effective) ? effective.toFixed(2) : parseFloat(item.price.toString()).toFixed(2);
     dispatch(addItem({

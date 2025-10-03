@@ -717,7 +717,12 @@ console.log("order",order)
                   ))}
                   {(() => {
                     const sub = computeSubtotal(order?.items || []);
-                    const tax = Number(order?.tax_amount || (sub * 0.07));
+                    // Only apply 7% fallback when shipping state is Indiana; otherwise 0
+                    const shippingState = (typeof order?.shipping_address === 'object' && order?.shipping_address)
+                      ? (order as any).shipping_address?.state
+                      : undefined;
+                    const isIndiana = String(shippingState || '').toLowerCase() === 'indiana';
+                    const tax = Number(order?.tax_amount ?? (isIndiana ? (sub * 0.07) : 0));
                     const taxPct = safePercent(tax, sub);
                     const shippingCost = Number(order?.shipping_cost || 350);
                     const total = order?.total_amount || (sub + tax + shippingCost);
@@ -733,7 +738,7 @@ console.log("order",order)
                           </Typography>
                           {tax > 0 && (
                             <Typography variant="body2">
-                              Tax:
+                              {`Tax${isIndiana ? ' (7%)' : ''}:`}
                             </Typography>
                           )}
                           <Typography variant="h6" fontWeight={600} color="primary">

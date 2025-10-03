@@ -73,10 +73,15 @@ export default function ShopOrderWizard() {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [qtyErrors, setQtyErrors] = useState<Record<number, string>>({});
+  // Derive errors inline to avoid flicker
 
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [variations, setVariations] = useState<VariationOption[]>([]);
+  // Remote search
+  const [searchInput, setSearchInput] = useState('');
+  const [searchResults, setSearchResults] = useState<ProductOption[]>([]);
+  // Track stock for validation even when product isn't present in local list
+  const [productStocks, setProductStocks] = useState<Record<number, number | undefined>>({});
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -159,6 +164,14 @@ export default function ShopOrderWizard() {
           }));
           // Immediately clear cart after importing items into the wizard
           try { dispatch(clearCart()); } catch {}
+          // Fetch stock for cart-imported products to enable validation
+          try {
+            const ids = Array.from(new Set(reduxCart.map((c) => Number(c.id))));
+            const details = await Promise.all(ids.map((id) => apiService.getProduct(id).catch(() => null)));
+            const stockMap: Record<number, number | undefined> = {};
+            details.forEach((d: any, i) => { if (d) stockMap[ids[i]] = Number(d?.stock ?? undefined); });
+            setProductStocks((prev) => ({ ...prev, ...stockMap }));
+          } catch {}
         }
       } catch (e: any) {
         setError('Failed to load initial data');
@@ -169,6 +182,25 @@ export default function ShopOrderWizard() {
     load();
   }, [reduxCart]);
 
+  // Debounced remote product search (server-side filtering) per API docs
+  useEffect(() => {
+    let active = true;
+    const q = searchInput.trim();
+    if (q.length < 2) { setSearchResults([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const res = await apiService.getProducts({ search: q, per_page: 20 });
+        const list = (res as any)?.data?.data || (res as any)?.data || res || [];
+        if (!active) return;
+        setSearchResults(Array.isArray(list) ? list : []);
+      } catch {
+        if (!active) return;
+        setSearchResults([]);
+      }
+    }, 250);
+    return () => { active = false; clearTimeout(t); };
+  }, [searchInput]);
+
   // Prefill customer info using same logic as EditProfileModal.loadCustomerFromAPI
   useEffect(() => {
     const prefill = async () => {
@@ -176,7 +208,11 @@ export default function ShopOrderWizard() {
       if (!customerId) return;
       try {
         const response = await apiService.getCustomer(customerId);
-        const customer = response.data?.data || response.data || response;
+        // Accept multiple shapes: {data:{data:{...}}} or {data:{...}} or {...}
+        const customerRaw = (response as any)?.data ?? response;
+        const customer = (customerRaw?.data && customerRaw?.data?.data)
+          ? customerRaw.data.data
+          : (customerRaw?.data || customerRaw);
         const name = customer.name || '';
         const firstNameFromName = name.split(' ')[0] || '';
         const lastNameFromName = name.split(' ').slice(1).join(' ') || '';
@@ -184,20 +220,51 @@ export default function ShopOrderWizard() {
         setLastName(customer.last_name || lastNameFromName || '');
         setEmail(customer.email || '');
         setPhone(customer.phone || '');
-        setShippingAddress({
+        // Helper to map state abbreviation to full name expected by UI
+        const stateMap: Record<string, string> = {
+          AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming'
+        };
+        const normalizeState = (s: any) => {
+          if (!s) return '';
+          const key = String(s).trim();
+          const upper = key.toUpperCase();
+          if (upper.length === 2 && stateMap[upper]) return stateMap[upper];
+          // If already full name, return as-is
+          return key;
+        };
+        const addresses = Array.isArray(customer.addresses) ? customer.addresses : [];
+        const pickAddr = (type: 'shipping' | 'billing') => {
+          const byType = addresses.filter((a: any) => String(a.type).toLowerCase() === type);
+          const chosen = byType.find((a: any) => a.is_default) || byType[0] || null;
+          if (chosen) {
+            return {
+              street: chosen.street || '',
+              city: chosen.city || '',
+              state: normalizeState(chosen.state || ''),
+              postalCode: chosen.postal_code || '',
+              country: chosen.country || 'US',
+            } as Address;
+          }
+          return null;
+        };
+        const shippingDerived = pickAddr('shipping') || {
           street: customer.address || '',
           city: customer.city || '',
-          state: customer.state || '',
+          state: normalizeState(customer.state || ''),
           postalCode: customer.postal_code || customer.zip || '',
           country: 'US',
-        });
-        setBillingAddress(prev => ({ ...prev }));
+        } as Address;
+        const billingDerived = pickAddr('billing') || shippingDerived;
+        setShippingAddress(shippingDerived);
+        setBillingAddress(billingDerived);
       } catch (e) {
         // Silent fail; user can fill manually
       }
     };
     prefill();
   }, [user]);
+
+  // No global qty error effect (prevents flicker)
 
   // Recompute cart prices when tiers/user/auth change
   useEffect(() => {
@@ -230,6 +297,17 @@ export default function ShopOrderWizard() {
   };
 
   const basePriceFor = (productId: number) => getUnitPrice(productId);
+  const getStockFor = (productId: number) => {
+    const prod = products.find(p => p.id === productId) as any;
+    const inList = Number(prod?.stock ?? NaN);
+    if (Number.isFinite(inList)) return inList as number;
+    const cached = productStocks[productId];
+    return (typeof cached === 'number') ? cached : undefined;
+  };
+
+  const getProductById = (id: number): ProductOption | undefined => {
+    return (searchResults.find(s => s.id === id) || products.find(p => p.id === id)) as any;
+  };
 
   const renderStepContent = () => {
     switch (activeStep) {
@@ -240,22 +318,26 @@ export default function ShopOrderWizard() {
               <Box display="grid" gridTemplateColumns="1fr" gap={2}>
                 <Typography variant="h6">Choose Products</Typography>
                 <Autocomplete
-                  multiple
-                  options={products}
+                  multiple={false}
+                  filterOptions={(x) => x}
+                  options={searchResults}
                   getOptionLabel={(o: any) => o.name}
-                  value={products.filter(p => cartItems.some(ci => ci.productId === p.id))}
-                  onChange={(_, values: any[]) => {
+                  inputValue={searchInput}
+                  onInputChange={(_, v) => setSearchInput(v)}
+                  value={null}
+                  isOptionEqualToValue={(o, v) => o.id === (v as any)?.id}
+                  onChange={(_, v: any) => {
+                    if (!v) return;
                     setCartItems(prev => {
-                      const next: CartItem[] = [];
-                      values.forEach(v => {
                         const existing = prev.find(ci => ci.productId === v.id);
                         const base = getUnitPrice(v.id);
-                        // Prefer product-specific pivot price when available for this user tier
-                        const product = products.find(p => p.id === v.id) as any;
+                      const product = (getProductById(v.id) as any) || {};
                         const effectiveTier = shopNowApis.getBestPriceTierForProduct(product, userData as any);
                         const display = effectiveTier?.finalPrice ?? shopNowApis.getDisplayPrice(base, !!auth?.isAuthenticated, userData, priceTiers);
                         const unitPrice = isNaN(Number(display)) ? 0 : Number(display);
-                        next.push({
+                      const next: CartItem[] = [
+                        ...prev,
+                        {
                           itemId: String(v.id),
                           productId: v.id,
                           name: v.name,
@@ -265,12 +347,25 @@ export default function ShopOrderWizard() {
                           totalPrice: (existing?.quantity || 1) * unitPrice,
                           variants: existing?.variants,
                           unitPriceLocked: existing?.unitPriceLocked || false,
-                        });
-                      });
+                        },
+                      ];
                       return next;
                     });
+                    // Cache stock if present and clear input
+                    const product = (getProductById(v.id) as any) || {};
+                    if (typeof product?.stock !== 'undefined') {
+                      setProductStocks(prevMap => ({ ...prevMap, [v.id]: Number(product.stock) }));
+                    }
+                    setSearchInput('');
                   }}
-                  renderInput={(params) => (<TextField {...params} placeholder="You can choose Single/Multiple Products" />)}
+                  renderInput={(params) => (<TextField {...params} placeholder="Search and select products" autoComplete="off" />)}
+                  renderTags={(value) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {cartItems.map((ci, idx) => (
+                        <Chip key={`${ci.productId}-${idx}`} label={(getProductById(ci.productId)?.name) || 'Item'} />
+                      ))}
+                    </Box>
+                  )}
                 />
                 {cartItems.length > 0 ? (
                   <Box sx={{ overflowX: 'auto' }}>
@@ -286,8 +381,13 @@ export default function ShopOrderWizard() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {cartItems.map((it, idx) => (
-                          <TableRow key={idx} hover>
+                        {cartItems.map((it, idx) => {
+                          const qtyErr = (() => {
+                            const s = getStockFor(it.productId);
+                            return (typeof s === 'number' && s >= 0 && it.quantity > s) ? `Max available stock: ${s}` : null;
+                          })();
+                          return (
+                          <TableRow key={idx} hover selected={!!qtyErr}>
                             <TableCell sx={{ minWidth: 240 }}>{it.name || products.find(p => p.id === it.productId)?.name}</TableCell>
                             <TableCell align="center">
                               <Button size="small" startIcon={<TuneIcon />} onClick={() => { setDrawerRowIndex(idx); setDrawerOpen(true); }}>Details</Button>
@@ -312,32 +412,32 @@ export default function ShopOrderWizard() {
                                 );
                               })()}
                             </TableCell>
-                            <TableCell align="center" sx={{ width: 120 }}>
+                            <TableCell align="center" sx={{ width: 160 }}>
                               <TextField type="number" size="small" value={it.quantity} onChange={(e) => {
                                 const qty = Math.max(1, Number(e.target.value) || 1);
-                                const stock = Number((products.find(p => p.id === it.productId) as any)?.stock ?? Infinity);
-                                const finiteStock = Number.isFinite(stock) && stock > 0 ? stock : Infinity;
-                                if (qty > finiteStock) {
-                                  setQtyErrors(prev => ({ ...prev, [idx]: `Max available stock: ${finiteStock}` }));
-                                } else {
-                                  setQtyErrors(prev => { const next = { ...prev }; delete next[idx]; return next; });
-                                }
-                                const stockLimit = Number.isFinite(stock) && stock > 0 ? stock : Infinity;
+                                const stockLookup = getStockFor(it.productId);
+                                const finiteStock = (typeof stockLookup === 'number' && stockLookup > 0) ? stockLookup : Infinity;
+                                const stockLimit = finiteStock;
                             // Do not auto-clamp; keep user entry, but track error separately
                             updateItem(idx, { quantity: qty });
-                              }} inputProps={{ min: 1, style: { textAlign: 'center' } }} error={!!qtyErrors[idx]} helperText={qtyErrors[idx] || ''} />
+                              }} inputProps={{ min: 1, style: { textAlign: 'center' } }} error={!!qtyErr} />
+                              {qtyErr && (
+                                <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                                  {qtyErr}
+                                </Typography>
+                              )}
                             </TableCell>
                             <TableCell align="right">${(it.quantity * it.unitPrice).toFixed(2)}</TableCell>
                             <TableCell align="center"><IconButton color="error" onClick={() => handleRemoveItem(idx)}><DeleteIcon /></IconButton></TableCell>
                           </TableRow>
-                        ))}
+                        );})}
                       </TableBody>
                     </Table>
                   </Box>
                 ) : (
                   <Box textAlign="center" py={3} color="text.secondary">No items selected.</Box>
                 )}
-                {Object.keys(qtyErrors).length > 0 && (
+                {cartItems.some((ci) => { const s = getStockFor(ci.productId); return typeof s === 'number' && s >= 0 && ci.quantity > s; }) && (
                   <Box sx={{ color: 'error.main', mt: 1 }}>
                     Please correct quantities exceeding available stock before continuing.
                   </Box>
@@ -495,9 +595,9 @@ export default function ShopOrderWizard() {
 
   const canProceedFromStep = (stepIndex: number) => {
     if (stepIndex === 0) {
-      const hasInvalidQty = cartItems.some((i, idx) => {
-        const stock = Number((products.find(p => p.id === i.productId) as any)?.stock ?? Infinity);
-        return Number.isFinite(stock) && stock > 0 && i.quantity > stock;
+      const hasInvalidQty = cartItems.some((i) => {
+        const stock = getStockFor(i.productId);
+        return typeof stock === 'number' && stock >= 0 && i.quantity > stock;
       });
       if (hasInvalidQty) return false;
       return cartItems.length > 0 && cartItems.every(i => i.productId && i.quantity > 0 && i.unitPrice >= 0);
@@ -518,7 +618,7 @@ export default function ShopOrderWizard() {
 
   const handleNext = async () => {
     if (!canProceedFromStep(activeStep)) {
-      if (Object.keys(qtyErrors).length > 0) {
+      if (activeStep === 0) {
         setError('Some items exceed available stock. Please correct them to continue.');
       } else {
         setError('Please complete required fields to continue.');
