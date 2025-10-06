@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAppDispatch } from '@/store/hooks';
 import { logoutUser } from '@/store/authSlice';
+import api from '@/utils/axios';
 
 const UserStatusChecker = () => {
   const pathname = usePathname();
@@ -29,37 +30,30 @@ const UserStatusChecker = () => {
       // Check user status when navigating between pages
       const checkUserStatus = async () => {
         try {
-          const response = await fetch('https://superiorseats.ali-khalid.com/api/user', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
+          const response = await api.get('/api/user');
+          const data = response.data;
+          
+          // Check if user is active
+          if (data.data && data.data.is_active === false) {
+            console.log('🚨 User account is inactive, forcing logout');
             
-            // Check if user is active
-            if (data.data && data.data.is_active === false) {
-              console.log('🚨 User account is inactive, forcing logout');
-              
-              // Show alert with the message
-              alert('Your account has been deactivated. Please contact system Administrator.');
-              
-              // Dispatch logout action
-              await dispatch(logoutUser());
-              
-              // Redirect to home page
-              setTimeout(() => {
-                window.location.href = '/';
-              }, 100);
-            }
-          } else if (response.status === 401) {
-            // Handle unauthorized - user might be inactive
-            const errorData = await response.json().catch(() => ({}));
-            const errorMessage = errorData.message || '';
+            // Show alert with the message
+            alert('Your account has been deactivated. Please contact system Administrator.');
+            
+            // Dispatch logout action
+            await dispatch(logoutUser());
+            
+            // Redirect to home page
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 100);
+          }
+        } catch (error: any) {
+          console.error('Error checking user status:', error);
+          
+          // Handle unauthorized - user might be inactive
+          if (error.response?.status === 401) {
+            const errorMessage = error.response?.data?.message || '';
             
             if (errorMessage.toLowerCase().includes('inactive') || 
                 errorMessage.toLowerCase().includes('account deactivated') ||
@@ -78,8 +72,6 @@ const UserStatusChecker = () => {
               }, 100);
             }
           }
-        } catch (error) {
-          console.error('Error checking user status:', error);
         }
       };
 
