@@ -65,6 +65,7 @@ const CategoriesPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [hasMorePages, setHasMorePages] = useState(false);
 
   const loadCategories = useCallback(async () => {
     try {
@@ -74,7 +75,7 @@ const CategoriesPage = () => {
       // Build API parameters for server-side pagination
       const params: Record<string, any> = {
         page: page + 1, // API uses 1-based pagination, but MUI uses 0-based
-        limit: rowsPerPage
+        per_page: rowsPerPage
       };
       
       // Add optional search parameter
@@ -90,24 +91,35 @@ const CategoriesPage = () => {
       // Handle the API response structure
       if (response && response.data) {
         setCategories(response.data);
-        // Update total count for pagination from the meta.pagination object
-        if (response.meta && response.meta.pagination && response.meta.pagination.total) {
-          setTotalCount(response.meta.pagination.total);
+        // Update total count and hasMorePages for pagination from the meta.pagination object
+        if (response.meta && response.meta.pagination) {
+          if (response.meta.pagination.total) {
+            setTotalCount(response.meta.pagination.total);
+          }
+          // Set hasMorePages from the API response
+          const morePages = response.meta.pagination.has_more_pages === true;
+          setHasMorePages(morePages);
+          console.log('📊 Setting hasMorePages to:', morePages, 'from response.meta.pagination.has_more_pages:', response.meta.pagination.has_more_pages);
         } else if (response.meta && response.meta.total) {
           setTotalCount(response.meta.total);
+          setHasMorePages(false);
         } else if (response.total !== undefined) {
           setTotalCount(response.total);
+          setHasMorePages(false);
         } else if (response.data && Array.isArray(response.data)) {
           // If no total count provided, use the length of current data
           // This is not ideal for server-side pagination but prevents errors
           setTotalCount(response.data.length);
+          setHasMorePages(false);
         }
       } else if (Array.isArray(response)) {
         setCategories(response);
         setTotalCount(response.length);
+        setHasMorePages(false);
       } else {
         setCategories([]);
         setTotalCount(0);
+        setHasMorePages(false);
       }
     } catch (err: any) {
       console.error('Error loading categories:', err);
@@ -366,13 +378,13 @@ const CategoriesPage = () => {
                   </Button>
                   
                   <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
-                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                    Page {page + 1} {hasMorePages ? `(more available)` : ''}
                   </Typography>
                   
                   <Button
                     variant="outlined"
                     size="small"
-                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                    disabled={!hasMorePages}
                     onClick={() => setPage(page + 1)}
                     sx={{
                       minWidth: 'auto',
@@ -480,13 +492,13 @@ const CategoriesPage = () => {
                   </Button>
                   
                   <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
-                    Page {page + 1} of {Math.ceil(totalCount / rowsPerPage)}
+                    Page {page + 1} {hasMorePages ? `(more available)` : ''}
                   </Typography>
                   
                   <Button
                     variant="outlined"
                     size="small"
-                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                    disabled={!hasMorePages}
                     onClick={() => setPage(page + 1)}
                     sx={{
                       minWidth: 'auto',

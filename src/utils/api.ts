@@ -1849,15 +1849,13 @@ class ApiService {
       const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
       const response = await api.get(`/categories${queryString ? `?${queryString}` : ''}`);
       
-      // Handle the actual API response structure
-      if (response.data && response.data.data && response.data.data.data) {
-        return response.data.data.data;
-      } else if (response.data && response.data.data) {
-        return response.data.data;
-      } else if (response.data) {
+      // Handle different response structures similar to other services
+      if (response.data && response.data.data) {
         return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
       }
-      return [];
+      return { data: [], meta: {} };
     } catch (error: any) {
       console.error('Error fetching categories:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch categories');
@@ -2119,8 +2117,14 @@ class ApiService {
   async getArmTypes(params?: Record<string, any>) {
     try {
       const response = await api.get('/arm-types', { params });
-      // Handle nested data structure: response.data.data.data
-      return response.data?.data?.data || response.data?.data || response.data || [];
+      
+      // Handle different response structures similar to other services
+      if (response.data && response.data.data) {
+        return response.data;
+      } else if (response.data) {
+        return { data: response.data, meta: response.data.meta || {} };
+      }
+      return { data: [], meta: {} };
     } catch (error: any) {
       console.error('Error fetching arm types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch arm types');
