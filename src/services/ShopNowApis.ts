@@ -305,9 +305,10 @@ class ShopNowApis {
     userData?: User | null;
   } = {}): Promise<ProductsResponse> {
     try {
-      // Extract customer ID (role_id) from userData parameter or localStorage fallback
+      // Extract customer ID (role_id) from userData parameter
+      // Only use userData if it's provided (user is authenticated)
       const customerId = (() => {
-        // First try to get from userData parameter
+        // Only try to get from userData parameter if it's provided
         if (params.userData) {
           const roleId = params.userData.role?.id || params.userData.role_id;
           console.log('🔍 ShopNowApis - Using userData role_id:', roleId);
@@ -327,19 +328,9 @@ class ShopNowApis {
           return typeof roleId === 'number' ? roleId : null;
         }
         
-        // Fallback to localStorage
-        try {
-          const raw = localStorage.getItem('persist:auth');
-          if (!raw) return null;
-          const parsed = JSON.parse(raw);
-          const userStr = parsed.user;
-          const user = userStr ? JSON.parse(userStr) : null;
-          
-          // Try to get role_id from user.role.id first, then fallback to user.role_id
-          const roleId = user?.role?.id || user?.role_id;
-          console.log('🔍 ShopNowApis - Using localStorage role_id:', roleId);
-          return typeof roleId === 'number' ? roleId : null;
-        } catch { return null; }
+        // If no userData provided, return null (no customer ID)
+        console.log('🔍 ShopNowApis - No userData provided, using no customer ID');
+        return null;
       })();
       
       // Build query parameters
@@ -360,8 +351,8 @@ class ShopNowApis {
       }
       
       // Build the path with customer ID - use /shop/products/{customer} pattern
-      // For no user login, use the pattern: /shop/products/{customer?%7D=
-      const basePath = customerId ? `/shop/products/${customerId}` : '/shop/products/{customer?%7D=';
+      // For no user login, use the pattern: /shop/products/{customer}
+      const basePath = customerId ? `/shop/products/${customerId}` : '/shop/products/{customer}';
       const queryString = queryParams.toString();
       const path = queryString ? `${basePath}?${queryString}` : basePath;
       
