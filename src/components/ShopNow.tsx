@@ -247,8 +247,10 @@ const ShopNow = () => {
       }
       
       
-      // Add userData to API params
-      apiParams.userData = userData;
+      // Add userData to API params only if user is authenticated
+      if (isAuthenticated && userData) {
+        apiParams.userData = userData;
+      }
       
       const productsResponse = await shopNowApis.getProducts(apiParams);
       
