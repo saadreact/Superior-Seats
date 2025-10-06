@@ -735,7 +735,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                 pb: { xs: 4, sm: 5, md: 4, lg: 4, xl: 4, xxl: 4},
                 maxWidth: '600px',
                 mx: 'auto',
-                width: '100%'
+                width: '100%',
+                maxHeight: { md: '70vh', lg: '70vh' },
+                overflowY: { md: 'auto', lg: 'auto' },
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                  borderRadius: '3px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '3px',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  },
+                },
               }}>
                 
 
