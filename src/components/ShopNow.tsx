@@ -102,7 +102,7 @@ const ShopNow = () => {
   const [selectedImage, setSelectedImage] = useState<Product | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);   // cards per page - server-side pagination
+  const [itemsPerPage, setItemsPerPage] = useState(12);   // cards per page - server-side pagination
   const [modalImageIndex, setModalImageIndex] = useState(0); // For multiple images in modal
   const [showSpecialOnly, setShowSpecialOnly] = useState(false); // Special products filter
   const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
@@ -1377,11 +1377,10 @@ const ShopNow = () => {
                       },
                     }}
                   >
-                    <MenuItem value={5}>5</MenuItem>
-                    <MenuItem value={10}>10</MenuItem>
-                    <MenuItem value={15}>15</MenuItem>
-                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={12}>12</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
                     <MenuItem value={100}>100</MenuItem>
+                 
                   </Select>
                 </FormControl>
                 
