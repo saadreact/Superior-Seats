@@ -687,7 +687,7 @@ export default function ShopOrderWizard() {
           billingAddress: { ...billingAddress },
         },
         paymentInfo: {
-          method: paymentOption === 'card' ? 'square' : 'cash',
+          method: 'cash',
           amountPaid: grandTotal,
           currency: 'USD',
         },
@@ -701,8 +701,8 @@ export default function ShopOrderWizard() {
       else if (response?.id) orderId = response.id;
       else if (response?.data?.data?.id) orderId = response.data.data.id;
 
-      // If card selected, charge now (mirror view-order Pay button exactly using the just-created order data)
-      if (paymentOption === 'card' && orderId && usedCardToken) {
+      // Charge payment for both card and cash (mirror view-order Pay button exactly using the just-created order data)
+      if (orderId) {
         // Fetch fresh order to get server-computed totals and customer id
         let freshOrder: any = null;
         try {
@@ -718,10 +718,10 @@ export default function ShopOrderWizard() {
         const chargeBody = {
           customer_id: customerId,
           order_id: orderId,
-          payment_method: 'square',
+          payment_method: paymentOption === 'card' ? 'square' : 'cash',
           amount: amountToCharge,
-          token: usedCardToken,
-          location_id: locationId,
+          ...(paymentOption === 'card' && usedCardToken ? { token: usedCardToken } : {}),
+          ...(paymentOption === 'card' ? { location_id: locationId } : {}),
           notes: `Payment for order #${orderNumber}`,
         };
 

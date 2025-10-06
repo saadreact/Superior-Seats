@@ -119,6 +119,9 @@ const OrderWizard: React.FC = () => {
 	const [customers, setCustomers] = useState<CustomerOption[]>([]);
 	const [products, setProducts] = useState<ProductOption[]>([]);
 	const [variations, setVariations] = useState<VariationOption[]>([]);
+	// Remote search
+	const [searchInput, setSearchInput] = useState('');
+	const [searchResults, setSearchResults] = useState<ProductOption[]>([]);
 
 	// Price tiers context
 	const [priceTiers, setPriceTiers] = useState<ShopPriceTier[]>([]);
@@ -242,6 +245,29 @@ const OrderWizard: React.FC = () => {
 		}));
 	}, [selectedCustomer, priceTiers, products]);
 
+	// Debounced remote product search (server-side filtering) per API docs
+	useEffect(() => {
+		let active = true;
+		const q = searchInput.trim();
+		if (q.length < 2) { setSearchResults([]); return; }
+		const t = setTimeout(async () => {
+			try {
+				const res = await apiService.getProducts({ search: q, per_page: 20 });
+				const list = (res as any)?.data?.data || (res as any)?.data || res || [];
+				if (!active) return;
+				setSearchResults(Array.isArray(list) ? list : []);
+			} catch {
+				if (!active) return;
+				setSearchResults([]);
+			}
+		}, 250);
+		return () => { active = false; clearTimeout(t); };
+	}, [searchInput]);
+
+	const getProductById = (id: number): ProductOption | undefined => {
+		return (searchResults.find(s => s.id === id) || products.find(p => p.id === id)) as any;
+	};
+
 	// Derived totals
 	const subTotal = useMemo(() => cartItems.reduce((s, i) => s + (i.quantity * i.unitPrice), 0), [cartItems]);
 	const discount = 0;
@@ -360,7 +386,7 @@ const OrderWizard: React.FC = () => {
 					shippingAddress: { ...shippingAddress },
 					billingAddress: { ...billingAddress },
 				},
-				paymentInfo: { method: paymentOption === 'card' ? 'square' : 'cash', amountPaid: grandTotal, currency: 'USD' },
+				paymentInfo: { method: 'cash', amountPaid: grandTotal, currency: 'USD' },
 				cartSummary: { subTotal, tax, discount: 0, grandTotal, shippingCost: 350 },
 				notes: [notes, shippingMethod ? `(Ship: ${shippingMethod})` : ''].filter(Boolean).join(' '),
 			};
@@ -371,8 +397,8 @@ const OrderWizard: React.FC = () => {
 			else if (response?.id) orderId = response.id;
 			else if (response?.data?.data?.id) orderId = response.data.data.id;
 
-			// If card selected, charge now (mirror shop flow exactly) but do NOT block navigation on failure
-			if (paymentOption === 'card' && orderId && usedCardToken) {
+			// Charge payment for both card and cash (mirror shop flow exactly) but do NOT block navigation on failure
+			if (orderId) {
 				try {
 					// Fetch fresh order to get server-computed totals and customer id
 					let freshOrder: any = null;
@@ -389,10 +415,10 @@ const OrderWizard: React.FC = () => {
 					const chargeBody = {
 						customer_id: customerId,
 						order_id: orderId,
-						payment_method: 'square',
+						payment_method: paymentOption === 'card' ? 'square' : 'cash',
 						amount: amountToCharge,
-						token: usedCardToken,
-						location_id: locationId,
+						...(paymentOption === 'card' && usedCardToken ? { token: usedCardToken } : {}),
+						...(paymentOption === 'card' ? { location_id: locationId } : {}),
 						notes: `Payment for order #${orderNumber}`,
 					};
 
@@ -469,17 +495,22 @@ const OrderWizard: React.FC = () => {
 							<Box display="grid" gridTemplateColumns="1fr" gap={2}>
 								<Typography variant="h6">Choose Products</Typography>
 								<Autocomplete
-									multiple
-									options={products}
+									multiple={false}
+									filterOptions={(x) => x}
+									options={searchResults}
 									getOptionLabel={(o: any) => o.name}
-									value={products.filter(p => cartItems.some(ci => ci.productId === p.id))}
-									onChange={(_, values: any[]) => {
+									inputValue={searchInput}
+									onInputChange={(_, v) => setSearchInput(v)}
+									value={null}
+									isOptionEqualToValue={(o, v) => o.id === (v as any)?.id}
+									onChange={(_, v: any) => {
+										if (!v) return;
 										setCartItems(prev => {
-											const next: CartItem[] = [];
-											values.forEach(v => {
-												const existing = prev.find(ci => ci.productId === v.id);
-												const unitPrice = getDiscountedPrice(v.id);
-												next.push({
+											const existing = prev.find(ci => ci.productId === v.id);
+											const unitPrice = getDiscountedPrice(v.id);
+											const next: CartItem[] = [
+												...prev,
+												{
 													itemId: String(v.id),
 													productId: v.id,
 													name: v.name,
@@ -489,12 +520,21 @@ const OrderWizard: React.FC = () => {
 													totalPrice: (existing?.quantity || 1) * unitPrice,
 													variants: existing?.variants,
 													unitPriceLocked: existing?.unitPriceLocked || false,
-												});
-											});
+												},
+											];
 											return next;
 										});
+										setSearchInput('');
 									}}
-									renderInput={(params) => <TextField {...params} placeholder="You can choose Single/Multiple Products" />} />
+									renderInput={(params) => (<TextField {...params} placeholder="Search and select products" autoComplete="off" />)}
+									renderTags={(value) => (
+										<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+											{cartItems.map((ci, idx) => (
+												<Chip key={`${ci.productId}-${idx}`} label={(getProductById(ci.productId)?.name) || 'Item'} />
+											))}
+										</Box>
+									)}
+								/>
 
 								{cartItems.length > 0 ? (
 									<Box sx={{ overflowX: 'auto' }}>
