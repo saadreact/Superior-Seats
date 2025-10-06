@@ -28,6 +28,9 @@ import {
   Tooltip,
   useTheme,
   useMediaQuery,
+  FormControl,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -677,35 +680,33 @@ const Products2Page = () => {
                 </Button>
               </Box>
               
-              {/* Items per page input */}
+              {/* Items per page select dropdown */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="body2" color="text.secondary">
                   Items per page:
                 </Typography>
-                <TextField
-                  type="number"
-                  value={rowsPerPage}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 10;
-                    if (value > 0 && value <= 100) {
+                <FormControl size="small" sx={{ minWidth: 80, maxWidth: 100 }}>
+                  <Select
+                    value={rowsPerPage.toString()}
+                    onChange={(event: any) => {
+                      const value = parseInt(event.target.value, 10);
                       setRowsPerPage(value);
                       setPage(0);
-                    }
-                  }}
-                  size="small"
-                  sx={{ 
-                    minWidth: 80,
-                    maxWidth: 100,
-                    '& .MuiInputBase-input': {
-                      textAlign: 'center'
-                    }
-                  }}
-                  inputProps={{
-                    min: 1,
-                    max: 100,
-                    step: 1
-                  }}
-                />
+                    }}
+                    sx={{
+                      '& .MuiSelect-select': {
+                        textAlign: 'center',
+                        padding: '8px 12px',
+                      },
+                    }}
+                  >
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={15}>15</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={100}>100</MenuItem>
+                  </Select>
+                </FormControl>
               </Box>
             </Box>
           </Box>
@@ -892,35 +893,33 @@ const Products2Page = () => {
               flexWrap: 'wrap',
               gap: 2
             }}>
-              {/* Left side - Items per page input */}
+              {/* Left side - Items per page select dropdown */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="body2" color="text.secondary">
                   Items per page:
                 </Typography>
-                <TextField
-                  type="number"
-                  value={rowsPerPage}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 10;
-                    if (value > 0 && value <= 100) {
+                <FormControl size="small" sx={{ minWidth: 80, maxWidth: 100 }}>
+                  <Select
+                    value={rowsPerPage.toString()}
+                    onChange={(event: any) => {
+                      const value = parseInt(event.target.value, 10);
                       setRowsPerPage(value);
                       setPage(0);
-                    }
-                  }}
-                  size="small"
-                  sx={{ 
-                    minWidth: 80,
-                    maxWidth: 100,
-                    '& .MuiInputBase-input': {
-                      textAlign: 'center'
-                    }
-                  }}
-                  inputProps={{
-                    min: 1,
-                    max: 100,
-                    step: 1
-                  }}
-                />
+                    }}
+                    sx={{
+                      '& .MuiSelect-select': {
+                        textAlign: 'center',
+                        padding: '8px 12px',
+                      },
+                    }}
+                  >
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={15}>15</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={100}>100</MenuItem>
+                  </Select>
+                </FormControl>
               </Box>
               
               {/* Center - Page info */}
