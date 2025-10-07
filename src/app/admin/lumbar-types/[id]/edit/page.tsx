@@ -505,7 +505,7 @@ const EditLumbarTypePage = () => {
                             justifyContent: 'center'
                           }}>
                             <img
-                              src={`https://superiorseats.ali-khalid.com/${currentImage}`}
+                              src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${currentImage}`}
                               alt="Current lumbar type image"
                               style={{
                                 maxWidth: '100%',

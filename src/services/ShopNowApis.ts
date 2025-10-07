@@ -333,6 +333,8 @@ class ShopNowApis {
         return null;
       })();
       
+      console.log('🔍 ShopNowApis - Final customerId:', customerId);
+      
       // Build query parameters
       const queryParams = new URLSearchParams();
       
@@ -351,32 +353,15 @@ class ShopNowApis {
       }
       
       // Build the path with customer ID - use /shop/products/{customer} pattern
-      // For no user login, use the pattern: /shop/products/{customer}
-      const basePath = customerId ? `/shop/products/${customerId}` : '/shop/products/{customer}';
+      // For no user login, use the pattern: /shop/products (without customer ID)
+      const basePath = customerId ? `/shop/products/${customerId}` : '/shop/products';
       const queryString = queryParams.toString();
       const path = queryString ? `${basePath}?${queryString}` : basePath;
       
-      console.log('🚀 ShopNowApis - Fetching products with params:', params, 'Path:', path);
-      console.log('🌐 ShopNowApis - Full URL:', `${BASE_URL}${path}`);
-      console.log('🔑 ShopNowApis - Auth token present:', !!localStorage.getItem('auth_token'));
-      console.log('👤 ShopNowApis - Customer ID (role_id):', customerId);
-      console.log('🔍 ShopNowApis - API Mode:', customerId ? 'Authenticated User' : 'No User Login');
-      console.log('📋 ShopNowApis - User Data Summary:', {
-        hasUserData: !!params.userData,
-        roleId: params.userData?.role?.id || params.userData?.role_id,
-        roleName: params.userData?.role?.name,
-        customerType: params.userData?.customer_type
-      });
-      console.log('🔧 ShopNowApis - Query Parameters:', {
-        page: params.page,
-        limit: params.limit,
-        show_on_special_shop: params.show_on_special_shop,
-        category_id: params.category_id,
-        queryString: queryString
-      });
+   
       
       const response = await api.get<ProductsResponse>(path);
-      console.log('✅ ShopNowApis - Products response received:', response.data);
+      
       
       // Debug: Log price tiers for first few products
       if (response.data.data && response.data.data.length > 0) {
@@ -460,7 +445,7 @@ class ShopNowApis {
         } catch { return null; }
       })();
       
-      const base = customerId ? `/shop/products/${customerId}` : '/shop/products/{customer?%7D=';
+      const base = customerId ? `/shop/products/${customerId}` : '/shop/products';
       const path = `${base}?category=${categoryId}`;
       const response = await api.get<ProductsResponse>(path);
       return response.data;
@@ -802,7 +787,7 @@ class ShopNowApis {
               return image;
             }
             // Otherwise, prepend the base URL
-            return `https://superiorseats.ali-khalid.com${image}`;
+            return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${image}`;
           });
       }
     } catch (error) {

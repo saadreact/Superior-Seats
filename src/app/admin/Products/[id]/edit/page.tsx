@@ -1270,7 +1270,7 @@ const EditProduct2Page = () => {
                         {existingImages.map((imageData, index) => (
                           <Box key={`existing-${imageData.id}`} sx={{ position: 'relative', width: 60, height: 60 }}>
                             <img
-                              src={imageData.url.startsWith('http') ? imageData.url : `https://superiorseats.ali-khalid.com${imageData.url}`}
+                              src={imageData.url.startsWith('http') ? imageData.url : `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${imageData.url}`}
                               alt={`Existing ${index + 1}`}
                               style={{
                                 width: '100%',

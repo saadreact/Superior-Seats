@@ -19,9 +19,10 @@ import {
 import InputAdornment from '@mui/material/InputAdornment';
 import { Person, Business, Send, Phone, Email, LocationOn, AccessTime } from '@mui/icons-material';
 import { contactInfo, initialFormData, ContactFormData } from '@/data/ContactPage';
+import { sendContactForm } from '@/services/contactpageapi';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import Breadcrumbs from '@/components/Breadcrumbs';
+// import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import HeroSectionCommon from './common/HeroSectionaCommon';
 
 
@@ -149,8 +150,8 @@ const ContactPage = () => {
       // Set loading state
       setIsSubmitting(true);
       
-      // Prepare email data
-      const emailData = {
+      // Prepare API data
+      const apiData = {
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
         email: validatedData.email,
@@ -160,44 +161,34 @@ const ContactPage = () => {
         message: validatedData.message,
       };
       
-      // Create email content
-      const emailSubject = `Contact Form: ${emailData.subject}`;
-      const emailBody = `
-      Hello Superior Seating LLC
-
-Name: ${emailData.firstName} ${emailData.lastName}
-Email: ${emailData.email}
-Phone: ${emailData.phone}
-Company: ${emailData.company || 'Not provided'}
-Message:
-${emailData.message}
-  This message was sent from the Superior Seating LLC website contact form.
-      `.trim();
+      // Send data to API
+      const response = await sendContactForm(apiData);
       
-      // Create mailto link
-      const mailtoLink = `mailto:info@superiorseats.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-      
-      // Open email client
-      window.open(mailtoLink, '_blank');
-      
-      // Show success message
-      setSnackbarMessage('Your email client is opening with a pre-filled message. Please send the email to complete your inquiry.');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-      
-      // Reset form after a short delay
-      setTimeout(() => {
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          company: '',
-          subject: '',
-          message: ''
-        });
-        setErrors({} as ContactFormErrors);
-      }, 2000);
+      if (response.success) {
+        // Show success message
+        setSnackbarMessage('Your message has been sent successfully! We will get back to you soon.');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        
+        // Reset form after a short delay
+        setTimeout(() => {
+          setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            phone: '',
+            company: '',
+            subject: '',
+            message: ''
+          });
+          setErrors({} as ContactFormErrors);
+        }, 2000);
+      } else {
+        // Handle API error response
+        setSnackbarMessage(response.message);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
       
     } catch (error: unknown) {
       console.error('Form validation error:', error);
@@ -248,12 +239,12 @@ ${emailData.message}
           }}
            />
 
-      {/* Breadcrumbs */}
-      <Breadcrumbs
+      {/* Breadcrumbs - Temporarily disabled */}
+      {/* <Breadcrumbs
         items={[
           { label: 'Contact Us' }
         ]}
-      />
+      /> */}
       
       {/* API Debug Component - Only show in development */}
       {process.env.NODE_ENV === 'development' && (
@@ -265,7 +256,7 @@ ${emailData.message}
       )}
 
       {/* Contact Form */}
-      <Box sx={{  backgroundColor: '#fafafa' }}>
+      <Box sx={{ backgroundColor: '#fafafa', pb: { xs: 4, sm: 5, md: 6 } }}>
         <Container maxWidth="md">
           <Typography
             variant="h3"
@@ -520,20 +511,57 @@ ${emailData.message}
                         },
                       }}
                     >
-                     {isSubmitting ? 'Opening Email...' : 'Send Message'}
+                     {isSubmitting ? 'Sending Message...' : 'Send Message'}
                    </Button>
-                                     <Typography
-                     variant="caption"
-                     sx={{
-                       color: 'text.secondary',
-                       fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                       opacity: 0.7,
-                       textAlign: 'center',
-                       px: { xs: 2, sm: 0 },
-                     }}
-                   >
-                     Click Send Message to open your email client with a pre-filled message
-                   </Typography>
+                   
+                   
+                   {/* Alternative Email Contact */}
+                   <Box sx={{ 
+                   
+                   
+                    // borderTop: '1px solid rgba(0, 0, 0, 0.1)'
+                   }}>
+                     <Typography
+                       variant="body2"
+                       sx={{
+                         color: 'text.secondary',
+                         fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                         mb: 1,
+                       }}
+                     >
+                       Or
+                     </Typography>
+                     <Typography
+                       variant="body2"
+                       sx={{
+                         color: 'text.secondary',
+                         fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                         display: 'flex',
+                         alignItems: 'center',
+                         justifyContent: 'center',
+                         gap: 0.5,
+                         flexWrap: 'wrap',
+                       }}
+                     >
+                       You can contact us through the Email:{' '}
+                       <Typography
+                         component="a"
+                         href="mailto:info@superiorseatingllc.com"
+                         variant="body2"
+                         sx={{
+                           color: 'primary.main',
+                           fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                           textDecoration: 'none',
+                           fontWeight: 500,
+                           '&:hover': {
+                             textDecoration: 'underline',
+                           },
+                         }}
+                       >
+                         info@superiorseatingllc.com
+                       </Typography>
+                     </Typography>
+                   </Box>
                 </Box>
               </Box>
             </form>

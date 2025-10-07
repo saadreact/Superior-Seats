@@ -443,7 +443,7 @@ const EditReclineTypePage = () => {
                           backgroundColor: '#fafafa'
                         }}>
                       <img
-                        src={`https://superiorseats.ali-khalid.com/${currentImage}`}
+                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${currentImage}`}
                             alt="Current recline type"
                         style={{
                           maxWidth: '200px',
@@ -453,7 +453,7 @@ const EditReclineTypePage = () => {
                               display: 'block'
                             }}
                             onError={(e) => {
-                              console.log('Image load error for:', `https://superiorseats.ali-khalid.com/${currentImage}`);
+                              
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
                               const parent = target.parentElement;

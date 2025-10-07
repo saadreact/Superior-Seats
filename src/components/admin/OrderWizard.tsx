@@ -421,8 +421,8 @@ const OrderWizard: React.FC = () => {
 						...(paymentOption === 'card' ? { location_id: locationId } : {}),
 						notes: `Payment for order #${orderNumber}`,
 					};
-					const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-					const chargeResp = await fetch(`${apiBaseUrl}/payments/charge`, {
+
+					const chargeResp = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/payments/charge`, {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',

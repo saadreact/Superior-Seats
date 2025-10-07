@@ -584,7 +584,7 @@ const EditMaterialTypePage = () => {
                         Current Image:
                       </Typography>
                       <img
-                        src={`https://superiorseats.ali-khalid.com/${currentImage}`}
+                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${currentImage}`}
                         alt="Current"
                         style={{
                           maxWidth: '100%',

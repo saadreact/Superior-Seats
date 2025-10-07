@@ -38,7 +38,7 @@ import {
 import Header from '@/components/Header';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import Footer from '@/components/Footer';
-import Breadcrumbs from '@/components/Breadcrumbs';
+// import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import { mainCategories, subCategories } from '@/data/ShopGallery';
 // NEW IMPORTS: Added to enable communication with CustomizedSeat component
 import { useSelectedItem, ProductVariations, VariationOption } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
@@ -385,8 +385,8 @@ const ShopGallery = () => {
           }}
         />
 
-      {/* Breadcrumbs */}
-      <Breadcrumbs />
+      {/* Breadcrumbs - Temporarily disabled */}
+      {/* <Breadcrumbs /> */}
 
 
              {/* Gallery Grid */}

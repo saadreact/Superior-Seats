@@ -407,7 +407,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     onClick={() => setPrimaryImage(index)}
                   >
                     <Image
-                      src={`https://superiorseats.ali-khalid.com${image}`}
+                      src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${image}`}
                       alt={`Product image ${index + 1}`}
                       width={100}
                       height={100}
@@ -614,7 +614,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                       {variation.image && (
                         <Image
-                          src={`https://superiorseats.ali-khalid.com${variation.image}`}
+                          src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${variation.image}`}
                           alt={variation.name}
                           width={40}
                           height={40}

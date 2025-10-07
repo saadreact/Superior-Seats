@@ -42,7 +42,7 @@ import {
 import Header from '@/components/Header';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import Footer from '@/components/Footer';
-import Breadcrumbs from '@/components/Breadcrumbs';
+// import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 
 // NEW IMPORTS: Added to enable communication with CustomizedSeat component
 import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
@@ -250,6 +250,19 @@ const ShopNow = () => {
       // Add userData to API params only if user is authenticated
       if (isAuthenticated && userData) {
         apiParams.userData = userData;
+        console.log('🔍 ShopNow - Passing userData to API:', {
+          isAuthenticated,
+          hasUserData: !!userData,
+          userData: userData,
+          roleId: userData.role?.id || userData.role_id,
+          customerType: userData.customer_type
+        });
+      } else {
+        console.log('🔍 ShopNow - Not passing userData to API:', {
+          isAuthenticated,
+          hasUserData: !!userData,
+          userData: userData
+        });
       }
       
       const productsResponse = await shopNowApis.getProducts(apiParams);
@@ -321,17 +334,22 @@ const ShopNow = () => {
     if (isAuthenticated) {
       setUserLoading(true);
       try {
+        console.log('🔍 ShopNow - Fetching user data for authenticated user...');
         const userResponse = await shopNowApis.getCurrentUser();
+        console.log('🔍 ShopNow - User data fetched:', userResponse);
         setUserData(userResponse);
       } catch (userError: any) {
         // Don't redirect on user data fetch failure, just clear user data
         if (userError?.response?.status === 401) {
+          console.log('🔍 ShopNow - 401 error fetching user data, clearing user data');
         }
+        console.error('🔍 ShopNow - Error fetching user data:', userError);
         setUserData(null);
       } finally {
         setUserLoading(false);
       }
     } else {
+      console.log('🔍 ShopNow - User not authenticated, clearing user data');
       setUserData(null);
       setUserLoading(false);
     }
@@ -606,8 +624,8 @@ const ShopNow = () => {
           }}
         />
 
-      {/* Breadcrumbs */}
-      <Breadcrumbs />
+      {/* Breadcrumbs - Temporarily disabled */}
+      {/* <Breadcrumbs /> */}
 
 
              {/* Gallery Grid */}

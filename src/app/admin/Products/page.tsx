@@ -272,11 +272,11 @@ const Products2Page = () => {
   const getProductImage = (product: Product) => {
     // Handle both images array and primary_image object from API response
     if (product.primary_image?.image_path) {
-      return `https://superiorseats.ali-khalid.com${product.primary_image.image_path}`;
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${product.primary_image.image_path}`;
     }
     
     if (product.images && product.images.length > 0) {
-      return `https://superiorseats.ali-khalid.com${product.images[0]}`;
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${product.images[0]}`;
     }
     
     return null; // No fallback image

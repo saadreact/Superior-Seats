@@ -181,18 +181,19 @@ const ProductDetailPage = () => {
 
   const getProductImages = (product: Product) => {
     const images: string[] = [];
+    const baseUrl = process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL;
     
     // Add primary image first
     if (product.primary_image?.image_path) {
-      images.push(`https://superiorseats.ali-khalid.com${product.primary_image.image_path}`);
+      images.push(`${baseUrl}${product.primary_image.image_path}`);
     }
     
     // Add other images
     if (product.images && Array.isArray(product.images)) {
       product.images.forEach(image => {
         const imageUrl = typeof image === 'string' ? image : (image as any)?.image_path || (image as any)?.image_url || '';
-        if (imageUrl && !images.includes(`https://superiorseats.ali-khalid.com${imageUrl}`)) {
-          images.push(`https://superiorseats.ali-khalid.com${imageUrl}`);
+        if (imageUrl && !images.includes(`${baseUrl}${imageUrl}`)) {
+          images.push(`${baseUrl}${imageUrl}`);
         }
       });
     }
