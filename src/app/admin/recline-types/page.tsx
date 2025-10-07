@@ -91,7 +91,7 @@ const ReclineTypesPage = () => {
   // Helper function to get recline type image URL
   const getReclineTypeImage = (reclineType: ReclineType) => {
     if (reclineType.image) {
-      return `https://superiorseats.ali-khalid.com/${reclineType.image}`;
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${reclineType.image}`;
     }
     return null;
   };

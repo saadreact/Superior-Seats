@@ -787,7 +787,7 @@ class ShopNowApis {
               return image;
             }
             // Otherwise, prepend the base URL
-            return `https://superiorseats.ali-khalid.com${image}`;
+            return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${image}`;
           });
       }
     } catch (error) {

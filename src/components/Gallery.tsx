@@ -22,7 +22,7 @@ import {
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import Breadcrumbs from '@/components/Breadcrumbs';
+// import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import LazyImage from '@/components/common/LazyImage';
 import { workPictures, workPicturesTruck, WorkImage } from '@/data/Gallery';
@@ -134,12 +134,12 @@ const Gallery = () => {
           }}
         /> 
 
-      {/* Breadcrumbs */}
-      <Breadcrumbs
+      {/* Breadcrumbs - Temporarily disabled */}
+      {/* <Breadcrumbs
         items={[
           { label: 'Gallery' }
         ]}
-      />
+      /> */}
      {/* Horizontal Image Slider */}
       <Box sx={{ 
         backgroundColor: '#f8f9fa',

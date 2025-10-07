@@ -257,7 +257,7 @@ const ReclineTypeDetailsPage = () => {
                       display: 'inline-block'
                     }}>
                       <img
-                        src={`https://superiorseats.ali-khalid.com/${reclineType.image}`}
+                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${reclineType.image}`}
                         alt={reclineType.name}
                         style={{
                           maxWidth: '200px',
@@ -267,7 +267,7 @@ const ReclineTypeDetailsPage = () => {
                           display: 'block'
                         }}
                         onError={(e) => {
-                          console.log('Image load error for:', `https://superiorseats.ali-khalid.com/${reclineType.image}`);
+                      
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
                           const parent = target.parentElement;

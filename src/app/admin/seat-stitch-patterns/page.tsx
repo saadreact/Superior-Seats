@@ -185,7 +185,7 @@ const SeatStitchPatternsPage = () => {
     // Handle image path from API response
     if (pattern.image) {
       // The image path from database is already complete, just prepend the base URL
-      return `https://superiorseats.ali-khalid.com/${pattern.image}`;
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${pattern.image}`;
     }
     
     // Return null to show "No Image" placeholder instead of static fallback

@@ -100,7 +100,7 @@ const HeatOptionsPage = () => {
   // Helper function to get heat option image URL
   const getHeatOptionImage = (heatOption: HeatOption) => {
     if (heatOption.image) {
-      return `https://superiorseats.ali-khalid.com/${heatOption.image}`;
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${heatOption.image}`;
     }
     return null;
   };
