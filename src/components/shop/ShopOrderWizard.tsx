@@ -725,7 +725,8 @@ export default function ShopOrderWizard() {
           notes: `Payment for order #${orderNumber}`,
         };
 
-        const chargeResp = await fetch('https://superiorseats.ali-khalid.com/api/payments/charge', {
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const chargeResp = await fetch(`${apiBaseUrl}/payments/charge`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
