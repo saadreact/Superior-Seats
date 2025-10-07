@@ -29,7 +29,8 @@ const UserStatusChecker = () => {
       // Check user status when navigating between pages
       const checkUserStatus = async () => {
         try {
-          const response = await fetch('https://superiorseats.ali-khalid.com/api/user', {
+          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+          const response = await fetch(`${apiBaseUrl}/user`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,

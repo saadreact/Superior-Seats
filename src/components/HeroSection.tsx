@@ -66,127 +66,50 @@ const HeroSection = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
 
+  // Video URL from environment
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const videoUrl = `${apiBaseUrl}/videos/SuperiorSeatsINC_banner_video.mov`;
+  
+  // Fallback images if video fails
   const backgroundImages = [
     '/Gallery/HeroHd/01.jpg',
     '/Gallery/HeroHd/02.jpg',
     '/Gallery/HeroHd/03.jpg',
     '/Gallery/HeroHd/04.jpg',
-  
   ];
-
+  
+  // State for video loading
+  const [videoLoaded, setVideoLoaded] = React.useState(false);
+  const [videoError, setVideoError] = React.useState(false);
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const [animationKey, setAnimationKey] = React.useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = React.useState(true);
-  const [slideDirection, setSlideDirection] = React.useState<'right' | 'left'>('left');
   
   // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
-
+  
+  // Fallback image carousel if video fails
   React.useEffect(() => {
-    if (!isAutoPlaying) return;
-    
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => 
-        (prevIndex + 1) % backgroundImages.length
-      );
-    
-      setAnimationKey(prev => prev + 1);
-    }, 4000); 
-
-    return () => clearInterval(interval);
-  }, [backgroundImages.length, isAutoPlaying]);
-
-  const handleImageChange = (index: number, direction: 'right' | 'left' = 'left') => {
-    if (index === currentImageIndex) return;
-    setSlideDirection(direction);
-    setCurrentImageIndex(index);
-    setAnimationKey(prev => prev + 1);
-  };
-
-  // Swipe functionality
-  const [touchStart, setTouchStart] = React.useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = React.useState<number | null>(null);
-
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    // Don't prevent default to allow button clicks
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-    setIsAutoPlaying(false);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    // Don't prevent default to allow button clicks
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = (e: React.TouchEvent) => {
-    // Don't prevent default to allow button clicks
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      // Swipe left - go to next image
-      const nextIndex = (currentImageIndex + 1) % backgroundImages.length;
-      handleImageChange(nextIndex, 'left');
-    } else if (isRightSwipe) {
-      // Swipe right - go to previous image
-      const prevIndex = currentImageIndex === 0 ? backgroundImages.length - 1 : currentImageIndex - 1;
-      handleImageChange(prevIndex, 'right');
+    if (videoError) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => 
+          (prevIndex + 1) % backgroundImages.length
+        );
+      }, 4000);
+      return () => clearInterval(interval);
     }
+  }, [videoError, backgroundImages.length]);
+  
+  // Timeout to fallback to images if video doesn't load within 10 seconds
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!videoLoaded && !videoError) {
+        console.log('Video loading timeout, falling back to images');
+        setVideoError(true);
+      }
+    }, 10000);
     
-    // Resume auto-play after a delay
-    setTimeout(() => setIsAutoPlaying(true), 3000);
-  };
+    return () => clearTimeout(timeout);
+  }, [videoLoaded, videoError]);
 
-  // Mouse drag functionality
-  const [mouseStart, setMouseStart] = React.useState<number | null>(null);
-  const [mouseEnd, setMouseEnd] = React.useState<number | null>(null);
-  const [isDragging, setIsDragging] = React.useState(false);
-
-  const onMouseDown = (e: React.MouseEvent) => {
-    // Don't prevent default to allow button clicks
-    setIsDragging(true);
-    setMouseEnd(null);
-    setMouseStart(e.clientX);
-    setIsAutoPlaying(false); // Pause auto-play when user starts interacting
-  };
-
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    // Don't prevent default to allow button clicks
-    setMouseEnd(e.clientX);
-  };
-
-  const onMouseUp = (e: React.MouseEvent) => {
-    if (!mouseStart || !mouseEnd) {
-      setIsDragging(false);
-      return;
-    }
-    
-    const distance = mouseStart - mouseEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      // Swipe left - go to next image
-      const nextIndex = (currentImageIndex + 1) % backgroundImages.length;
-      handleImageChange(nextIndex, 'left');
-    } else if (isRightSwipe) {
-      // Swipe right - go to previous image
-      const prevIndex = currentImageIndex === 0 ? backgroundImages.length - 1 : currentImageIndex - 1;
-      handleImageChange(prevIndex, 'right');
-    }
-    
-    setIsDragging(false);
-    // Resume auto-play after a delay
-    setTimeout(() => setIsAutoPlaying(true), 3000);
-  };
 
   // Snackbar handlers
   const handleSnackbarOpen = () => {
@@ -202,75 +125,66 @@ const HeroSection = () => {
 
 
   return (
-                  <Box
+    <Box
+      sx={{
+        position: 'relative',
+        color: 'white',
+        py: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
+        height: { xs: '400px', sm: '450px', md: '400px', lg: '500px', xl: '600px' },
+        display: 'flex',
+        alignItems: 'center',
+        overflow: 'hidden',
+        // Position directly below fixed header
+        mt: { xs: '55px', sm: '38px', md: '40px' },
+      }}
+    >
+      {/* Background Video or Fallback Images */}
+      <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}1A 0%, ${theme.palette.primary.dark}D9 100%)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          color: 'white',
-          py: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
-          height: { xs: '400px', sm: '450px', md: '400px', lg: '500px', xl: '600px' },
-          display: 'flex',
-          alignItems: 'center',
-          position: 'relative',
-          cursor: isDragging ? 'grabbing' : 'default',
-          overflow: 'hidden',
-          userSelect: 'none',
-          touchAction: 'none',
-          // Position directly below fixed header
-          mt: { xs: '55px', sm: '38px', md: '40px' },
-          // Global keyframes for slide animation
-          '@keyframes slideFromRight': {
-            '0%': { 
-              transform: 'translateX(100%)',
-              opacity: 0.8,
-            },
-            '100%': { 
-              transform: 'translateX(0%)',
-              opacity: 1,
-            },
-          },
-          '@keyframes slideFromLeft': {
-            '0%': { 
-              transform: 'translateX(-100%)',
-              opacity: 0.8,
-            },
-            '100%': { 
-              transform: 'translateX(0%)',
-              opacity: 1,
-            },
-          },
-          // Visual feedback for swipe area
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: isDragging ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-            transition: 'background 0.3s ease',
-            pointerEvents: 'none',
-            zIndex: 1,
-          },
-        }}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={() => {
-          if (isDragging) {
-            setIsDragging(false);
-            setTimeout(() => setIsAutoPlaying(true), 3000);
-          }
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1,
+          // background: `linear-gradient(135deg, ${theme.palette.primary.main}1A 0%, ${theme.palette.primary.dark}D9 100%)`,
         }}
       >
-                  {/* Background Image with Slide Animation */}
+        {!videoError ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'fill',
+              objectPosition: 'center',
+            }}
+            onError={(e) => {
+              console.error('Video failed to load:', e);
+              setVideoError(true);
+            }}
+            onLoadStart={() => {
+              console.log('Video started loading');
+            }}
+            onCanPlay={() => {
+              console.log('Video can play');
+              setVideoLoaded(true);
+            }}
+            onLoadedData={() => {
+              console.log('Video data loaded');
+            }}
+          >
+            <source src={videoUrl} type="video/mp4" />
+            <source src={videoUrl} type="video/quicktime" />
+            <source src={videoUrl} type="video/webm" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
           <Box
-            key={animationKey}
             sx={{
               position: 'absolute',
               top: 0,
@@ -282,14 +196,24 @@ const HeroSection = () => {
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               backgroundAttachment: 'fixed',
-              willChange: 'transform',
-              transform: 'translateZ(0)',
-              backfaceVisibility: 'hidden',
-              animation: slideDirection === 'left' ? 'slideFromRight 0.8s ease-in-out' : 'slideFromLeft 0.8s ease-in-out',
-              zIndex: 1,
             }}
           />
-    <Container maxWidth="xl" disableGutters sx={{ position: 'relative', zIndex: 2 }}>
+        )}
+      </Box>
+      
+      {/* Dark overlay for better text readability */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.4)',
+          zIndex: 2,
+        }}
+      />
+    <Container maxWidth="xl" disableGutters sx={{ position: 'relative', zIndex: 3 }}>
                   {/* Main Content Container - Easy to reposition */}
                                      <Box
                      sx={{
@@ -466,83 +390,6 @@ const HeroSection = () => {
                     </Box>
       </Container>
 
-             {/* Enhanced Slide Indicators */}
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: { xs: 10, sm: 15, md: 20, lg: 25, xl: 30 },
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            gap: { xs: 0.25, sm: 0.5, md: 1, lg: 1.5, xl: 2 },
-            zIndex: 3,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {backgroundImages.map((_, index) => (
-            <motion.div
-              key={index}
-              // Removed hover effects as requested
-              style={{
-                cursor: 'default',
-              }}
-            >
-              <Box
-                sx={{
-                  width: { xs: 6, sm: 8, md: 10, lg: 11, xl: 12 },
-                  height: { xs: 6, sm: 8, md: 10, lg: 11, xl: 12 },
-                  borderRadius: '50%',
-                  backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.4)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'default',
-                  // Removed hover effect as requested
-                }}
-                onClick={() => handleImageChange(index)}
-              />
-            </motion.div>
-          ))}
-        </Box>
-
-               {/* Enhanced Progress Bar */}
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: { xs: 2, sm: 3, md: 4 },
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            zIndex: 3,
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-              animation: 'shimmer 2s infinite',
-              '@keyframes shimmer': {
-                '0%': { transform: 'translateX(-100%)' },
-                '100%': { transform: 'translateX(100%)' },
-              },
-            },
-          }}
-        >
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${((currentImageIndex + 1) / backgroundImages.length) * 100}%` }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-            style={{
-              height: '100%',
-              background: 'linear-gradient(90deg, #ffffff, #f0f0f0, #ffffff)',
-              boxShadow: '0 0 15px rgba(255, 255, 255, 0.8)',
-              borderRadius: '0 2px 2px 0',
-            }}
-          />
-        </Box>
 
       {/* Snackbar for customize feature coming soon */}
       <Snackbar
