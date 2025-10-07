@@ -67,8 +67,7 @@ const HeroSection = () => {
   const router = useRouter();
 
   // Video URL from environment
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const baseUrl = apiBaseUrl?.replace('/api', '');
+  const baseUrl = process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL;
   const videoUrl = `${baseUrl}/videos/SuperiorSeatsINC_banner_video.mov`;
   
   // Fallback images if video fails
