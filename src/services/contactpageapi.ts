@@ -56,6 +56,7 @@ export class ContactPageAPI {
         company: formData.company,
         subject: formData.subject,
         message: formData.message,
+        To: 'info@superiorseatingllc.com', // Add To field for email structure
       };
 
       console.log('📧 Sending contact form to:', `${API_BASE_URL}/contact`);

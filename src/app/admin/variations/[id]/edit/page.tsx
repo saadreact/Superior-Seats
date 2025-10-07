@@ -570,7 +570,7 @@ const EditVariationPage = () => {
                         Current Image:
                       </Typography>
                       <Image
-                        src={`https://superiorseats.ali-khalid.com${formData.image}`}
+                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${formData.image}`}
                         alt="Current variation image"
                         width={200}
                         height={150}

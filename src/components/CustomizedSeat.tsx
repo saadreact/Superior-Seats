@@ -18,7 +18,7 @@ import { CustomizedSeatApi, Product } from '@/services/CustomizedSeatApi';
 // NEW IMPORT: Added to fetch vehicle trim data
 import { apiService } from '@/utils/api';
 import HeroSectionCommon from './common/HeroSectionaCommon';
-import Breadcrumbs from './Breadcrumbs';
+// import Breadcrumbs from './Breadcrumbs'; // Temporarily disabled
 import Footer from './Footer';
 // CSS Module import
 import styles from './CustomizedSeat.module.css';
@@ -373,13 +373,13 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           />
       )}
 
-      {/* Breadcrumbs */}
-      <Breadcrumbs
+      {/* Breadcrumbs - Temporarily disabled */}
+      {/* <Breadcrumbs
         items={[
           { label: 'Shop', href: '/shop-now' },
           { label: 'Build Your Own Seat' }
         ]}
-      />
+      /> */}
 
       {/* Main Configuration Section */}
       <Container maxWidth="xl" className={styles.configContainer}>

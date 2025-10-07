@@ -199,7 +199,7 @@ const ViewVariationPage = () => {
                   Variation Image
                 </Typography>
                 <Image
-                  src={`https://superiorseats.ali-khalid.com${variation.image}`}
+                  src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${variation.image}`}
                   alt={variation.name}
                   width={200}
                   height={150}

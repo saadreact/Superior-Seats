@@ -82,7 +82,7 @@ const MaterialTypesPage = () => {
   // Helper function to get material type image URL
   const getMaterialTypeImage = (materialType: MaterialType) => {
     if (materialType.image) {
-      return `https://superiorseats.ali-khalid.com/${materialType.image}`;
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${materialType.image}`;
     }
     return null;
   };

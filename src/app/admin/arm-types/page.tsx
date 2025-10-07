@@ -93,7 +93,8 @@ const ArmTypesPage = () => {
   // Helper function to get arm type image URL
   const getArmTypeImage = (armType: ArmType) => {
     if (armType.image) {
-      return `https://superiorseats.ali-khalid.com/${armType.image}`;
+      const baseUrl = process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL;
+      return `${baseUrl}/${armType.image}`;
     }
     return null;
   };

@@ -96,7 +96,7 @@ const LumbarTypesPage = () => {
   // Helper function to get lumbar type image URL
   const getLumbarTypeImage = (lumbarType: LumbarType) => {
     if (lumbarType.image) {
-      return `https://superiorseats.ali-khalid.com/${lumbarType.image}`;
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${lumbarType.image}`;
     }
     return null;
   };

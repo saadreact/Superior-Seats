@@ -27,7 +27,7 @@ import {
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import Breadcrumbs from '@/components/Breadcrumbs';
+// import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import { stats, values, process } from '@/data/About';
 
 const MotionTypography = motion.create(Typography);
@@ -142,14 +142,14 @@ const AboutPage = () => {
         </Container>
       </Box>
 
-      {/* Breadcrumbs */}
-      <Box sx={{ backgroundColor: 'white' }}>
+      {/* Breadcrumbs - Temporarily disabled */}
+      {/* <Box sx={{ backgroundColor: 'white' }}>
         <Breadcrumbs
           items={[
             { label: 'About Us' }
           ]}
         />
-      </Box>
+      </Box> */}
 
       {/* Company Stats */}
       <Box sx={{ 

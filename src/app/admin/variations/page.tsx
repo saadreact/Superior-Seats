@@ -145,7 +145,7 @@ const VariationsPage = () => {
               <TableCell>
                 {variation.image ? (
                   <Image
-                    src={`https://superiorseats.ali-khalid.com${variation.image}`}
+                    src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${variation.image}`}
                     alt={variation.name}
                     width={50}
                     height={50}
@@ -212,7 +212,7 @@ const VariationsPage = () => {
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               {variation.image ? (
                                     <Image
-                      src={`https://superiorseats.ali-khalid.com${variation.image}`}
+                      src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${variation.image}`}
                       alt={variation.name}
                   width={80}
                   height={80}

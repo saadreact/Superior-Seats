@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import Breadcrumbs from '@/components/Breadcrumbs';
+// import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 
 import { motion } from 'framer-motion';
@@ -111,8 +111,8 @@ const TermsOfService = () => {
         }}
       />
 
-      {/* Breadcrumbs */}
-      <Breadcrumbs />
+      {/* Breadcrumbs - Temporarily disabled */}
+      {/* <Breadcrumbs /> */}
 
       <Box sx={{ 
         flex: 1, 
