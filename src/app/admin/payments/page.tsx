@@ -64,7 +64,10 @@ const AdminPayments = () => {
   }, [dispatch]);
 
   const connectSquare = async () => {
-    const url = 'https://app.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-5-Fq9kX2vcQTojh9kXpx8g&scope=MERCHANT_PROFILE_READ%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE&redirect_uri=https%3A//superiorseats.ali-khalid.com/square/admin/callback&state=connect_square';
+    const isProduction = process.env.NODE_ENV === 'production';
+    const url = isProduction
+      ? 'https://connect.squareup.com/oauth2/authorize?client_id=sq0idp-U8knyX6QCinnjNUdzs_lXg&scope=MERCHANT_PROFILE_READ%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE&state=token'
+      : 'https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-5-Fq9kX2vcQTojh9kXpx8g&scope=MERCHANT_PROFILE_READ%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE&state=token';
     window.location.href = url;
   };
 
