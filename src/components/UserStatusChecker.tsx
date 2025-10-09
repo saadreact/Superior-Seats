@@ -30,7 +30,7 @@ const UserStatusChecker = () => {
       // Check user status when navigating between pages
       const checkUserStatus = async () => {
         try {
-          const response = await api.get('/api/user');
+          const response = await api.get('/user');
           const data = response.data;
           
           // Check if user is active
