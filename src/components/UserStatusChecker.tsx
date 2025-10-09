@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAppDispatch } from '@/store/hooks';
 import { logoutUser } from '@/store/authSlice';
-import api from '@/utils/axios';
+import { apiService } from '@/utils/api';
 
 const UserStatusChecker = () => {
   const pathname = usePathname();
@@ -30,11 +30,11 @@ const UserStatusChecker = () => {
       // Check user status when navigating between pages
       const checkUserStatus = async () => {
         try {
-          const response = await api.get('/user');
-          const data = response.data;
+          const data = await apiService.getCurrentUser();
+          
           
           // Check if user is active
-          if (data.data && data.data.is_active === false) {
+          if (data && data.is_active === false) {
             console.log('🚨 User account is inactive, forcing logout');
             
             // Show alert with the message

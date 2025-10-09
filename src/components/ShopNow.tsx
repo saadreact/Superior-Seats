@@ -427,6 +427,7 @@ const ShopNow = () => {
      if (isOnShopGalleryPage) {
        // Log available categories from API
        if (categories && categories.length > 0) {
+         
        }
      }
    }, [selectedMainCategory, showSpecialOnly, apiProducts.length, categories, isOnShopGalleryPage, currentPage, itemsPerPage, paginationMeta]);
@@ -583,7 +584,7 @@ const ShopNow = () => {
       id: item.id
     });
     
-    alert('Customize feature coming soon!');
+    alert('Customize feature is coming soon!');
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -1803,7 +1804,7 @@ const ShopNow = () => {
                             // handleCloseLightbox();
                             
                             // Temporary: Show snackbar that feature is coming soon
-                            handleSnackbarOpen('This Feature coming Soon');
+                            handleSnackbarOpen('This feature is coming Soon');
                           }}
                           sx={{
                             position: 'absolute',
@@ -1936,7 +1937,7 @@ const ShopNow = () => {
                             // handleCloseLightbox();
                             
                             // Temporary: Show snackbar that feature is coming soon
-                            handleSnackbarOpen('This Feature coming Soon');
+                            handleSnackbarOpen('This feature is coming Soon');
                           }}
                           sx={{
                             display: { xs: 'flex', sm: 'none' }, // Only show on mobile
