@@ -550,16 +550,14 @@ const ShopNow = () => {
     // Prevent adding when stock is missing or zero
     const stock = Number((item as any)?.stock ?? NaN);
     if (!Number.isFinite(stock) || stock <= 0) {
-      setSnackbarOpen(true);
-      setTimeout(() => setSnackbarOpen(false), 2000);
+      handleSnackbarOpen('Out of stock');
       return;
     }
     // Enforce stock across repeated add clicks by checking existing cart qty
     try {
       const currentQty = (cartItems || []).filter((it: any) => Number(it.id) === Number(item.id)).reduce((s: number, it: any) => s + (Number(it.quantity) || 0), 0) || 0;
       if (currentQty + 1 > stock) {
-        setSnackbarOpen(true);
-        setTimeout(() => setSnackbarOpen(false), 2000);
+        handleSnackbarOpen(`Only ${stock} in stock`);
         return;
       }
     } catch {}
@@ -572,6 +570,7 @@ const ShopNow = () => {
       image: getFirstValidImage(item) || '/placeholder-image.jpg',
       description: item.description || '',
       category: typeof item.category === 'string' ? item.category : (item.category as any)?.name || 'seat',
+      stock: stock, // Include stock information
     }));
     handleSnackbarOpen('Added to cart');
   };

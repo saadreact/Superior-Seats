@@ -514,6 +514,7 @@ const OrderWizardEdit: React.FC<OrderWizardEditProps> = ({ order }) => {
 										options={customers}
 										getOptionLabel={(o) => `${o.first_name} ${o.last_name} (${o.email})`}
 										value={selectedCustomer}
+										disabled={true}
 										onChange={(_, v) => {
 											setSelectedCustomer(v);
 											if (v) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -45,6 +45,8 @@ import {
   FormatQuote,
   CheckCircleOutline,
   Verified,
+  VolumeOff,
+  VolumeUp,
 } from '@mui/icons-material';
 import Footer from '@/components/Footer';
 
@@ -159,6 +161,10 @@ const HomePage = () => {
   
   // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  
+  // Video state
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Icon mapping function for values section
   const getIcon = (iconName: string) => {
@@ -194,6 +200,14 @@ const HomePage = () => {
     setSnackbarOpen(false);
   };
 
+  // Video handlers
+  const handleToggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', overflow: 'hidden' }}>
       <Header />
@@ -202,6 +216,7 @@ const HomePage = () => {
       </Box>
       
       {/* About Section - Inspired by B&G intro */}
+      {/* COMMENTED OUT FOR NOW
       <Box sx={{ 
         py: { xs: 6, md: 8, lg: 10 },
         backgroundColor: 'white',
@@ -254,7 +269,6 @@ const HomePage = () => {
             </Typography>
           </MotionBox>
 
-          {/* Values Cards */}
           <MotionBox
             variants={productsContainerVariants}
             initial="hidden"
@@ -309,6 +323,7 @@ const HomePage = () => {
           </MotionBox>
         </Container>
       </Box>
+      */}
 
       {/* Stats Section */}
       <Box sx={{ 
@@ -929,6 +944,7 @@ const HomePage = () => {
       </Box>
 
       {/* Testimonials Section */}
+      {/* COMMENTED OUT FOR NOW
       <Box sx={{ 
         py: { xs: 6, md: 8, lg: 10 },
         backgroundColor: '#fafafa',
@@ -1041,8 +1057,10 @@ const HomePage = () => {
           </Box>
         </Container>
       </Box>
+      */}
 
       {/* Call to Action Section */}
+      {/* COMMENTED OUT FOR NOW
       <Box sx={{ 
         py: { xs: 8, md: 10, lg: 12 },
         background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.95) 0%, rgba(139, 0, 0, 0.95) 100%)',
@@ -1141,6 +1159,7 @@ const HomePage = () => {
           </MotionBox>
         </Container>
       </Box>
+      */}
      
       {/* Brand Carousel Section */}
       <TruckCarousel />
@@ -1149,6 +1168,7 @@ const HomePage = () => {
       <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden', backgroundColor: 'black' }}>
         <Box sx={{ position: 'relative', maxWidth: '1440px', mx: 'auto' }}>
           <Box
+            ref={videoRef}
             component="video"
             autoPlay
             muted
@@ -1161,6 +1181,26 @@ const HomePage = () => {
             <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/quicktime" />
           </Box>
           <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)' }} />
+          
+          {/* Unmute Button */}
+          <IconButton
+            onClick={handleToggleMute}
+            sx={{
+              position: 'absolute',
+              bottom: 20,
+              right: 20,
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              color: 'white',
+              backdropFilter: 'blur(8px)',
+              '&:hover': {
+                backgroundColor: 'rgba(211, 47, 47, 0.8)',
+              },
+              transition: 'all 0.3s ease',
+              zIndex: 2,
+            }}
+          >
+            {isMuted ? <VolumeOff /> : <VolumeUp />}
+          </IconButton>
         </Box>
       </Box>
       
