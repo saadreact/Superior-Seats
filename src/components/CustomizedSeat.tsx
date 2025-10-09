@@ -1542,6 +1542,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                               image: productData.primary_image?.image_url || '/placeholder-image.jpg',
                               description: `${productData.description} with ${materialName} material, ${colorName} color, and ${stitchingName} stitching`,
                               category: productData.category?.name || 'seat',
+                              stock: (productData as any)?.stock, // Include stock information
                               // Persist variant selections for prefill in order wizard
                               variants: {
                                 materialType: selectedTexture && selectedTexture !== 'none' ? selectedTexture : '',
