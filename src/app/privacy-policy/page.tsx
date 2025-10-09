@@ -8,7 +8,11 @@ import {
   Paper,
   Divider,
   useTheme,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 // import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
@@ -114,11 +118,11 @@ const PrivacyPolicy = () => {
             variants={containerVariants}
           >
 
-            {/* Content */}
+            {/* Content as Accordions */}
             <MotionPaper
               variants={itemVariants}
               sx={{
-                p: { xs: 2, sm: 3, md: 4 },
+                p: { xs: 1, sm: 1.5, md: 2 },
                 backgroundColor: 'background.paper',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                 borderRadius: 2,
@@ -126,82 +130,37 @@ const PrivacyPolicy = () => {
               }}
             >
               {sections.map((section, index) => (
-                <MotionBox
-                  key={index}
-                  variants={itemVariants}
-                  sx={{ mb: index < sections.length - 1 ? { xs: 2, sm: 2.5 } : 0 }}
-                >
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      mb: { xs: 1.5, sm: 2 },
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: { xs: 0.5, sm: 1 },
-                    }}
-                  >
-                                          <Typography
-                        variant="h4"
-                        sx={{
-                          fontWeight: 'medium',
-                          color: 'text.primary',
-                          fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-                          textAlign: 'center',
-                          letterSpacing: '-0.01em',
-                          lineHeight: 1.3,
-                        }}
-                      >
+                <Accordion key={index} defaultExpanded={index === 0} disableGutters>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        color: 'text.primary',
+                        fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+                      }}
+                    >
                       {section.title}
                     </Typography>
-                  </Box>
-                  
-                  <Box 
-                    sx={{ 
-                      m: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: { xs: 1, sm: 1.5 },
-                    }}
-                  >
-                                         {section.content.map((item, itemIndex) => (
-                       <Typography
-                         key={itemIndex}
-                         variant="body1"
-                         sx={{
-                           lineHeight: 1.6,
-                           color: 'text.secondary',
-                           fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem', lg: '1rem' },
-                           fontWeight: 400,
-                           textAlign: 'justify',
-                           maxWidth: '100%',
-                           px: { xs: 1, sm: 2 },
-                           whiteSpace: 'normal',
-                           overflow: 'visible',
-                           wordWrap: 'break-word',
-                           overflowWrap: 'break-word',
-                           hyphens: 'auto',
-                           textJustify: 'inter-word',
-                           letterSpacing: '0.01em',
-                         }}
-                       >
-                         {item}
-                       </Typography>
-                     ))}
-                  </Box>
-                  
-                  {index < sections.length - 1 && (
-                    <Divider 
-                      sx={{ 
-                        mt: { xs: 2, sm: 2.5 }, 
-                        mb: { xs: 2, sm: 2.5 },
-                        borderColor: 'rgba(218, 41, 28, 0.2)',
-                        borderWidth: 1,
-                      }} 
-                    />
-                  )}
-                </MotionBox>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {section.content.map((item, itemIndex) => (
+                      <Typography
+                        key={itemIndex}
+                        variant="body1"
+                        sx={{
+                          lineHeight: 1.7,
+                          color: 'text.secondary',
+                          fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' },
+                          mb: itemIndex < section.content.length - 1 ? 1.5 : 0,
+                          textAlign: 'justify',
+                        }}
+                      >
+                        {item}
+                      </Typography>
+                    ))}
+                  </AccordionDetails>
+                </Accordion>
               ))}
             </MotionPaper>
           </MotionBox>
