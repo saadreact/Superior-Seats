@@ -36,7 +36,7 @@ export default function CustomSeatsPage() {
       textAlign: 'center'
     }}>
       <Typography variant="h3" sx={{ mb: 2, color: 'primary.main' }}>
-        Customize Feature Coming Soon!
+        Customize feature is Coming Soon!
       </Typography>
       <Typography variant="h6" sx={{ mb: 4, color: 'text.secondary' }}>
         We&apos;re working on bringing you an amazing seat customization experience.

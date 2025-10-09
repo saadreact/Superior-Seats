@@ -60,16 +60,37 @@ export const loginUser = createAsyncThunk(
     } catch (error: any) {
       // Handle different types of errors
       if (error.response?.status === 422) {
-        // Validation errors
-        const validationErrors = error.response?.data?.errors;
-        if (validationErrors) {
-          const errorMessages = Object.values(validationErrors).flat();
-          return rejectWithValue(errorMessages.join(', '));
+        // Validation errors - extract the message from the nested structure
+        const errorData = error.response?.data?.errors;
+        
+        // First check if there's a direct message in errors.message
+        if (errorData?.message) {
+          return rejectWithValue(errorData.message);
+        }
+        
+        // Otherwise, extract validation messages from errors.errors object
+        if (errorData?.errors) {
+          const validationErrors = Object.values(errorData.errors).flat();
+          return rejectWithValue(validationErrors.join(', '));
+        }
+        
+        // Fallback to regular validation errors structure
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.values(errorData)
+            .filter(val => typeof val === 'string' || Array.isArray(val))
+            .flat();
+          if (errorMessages.length > 0) {
+            return rejectWithValue(errorMessages.join(', '));
+          }
         }
       }
       
       if (error.response?.status === 401) {
-        return rejectWithValue('Invalid email or password. Please try again.');
+        // Check if there's a nested error message
+        const errorMessage = error.response?.data?.errors?.message || 
+                           error.response?.data?.message || 
+                           'Invalid email or password. Please try again.';
+        return rejectWithValue(errorMessage);
       }
       
       if (error.response?.status === 429) {
@@ -80,7 +101,11 @@ export const loginUser = createAsyncThunk(
         return rejectWithValue('Server error. Please try again later.');
       }
       
-      return rejectWithValue(error.response?.data?.message || 'Login failed. Please check your credentials and try again.');
+      // Extract message from nested structure if available
+      const errorMessage = error.response?.data?.errors?.message || 
+                          error.response?.data?.message || 
+                          'Login failed. Please check your credentials and try again.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -106,11 +131,28 @@ export const registerUser = createAsyncThunk(
     } catch (error: any) {
       // Handle different types of errors
       if (error.response?.status === 422) {
-        // Validation errors
-        const validationErrors = error.response?.data?.errors;
-        if (validationErrors) {
-          const errorMessages = Object.values(validationErrors).flat();
-          return rejectWithValue(errorMessages.join(', '));
+        // Validation errors - extract the message from the nested structure
+        const errorData = error.response?.data?.errors;
+        
+        // First check if there's a direct message in errors.message
+        if (errorData?.message) {
+          return rejectWithValue(errorData.message);
+        }
+        
+        // Otherwise, extract validation messages from errors.errors object
+        if (errorData?.errors) {
+          const validationErrors = Object.values(errorData.errors).flat();
+          return rejectWithValue(validationErrors.join(', '));
+        }
+        
+        // Fallback to regular validation errors structure
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.values(errorData)
+            .filter(val => typeof val === 'string' || Array.isArray(val))
+            .flat();
+          if (errorMessages.length > 0) {
+            return rejectWithValue(errorMessages.join(', '));
+          }
         }
       }
       
@@ -122,7 +164,11 @@ export const registerUser = createAsyncThunk(
         return rejectWithValue('Server error. Please try again later.');
       }
       
-      return rejectWithValue(error.response?.data?.message || 'Registration failed. Please check your information and try again.');
+      // Extract message from nested structure if available
+      const errorMessage = error.response?.data?.errors?.message || 
+                          error.response?.data?.message || 
+                          'Registration failed. Please check your information and try again.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
