@@ -392,9 +392,27 @@ const HomePage = () => {
       </Box> */}
 
      
-      {/* Truck Carousel Section */}
-      
+      {/* Brand Carousel Section */}
       <TruckCarousel />
+
+      {/* Video Section Above Footer */}
+      <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden', backgroundColor: 'black' }}>
+        <Box sx={{ position: 'relative', maxWidth: '1440px', mx: 'auto' }}>
+          <Box
+            component="video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            sx={{ width: '100%', height: { xs: 240, sm: 320, md: 420, lg: 520 }, objectFit: 'cover' }}
+          >
+            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/mp4" />
+            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/quicktime" />
+          </Box>
+          <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)' }} />
+        </Box>
+      </Box>
       
       {/* Product Details Modal */}
       <Dialog

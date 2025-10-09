@@ -3,6 +3,8 @@
 import React from 'react';
 import Image from 'next/image';
 import { Box, Skeleton, Typography } from '@mui/material';
+import ImageTag from 'next/image';
+import BrandedLoader from './BrandedLoader';
 import { useLazyLoading } from '@/hooks/useLazyLoading';
 
 interface LazyImageProps {
@@ -109,21 +111,14 @@ const LazyImage: React.FC<LazyImageProps> = ({
     >
       {/* Skeleton Loading */}
       {showSkeleton && !isLoaded && (
-        <Skeleton
-          variant="rectangular"
-          width={skeletonWidth}
-          height={skeletonHeight}
-          animation="wave"
-          sx={{
-            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-            borderRadius: 1,
-          }}
-        />
+        <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <BrandedLoader text="Loading..." minHeight="auto" />
+        </Box>
       )}
 
       {/* Actual Image */}
       {isInView && (
-        <Image
+        <ImageTag
           src={currentSrc}
           alt={alt}
           width={width}

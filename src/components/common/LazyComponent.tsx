@@ -2,6 +2,7 @@
 
 import React, { Suspense, lazy, ComponentType } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
+import BrandedLoader from './BrandedLoader';
 
 interface LazyComponentProps {
   component: () => Promise<{ default: ComponentType<any> }>;
@@ -21,36 +22,7 @@ const LazyComponent: React.FC<LazyComponentProps> = ({
   const LazyLoadedComponent = lazy(component);
 
   const defaultFallback = (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '50vh',
-        gap: 2,
-      }}
-    >
-      {showSpinner && (
-        <CircularProgress
-          size={spinnerSize}
-          sx={{
-            color: 'primary.main',
-          }}
-        />
-      )}
-      {loadingText && (
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{
-            fontWeight: 500,
-          }}
-        >
-          {loadingText}
-        </Typography>
-      )}
-    </Box>
+    <BrandedLoader text={loadingText} />
   );
 
   return (
