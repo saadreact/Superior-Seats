@@ -76,7 +76,7 @@ const AboutPage = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(211, 47, 47, 0.3) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.65) 0%, rgba(211, 47, 47, 0.45) 100%)',
             zIndex: 1,
           },
         }}
