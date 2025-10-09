@@ -313,9 +313,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
     // Check if login failed
     if (loginUser.rejected.match(result)) {
+      // Extract error message properly - handle both string and object payloads
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (typeof result.payload === 'string') {
+        errorMessage = result.payload;
+      } else if (result.payload && typeof result.payload === 'object') {
+        const payload = result.payload as any;
+        // Try to extract message from various possible locations in the response
+        errorMessage = payload.errors?.message ||  // For nested errors.message
+                      payload.message ||            // For direct message
+                      payload.error ||              // For error field
+                      'Login failed. Please try again.';
+      }
+      
       setSnackbar({
         open: true,
-        message: result.payload as string || 'Login failed. Please try again.',
+        message: errorMessage,
         severity: 'error',
       });
     } else if (loginUser.fulfilled.match(result)) {
@@ -345,9 +359,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
     // Check if registration failed
     if (registerUser.rejected.match(result)) {
+      // Extract error message properly - handle both string and object payloads
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (typeof result.payload === 'string') {
+        errorMessage = result.payload;
+      } else if (result.payload && typeof result.payload === 'object') {
+        const payload = result.payload as any;
+        // Try to extract message from various possible locations in the response
+        errorMessage = payload.errors?.message ||  // For nested errors.message
+                      payload.message ||            // For direct message
+                      payload.error ||              // For error field
+                      'Registration failed. Please try again.';
+      }
+      
       setSnackbar({
         open: true,
-        message: result.payload as string || 'Registration failed. Please try again.',
+        message: errorMessage,
         severity: 'error',
       });
     } else if (registerUser.fulfilled.match(result)) {

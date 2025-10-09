@@ -53,23 +53,10 @@ api.interceptors.response.use(
         error: error.response?.data
       });
       
-      // Only redirect if we're not already on the home page, login page, or shop pages
-      const currentPath = window.location.pathname;
-      const protectedPaths = ['/', '/login', '/signup', '/ShopGallery', '/shop-now'];
-      
-      if (!protectedPaths.includes(currentPath)) {
-        console.log('🔄 Axios Interceptor - Redirecting to home page due to 401 error');
-        // Clear auth data from localStorage
-        localStorage.removeItem('persist:auth');
-        localStorage.removeItem('auth_token');
-        // Redirect to login or refresh token logic can be added here
-        window.location.href = '/';
-      } else {
-        console.log('🔄 Axios Interceptor - On protected page, not redirecting:', currentPath);
-        // Still clear auth data but don't redirect
-        localStorage.removeItem('persist:auth');
-        localStorage.removeItem('auth_token');
-      }
+      // Don't automatically clear tokens - let the main api service handle token refresh
+      // This interceptor is primarily used for Square API calls which don't need auth
+      // Just log the error and pass it through
+      console.log('🔄 Axios Interceptor - Passing 401 error through without clearing tokens');
     }
     return Promise.reject(error);
   }
