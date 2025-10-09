@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import {
   Box,
   Container,
-  Grid,
   Typography,
   Card,
   CardContent,
@@ -20,26 +19,39 @@ import {
   Stack,
   Snackbar,
   Alert,
+  Avatar,
+  Paper,
+  Divider,
 } from '@mui/material';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import TruckCarousel from '@/components/TruckCarousel';
 import { seatingProducts, stats } from '@/data/homepage';
+import { values, process as processSteps } from '@/data/About';
+import { workPictures } from '@/data/Gallery';
+import { testimonials } from '@/data/testimonials';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   Star,
   ArrowForward,
   Chair,
   EventSeat,
   AirlineSeatReclineNormal,
-  Close
+  Close,
+  AutoAwesome,
+  Support,
+  Engineering,
+  FormatQuote,
+  CheckCircleOutline,
+  Verified,
 } from '@mui/icons-material';
 import Footer from '@/components/Footer';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
 const MotionCard = motion.create(Card);
+const MotionPaper = motion.create(Paper);
 
 // Custom hook for count-up animation
 const useCountUp = (end: number, duration: number = 2000) => {
@@ -148,24 +160,15 @@ const HomePage = () => {
   // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-
-
-  // Using data from homepage.ts file
-
-  // Function to render icon based on iconName
-  const renderIcon = (iconName: string) => {
-    const iconProps = { sx: { fontSize: 60, color: 'primary.main' } };
-    
-    switch (iconName) {
-      case 'Chair':
-        return <Chair {...iconProps} />;
-      case 'EventSeat':
-        return <EventSeat {...iconProps} />;
-      case 'AirlineSeatReclineNormal':
-        return <AirlineSeatReclineNormal {...iconProps} />;
-      default:
-        return <Chair {...iconProps} />;
-    }
+  // Icon mapping function for values section
+  const getIcon = (iconName: string) => {
+    const iconProps = { sx: { fontSize: { xs: 40, md: 50, lg: 60 }, color: 'primary.main' } };
+    const iconMap: { [key: string]: React.ReactElement } = {
+      AutoAwesome: <AutoAwesome {...iconProps} />,
+      Support: <Support {...iconProps} />,
+      Engineering: <Engineering {...iconProps} />,
+    };
+    return iconMap[iconName] || <Chair {...iconProps} />;
   };
 
   // Modal handlers
@@ -192,209 +195,974 @@ const HomePage = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
+    <Box sx={{ minHeight: '100vh', overflow: 'hidden' }}>
       <Header />
       <Box sx={{ mt: 0, pt: 0 }}>
         <HeroSection />
       </Box>
       
-      {/* Stats Section */}
+      {/* About Section - Inspired by B&G intro */}
       <Box sx={{ 
-        py: { xs: 2, md: 1 ,lg: 2, xl: 2},
-        backgroundColor: 'rgba(228, 221, 221, 0.08)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-        width: '100%',
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: 'white',
+        position: 'relative',
       }}>
-        <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
-                     <MotionBox
-             variants={statsContainerVariants}
-             initial="hidden"
-             whileInView="visible"
-             viewport={{ once: false, amount: 0.3 }}
-           >
-                         <Grid
-               display="grid"
-               gridTemplateColumns={{ xs: '1fr 1fr', md: '1fr 1fr 1fr' }}
-               sx={{
-                 width: '100%',
-                 gap: { xs: 3, sm: 4, md: 6, lg: 8, xl: 10 },
-               }}
-             >
-              {stats.map((stat, index) => (
-                <StatItem key={index} stat={stat} />
-              ))}
-            </Grid>
+        <Container maxWidth="lg">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: 6 }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              GOING BEYOND THE BUILD
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              Crafting Excellence, One Seat at a Time
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
+                color: 'text.secondary',
+                maxWidth: '800px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              We're building with spirit for our people, our partners, our communities, and the future we share.
+              With over 25 years of experience, we've mastered the art of creating premium seating solutions
+              that combine comfort, durability, and style.
+            </Typography>
+          </MotionBox>
+
+          {/* Values Cards */}
+          <MotionBox
+            variants={productsContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.2 }}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: { xs: 3, md: 4 },
+            }}
+          >
+            {values.map((value, index) => (
+              <MotionCard
+                key={index}
+                variants={productCardVariants}
+                sx={{
+                  height: '100%',
+                  p: 4,
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+                  },
+                }}
+              >
+                <Box sx={{ mb: 3 }}>
+                  {getIcon(value.icon)}
+                </Box>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 2,
+                    fontWeight: 600,
+                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                  }}
+                >
+                  {value.title}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    lineHeight: 1.7,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                  }}
+                >
+                  {value.description}
+                </Typography>
+              </MotionCard>
+            ))}
           </MotionBox>
         </Container>
       </Box>
 
-      {/* Products Section */}
-      {/* <Box sx={{ py: { xs: 2, md: 3, lg: 1, xl: 2 }, width: '100%' }}>
+      {/* Stats Section */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
+        position: 'relative',
+      }}>
         <Container maxWidth={false} sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 } }}>
-                     <MotionBox
-             variants={sectionVariants}
-             initial="hidden"
-             whileInView="visible"
-             viewport={{ once: false, amount: 0.3 }}
-             sx={{ textAlign: 'center', mb: { xs: 2, md: 3 } }}
-           >
+          <MotionTypography
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            variant="h3"
+            sx={{
+              textAlign: 'center',
+              mb: 6,
+              fontSize: { xs: '1.75rem', md: '2.5rem', lg: '3rem' },
+              fontWeight: 600,
+            }}
+          >
+            A Little About Us
+          </MotionTypography>
+          <MotionBox
+            variants={statsContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.3 }}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr' },
+              width: '100%',
+              gap: { xs: 3, sm: 4, md: 6, lg: 8, xl: 10 },
+            }}
+          >
+            {stats.map((stat, index) => (
+              <StatItem key={index} stat={stat} />
+            ))}
+          </MotionBox>
+        </Container>
+      </Box>
+
+      {/* Our Process Section - Inspired by B&G */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: 'white',
+        position: 'relative',
+      }}>
+        <Container maxWidth="lg">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: 6 }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              OUR PROCESS
+            </Typography>
             <Typography
               variant="h2"
               sx={{
-                mb: { xs: 1, md: 2 },
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
-                fontWeight: 'medium',
-                color: 'black',
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
               }}
             >
-              Our Seating Solutions
+              Crafters from the Beginning
             </Typography>
-                         <Typography
-               variant="h6"
-               sx={{
-                 color: 'black',
-                 width: '100%',
-                 fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' ,lg: '1.25rem', xl: '1.25rem'},
-                 px: { xs: 2, sm: 0 },
-                 whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow text to wrap on mobile
-                 overflow: 'visible',
-                 textOverflow: 'clip',
-                 textAlign: 'center', // Center the text
-                 lineHeight: { xs: 1.4, sm: 1.5 }, // Better line height for readability
-               }}
-             >
-               Premium Truck, RV, and Van seating with custom options and Superior craftsmanship.
-             </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
+                color: 'text.secondary',
+                maxWidth: '800px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              We're true craftsmen who bring your vision to life with our hands-on approach for more control over quality, comfort, and style.
+            </Typography>
           </MotionBox>
 
-                     <MotionBox
-             variants={productsContainerVariants}
-             initial="hidden"
-             whileInView="visible"
-             viewport={{ once: false, amount: 0.2 }}
-           >
-            <Grid
-              display="grid"
-              gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr' }}
-              gap={{ xs: 2, sm: 3, md: 4, lg: 4 }}
-              sx={{ width: '100%' }}
-            >
-              {seatingProducts.map((product, index) => (
-                <MotionCard
-                  key={`product-${index}`}
-                  variants={productCardVariants}
+          {/* Process Steps */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: { xs: 3, md: 4 },
+              justifyContent: 'center',
+            }}
+          >
+            {processSteps.map((step, index) => (
+              <MotionPaper
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                elevation={0}
+                sx={{
+                  p: 4,
+                  background: 'transparent',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  transition: 'all 0.3s ease',
+                  flex: {
+                    xs: '1 1 100%',
+                    sm: '1 1 calc(50% - 16px)',
+                    md: '1 1 calc(33.333% - 21.33px)',
+                  },
+                  maxWidth: {
+                    xs: '100%',
+                    sm: 'calc(50% - 16px)',
+                    md: 'calc(33.333% - 21.33px)',
+                  },
+                  minWidth: {
+                    xs: '100%',
+                    sm: 'calc(50% - 16px)',
+                    md: 'calc(33.333% - 21.33px)',
+                  },
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    borderColor: 'primary.main',
+                    boxShadow: '0 12px 40px rgba(211, 47, 47, 0.1)',
+                  },
+                }}
+              >
+                <Typography
+                  variant="h3"
                   sx={{
-                    height: '100%',
-                    minHeight: { xs: '400px', sm: '450px', md: '500px', lg: '520px', xl: '540px' },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                    // Removed hover effects as requested
+                    fontSize: { xs: '3rem', md: '4rem' },
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    opacity: 0.2,
+                    mb: 2,
                   }}
                 >
-                  <CardMedia
-                    component="img"
-                    image={product.image}
-                    alt={product.title}
+                  {step.step}
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    fontWeight: 600,
+                    fontSize: { xs: '1.125rem', md: '1.25rem' },
+                  }}
+                >
+                  {step.title}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                    lineHeight: 1.7,
+                    fontSize: { xs: '0.9rem', md: '1rem' },
+                  }}
+                >
+                  {step.description}
+                </Typography>
+              </MotionPaper>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Portfolio/Gallery Section - Full Width Images */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        background: 'linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%)',
+      }}>
+        <Container maxWidth="xl">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: 6 }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              OUR CRAFTSMANSHIP
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              Featured Projects
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
+                color: 'text.secondary',
+                maxWidth: '800px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              Explore our portfolio of custom seating solutions crafted with precision and passion.
+            </Typography>
+          </MotionBox>
+
+          {/* Gallery Grid */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+              gap: { xs: 2, md: 3 },
+            }}
+          >
+            {workPictures.slice(0, 6).map((picture, index) => (
+              <MotionBox
+                key={picture.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                sx={{
+                  position: 'relative',
+                  paddingTop: '75%',
+                  overflow: 'hidden',
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                  backgroundColor: '#f5f5f5',
+                  '&:hover img': {
+                    transform: 'scale(1.05)',
+                  },
+                  '&:hover::after': {
+                    opacity: 0.5,
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.2) 100%)',
+                    opacity: 0.2,
+                    transition: 'opacity 0.3s ease',
+                    pointerEvents: 'none',
+                  },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={picture.image}
+                  alt={`Project ${picture.id}`}
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    transition: 'transform 0.5s ease',
+                  }}
+                />
+              </MotionBox>
+            ))}
+          </Box>
+
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => router.push('/gallery')}
+              endIcon={<ArrowForward />}
+              sx={{
+                borderWidth: 2,
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                px: 4,
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 600,
+                '&:hover': {
+                  borderWidth: 2,
+                  transform: 'translateY(-2px)',
+                },
+              }}
+            >
+              View Full Gallery
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Latest Work Showcase - Using Landing Page Images */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: 'white',
+        position: 'relative',
+      }}>
+        <Container maxWidth="xl">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: 6 }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              LATEST WORK
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              Recent Installations
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
+                color: 'text.secondary',
+                maxWidth: '800px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              See our latest custom seat installations showcasing our craftsmanship and attention to detail.
+            </Typography>
+          </MotionBox>
+
+          {/* Latest Work Grid - Using Landing Page Images */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+              gap: { xs: 2, md: 3 },
+              mb: { xs: 2, md: 3 },
+            }}
+          >
+            {/* Row 1 - Large Image */}
+            <MotionBox
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+              sx={{
+                position: 'relative',
+                paddingTop: '66.67%',
+                overflow: 'hidden',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                '&:hover img': {
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              <Box
+                component="img"
+                src="/LandingPage/Fw_ Seats/image0 (12).jpeg"
+                alt="Custom Seat Installation 1"
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'transform 0.5s ease',
+                }}
+              />
+            </MotionBox>
+            
+            {/* Row 1 - Small Images Grid */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: { xs: 2, md: 3 },
+              }}
+            >
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                sx={{
+                  position: 'relative',
+                  paddingTop: '100%',
+                  overflow: 'hidden',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  '&:hover img': {
+                    transform: 'scale(1.05)',
+                  },
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/LandingPage/Fw_ Seats/IMG_2797.JPEG"
+                  alt="Custom Seat Installation 2"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.5s ease',
+                  }}
+                />
+              </MotionBox>
+              
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                sx={{
+                  position: 'relative',
+                  paddingTop: '100%',
+                  overflow: 'hidden',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  '&:hover img': {
+                    transform: 'scale(1.05)',
+                  },
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/LandingPage/Fw__Seats%20(1)/IMG_3590.jpg"
+                  alt="Custom Seat Installation 3"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.5s ease',
+                  }}
+                />
+              </MotionBox>
+              
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                sx={{
+                  position: 'relative',
+                  paddingTop: '50%',
+                  overflow: 'hidden',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  gridColumn: 'span 2',
+                  '&:hover img': {
+                    transform: 'scale(1.05)',
+                  },
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/LandingPage/Fw__Seats%20(1)/IMG_5557.JPG"
+                  alt="Custom Seat Installation 4"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.5s ease',
+                  }}
+                />
+              </MotionBox>
+            </Box>
+          </Box>
+
+          {/* Row 2 */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: { xs: 2, md: 3 },
+            }}
+          >
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+              sx={{
+                position: 'relative',
+                paddingTop: '133%',
+                overflow: 'hidden',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                '&:hover img': {
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              <Box
+                component="img"
+                src="/LandingPage/Fw__Seats%20(1)/IMG_7077.jpg"
+                alt="Custom Seat Installation 5"
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'transform 0.5s ease',
+                }}
+              />
+            </MotionBox>
+            
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              sx={{
+                position: 'relative',
+                paddingTop: '133%',
+                overflow: 'hidden',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                '&:hover img': {
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              <Box
+                component="img"
+                src="/LandingPage/Fw__FW__/1000001039.jpg"
+                alt="Custom Seat Installation 6"
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'transform 0.5s ease',
+                }}
+              />
+            </MotionBox>
+            
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              sx={{
+                position: 'relative',
+                paddingTop: '133%',
+                overflow: 'hidden',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                '&:hover img': {
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              <Box
+                component="img"
+                src="/LandingPage/Fw__Seats%20(1)/IMG_8107.jpeg"
+                alt="Custom Seat Installation 7"
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'transform 0.5s ease',
+                }}
+              />
+            </MotionBox>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Testimonials Section */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: '#fafafa',
+      }}>
+        <Container maxWidth="lg">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: 6 }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              TESTIMONIALS
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              What Our Customers Say
+            </Typography>
+          </MotionBox>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: { xs: 3, md: 4 },
+            }}
+          >
+            {testimonials.map((testimonial, index) => (
+              <MotionCard
+                key={testimonial.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.6, delay: index * 0.15 }}
+                sx={{
+                  height: '100%',
+                  p: 4,
+                  position: 'relative',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+                  },
+                }}
+              >
+                <FormatQuote 
+                  sx={{ 
+                    fontSize: 48,
+                    color: 'primary.main',
+                    opacity: 0.2,
+                    position: 'absolute',
+                    top: 16,
+                    left: 16,
+                  }} 
+                />
+                <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} sx={{ fontSize: 20, color: 'warning.main' }} />
+                  ))}
+                </Box>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    mb: 3,
+                    color: 'text.secondary',
+                    lineHeight: 1.8,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  "{testimonial.text}"
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar
                     sx={{
-                      height: { xs: 150, sm: 180, md: 200, lg: 220, xl: 240 },
-                      minHeight: { xs: 150, sm: 180, md: 200, lg: 220, xl: 240 },
-                      objectFit: 'contain',
-                      backgroundColor: 'grey.100',
-                      width: '100%',
-                      flexShrink: 0,
+                      width: 48,
+                      height: 48,
+                      bgcolor: 'primary.main',
                     }}
-                  />
-                  <CardContent sx={{ 
-                    flexGrow: 1, 
-                    p: { xs: 2, sm: 2.5, md: 3 },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    height: '100%'
-                  }}>
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'normal', fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' } }}>
-                          {product.title}
-                        </Typography>
-                        <Typography variant="h6" sx={{ color: 'black', fontWeight: 'normal', fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' } }}>
-                          {product.price}
-                        </Typography>
-                      </Box>
-                      <Typography sx={{ mb: { xs: 1.5, md: 2 }, color: 'black', fontWeight: 'normal', fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem' } }}>
-                        {product.description}
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, md: 2 }, flexWrap: 'wrap' }}>
-                        {product.features.map((feature, featureIndex) => (
-                          <Chip
-                            key={`feature-${index}-${featureIndex}`}
-                            label={feature}
-                            size="small"
-                            sx={{ 
-                              backgroundColor: 'rgba(220, 38, 38, 0.8)', 
-                              color: 'white',
-                              fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '0.9rem', xl: '0.95rem' },
-                              fontWeight: 500,
-                              padding: { xs: '4px 8px', sm: '6px 10px', md: '8px 12px' },
-                              '& .MuiChip-label': {
-                                padding: { xs: '0 4px', sm: '0 6px', md: '0 8px' },
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    </Box>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      minHeight: '40px',
-                      mt: 'auto',
-                      pt: 1
-                    }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Star sx={{ fontSize: 16, color: 'warning.main' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 'regular' }}>
-                          {product.rating}
-                        </Typography>
-                      </Box>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        endIcon={<ArrowForward />}
-                        onClick={() => handleOpenModal(product)}
-                        sx={{
-                          height: { xs: '40px', sm: '40px', md: '35px', lg: '35px', xl: '35px' },
-                          fontSize: { xs: '0.875rem', sm: '0.875rem', md: '0.875rem', lg: '0.875rem', xl: '1rem' },
-                          minHeight: '35px',
-                          boxShadow: 'none',
-                          '&:hover': {
-                            boxShadow: 'none',
-                          },
-                        }}
-                      >
-                        View Details
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </MotionCard>
-              ))}
-            </Grid>
+                  >
+                    {testimonial.name.charAt(0)}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {testimonial.name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {testimonial.role}
+                    </Typography>
+                  </Box>
+                </Box>
+              </MotionCard>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Call to Action Section */}
+      <Box sx={{ 
+        py: { xs: 8, md: 10, lg: 12 },
+        background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.95) 0%, rgba(139, 0, 0, 0.95) 100%)',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: 'url(/Gallery/Truckimages/truck01.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.15,
+          zIndex: 0,
+        },
+      }}>
+        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center' }}
+          >
+            <Typography
+              variant="h2"
+              sx={{
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 700,
+              }}
+            >
+              Ready to Experience Superior Comfort?
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 5,
+                fontSize: { xs: '1rem', md: '1.25rem' },
+                opacity: 0.95,
+                lineHeight: 1.8,
+              }}
+            >
+              Join thousands of satisfied customers who've transformed their vehicles with our custom seating solutions.
+            </Typography>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              justifyContent="center"
+            >
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => router.push('/contact')}
+                sx={{
+                  bgcolor: 'white',
+                  color: 'primary.main',
+                  px: 4,
+                  py: 2,
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.9)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                Get a Quote
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => router.push('/shop-now')}
+                sx={{
+                  borderColor: 'white',
+                  color: 'white',
+                  borderWidth: 2,
+                  px: 4,
+                  py: 2,
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderWidth: 2,
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                Shop Now
+              </Button>
+            </Stack>
           </MotionBox>
         </Container>
-      </Box> */}
-
+      </Box>
      
-      {/* Truck Carousel Section */}
-      
+      {/* Brand Carousel Section */}
       <TruckCarousel />
+
+      {/* Video Section Above Footer */}
+      <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden', backgroundColor: 'black' }}>
+        <Box sx={{ position: 'relative', maxWidth: '1440px', mx: 'auto' }}>
+          <Box
+            component="video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            sx={{ width: '100%', height: { xs: 240, sm: 320, md: 420, lg: 520 }, objectFit: 'cover' }}
+          >
+            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/mp4" />
+            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/quicktime" />
+          </Box>
+          <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)' }} />
+        </Box>
+      </Box>
       
       {/* Product Details Modal */}
       <Dialog
