@@ -248,8 +248,8 @@ const HomePage = () => {
                 lineHeight: 1.8,
               }}
             >
-              We're building with spirit for our people, our partners, our communities, and the future we share.
-              With over 25 years of experience, we've mastered the art of creating premium seating solutions
+              We&apos;re building with spirit for our people, our partners, our communities, and the future we share.
+              With over 25 years of experience, we&apos;ve mastered the art of creating premium seating solutions
               that combine comfort, durability, and style.
             </Typography>
           </MotionBox>
@@ -398,7 +398,7 @@ const HomePage = () => {
                 lineHeight: 1.8,
               }}
             >
-              We're true craftsmen who bring your vision to life with our hands-on approach for more control over quality, comfort, and style.
+              We&apos;re true craftsmen who bring your vision to life with our hands-on approach for more control over quality, comfort, and style.
             </Typography>
           </MotionBox>
 
@@ -1015,7 +1015,7 @@ const HomePage = () => {
                     fontStyle: 'italic',
                   }}
                 >
-                  "{testimonial.text}"
+                  &ldquo;{testimonial.text}&rdquo;
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar
@@ -1090,7 +1090,7 @@ const HomePage = () => {
                 lineHeight: 1.8,
               }}
             >
-              Join thousands of satisfied customers who've transformed their vehicles with our custom seating solutions.
+              Join thousands of satisfied customers who&apos;ve transformed their vehicles with our custom seating solutions.
             </Typography>
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
