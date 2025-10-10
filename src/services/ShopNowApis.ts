@@ -3,13 +3,6 @@ import api from '../utils/axios';
 // Base URL for the API - Use environment variable if available, fallback to hardcoded URL
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-// Debug logging for base URL
-console.log('🔧 ShopNowApis - Environment variables:', {
-  NODE_ENV: process.env.NODE_ENV,
-  NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  BASE_URL: BASE_URL
-});
-
 // ============================================================================
 // TYPES DEFINITIONS
 // ============================================================================
@@ -228,7 +221,6 @@ class ShopNowApis {
       const response = await api.get<CategoriesResponse>('/categories');
       return response.data;
     } catch (error) {
-      console.warn('⚠️ ShopNowApis - Categories endpoint not available, using fallback:', error);
       // Return a fallback response instead of throwing
       return {
         status: 'success',
@@ -253,7 +245,6 @@ class ShopNowApis {
       const response = await api.get<{ status: string; message: string; data: Category }>(`/categories/${id}`);
       return response.data.data;
     } catch (error) {
-      console.error(`❌ ShopNowApis - Error fetching category ${id}:`, error);
       throw error;
     }
   }
@@ -268,7 +259,6 @@ class ShopNowApis {
       const response = await api.get<CategoriesResponse>(`/categories?slug=${slug}`);
       return response.data.data;
     } catch (error) {
-      console.error(`❌ ShopNowApis - Error fetching categories by slug ${slug}:`, error);
       throw error;
     }
   }
@@ -282,8 +272,6 @@ class ShopNowApis {
       const response = await api.get<CategoriesResponse>('/categories?is_active=true');
       return response.data.data;
     } catch (error) {
-      console.error('❌ ShopNowApis - Error fetching active categories:', error);
-      
       throw error;
     }
   }
@@ -302,38 +290,11 @@ class ShopNowApis {
     limit?: number;
     show_on_special_shop?: boolean;
     category_id?: number;
-    userData?: User | null;
+    customerId?: number | null;
   } = {}): Promise<ProductsResponse> {
     try {
-      // Extract customer ID (role_id) from userData parameter
-      // Only use userData if it's provided (user is authenticated)
-      const customerId = (() => {
-        // Only try to get from userData parameter if it's provided
-        if (params.userData) {
-          const roleId = params.userData.role?.id || params.userData.role_id;
-          console.log('🔍 ShopNowApis - Using userData role_id:', roleId);
-          console.log('🔍 ShopNowApis - userData structure:', {
-            hasUserData: !!params.userData,
-            hasRole: !!params.userData.role,
-            roleId: roleId,
-            roleIdType: typeof roleId,
-            roleStructure: params.userData.role ? {
-              id: params.userData.role.id,
-              idType: typeof params.userData.role.id,
-              name: params.userData.role.name
-            } : null,
-            directRoleId: params.userData.role_id,
-            directRoleIdType: typeof params.userData.role_id
-          });
-          return typeof roleId === 'number' ? roleId : null;
-        }
-        
-        // If no userData provided, return null (no customer ID)
-        console.log('🔍 ShopNowApis - No userData provided, using no customer ID');
-        return null;
-      })();
-      
-      console.log('🔍 ShopNowApis - Final customerId:', customerId);
+      // Use customerId directly from params (comes from Redux/localStorage)
+      const customerId = params.customerId || null;
       
       // Build query parameters
       const queryParams = new URLSearchParams();
@@ -358,33 +319,10 @@ class ShopNowApis {
       const queryString = queryParams.toString();
       const path = queryString ? `${basePath}?${queryString}` : basePath;
       
-   
-      
       const response = await api.get<ProductsResponse>(path);
-      
-      
-      // Debug: Log price tiers for first few products
-      if (response.data.data && response.data.data.length > 0) {
-        console.log('🔍 ShopNowApis - Price tiers analysis for first 3 products:');
-        response.data.data.slice(0, 3).forEach((product, index) => {
-          console.log(`Product ${index + 1} (${product.name}):`, {
-            productId: product.id,
-            basePrice: product.price,
-            hasPriceTiers: !!product.price_tiers,
-            priceTiersCount: product.price_tiers?.length || 0,
-            priceTiers: product.price_tiers?.map(tier => ({
-              id: tier.id,
-              name: tier.name,
-              discount: tier.discount_off_retail_price,
-              priceAdjustment: tier.pivot?.price_adjustment
-            })) || []
-          });
-        });
-      }
       
       return response.data;
     } catch (error) {
-      console.warn('⚠️ ShopNowApis - Products endpoint not available, using fallback:', error);
       // Return a fallback response instead of throwing
       return {
         status: 'success',
@@ -418,39 +356,16 @@ class ShopNowApis {
   /**
    * Get products by category
    * @param categoryId - Category ID
-   * @param userData - User data (optional)
+   * @param customerId - Customer ID (role_id) from Redux/localStorage (optional)
    * @returns Promise<ProductsResponse>
    */
-  async getProductsByCategory(categoryId: number, userData?: User | null): Promise<ProductsResponse> {
+  async getProductsByCategory(categoryId: number, customerId?: number | null): Promise<ProductsResponse> {
     try {
-      // Extract customer ID (role_id) from userData parameter or localStorage fallback
-      const customerId = (() => {
-        // First try to get from userData parameter
-        if (userData) {
-          const roleId = userData.role?.id || userData.role_id;
-          return typeof roleId === 'number' ? roleId : null;
-        }
-        
-        // Fallback to localStorage
-        try {
-          const raw = localStorage.getItem('persist:auth');
-          if (!raw) return null;
-          const parsed = JSON.parse(raw);
-          const userStr = parsed.user;
-          const user = userStr ? JSON.parse(userStr) : null;
-          
-          // Try to get role_id from user.role.id first, then fallback to user.role_id
-          const roleId = user?.role?.id || user?.role_id;
-          return typeof roleId === 'number' ? roleId : null;
-        } catch { return null; }
-      })();
-      
       const base = customerId ? `/shop/products/${customerId}` : '/shop/products';
       const path = `${base}?category=${categoryId}`;
       const response = await api.get<ProductsResponse>(path);
       return response.data;
     } catch (error) {
-      console.error(`❌ ShopNowApis - Error fetching products for category ${categoryId}:`, error);
       throw error;
     }
   }
@@ -465,7 +380,6 @@ class ShopNowApis {
       const response = await api.get<{ status: string; message: string; data: Product }>(`/product/${id}`);
       return response.data.data;
     } catch (error) {
-      console.error(`❌ ShopNowApis - Error fetching product ${id}:`, error);
       throw error;
     }
   }
@@ -483,7 +397,6 @@ class ShopNowApis {
       const response = await api.get<UserResponse>('/user');
       return response.data.data;
     } catch (error) {
-      console.warn('⚠️ ShopNowApis - User endpoint not available:', error);
       // Return null instead of throwing to indicate no user data
       return null as any;
     }
@@ -506,7 +419,7 @@ class ShopNowApis {
           const authState = JSON.parse(authData.auth || '{}');
           token = authState.token;
         } catch (error) {
-          console.error('Error parsing auth token:', error);
+          // Silently handle parsing errors
         }
       }
     }
@@ -536,10 +449,8 @@ class ShopNowApis {
   async getPriceTiers(): Promise<PriceTiersResponse> {
     try {
       const response = await api.get<PriceTiersResponse>('/price-tiers/options');
-      console.log('✅ ShopNowApis - Price tiers options response:', response.data);
       return response.data;
     } catch (error) {
-      console.warn('⚠️ ShopNowApis - Price tiers options endpoint not available, using fallback:', error);
       // Return a fallback response instead of throwing
       return {
         status: 'success',
@@ -557,12 +468,10 @@ class ShopNowApis {
    */
   getWholesaleDiscount(priceTiers: PriceTier[], userData: User | null): number {
     if (priceTiers.length === 0) {
-      console.log('💰 ShopNowApis - No price tiers available, using default 0% discount');
       return 0;
     }
     
     if (!userData || !userData.role?.price_tier_id) {
-      console.log('💰 ShopNowApis - No user price tier ID, using default 0% discount');
       return 0;
     }
     
@@ -572,12 +481,10 @@ class ShopNowApis {
     );
     
     if (!userPriceTier) {
-      console.warn('⚠️ ShopNowApis - User price tier not found or inactive:', userData.role!.price_tier_id);
       return 0;
     }
     
     const discount = parseFloat(userPriceTier.discount_off_retail_price);
-    console.log('💰 ShopNowApis - User discount found:', discount + '%');
     return discount;
   }
 
@@ -594,20 +501,12 @@ class ShopNowApis {
     
     // For non-authenticated users and retail customers, show the same price
     if (!isAuthenticated || this.isRetailCustomer(userData)) {
-      console.log('💰 ShopNowApis - Non-authenticated/Retail customer - showing standard price:', numericPrice);
       return numericPrice;
     } else {
       // For wholesale customers, apply discount
       const discountPercentage = this.getWholesaleDiscount(priceTiers, userData);
       const discountAmount = (numericPrice * discountPercentage) / 100;
       const discountedPrice = numericPrice - discountAmount;
-      
-      console.log('💰 ShopNowApis - Wholesale customer - applying discount:', {
-        originalPrice: numericPrice,
-        discountPercentage: discountPercentage + '%',
-        discountAmount: discountAmount,
-        finalPrice: discountedPrice
-      });
       
       return discountedPrice;
     }
@@ -626,40 +525,19 @@ class ShopNowApis {
     finalPrice: number;
     savings: number;
   } | null {
-    console.log('🔍 ShopNowApis - Processing product:', {
-      productId: product.id,
-      productName: product.name,
-      hasUserData: !!userData,
-      hasPriceTiers: !!product.price_tiers,
-      priceTiersLength: product.price_tiers?.length || 0,
-      userData: userData,
-      userRoleId: userData?.role?.id || userData?.role_id,
-      userRoleIdType: typeof (userData?.role?.id || userData?.role_id)
-    });
-
     // If no user is logged in, return null (show regular price)
     if (!userData) {
-      console.log('🔍 ShopNowApis - No user logged in, showing regular price');
       return null;
     }
     
     // TEMPORARY DEBUG: Force price tier display for testing
     // Remove this after debugging
     if (product.price_tiers && product.price_tiers.length > 0) {
-      console.log('🔍 ShopNowApis - DEBUG: Forcing price tier display for testing');
       const debugTier = product.price_tiers[0];
       const originalPrice = parseFloat(product.price);
       const discountPercentage = parseFloat(debugTier.discount_off_retail_price);
       const finalPrice = parseFloat(debugTier.pivot?.price_adjustment || '0');
       const savings = originalPrice - finalPrice;
-      
-      console.log('🔍 ShopNowApis - DEBUG: Forced price tier result:', {
-        originalPrice,
-        discountPercentage,
-        finalPrice,
-        savings,
-        tierName: debugTier.name
-      });
       
       return {
         tier: debugTier,
@@ -672,7 +550,6 @@ class ShopNowApis {
 
     // If no price tiers available, return null (show regular price)
     if (!product.price_tiers || product.price_tiers.length === 0) {
-      console.log('🔍 ShopNowApis - No price tiers for product:', product.id, product.name);
       return null;
     }
 
@@ -681,18 +558,8 @@ class ShopNowApis {
     // Get user's role_id
     const userRoleId = userData.role?.id || userData.role_id;
     if (!userRoleId) {
-      console.log('🔍 ShopNowApis - No user role ID found:', userData);
       return null;
     }
-
-    console.log('🔍 ShopNowApis - Looking for price tier with role_id:', userRoleId, 'in product:', product.id);
-    console.log('🔍 ShopNowApis - Available price tiers:', product.price_tiers.map(tier => ({
-      id: tier.id,
-      name: tier.name,
-      discount: tier.discount_off_retail_price,
-      hasPivot: !!tier.pivot,
-      priceAdjustment: tier.pivot?.price_adjustment
-    })));
 
     // Find price tier that matches user's role_id (ensure both are numbers for comparison)
     let matchingTier = product.price_tiers.find(tier => 
@@ -701,44 +568,18 @@ class ShopNowApis {
     
     // Fallback: If no exact match, try to find any active price tier for this user
     if (!matchingTier && product.price_tiers.length > 0) {
-      console.log('🔍 ShopNowApis - No exact role_id match, trying fallback matching...');
       // For now, let's use the first available price tier as a fallback
       // This can be enhanced later with more sophisticated matching logic
       matchingTier = product.price_tiers[0];
-      console.log('🔍 ShopNowApis - Using fallback price tier:', matchingTier);
     }
     
-    console.log('🔍 ShopNowApis - Matching tier search result:', {
-      userRoleId,
-      userRoleIdType: typeof userRoleId,
-      matchingTier: matchingTier ? {
-        id: matchingTier.id,
-        idType: typeof matchingTier.id,
-        name: matchingTier.name,
-        hasPivot: !!matchingTier.pivot,
-        priceAdjustment: matchingTier.pivot?.price_adjustment
-      } : null,
-      allTierIds: product.price_tiers.map(tier => ({ id: tier.id, idType: typeof tier.id }))
-    });
-    
     if (!matchingTier || !matchingTier.pivot) {
-      console.log('🔍 ShopNowApis - No matching tier found for role_id:', userRoleId);
       return null;
     }
 
     const discountPercentage = parseFloat(matchingTier.discount_off_retail_price);
     const finalPrice = parseFloat(matchingTier.pivot.price_adjustment);
     const savings = originalPrice - finalPrice;
-
-    console.log('✅ ShopNowApis - Price tier found:', {
-      productId: product.id,
-      productName: product.name,
-      originalPrice,
-      discountPercentage: `${discountPercentage}%`,
-      finalPrice,
-      savings,
-      tierName: matchingTier.name
-    });
 
     return {
       tier: matchingTier,
@@ -773,7 +614,7 @@ class ShopNowApis {
         try {
           imagesArray = JSON.parse(product.images);
         } catch (parseError) {
-          console.error('Error parsing images JSON:', parseError);
+          // Silently handle parsing errors
         }
       }
       
@@ -791,7 +632,7 @@ class ShopNowApis {
           });
       }
     } catch (error) {
-      console.error('Error processing images:', error);
+      // Silently handle processing errors
     }
     
     return ['/placeholder-image.jpg'];
