@@ -51,7 +51,7 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
 
   const [stockError, setStockError] = React.useState<string | null>(null);
 
-  const handleQuantityChange = async (id: number, currentQuantity: number, change: number) => {
+  const handleQuantityChange = async (id: number, currentQuantity: number, change: number, itemStock?: number) => {
     const newQuantity = currentQuantity + change;
     if (newQuantity <= 0) return;
     // On increment, validate against stock from API (only when user is logged in)
@@ -65,6 +65,8 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
     //    }
       } catch {}
     }
+    
+    // For decrement or if no stock limit, just update quantity
     dispatch(updateQuantity({ id, quantity: newQuantity }));
   };
 
@@ -371,49 +373,68 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
                           mt: 'auto'
                         }}>
                           {/* Quantity Controls */}
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
-                              sx={{ 
-                                backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                                width: { xs: 28, sm: 30, md: 32 },
-                                height: { xs: 28, sm: 30, md: 32 },
-                                '&:hover': { 
-                                  backgroundColor: 'rgba(211, 47, 47, 0.15)',
-                                  transform: 'scale(1.05)'
-                                },
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              <Remove fontSize="small" sx={{ fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }} />
-                            </IconButton>
-                            <Typography sx={{ 
-                              mx: { xs: 2, sm: 2.25, md: 2.5 }, 
-                              minWidth: { xs: 20, sm: 22, md: 24 }, 
-                              textAlign: 'center',
-                              fontWeight: 600,
-                              fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
-                              color: '#1a1a1a'
-                            }}>
-                              {item.quantity}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
-                              sx={{ 
-                                backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                                width: { xs: 28, sm: 30, md: 32 },
-                                height: { xs: 28, sm: 30, md: 32 },
-                                '&:hover': { 
-                                  backgroundColor: 'rgba(211, 47, 47, 0.15)',
-                                  transform: 'scale(1.05)'
-                                },
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              <Add fontSize="small" sx={{ fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }} />
-                            </IconButton>
+                          <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: 0.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleQuantityChange(item.id, item.quantity, -1, item.stock)}
+                                sx={{ 
+                                  backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                                  width: { xs: 28, sm: 30, md: 32 },
+                                  height: { xs: 28, sm: 30, md: 32 },
+                                  '&:hover': { 
+                                    backgroundColor: 'rgba(211, 47, 47, 0.15)',
+                                    transform: 'scale(1.05)'
+                                  },
+                                  transition: 'all 0.2s ease'
+                                }}
+                              >
+                                <Remove fontSize="small" sx={{ fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }} />
+                              </IconButton>
+                              <Typography sx={{ 
+                                mx: { xs: 2, sm: 2.25, md: 2.5 }, 
+                                minWidth: { xs: 20, sm: 22, md: 24 }, 
+                                textAlign: 'center',
+                                fontWeight: 600,
+                                fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
+                                color: '#1a1a1a'
+                              }}>
+                                {item.quantity}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleQuantityChange(item.id, item.quantity, 1, item.stock)}
+                                disabled={item.stock !== undefined && item.stock !== null && item.quantity >= item.stock}
+                                sx={{ 
+                                  backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                                  width: { xs: 28, sm: 30, md: 32 },
+                                  height: { xs: 28, sm: 30, md: 32 },
+                                  '&:hover': { 
+                                    backgroundColor: 'rgba(211, 47, 47, 0.15)',
+                                    transform: 'scale(1.05)'
+                                  },
+                                  '&:disabled': {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                                    opacity: 0.5,
+                                  },
+                                  transition: 'all 0.2s ease'
+                                }}
+                              >
+                                <Add fontSize="small" sx={{ fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }} />
+                              </IconButton>
+                            </Box>
+                            {item.stock !== undefined && item.stock !== null && (
+                              <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                  fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                                  color: item.quantity >= item.stock ? 'error.main' : 'text.secondary',
+                                  fontWeight: item.quantity >= item.stock ? 600 : 400,
+                                }}
+                              >
+                                {item.quantity >= item.stock ? 'Max stock' : `${item.stock} in stock`}
+                              </Typography>
+                            )}
                           </Box>
                           
                           {/* Price */}

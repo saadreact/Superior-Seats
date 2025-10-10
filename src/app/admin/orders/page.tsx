@@ -142,7 +142,7 @@ const OrdersPage = () => {
 
   // Pagination states
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
   // Filter states - Updated to match customer list structure

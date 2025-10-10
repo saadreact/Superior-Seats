@@ -10,6 +10,7 @@ export interface CartItem {
   subCategory?: string;
   mainCategory?: string;
   quantity: number;
+  stock?: number; // Add stock to track inventory limits
   // Optional: preserve variant selections from customization
   variants?: any;
 }
@@ -34,9 +35,20 @@ const cartSlice = createSlice({
       const existingItem = state.items.find(item => item.id === action.payload.id);
 
       if (existingItem) {
+        // Check stock limit before incrementing
+        const stock = action.payload.stock ?? existingItem.stock;
+        if (stock !== undefined && stock !== null && existingItem.quantity >= stock) {
+          // Don't add more if we've reached stock limit
+          return;
+        }
         existingItem.quantity += 1;
+        // Update stock if provided in payload
+        if (action.payload.stock !== undefined) {
+          existingItem.stock = action.payload.stock;
+        }
       } else {
-        state.items.push({ ...action.payload, quantity: 1 });
+        // Add new item with stock info
+        state.items.push({ ...action.payload, quantity: 1, stock: action.payload.stock });
       }
 
       state.totalItems = state.items.length;
@@ -56,10 +68,21 @@ const cartSlice = createSlice({
       }, 0);
     },
 
-    updateQuantity: (state, action: PayloadAction<{ id: number; quantity: number }>) => {
+    updateQuantity: (state, action: PayloadAction<{ id: number; quantity: number; stock?: number }>) => {
       const item = state.items.find(item => item.id === action.payload.id);
       if (item) {
-        item.quantity = action.payload.quantity;
+        // Update stock if provided
+        if (action.payload.stock !== undefined) {
+          item.stock = action.payload.stock;
+        }
+        
+        // Enforce stock limit
+        const stock = item.stock;
+        if (stock !== undefined && stock !== null && action.payload.quantity > stock) {
+          item.quantity = stock; // Cap at stock limit
+        } else {
+          item.quantity = action.payload.quantity;
+        }
 
         state.totalItems = state.items.length;
         state.totalPrice = state.items.reduce((sum, item) => {
