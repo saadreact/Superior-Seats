@@ -47,6 +47,8 @@ import {
   Verified,
   VolumeOff,
   VolumeUp,
+  Fullscreen,
+  FullscreenExit,
 } from '@mui/icons-material';
 import Footer from '@/components/Footer';
 
@@ -164,7 +166,9 @@ const HomePage = () => {
   
   // Video state
   const [isMuted, setIsMuted] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   // Icon mapping function for values section
   const getIcon = (iconName: string) => {
@@ -207,6 +211,59 @@ const HomePage = () => {
       setIsMuted(!isMuted);
     }
   };
+
+  const handleToggleFullscreen = async () => {
+    if (!videoContainerRef.current) return;
+
+    try {
+      if (!isFullscreen) {
+        // Enter fullscreen
+        if (videoContainerRef.current.requestFullscreen) {
+          await videoContainerRef.current.requestFullscreen();
+        } else if ((videoContainerRef.current as any).webkitRequestFullscreen) {
+          await (videoContainerRef.current as any).webkitRequestFullscreen();
+        } else if ((videoContainerRef.current as any).mozRequestFullScreen) {
+          await (videoContainerRef.current as any).mozRequestFullScreen();
+        } else if ((videoContainerRef.current as any).msRequestFullscreen) {
+          await (videoContainerRef.current as any).msRequestFullscreen();
+        }
+        setIsFullscreen(true);
+      } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Error toggling fullscreen:', error);
+    }
+  };
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
 
   return (
     <Box sx={{ minHeight: '100vh', overflow: 'hidden' }}>
@@ -364,6 +421,89 @@ const HomePage = () => {
             ))}
           </MotionBox>
         </Container>
+      </Box>
+
+      {/* Video Section */}
+      <Box sx={{ 
+        position: 'relative', 
+        width: '100%', 
+        overflow: 'hidden', 
+        backgroundColor: 'black',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: { xs: 240, sm: 320, md: 420, lg: 520 }
+      }}>
+        <Box ref={videoContainerRef} sx={{ 
+          position: 'relative', 
+          maxWidth: '1440px', 
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Box
+            ref={videoRef}
+            component="video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            sx={{ 
+              width: '100%', 
+              height: '100%',
+              maxHeight: { xs: 240, sm: 320, md: 420, lg: 520 },
+              objectFit: 'cover',
+              display: 'block'
+            }}
+          >
+            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/mp4" />
+            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/quicktime" />
+          </Box>
+          <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)' }} />
+          
+          {/* Unmute Button */}
+          <IconButton
+            onClick={handleToggleMute}
+            sx={{
+              position: 'absolute',
+              bottom: 20,
+              right: 70,
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              color: 'white',
+              backdropFilter: 'blur(8px)',
+              '&:hover': {
+                backgroundColor: 'rgba(211, 47, 47, 0.8)',
+              },
+              transition: 'all 0.3s ease',
+              zIndex: 2,
+            }}
+          >
+            {isMuted ? <VolumeOff /> : <VolumeUp />}
+          </IconButton>
+
+          {/* Fullscreen Button */}
+          <IconButton
+            onClick={handleToggleFullscreen}
+            sx={{
+              position: 'absolute',
+              bottom: 20,
+              right: 20,
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              color: 'white',
+              backdropFilter: 'blur(8px)',
+              '&:hover': {
+                backgroundColor: 'rgba(211, 47, 47, 0.8)',
+              },
+              transition: 'all 0.3s ease',
+              zIndex: 2,
+            }}
+          >
+            {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+          </IconButton>
+        </Box>
       </Box>
 
       {/* Our Process Section - Inspired by B&G */}
@@ -1163,46 +1303,6 @@ const HomePage = () => {
      
       {/* Brand Carousel Section */}
       <TruckCarousel />
-
-      {/* Video Section Above Footer */}
-      <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden', backgroundColor: 'black' }}>
-        <Box sx={{ position: 'relative', maxWidth: '1440px', mx: 'auto' }}>
-          <Box
-            ref={videoRef}
-            component="video"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            sx={{ width: '100%', height: { xs: 240, sm: 320, md: 420, lg: 520 }, objectFit: 'cover' }}
-          >
-            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/mp4" />
-            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/quicktime" />
-          </Box>
-          <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)' }} />
-          
-          {/* Unmute Button */}
-          <IconButton
-            onClick={handleToggleMute}
-            sx={{
-              position: 'absolute',
-              bottom: 20,
-              right: 20,
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              color: 'white',
-              backdropFilter: 'blur(8px)',
-              '&:hover': {
-                backgroundColor: 'rgba(211, 47, 47, 0.8)',
-              },
-              transition: 'all 0.3s ease',
-              zIndex: 2,
-            }}
-          >
-            {isMuted ? <VolumeOff /> : <VolumeUp />}
-          </IconButton>
-        </Box>
-      </Box>
       
       {/* Product Details Modal */}
       <Dialog
