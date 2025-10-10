@@ -51,7 +51,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addItem } from '@/store/cartSlice';
 import { RootState } from '@/store/store';
 // API IMPORTS
-import shopNowApis, { Product, User, PriceTier, Category } from '@/services/ShopNowApis';
+import shopNowApis, { Product, Category } from '@/services/ShopNowApis';
 
 const ShopNow = () => {
   const theme = useTheme();
@@ -71,31 +71,6 @@ const ShopNow = () => {
   // Check if we're on the ShopGallery or Shop Now page
   const isOnShopGalleryPage = pathname === '/ShopGallery' || pathname === '/shop-now';
   
-  // Debug: Log environment variables in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-    }
-  }, [pathname, isOnShopGalleryPage]);
-
-  // Debug: Monitor for unexpected navigation changes
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-      } else {
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
   
   const [selectedMainCategory, setSelectedMainCategory] = useState('all');
   const [selectedSubCategory, setSelectedSubCategory] = useState('all');
@@ -122,41 +97,11 @@ const ShopNow = () => {
     has_more_pages: boolean;
   } | null>(null);
   
-  // User State
-  const [userData, setUserData] = useState<User | null>(null);
-  const [userLoading, setUserLoading] = useState(false);
-
-  // Price Tiers State
-  const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
-  const [priceTiersLoading, setPriceTiersLoading] = useState(false);
-
   // Categories State - Now extracted from products
   const [categories, setCategories] = useState<Category[]>([]);
-
-    // Function to fetch price tiers
-  const fetchPriceTiers = useCallback(async () => {
-    if (!isOnShopGalleryPage) {
-      return;
-    }
-
-    try {
-      setPriceTiersLoading(true);
-      
-      const response = await shopNowApis.getPriceTiers();
-      
-      if (response.status === 'success' && response.data) {
-        setPriceTiers(response.data);
-      } else {
-        setPriceTiers([]); // Set empty array as fallback
-      }
-    } catch (error) {
-      setPriceTiers([]); // Set empty array as fallback
-      // Don't throw error to prevent breaking the app
-    } finally {
-      setPriceTiersLoading(false);
-    }
-  }, [isOnShopGalleryPage]);
-
+  
+  // Extract role_id (customer ID) directly from Redux state (persisted in localStorage)
+  const customerId = user?.role?.id || user?.role_id || null;
 
   // Function to extract unique categories from products
   const extractCategoriesFromProducts = useCallback((products: Product[]) => {
@@ -187,23 +132,6 @@ const ShopNow = () => {
     return Array.from(categoryMap.values()).sort((a, b) => a.sort_order - b.sort_order);
   }, []);
 
-  // Function to fetch all categories by getting all products first
-  const fetchAllCategories = useCallback(async () => {
-    if (!isOnShopGalleryPage || categories.length > 0) {
-      return; // Skip if not on the right page or categories already loaded
-    }
-
-    try {
-      const response = await shopNowApis.getProducts({ page: 1, limit: 1000 }); // Get a large number to get all products
-      
-      if (response.status === 'success' && response.data) {
-        const extractedCategories = extractCategoriesFromProducts(response.data);
-        setCategories(extractedCategories);
-      }
-    } catch (error) {
-    }
-  }, [isOnShopGalleryPage, categories.length, extractCategoriesFromProducts]);
-
   // Function to fetch products with server-side pagination and filtering
   const fetchProducts = useCallback(async () => {
     if (!isOnShopGalleryPage) {
@@ -213,12 +141,6 @@ const ShopNow = () => {
       return;
     }
     (fetchProducts as any).__inFlight = true;
-    
-    // If a specific category is selected but categories are not loaded yet, wait
-    if (selectedMainCategory !== 'all' && categories.length === 0) {
-      (fetchProducts as any).__inFlight = false;
-      return;
-    }
     
     setLoading(true);
     setError(null);
@@ -247,35 +169,21 @@ const ShopNow = () => {
       }
       
       
-      // Add userData to API params only if user is authenticated
-      if (isAuthenticated && userData) {
-        apiParams.userData = userData;
-        console.log('🔍 ShopNow - Passing userData to API:', {
-          isAuthenticated,
-          hasUserData: !!userData,
-          userData: userData,
-          roleId: userData.role?.id || userData.role_id,
-          customerType: userData.customer_type
-        });
-      } else {
-        console.log('🔍 ShopNow - Not passing userData to API:', {
-          isAuthenticated,
-          hasUserData: !!userData,
-          userData: userData
-        });
+      // Add customer ID (role_id) directly from Redux if user is authenticated
+      if (isAuthenticated && customerId) {
+        apiParams.customerId = customerId;
       }
       
       const productsResponse = await shopNowApis.getProducts(apiParams);
       
-      // Debug: Log first product's price tiers to see the structure
-      if (productsResponse.data && productsResponse.data.length > 0) {
-        const firstProduct = productsResponse.data[0];
-      }
-      
       if (productsResponse.status === 'success' && productsResponse.data) {
         setApiProducts(productsResponse.data);
         
-        // Categories are now loaded separately via fetchAllCategories
+        // Extract and set categories from products (only show categories with products)
+        if (categories.length === 0) {
+          const extractedCategories = extractCategoriesFromProducts(productsResponse.data);
+          setCategories(extractedCategories);
+        }
         
         // Set pagination metadata
         if (productsResponse.meta?.pagination) {
@@ -304,114 +212,15 @@ const ShopNow = () => {
     
     setLoading(false);
     (fetchProducts as any).__inFlight = false;
-  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, categories, userData]);
+  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, customerId, isAuthenticated, extractCategoriesFromProducts]);
 
-  // Function to refresh all APIs (price tiers, user data, categories)
-  const refreshAllApis = useCallback(async () => {
-    // Only refresh APIs if we're on the ShopGallery page
-    if (!isOnShopGalleryPage) {
-      return;
-    }
-    if ((refreshAllApis as any).__inFlight) {
-      return;
-    }
-    (refreshAllApis as any).__inFlight = true;
-    
-    
-    // Fetch all categories first
-    try {
-      await fetchAllCategories();
-    } catch (error) {
-    }
-    
-    // Fetch price tiers
-    try {
-      await fetchPriceTiers();
-    } catch (error) {
-    }
-    
-    // Fetch user data if authenticated
-    if (isAuthenticated) {
-      setUserLoading(true);
-      try {
-        console.log('🔍 ShopNow - Fetching user data for authenticated user...');
-        const userResponse = await shopNowApis.getCurrentUser();
-        console.log('🔍 ShopNow - User data fetched:', userResponse);
-        setUserData(userResponse);
-      } catch (userError: any) {
-        // Don't redirect on user data fetch failure, just clear user data
-        if (userError?.response?.status === 401) {
-          console.log('🔍 ShopNow - 401 error fetching user data, clearing user data');
-        }
-        console.error('🔍 ShopNow - Error fetching user data:', userError);
-        setUserData(null);
-      } finally {
-        setUserLoading(false);
-      }
-    } else {
-      console.log('🔍 ShopNow - User not authenticated, clearing user data');
-      setUserData(null);
-      setUserLoading(false);
-    }
-    (refreshAllApis as any).__inFlight = false;
-  }, [isAuthenticated, isOnShopGalleryPage, fetchPriceTiers, fetchAllCategories]);
-
-  // Effect to fetch products when filters or pagination change
+  // Effect to fetch products - categories are extracted from products response
   useEffect(() => {
     if (isOnShopGalleryPage) {
       fetchProducts();
     }
-  }, [fetchProducts, isOnShopGalleryPage]);
-
-  // Effect to fetch products when categories are loaded and a specific category is selected
-  useEffect(() => {
-    if (isOnShopGalleryPage && selectedMainCategory !== 'all' && categories.length > 0) {
-      fetchProducts();
-    }
-  }, [categories, selectedMainCategory, isOnShopGalleryPage, fetchProducts]);
-
-  // Effect to refresh APIs when authentication state changes (only if on ShopGallery page)
-  useEffect(() => {
-    if (isOnShopGalleryPage) {
-      refreshAllApis();
-    } else {
-    }
-  }, [isAuthenticated, user, refreshAllApis, isOnShopGalleryPage]);
-
-  // Initial load effect (only if on ShopGallery page)
-  useEffect(() => {
-    if (isOnShopGalleryPage) {
-      refreshAllApis();
-    } else {
-    }
-  }, [isOnShopGalleryPage, refreshAllApis]); // Only depend on page check
-
-  // Check if user is retail customer
-  const isRetailCustomer = () => {
-    return shopNowApis.isRetailCustomer(userData);
-  };
-
-  // Get wholesale discount percentage
-  const getWholesaleDiscount = () => {
-    return shopNowApis.getWholesaleDiscount(priceTiers, userData);
-  };
-
-  // Get display price based on customer type
-  const getDisplayPrice = (price: string | number) => {
-    return shopNowApis.getDisplayPrice(price, isAuthenticated, userData, priceTiers);
-  };
-
-  // Get best price tier for a product
-  const getBestPriceTier = (product: Product) => {
-    const result = shopNowApis.getBestPriceTierForProduct(product, userData);
-    return result;
-  };
-
-  // Debug logging for user state
-  useEffect(() => {
-    if (isOnShopGalleryPage) {
-    }
-  }, [userData, isAuthenticated, isOnShopGalleryPage, priceTiers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, customerId, isAuthenticated]);
 
   // Use server-side filtered products directly (no client-side filtering needed)
   const filteredImages = apiProducts;
@@ -422,20 +231,11 @@ const ShopNow = () => {
   const startIndex = paginationMeta?.from || 1;
   const endIndex = paginationMeta?.to || 0;
 
-     // Debug logging for filtering
-   useEffect(() => {
-     if (isOnShopGalleryPage) {
-       // Log available categories from API
-       if (categories && categories.length > 0) {
-         
-       }
-     }
-   }, [selectedMainCategory, showSpecialOnly, apiProducts.length, categories, isOnShopGalleryPage, currentPage, itemsPerPage, paginationMeta]);
 
-     // Generate main categories from extracted categories data
+     // Generate categories dropdown - only show categories that have products
    const apiMainCategories = [
      { value: 'all', label: 'All Products' },
-     ...(categories || []) // Add null check for categories
+     ...(categories || [])
        .filter(cat => cat && cat.is_active) // Only show active categories
        .sort((a, b) => a.sort_order - b.sort_order) // Sort by sort_order
        .map(cat => ({
@@ -495,6 +295,37 @@ const ShopNow = () => {
   const getFirstValidImage = (product: Product): string | undefined => {
     const images = getValidImages(product);
     return images.length > 0 ? images[0] : undefined;
+  };
+
+  // Helper function to get pricing information with discount
+  const getPriceDisplay = (product: Product) => {
+    const originalPrice = parseFloat(product.price.toString());
+    
+    // Check if product has price_tiers with active discounts
+    if (product.price_tiers && product.price_tiers.length > 0) {
+      const priceTier = product.price_tiers[0]; // Use first price tier
+      const discountedPrice = parseFloat(priceTier.pivot.price_adjustment);
+      const discountPercentage = parseFloat(priceTier.discount_off_retail_price);
+      
+      // Only show discount if there's an actual discount (price is different and percentage > 0)
+      const hasActualDiscount = discountPercentage > 0 && discountedPrice < originalPrice && discountedPrice > 0;
+      
+      return {
+        hasDiscount: hasActualDiscount,
+        originalPrice,
+        discountedPrice: hasActualDiscount ? discountedPrice : originalPrice,
+        discountPercentage: priceTier.discount_off_retail_price,
+        displayPrice: hasActualDiscount ? discountedPrice : originalPrice
+      };
+    }
+    
+    return {
+      hasDiscount: false,
+      originalPrice,
+      discountedPrice: originalPrice,
+      discountPercentage: '0',
+      displayPrice: originalPrice
+    };
   };
 
   // Touch/swipe functionality for mobile
@@ -563,8 +394,11 @@ const ShopNow = () => {
         return;
       }
     } catch {}
-    const effective = getBestPriceTier(item)?.finalPrice ?? parseFloat(item.price.toString());
-    const priceString = Number.isFinite(effective) ? effective.toFixed(2) : parseFloat(item.price.toString()).toFixed(2);
+    
+    // Get the correct price (discounted if available)
+    const priceInfo = getPriceDisplay(item);
+    const priceString = priceInfo.displayPrice.toFixed(2);
+    
     dispatch(addItem({
       id: item.id,
       title: item.name,
@@ -1052,96 +886,92 @@ const ShopNow = () => {
                       </Box>
                     )}
                      
-                    {/* Enhanced Price Display with Product-Specific Price Tiers */}
+                    {/* Price Display */}
                     {(() => {
-                      const priceTierInfo = getBestPriceTier(item);
-                      
-                      if (priceTierInfo && priceTierInfo.discountPercentage > 0) {
-                        // Show price tier pricing for wholesale customers with discount
-                        return (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: { xs: 12, sm: 12, md: 16 },
-                          right: { xs: 12, sm: 12, md: 16 },
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-end',
-                          gap: { xs: 0.5, sm: 0.75 },
-                          maxWidth: { xs: '140px', sm: '160px', md: '180px' },
-                        }}
-                      >
-                        {/* Discount Percentage Badge */}
-                        <Chip
-                              label={`${priceTierInfo.discountPercentage}% OFF`}
+                      const priceInfo = getPriceDisplay(item);
+                      return (
+                        <Box
                           sx={{
-                            backgroundColor: 'primary.main',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: { xs: '0.65rem', sm: '0.7rem', md: '1rem', lg: '1rem' , xl: '1rem'},
-                            height: { xs: 20, sm: 22, md: 24 },
-                            '& .MuiChip-label': {
-                              px: { xs: 0.75, sm: 1 },
-                            },
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-                          }}
-                        />
-                        
-                        {/* Original Price with Strikethrough */}
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: 'text.primary',
-                            fontSize: { xs: '0.8rem', sm: '0.85rem', md: '1rem' },
-                            fontWeight: 'medium',
-                            textDecoration: 'line-through',
-                            textDecorationColor: 'text.primary',
-                            opacity: 0.7,
+                            position: 'absolute',
+                            top: { xs: 12, sm: 12, md: 16 },
+                            right: { xs: 12, sm: 12, md: 16 },
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-end',
+                            gap: 0.5,
                           }}
                         >
-                              ${priceTierInfo.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </Typography>
-                        
-                        {/* Discounted Price */}
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: 'primary.main',
-                            fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
-                            fontWeight: 'bold',
-                            lineHeight: 1,
-                          }}
-                        >
-                              ${priceTierInfo.finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </Typography>
-                      </Box>
-                        );
-                      } else {
-                        // Show regular price for retail customers, products without price tiers, or 0% discount price tiers
-                        return (
-                      <Chip
-                            label={`$${parseFloat(item.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                        sx={{
-                          position: 'absolute',
-                          top: { xs: 12, sm: 12, md: 16 },
-                          right: { xs: 12, sm: 12, md: 16 },
-                          backgroundColor: 'primary.main',
-                          color: 'white',
-                          fontWeight: 'bold',
-                          fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
-                          height: { xs: 28, sm: 32, md: 36 },
-                          maxWidth: { xs: '120px', sm: '150px', md: '180px' },
-                          '& .MuiChip-label': {
-                            px: { xs: 1, sm: 1.5 },
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          },
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                        }}
-                      />
-                        );
-                      }
+                          {/* Discount Badge */}
+                          {priceInfo.hasDiscount && (
+                            <Chip
+                              label={`${priceInfo.discountPercentage}% OFF`}
+                              size="small"
+                              sx={{
+                                backgroundColor: 'error.main',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                                height: { xs: 22, sm: 24, md: 26 },
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                              }}
+                            />
+                          )}
+                          
+                          {/* Price Display */}
+                          {priceInfo.hasDiscount ? (
+                            // Show both original and discounted price
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'flex-end',
+                                gap: 0.25,
+                              }}
+                            >
+                              {/* Original Price with strikethrough */}
+                              <Typography
+                                sx={{
+                                  fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' },
+                                  textDecoration: 'line-through',
+                                  color: '#616161',
+                                  fontWeight: 'medium',
+                                  lineHeight: 1.2,
+                                }}
+                              >
+                                ${priceInfo.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </Typography>
+                              
+                              {/* Discounted Price */}
+                              <Typography
+                                sx={{
+                                  fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
+                                  fontWeight: 'bold',
+                                  color: 'primary.main',
+                                  lineHeight: 1.2,
+                                }}
+                              >
+                                ${priceInfo.displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </Typography>
+                            </Box>
+                          ) : (
+                            // Show only regular price
+                            <Chip
+                              label={`$${priceInfo.displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                              sx={{
+                                backgroundColor: 'primary.main',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                                height: { xs: 28, sm: 32, md: 36 },
+                                '& .MuiChip-label': {
+                                  px: { xs: 1, sm: 1.5 },
+                                },
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                              }}
+                            />
+                          )}
+                        </Box>
+                      );
                     })()}
                   </Box>
                   <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2, md: 2.5, lg: 3 } }}>
@@ -1493,104 +1323,95 @@ const ShopNow = () => {
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                   >
-                     {/* Enhanced Price Display in Modal with Product-Specific Price Tiers */}
+                     {/* Price Display in Modal */}
                      {(() => {
-                       const priceTierInfo = getBestPriceTier(selectedImage);
-                       
-                       if (priceTierInfo && priceTierInfo.discountPercentage > 0) {
-                         // Show price tier pricing for wholesale customers with discount
-                         return (
-                       <Box
-                         sx={{
-                           position: 'absolute',
-                           top: { xs: 12, sm: 16, md: 20 },
-                           right: { xs: 12, sm: 16, md: 20 },
-                           display: 'flex',
-                           flexDirection: 'column',
-                           alignItems: 'flex-end',
-                           gap: { xs: 0.75, sm: 1 },
-                           maxWidth: { xs: '180px', sm: '220px', md: '260px' },
-                           zIndex: 3,
-                           backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                           padding: { xs: 1, sm: 1.5, md: 2 },
-                           borderRadius: '12px',
-                           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                           border: '2px solid rgba(255, 255, 255, 0.2)',
-                         }}
-                       >
-                         {/* Discount Percentage Badge */}
-                         <Chip
-                               label={`${priceTierInfo.discountPercentage}% OFF`}
+                       const priceInfo = getPriceDisplay(selectedImage);
+                       return (
+                         <Box
                            sx={{
-                             backgroundColor: 'primary.main',
-                             color: 'white',
-                             fontWeight: 'bold',
-                             fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.5rem' },
-                             height: { xs: 24, sm: 28, md: 32 },
-                             '& .MuiChip-label': {
-                               px: { xs: 1, sm: 1.5 },
-                             },
-                             boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                           }}
-                         />
-                         
-                         {/* Original Price with Strikethrough */}
-                         <Typography
-                           variant="body2"
-                           sx={{
-                             color: 'text.primary',
-                             fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
-                             fontWeight: 'medium',
-                             textDecoration: 'line-through',
-                             textDecorationColor: 'text.primary',
-                             opacity: 0.7,
+                             position: 'absolute',
+                             top: { xs: 12, sm: 16, md: 20 },
+                             right: { xs: 12, sm: 16, md: 20 },
+                             display: 'flex',
+                             flexDirection: 'column',
+                             alignItems: 'flex-end',
+                             gap: 0.75,
+                             zIndex: 3,
                            }}
                          >
-                               ${priceTierInfo.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                         </Typography>
-                         
-                         {/* Discounted Price */}
-                         <Typography
-                           variant="h5"
-                           sx={{
-                             color: 'primary.main',
-                             fontSize: { xs: '1.1rem', sm: '1.35rem', md: '1.7rem' },
-                             fontWeight: 'bold',
-                             lineHeight: 1,
-                           }}
-                         >
-                               ${priceTierInfo.finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                         </Typography>
-                       </Box>
-                         );
-                       } else {
-                         // Show regular price for retail customers, products without price tiers, or 0% discount price tiers
-                         return (
-                       <Chip
-                             label={`$${parseFloat(selectedImage.price.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                         sx={{
-                           position: 'absolute',
-                           top: { xs: 12, sm: 16, md: 20 },
-                           right: { xs: 12, sm: 16, md: 20 },
-                           backgroundColor: 'primary.main',
-                           color: 'white',
-                           fontWeight: 'bold',
-                           fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
-                           height: { xs: 36, sm: 40, md: 44 },
-                           maxWidth: { xs: '200px', sm: '250px', md: '300px' },
-                           zIndex: 3,
-                           '& .MuiChip-label': {
-                             px: { xs: 1.5, sm: 2, md: 2.5 },
-                             overflow: 'hidden',
-                             textOverflow: 'ellipsis',
-                             whiteSpace: 'nowrap',
-                           },
-                           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                           border: '2px solid rgba(255, 255, 255, 0.2)',
-                         }}
-                       />
-                         );
-                       }
+                           {/* Discount Badge */}
+                           {priceInfo.hasDiscount && (
+                             <Chip
+                               label={`${priceInfo.discountPercentage}% OFF`}
+                               size="small"
+                               sx={{
+                                 backgroundColor: 'error.main',
+                                 color: 'white',
+                                 fontWeight: 'bold',
+                                 fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem' },
+                                 height: { xs: 26, sm: 30, md: 34 },
+                                 boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                                 border: '2px solid rgba(255, 255, 255, 0.2)',
+                               }}
+                             />
+                           )}
+                           
+                           {/* Price Display */}
+                           {priceInfo.hasDiscount ? (
+                             // Show both original and discounted price
+                             <Box
+                               sx={{
+                                 display: 'flex',
+                                 flexDirection: 'column',
+                                 alignItems: 'flex-end',
+                                 gap: 0.5,
+                               }}
+                             >
+                               {/* Original Price with strikethrough */}
+                               <Typography
+                                 sx={{
+                                   fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                                   textDecoration: 'line-through',
+                                   color: '#616161',
+                                   fontWeight: 'medium',
+                                   lineHeight: 1.2,
+                                 }}
+                               >
+                                 ${priceInfo.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                               </Typography>
+                               
+                               {/* Discounted Price */}
+                               <Typography
+                                 sx={{
+                                   fontSize: { xs: '1.25rem', sm: '1.4rem', md: '1.5rem' },
+                                   fontWeight: 'bold',
+                                   color: 'primary.main',
+                                   lineHeight: 1.2,
+                                 }}
+                               >
+                                 ${priceInfo.displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                               </Typography>
+                             </Box>
+                           ) : (
+                             // Show only regular price
+                             <Chip
+                               label={`$${priceInfo.displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                               sx={{
+                                 backgroundColor: 'primary.main',
+                                 color: 'white',
+                                 fontWeight: 'bold',
+                                 fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+                                 height: { xs: 36, sm: 40, md: 44 },
+                                 '& .MuiChip-label': {
+                                   px: { xs: 1.5, sm: 2, md: 2.5 },
+                                 },
+                                 boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                                 border: '2px solid rgba(255, 255, 255, 0.2)',
+                               }}
+                             />
+                           )}
+                         </Box>
+                       );
                      })()}
 
                     {/* Main Product Image */}

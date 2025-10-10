@@ -112,6 +112,8 @@ const CreateProduct2Page = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [initialLoading, setInitialLoading] = useState(true);
+  const [variationDataLoaded, setVariationDataLoaded] = useState(false);
+  const [priceTiersLoaded, setPriceTiersLoaded] = useState(false);
   
   // Price tiers states
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
@@ -139,50 +141,34 @@ const CreateProduct2Page = () => {
 
   useEffect(() => {
     loadInitialData();
-    loadPriceTiers();
   }, []);
+
+  // Effect to calculate price tiers when priceTiers are loaded or dependencies change
+  useEffect(() => {
+    if (formData.enablePriceTiers && priceTiers.length > 0 && formData.basePrice > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.basePrice, priceTiers, priceOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+    }
+  }, [priceTiers, formData.enablePriceTiers, formData.basePrice, priceOverrides]);
 
   const loadInitialData = async () => {
     try {
       setInitialLoading(true);
       
-      // Load all required data for dropdowns using the new productApi with fallbacks
+      // Load only essential data on page load (categories and vehicle makes)
       const [
         categoriesRes,
-        seatTypesRes,
-        armTypesRes,
-        lumbarTypesRes,
-        reclineTypesRes,
-        heatOptionsRes,
-        materialTypesRes,
-        stitchPatternsRes,
-        seatItemTypesRes,
-        seatStylesRes,
-        colorsRes,
         vehicleMakesRes,
       ] = await Promise.all([
         productApi.getCategories(),
-        productApi.getSeatTypes().catch(() => apiService.getSeatTypes()),
-        productApi.getArmTypes().catch(() => apiService.getArmTypes()),
-        productApi.getLumbarTypes(),
-        productApi.getReclineTypes(),
-        productApi.getHeatOptions(),
-        productApi.getMaterialTypes(),
-        productApi.getStitchPatterns(),
-        productApi.getItemTypes().catch(() => apiService.getItemTypes()),
-        productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
-        productApi.getColors(),
         apiService.getVehicleMakes(),
       ]);
 
       // Debug API responses
-      console.log('=== API RESPONSES DEBUG ===');
-      console.log('Seat Types API Response:', seatTypesRes);
-      console.log('Arm Types API Response:', armTypesRes);
-      console.log('Item Types API Response:', seatItemTypesRes);
-      console.log('Seat Styles API Response:', seatStylesRes);
+      console.log('=== INITIAL API RESPONSES DEBUG ===');
       console.log('Categories API Response:', categoriesRes);
-      console.log('===========================');
+      console.log('Vehicle Makes API Response:', vehicleMakesRes);
+      console.log('===================================');
       
       // Convert API responses to the expected format { id, name, price }
       const convertToFormFormat = (items: any[], hasPrice = true) => 
@@ -192,20 +178,8 @@ const CreateProduct2Page = () => {
           price: hasPrice ? (item.price || item.cost || 0) : 0
         })) : [];
       
-      // Ensure all responses are arrays and have the expected structure
+      // Set essential data
       setCategories(convertToFormFormat(categoriesRes));
-      setSeatTypes(convertToFormFormat(seatTypesRes));
-      setArmTypes(convertToFormFormat(armTypesRes));
-      setLumbarTypes(convertToFormFormat(lumbarTypesRes));
-      setReclineTypes(convertToFormFormat(reclineTypesRes));
-      setHeatOptions(convertToFormFormat(heatOptionsRes));
-      setMaterialTypes(convertToFormFormat(materialTypesRes));
-      setStitchPatterns(convertToFormFormat(stitchPatternsRes));
-      setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
-      const processedSeatStyles = convertToFormFormat(seatStylesRes, false); // Seat styles don't have price
-      console.log('Processed Seat Styles:', processedSeatStyles);
-      setSeatStyles(processedSeatStyles);
-      setColors(convertToFormFormat(colorsRes));
       
       // Set vehicle makes data
       const vehicleMakesData = Array.isArray(vehicleMakesRes?.data) ? vehicleMakesRes.data : 
@@ -229,6 +203,82 @@ const CreateProduct2Page = () => {
       }
     } finally {
       setInitialLoading(false);
+    }
+  };
+
+  const loadVariationData = async () => {
+    // Skip if data is already loaded
+    if (variationDataLoaded) {
+      console.log('Variation data already loaded, skipping...');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      // Load all variation-related data
+      const [
+        seatTypesRes,
+        armTypesRes,
+        lumbarTypesRes,
+        reclineTypesRes,
+        heatOptionsRes,
+        materialTypesRes,
+        stitchPatternsRes,
+        seatItemTypesRes,
+        seatStylesRes,
+        colorsRes,
+      ] = await Promise.all([
+        productApi.getSeatTypes().catch(() => apiService.getSeatTypes()),
+        productApi.getArmTypes().catch(() => apiService.getArmTypes()),
+        productApi.getLumbarTypes(),
+        productApi.getReclineTypes(),
+        productApi.getHeatOptions(),
+        productApi.getMaterialTypes(),
+        productApi.getStitchPatterns(),
+        productApi.getItemTypes().catch(() => apiService.getItemTypes()),
+        productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
+        productApi.getColors(),
+      ]);
+
+      // Debug API responses
+      console.log('=== VARIATION API RESPONSES DEBUG ===');
+      console.log('Seat Types API Response:', seatTypesRes);
+      console.log('Arm Types API Response:', armTypesRes);
+      console.log('Item Types API Response:', seatItemTypesRes);
+      console.log('Seat Styles API Response:', seatStylesRes);
+      console.log('====================================');
+      
+      // Convert API responses to the expected format { id, name, price }
+      const convertToFormFormat = (items: any[], hasPrice = true) => 
+        Array.isArray(items) ? items.map(item => ({ 
+          id: item.id || 0,
+          name: item.name || item.title || item.label || 'Unknown', 
+          price: hasPrice ? (item.price || item.cost || 0) : 0
+        })) : [];
+      
+      // Set all variation data
+      setSeatTypes(convertToFormFormat(seatTypesRes));
+      setArmTypes(convertToFormFormat(armTypesRes));
+      setLumbarTypes(convertToFormFormat(lumbarTypesRes));
+      setReclineTypes(convertToFormFormat(reclineTypesRes));
+      setHeatOptions(convertToFormFormat(heatOptionsRes));
+      setMaterialTypes(convertToFormFormat(materialTypesRes));
+      setStitchPatterns(convertToFormFormat(stitchPatternsRes));
+      setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
+      const processedSeatStyles = convertToFormFormat(seatStylesRes, false); // Seat styles don't have price
+      console.log('Processed Seat Styles:', processedSeatStyles);
+      setSeatStyles(processedSeatStyles);
+      setColors(convertToFormFormat(colorsRes));
+      
+      // Mark variation data as loaded
+      setVariationDataLoaded(true);
+      
+    } catch (error: any) {
+      console.error('Error loading variation data:', error);
+      setErrors({ submit: 'Failed to load variation data. Please try again.' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -304,13 +354,7 @@ const CreateProduct2Page = () => {
       [field]: value,
     }));
     
-    // Recalculate price tiers if basePrice changes and price tiers are enabled
-    if (field === 'basePrice' && formData.enablePriceTiers && calculatedPriceTiers.length > 0) {
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
-      setCalculatedPriceTiers(newCalculatedTiers);
-      
-                        // Price adjustments are now handled directly in handleSubmit
-    }
+    // Price tier recalculation is now handled by useEffect
     
     if (errors[field]) {
       setErrors(prev => ({
@@ -415,8 +459,14 @@ const CreateProduct2Page = () => {
   };
 
   // Variations toggle handler
-  const handleVariationsToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVariationsToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const enabled = event.target.checked;
+    
+    if (enabled) {
+      // Load variation data when enabling variations
+      await loadVariationData();
+    }
+    
     setFormData(prev => ({
       ...prev,
       enableVariations: enabled,
@@ -440,24 +490,23 @@ const CreateProduct2Page = () => {
   };
 
   // Price tiers handlers
-  const handlePriceTiersToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePriceTiersToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const enabled = event.target.checked;
+    
     setFormData(prev => ({
       ...prev,
       enablePriceTiers: enabled,
     }));
     
     if (enabled) {
-      // Calculate price tiers when enabled
-      if (formData.basePrice > 0) {
-        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.basePrice, priceTiers, priceOverrides);
-        setCalculatedPriceTiers(newCalculatedTiers);
-        
-        // Price tiers are now handled directly in handleSubmit
-      }
+      // Load price tiers when enabling
+      await loadPriceTiers();
+      
+      // Note: We need to use a callback or effect to calculate price tiers
+      // after priceTiers state is updated. For now, calculation will happen
+      // when basePrice changes or in an effect that watches priceTiers
     } else {
       // Clear price tiers when disabled
-      // Price tiers are now handled directly in handleSubmit
       setCalculatedPriceTiers([]);
       setPriceOverrides({});
     }
@@ -469,41 +518,33 @@ const CreateProduct2Page = () => {
       [tierId.toString()]: overridePrice
     }));
     
-    // Update the calculated price tiers with the new override
-    setCalculatedPriceTiers(prev => prev.map(tier => {
-      if (tier.id === tierId) {
-        const isOverridden = overridePrice > 0 && overridePrice !== tier.calculated_price;
-        return {
-          ...tier,
-          override_price: overridePrice,
-          is_overridden: isOverridden
-        };
-      }
-      return tier;
-    }));
-    
-    // Price adjustments are now handled directly in handleSubmit
+    // Price tier recalculation is now handled by useEffect
   };
 
   const handleResetPriceTiers = () => {
-    if (formData.basePrice > 0) {
-      // Clear all overrides
-      setPriceOverrides({});
-      
-      // Recalculate price tiers without overrides
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.basePrice, priceTiers, {});
-      setCalculatedPriceTiers(newCalculatedTiers);
-      
-      // Price adjustments are now handled directly in handleSubmit
-    }
+    // Clear all overrides - useEffect will recalculate with the cleared overrides
+    setPriceOverrides({});
   };
 
   const loadPriceTiers = async () => {
+    // Skip if data is already loaded
+    if (priceTiersLoaded) {
+      console.log('Price tiers already loaded, skipping...');
+      return;
+    }
+    
     try {
+      setLoading(true);
+      console.log('Loading price tiers...');
       const response = await productApi.getPriceTiers();
       setPriceTiers(response || []);
+      setPriceTiersLoaded(true);
+      console.log('Price tiers loaded successfully:', response);
     } catch (err) {
       console.error('Error loading price tiers:', err);
+      setErrors({ submit: 'Failed to load price tiers. Please try again.' });
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -54,15 +54,15 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
   const handleQuantityChange = async (id: number, currentQuantity: number, change: number) => {
     const newQuantity = currentQuantity + change;
     if (newQuantity <= 0) return;
-    // On increment, validate against stock from API
-    if (change > 0) {
+    // On increment, validate against stock from API (only when user is logged in)
+    if (change > 0 && isAuthenticated) {
       try {
-        const product = await apiService.getProduct(id as any);
-        const stock = Number((product as any)?.stock ?? NaN);
-        if (Number.isFinite(stock) && stock >= 0 && newQuantity > stock) {
-          setStockError(`Only ${stock} in stock for this product.`);
-          return;
-        }
+       // const product = await apiService.getProduct(id as any);
+      //  const stock = Number((product as any)?.stock ?? NaN);
+      //  if (Number.isFinite(stock) && stock >= 0 && newQuantity > stock) {
+       //   setStockError(`Only ${stock} in stock for this product.`);
+      //    return;
+    //    }
       } catch {}
     }
     dispatch(updateQuantity({ id, quantity: newQuantity }));
