@@ -137,8 +137,8 @@ const OrdersPage = () => {
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [canEditSelected, setCanEditSelected] = useState<boolean>(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Pagination states
   const [page, setPage] = useState(0);
@@ -558,35 +558,17 @@ const OrdersPage = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-            {/* Search Bar positioned at top-left */}
-            <TextField
-              placeholder="Search orders..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch();
-                }
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                )}}
-              sx={{ maxWidth: 400 }}
-              size="small"
-            />
-          </Box>
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+            Orders
+          </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Button
               variant="outlined"
               startIcon={<FilterIcon />}
-              onClick={() => setFilterDialogOpen(true)}
+              onClick={() => setShowFilters(!showFilters)}
               size="small"
             >
-              Filters
+              {showFilters ? 'Hide' : 'Show'} Filters
             </Button>
             <Button
               variant="outlined"
@@ -613,16 +595,34 @@ const OrdersPage = () => {
           </Stack>
         </Box>
 
-        {/* Filters Dialog */}
-        <Dialog open={filterDialogOpen} onClose={() => setFilterDialogOpen(false)} maxWidth="lg" fullWidth>
-          <DialogTitle>Filter Orders</DialogTitle>
-          <DialogContent dividers>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 2 }}>
+        {/* Filters Section */}
+        {showFilters && (
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Filters
+              </Typography>
+              <Button 
+                onClick={resetFilters} 
+                startIcon={<ClearIcon />}
+                size="small"
+                variant="outlined"
+              >
+                Clear All
+              </Button>
+            </Box>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 2, mb: 2 }}>
               <TextField
                 fullWidth
                 label="Search"
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -631,8 +631,9 @@ const OrdersPage = () => {
                   ),
                 }}
                 placeholder="Order number, customer name or email"
+                size="small"
               />
-              <FormControl fullWidth>
+              <FormControl fullWidth size="small">
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={filters.status}
@@ -646,7 +647,7 @@ const OrdersPage = () => {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl fullWidth>
+              <FormControl fullWidth size="small">
                 <InputLabel>Payment Status</InputLabel>
                 <Select
                   value={filters.payment_status}
@@ -661,7 +662,8 @@ const OrdersPage = () => {
                 </Select>
               </FormControl>
             </Box>
-            <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
               <TextField
                 fullWidth
                 label="From Date"
@@ -669,6 +671,7 @@ const OrdersPage = () => {
                 value={filters.date_from}
                 onChange={(e) => handleFilterChange('date_from', e.target.value)}
                 InputLabelProps={{ shrink: true }}
+                size="small"
               />
               <TextField
                 fullWidth
@@ -677,6 +680,7 @@ const OrdersPage = () => {
                 value={filters.date_to}
                 onChange={(e) => handleFilterChange('date_to', e.target.value)}
                 InputLabelProps={{ shrink: true }}
+                size="small"
               />
               <TextField
                 fullWidth
@@ -684,6 +688,10 @@ const OrdersPage = () => {
                 type="number"
                 value={filters.min_amount}
                 onChange={(e) => handleFilterChange('min_amount', e.target.value)}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
+                size="small"
               />
               <TextField
                 fullWidth
@@ -691,14 +699,24 @@ const OrdersPage = () => {
                 type="number"
                 value={filters.max_amount}
                 onChange={(e) => handleFilterChange('max_amount', e.target.value)}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
+                size="small"
               />
             </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={resetFilters} startIcon={<ClearIcon />}>Clear</Button>
-            <Button onClick={() => setFilterDialogOpen(false)} variant="contained">Close</Button>
-          </DialogActions>
-        </Dialog>
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+              <Button 
+                variant="contained" 
+                startIcon={<SearchIcon />}
+                onClick={handleSearch}
+              >
+                Apply Filters
+              </Button>
+            </Box>
+          </Paper>
+        )}
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
