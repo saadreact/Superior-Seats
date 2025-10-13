@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  unoptimized: true,
   images: {
    domains: ['superiorseats.ali-khalid.com', '127.0.0.1', 'dev-api.superiorseatingllc.com','api.superiorseatingllc.com'],
     remotePatterns: [

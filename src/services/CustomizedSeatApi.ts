@@ -324,7 +324,7 @@ export const CustomizedSeatApi = {
         throw new Error(response.data.message || 'Failed to fetch colors');
       }
     } catch (error) {
-      console.error('Error fetching colors:', error);
+    
       throw error;
     }
   },
@@ -360,7 +360,8 @@ export const CustomizedSeatApi = {
         throw new Error(response.data.message || 'Failed to fetch vehicle models');
       }
     } catch (error) {
-      console.error('Error fetching vehicle models:', error);
+    
+
       throw error;
     }
   },
@@ -392,7 +393,8 @@ export const CustomizedSeatApi = {
         throw new Error(response.data.message || 'Failed to fetch vehicle trims');
       }
     } catch (error) {
-      console.error('Error fetching vehicle trims:', error);
+     
+      
       throw error;
     }
   },
@@ -415,20 +417,23 @@ export const CustomizedSeatApi = {
   // Get product by ID
   getProductById: async (id: number): Promise<Product> => {
     try {
-      console.log('🔄 CustomizedSeatApi - Fetching product details for ID:', id);
+   
+      
       
       const response = await axios.get<ProductApiResponse>(
         `${API_BASE_URL}/shop/product/${id}`
       );
 
       if (response.data.status === 'success') {
-        console.log('✅ CustomizedSeatApi - Product details fetched successfully:', response.data.data);
+        
+        
         return response.data.data;
       } else {
         throw new Error(response.data.message || 'Failed to fetch product details');
       }
     } catch (error) {
-      console.error('❌ CustomizedSeatApi - Error fetching product details:', error);
+     
+      
       throw error;
     }
   }

@@ -15,7 +15,6 @@ class SeatStitchPatternService {
       }
       return { data: [], meta: {} };
     } catch (error: any) {
-      console.error('Error fetching seat stitch patterns:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch seat stitch patterns');
     }
   }
@@ -26,7 +25,6 @@ class SeatStitchPatternService {
       const response = await api.get(`/seat-stitch-patterns/${id}`);
       return response.data?.data?.seat_stitch_pattern || response.data?.seat_stitch_pattern || response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error fetching seat stitch pattern:', error);
       if (error.response?.status === 404) {
         throw new Error('Seat stitch pattern not found');
       }
@@ -70,16 +68,6 @@ class SeatStitchPatternService {
           });
         }
 
-        // Debug: Log FormData contents
-        console.log('Seat Stitch Pattern FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post('/seat-stitch-patterns', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -107,9 +95,6 @@ class SeatStitchPatternService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error creating seat stitch pattern:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       throw new Error(error.response?.data?.message || 'Failed to create seat stitch pattern');
     }
   }
@@ -153,16 +138,6 @@ class SeatStitchPatternService {
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
         
-        // Debug: Log FormData contents
-        console.log('Seat Stitch Pattern Update FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post(`/seat-stitch-patterns/${id}`, formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -190,9 +165,6 @@ class SeatStitchPatternService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error updating seat stitch pattern:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       if (error.response?.status === 404) {
         throw new Error('Seat stitch pattern not found');
       }
@@ -206,7 +178,6 @@ class SeatStitchPatternService {
       const response = await api.delete(`/seat-stitch-patterns/${id}`);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error deleting seat stitch pattern:', error);
       if (error.response?.status === 404) {
         throw new Error('Seat stitch pattern not found');
       }
@@ -220,7 +191,6 @@ class SeatStitchPatternService {
       const response = await api.get('/price-tiers', { params });
       return response.data?.data || response.data || [];
     } catch (error: any) {
-      console.error('Error fetching price tiers:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch price tiers');
     }
   }
