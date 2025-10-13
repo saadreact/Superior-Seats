@@ -100,6 +100,7 @@ const Header = () => {
     { text: 'Home', href: '/' },
     // TODO: Uncomment when customize page is ready
     // { text: 'Build Your Own Seat', href: '/custom-seats' },
+    { text: 'Upholstery Services', href: '/upholstery' },
     { text: 'Shop Now', href: '/shop-now' },
     { text: 'Gallery', href: '/gallery' },
     { text: 'About', href: '/about' },

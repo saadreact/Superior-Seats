@@ -140,303 +140,537 @@ const Gallery = () => {
           { label: 'Gallery' }
         ]}
       /> */}
-     {/* Horizontal Image Slider */}
-      <Box sx={{ 
-        backgroundColor: '#f8f9fa',
-        py: { xs: 0.25, md: 0.5, lg: 1, xl: 1 },
-        overflow: 'hidden',
-      }}>
-          <Container maxWidth="xl">
-            <MotionBox
-              variants={sectionVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: false, amount: 0.3 }}
-              sx={{ textAlign: 'center', mb: { xs: 0.5, sm: 1.5, md: 2.5, lg: 2.5 } }}
-            >
-              <MotionTypography
-                variant="h3"
-                sx={{
-                  textAlign: 'center',
-                  fontWeight: 'medium',
-                  mb: { xs: 0.5, sm: 1.5, md: 2.5, lg: 2.5 },
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
 
+      {/* Featured Project Section 1 - Truck Customization */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: 'white',
+      }}>
+        <Container maxWidth="xl">
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: { xs: 4, md: 6, lg: 8 },
+              alignItems: 'center',
+            }}
+          >
+            {/* Content */}
+            <MotionBox
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+              sx={{ order: { xs: 2, md: 1 } }}
+            >
+              <Typography
+                variant="overline"
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.9rem', md: '1rem' },
+                  letterSpacing: 2,
                 }}
               >
-                Our Work Shop
-              </MotionTypography>
+                TRUCK SEATING EXCELLENCE
+              </Typography>
+              <Typography
+                variant="h2"
+                sx={{
+                  mt: 2,
+                  mb: 3,
+                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                  fontWeight: 600,
+                  color: 'text.primary',
+                }}
+              >
+                Professional Grade Comfort
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                  mb: 3,
+                }}
+              >
+                We specialize in creating custom truck seating solutions that combine durability with comfort. 
+                Our expert craftsmen work with premium materials to deliver seats that withstand the demands 
+                of professional driving while providing superior ergonomic support.
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                }}
+              >
+                Every project is tailored to meet the specific needs of our clients, from long-haul truckers 
+                to fleet operators, ensuring maximum comfort and longevity.
+              </Typography>
             </MotionBox>
-          
-          <Box
-            sx={{
-              position: 'relative',
-              width: '100%',
-              overflow: 'hidden',
-              '&::before, &::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                width: '150px',
-                zIndex: 2,
-                pointerEvents: 'none',
-              },
-              '&::before': {
-                left: 0,
-                background: 'linear-gradient(to right,rgba(248, 249, 250, 0.42) 0%, transparent 100%)',
-              },
-              '&::after': {
-                right: 0,
-                background: 'linear-gradient(to left,rgba(248, 249, 250, 0.42) 0%, transparent 100%)',
-              },
-            }}
-          >
-          {/* Continuous Sliding Images */}
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 3,
-                             animation: 'slideLeft 60s linear infinite',
-              width: 'max-content',
-              animationPlayState: selectedImage ? 'paused' : 'running',
-              '@keyframes slideLeft': {
-                '0%': {
-                  transform: 'translateX(0)',
-                },
-                '100%': {
-                  transform: 'translateX(-50%)',
-                },
-              },
-              '&:hover': {
-                animationPlayState: 'paused',
-              },
-            }}
-          >
-            {/* First set of images */}
-            {workPicturesTruck.map((item, index) => (
+
+            {/* Image */}
+            <MotionBox
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+              sx={{ order: { xs: 1, md: 2 } }}
+            >
               <Box
-                key={`first-${item.id}`}
                 sx={{
-                  minWidth: 350,
-                  width: 350,
-                  height: 250,
                   position: 'relative',
-                  borderRadius: 2,
+                  paddingTop: '75%',
+                  borderRadius: 3,
                   overflow: 'hidden',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
+                  transition: 'all 0.4s ease',
                   '&:hover': {
-                    transform: 'scale(1.05)',
-                    boxShadow: '0 8px 25px rgba(211, 47, 47, 0.3)',
-                    '& .image-overlay': {
-                      opacity: 1,
-                    },
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
                   },
                 }}
-                onClick={() => handleImageClick(item, index)}
+                onClick={() => handleImageClick(workPicturesTruck[0], 0)}
               >
-                {item.image && item.image.trim() !== '' ? (
-                  <LazyImage
-                    src={item.image}
-                    alt={`Gallery image ${item.id}`}
-                    fill
-                    style={{
-                      objectFit: 'cover',
-                      backgroundColor: '#f5f5f5',
-                    }}
-                    showSkeleton={true}
-                    skeletonHeight="100%"
-                    skeletonWidth="100%"
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#f5f5f5',
-                      color: 'text.secondary',
-                    }}
-                  >
-                    <Typography variant="body2">No image</Typography>
-                  </Box>
-                )}
-                
-                {/* Hover Overlay */}
                 <Box
-                  className="image-overlay"
+                  component="img"
+                  src={workPicturesTruck[0]?.image}
+                  alt="Professional truck seating"
                   sx={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.8) 0%, rgba(0,0,0,0.6) 100%)',
-                    color: 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                    p: 2,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
                   }}
-                >
-                  <ZoomIn sx={{ fontSize: 20 }} />
-                </Box>
+                />
               </Box>
-            ))}
-            
-            {/* Duplicate set for seamless loop */}
-            {workPicturesTruck.map((item, index) => (
-              <Box
-                key={`second-${item.id}`}
-                sx={{
-                  minWidth: 350,
-                  width: 350,
-                  height: 250,
-                  position: 'relative',
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                    boxShadow: '0 8px 25px rgba(211, 47, 47, 0.3)',
-                    '& .image-overlay': {
-                      opacity: 1,
-                    },
-                  },
-                }}
-                onClick={() => handleImageClick(item, index)}
-              >
-                {item.image && item.image.trim() !== '' ? (
-                  <LazyImage
-                    src={item.image}
-                    alt={`Gallery image ${item.id}`}
-                    fill
-                    style={{
-                      objectFit: 'cover',
-                      backgroundColor: '#f5f5f5',
-                    }}
-                    showSkeleton={true}
-                    skeletonHeight="100%"
-                    skeletonWidth="100%"
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#f5f5f5',
-                      color: 'text.secondary',
-                    }}
-                  >
-                    <Typography variant="body2">No image</Typography>
-                  </Box>
-                )}
-                
-                {/* Hover Overlay */}
-                <Box
-                  className="image-overlay"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.8) 0%, rgba(0,0,0,0.6) 100%)',
-                    color: 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                    p: 2,
-                  }}
-                >
-                  <ZoomIn sx={{ fontSize: 20 }} />
-                </Box>
-              </Box>
-            ))}
+            </MotionBox>
           </Box>
-        </Box>
         </Container>
       </Box>
 
-                           {/* Our Work Pictures Section */}
-      <Box sx={{ py: { xs: 1, md: 1.5 }, backgroundColor: '#fafafa' }}>
-          <Container maxWidth="xl">
-            <MotionBox
-              variants={sectionVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: false, amount: 0.3 }}
-              sx={{ textAlign: 'center', mb: { xs: 1, sm: 1.5, md: 3, lg: 2.5 }, py: { xs: 1, sm: 1.5, md: 3, lg: 2.5 } }}
+      {/* Workshop Craftsmanship Section */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: '#f8f9fa',
+      }}>
+        <Container maxWidth="xl">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
             >
-              <MotionTypography
-                variant="h3"
+              BEHIND THE CRAFT
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              Where Excellence Begins
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                color: 'text.secondary',
+                maxWidth: '800px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              Our state-of-the-art workshop is where passion meets precision. Each seat goes through meticulous 
+              quality checks and craftsmanship processes to ensure we deliver nothing but the best.
+            </Typography>
+          </MotionBox>
+
+          {/* Workshop Images Grid */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+              gap: { xs: 2, md: 3 },
+            }}
+          >
+            {workPicturesTruck.slice(1, 7).map((item, index) => (
+              <MotionBox
+                key={item.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
                 sx={{
-                  textAlign: 'center',
-                  fontWeight: 'medium',
-                  mb: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
-                  py: { xs: 1, sm: 1.5, md: 3, lg: 2.5 },
-                  color: 'text.primary',
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem', lg: '3rem' ,xl: '3rem'},
+                  position: 'relative',
+                  paddingTop: '75%',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  transition: 'all 0.4s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 20px 40px rgba(211, 47, 47, 0.2)',
+                    '& .workshop-image': {
+                      transform: 'scale(1.1)',
+                    },
+                  },
+                }}
+                onClick={() => handleImageClick(item, index + 1)}
+              >
+                <Box
+                  component="img"
+                  src={item.image}
+                  alt={`Workshop ${index + 1}`}
+                  className="workshop-image"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.6s ease',
+                  }}
+                />
+              </MotionBox>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Featured Project Section 2 - Interior Excellence */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: 'white',
+      }}>
+        <Container maxWidth="xl">
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: { xs: 4, md: 6, lg: 8 },
+              alignItems: 'center',
+            }}
+          >
+            {/* Image */}
+            <MotionBox
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  paddingTop: '75%',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  cursor: 'pointer',
+                  transition: 'all 0.4s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
+                  },
+                }}
+                onClick={() => handleImageClick(workPicturesTruck[7], 7)}
+              >
+                <Box
+                  component="img"
+                  src={workPicturesTruck[7]?.image}
+                  alt="Interior excellence"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              </Box>
+            </MotionBox>
+
+            {/* Content */}
+            <MotionBox
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Typography
+                variant="overline"
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.9rem', md: '1rem' },
+                  letterSpacing: 2,
                 }}
               >
-                Our Beautiful Work
-              </MotionTypography>
+                INTERIOR TRANSFORMATION
+              </Typography>
+              <Typography
+                variant="h2"
+                sx={{
+                  mt: 2,
+                  mb: 3,
+                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                  fontWeight: 600,
+                  color: 'text.primary',
+                }}
+              >
+                Complete Cabin Solutions
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                  mb: 3,
+                }}
+              >
+                From sleeper cabs to day cabs, we transform truck interiors into comfortable, functional spaces. 
+                Our comprehensive approach covers everything from seat design to full cabin upholstery, creating 
+                an environment where drivers feel at home on the road.
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                }}
+              >
+                We use premium, durable materials that stand up to heavy use while maintaining their appearance 
+                and comfort over thousands of miles.
+              </Typography>
             </MotionBox>
-                     <Box sx={{ 
-             display: 'grid',
-             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(5, 1fr)' },
-             gap: { xs: 1.5, sm: 2, md: 2.5, lg: 3 },
-             justifyContent: 'center',
-           }}>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Quality & Detail Section with Remaining Workshop Images */}
+      <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: '#f8f9fa',
+      }}>
+        <Container maxWidth="xl">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              ATTENTION TO DETAIL
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              Every Stitch Matters
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                color: 'text.secondary',
+                maxWidth: '800px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              Quality isn&apos;t just a promise—it&apos;s our standard. From material selection to final inspection, 
+              every step of our process is designed to exceed expectations and deliver seats that last.
+            </Typography>
+          </MotionBox>
+
+          {/* Grid with remaining workshop images */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+              gap: { xs: 2, md: 3 },
+            }}
+          >
+            {workPicturesTruck.slice(8).map((item, index) => (
+              <MotionBox
+                key={item.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                sx={{
+                  position: 'relative',
+                  paddingTop: '100%',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  transition: 'all 0.4s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 20px 40px rgba(211, 47, 47, 0.2)',
+                    '& .detail-image': {
+                      transform: 'scale(1.1)',
+                    },
+                  },
+                }}
+                onClick={() => handleImageClick(item, index + 8)}
+              >
+                <Box
+                  component="img"
+                  src={item.image}
+                  alt={`Quality detail ${index + 1}`}
+                  className="detail-image"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.6s ease',
+                  }}
+                />
+              </MotionBox>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Our Work Pictures Section - Redesigned with Masonry-style Layout */}
+      <Box sx={{ py: { xs: 6, md: 8, lg: 10 }, backgroundColor: 'white' }}>
+        <Container maxWidth="xl">
+          {/* Section Header */}
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              FEATURED PROJECTS
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              Our Beautiful Work
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                color: 'text.secondary',
+                maxWidth: '700px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              Every seat tells a story of precision, passion, and perfection. Browse through our extensive portfolio.
+            </Typography>
+          </MotionBox>
+
+          {/* Professional Gallery Grid */}
+          <Box sx={{ 
+            display: 'grid',
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(3, 1fr)', 
+              lg: 'repeat(4, 1fr)' 
+            },
+            gap: { xs: 2, sm: 2.5, md: 3 },
+            justifyContent: 'center',
+          }}>
             {workPictures.map((item, index) => (
-              <Box 
-                key={item.id} 
+              <MotionBox
+                key={item.id}
+                initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: (index % 12) * 0.05,
+                  ease: [0.4, 0, 0.2, 1]
+                }}
                 sx={{ 
                   width: '100%',
                   position: 'relative',
                   cursor: 'pointer',
                   overflow: 'hidden',
                   borderRadius: 2,
-                  opacity: animatedImages[index] ? 1 : 0,
-                  transform: animatedImages[index] ? 'translateY(0) scale(1)' : 'translateY(50px) scale(0.8)',
-                  transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                  animation: animatedImages[index] ? 'imageFloat 20s ease-in-out infinite' : 'none',
-                  '@keyframes imageFloat': {
-                    '0%, 100%': {
-                      transform: 'translateY(0) scale(1)',
-                    },
-                    '50%': {
-                      transform: 'translateY(-5px) scale(1.02)',
-                    },
-                  },
+                  backgroundColor: '#fff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   '&:hover': {
-                    transform: 'translateY(-8px) scale(1.05)',
-                    boxShadow: '0 20px 40px rgba(211, 47, 47, 0.3)',
+                    transform: 'translateY(-12px)',
+                    boxShadow: '0 20px 40px rgba(211, 47, 47, 0.2)',
                     '& .zoom-icon': {
                       opacity: 1,
-                      transform: 'translate(-50%, -50%) scale(1.1)',
+                      transform: 'translate(-50%, -50%) scale(1)',
+                    },
+                    '& .gallery-image': {
+                      transform: 'scale(1.08)',
                     },
                     '& .image-overlay': {
                       opacity: 1,
-                      transform: 'translateY(0)',
-                    },
-                    '& .gallery-image': {
-                      transform: 'scale(1.1)',
                     },
                   },
+                  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
                 onClick={() => handleImageClick(item, index)}
               >
@@ -444,37 +678,79 @@ const Gallery = () => {
                   sx={{
                     position: 'relative',
                     width: '100%',
-                    paddingTop: '75%', 
+                    paddingTop: '100%',
                     overflow: 'hidden',
                     borderRadius: 2,
                   }}
                 >
                   {item.image && item.image.trim() !== '' ? (
-                    <img
-                      src={item.image}
-                      alt={`Gallery image ${item.id}`}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        backgroundColor: '#f5f5f5',
-                        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                      }}
-                      className="gallery-image"
-                      onError={(e) => {
-                   
-                        e.currentTarget.style.display = 'none';
-                      }}
-                      onLoad={() => {
-                     
-                      }}
-                    />
+                    <>
+                      <img
+                        src={item.image}
+                        alt={`Gallery image ${item.id}`}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          backgroundColor: '#f5f5f5',
+                          transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}
+                        className="gallery-image"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      
+                      {/* Gradient Overlay */}
+                      <Box
+                        className="image-overlay"
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%)',
+                          opacity: 0,
+                          transition: 'opacity 0.5s ease',
+                        }}
+                      />
+                      
+                      {/* Zoom Icon */}
+                      <Box
+                        className="zoom-icon"
+                        sx={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%) scale(0.8)',
+                          opacity: 0,
+                          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                          backgroundColor: 'rgba(211, 47, 47, 0.95)',
+                          borderRadius: '50%',
+                          width: 56,
+                          height: 56,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          zIndex: 2,
+                          backdropFilter: 'blur(10px)',
+                          boxShadow: '0 4px 20px rgba(211, 47, 47, 0.4)',
+                        }}
+                      >
+                        <ZoomIn sx={{ fontSize: 24 }} />
+                      </Box>
+                    </>
                   ) : (
                     <Box
                       sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
                         width: '100%',
                         height: '100%',
                         display: 'flex',
@@ -487,35 +763,8 @@ const Gallery = () => {
                       <Typography variant="body2">No image</Typography>
                     </Box>
                   )}
-                  
-                  {/* Zoom Icon */}
-                  <Box
-                    className="zoom-icon"
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      opacity: 0,
-                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                      backgroundColor: 'rgba(211, 47, 47, 0.95)',
-                      borderRadius: '50%',
-                      width: 48,
-                      height: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      zIndex: 2,
-                      backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(255,255,255,0.2)',
-                    }}
-                  >
-                    <ZoomIn sx={{ fontSize: 20 }} />
-                  </Box>
-                  
                 </Box>
-              </Box>
+              </MotionBox>
             ))}
           </Box>
         </Container>
