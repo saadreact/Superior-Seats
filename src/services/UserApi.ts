@@ -47,14 +47,14 @@ class UserApi {
    */
   async getCurrentUser(): Promise<User> {
     try {
-      console.log('👤 UserApi - getCurrentUser called');
+      
       
       const response = await apiService.getCurrentUser();
-      console.log('✅ UserApi - getCurrentUser response:', response);
+  
       
       return response;
     } catch (error) {
-      console.error('❌ UserApi - getCurrentUser error:', error);
+   
       throw error;
     }
   }
@@ -71,20 +71,14 @@ class UserApi {
    */
   isRetailCustomer(userData: User | null): boolean {
     if (!userData) {
-      console.log('🔍 UserApi - No user data provided');
+     
       return false;
     }
     
     const customerType = userData.customer_type || 
                         userData.role?.customer_type;
     
-    console.log('🔍 UserApi - Customer type check:', {
-      userData: userData,
-      userDataCustomerType: userData.customer_type,
-      roleCustomerType: userData.role?.customer_type,
-      finalCustomerType: customerType,
-      isRetail: customerType === 'retail'
-    });
+
     
     return customerType === 'retail';
   }

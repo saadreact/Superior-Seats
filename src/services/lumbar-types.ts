@@ -15,7 +15,6 @@ class LumbarTypesService {
       }
       return { data: [], meta: {} };
     } catch (error: any) {
-      console.error('Error fetching lumbar types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch lumbar types');
     }
   }
@@ -26,7 +25,6 @@ class LumbarTypesService {
       const response = await api.get(`/lumbar-types/${id}`);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error fetching lumbar type:', error);
       if (error.response?.status === 404) {
         throw new Error('Lumbar type not found');
       }
@@ -70,16 +68,6 @@ class LumbarTypesService {
           });
         }
 
-        // Debug: Log FormData contents
-        console.log('Lumbar Type FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post('/lumbar-types', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -107,9 +95,6 @@ class LumbarTypesService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error creating lumbar type:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       throw new Error(error.response?.data?.message || 'Failed to create lumbar type');
     }
   }
@@ -157,16 +142,6 @@ class LumbarTypesService {
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
         
-        // Debug: Log FormData contents
-        console.log('Lumbar Type Update FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post(`/lumbar-types/${id}`, formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -195,9 +170,6 @@ class LumbarTypesService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error updating lumbar type:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       if (error.response?.status === 404) {
         throw new Error('Lumbar type not found');
       }
@@ -211,7 +183,6 @@ class LumbarTypesService {
       const response = await api.delete(`/lumbar-types/${id}`);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error deleting lumbar type:', error);
       if (error.response?.status === 404) {
         throw new Error('Lumbar type not found');
       }
@@ -225,7 +196,6 @@ class LumbarTypesService {
       const response = await api.get('/price-tiers', { params });
       return response.data?.data || response.data || [];
     } catch (error: any) {
-      console.error('Error fetching price tiers:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch price tiers');
     }
   }

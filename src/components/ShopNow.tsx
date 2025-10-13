@@ -29,6 +29,7 @@ import {
   Snackbar,
   Alert,
   TextField,
+  CircularProgress,
 } from '@mui/material';
 import {
   Close,
@@ -82,6 +83,8 @@ const ShopNow = () => {
   const [showSpecialOnly, setShowSpecialOnly] = useState(false); // Special products filter
   const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
   const [snackbarMessage, setSnackbarMessage] = useState('Added to cart'); // Snackbar message
+  const [imageLoading, setImageLoading] = useState(true); // Track image loading state
+  const [showLoader, setShowLoader] = useState(false); // Only show loader if loading takes > 200ms
 
   // API State
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
@@ -264,6 +267,18 @@ const ShopNow = () => {
     setSelectedImage(image);
     setCurrentImageIndex(index);
     setModalImageIndex(0); // Reset modal image index when opening modal
+    setImageLoading(true);
+    setShowLoader(false);
+    
+    // Only show loader if image takes more than 200ms to load
+    const loaderTimer = setTimeout(() => {
+      if (imageLoading) {
+        setShowLoader(true);
+      }
+    }, 100);
+    
+    // Store timer reference for cleanup
+    (handleImageClick as any).loaderTimer = loaderTimer;
   };
 
   const handleCloseLightbox = () => {
@@ -336,7 +351,17 @@ const ShopNow = () => {
     if (selectedImage) {
       const productImages = getProductImages(selectedImage);
       const nextIndex = (modalImageIndex + 1) % productImages.length;
+      setImageLoading(true);
+      setShowLoader(false);
       setModalImageIndex(nextIndex);
+      
+      // Only show loader if image takes more than 200ms to load
+      const loaderTimer = setTimeout(() => {
+        setShowLoader(true);
+      }, 100);
+      
+      // Store timer reference for cleanup
+      (handleNextModalImage as any).loaderTimer = loaderTimer;
     }
   };
 
@@ -344,7 +369,17 @@ const ShopNow = () => {
     if (selectedImage) {
       const productImages = getProductImages(selectedImage);
       const prevIndex = modalImageIndex === 0 ? productImages.length - 1 : modalImageIndex - 1;
+      setImageLoading(true);
+      setShowLoader(false);
       setModalImageIndex(prevIndex);
+      
+      // Only show loader if image takes more than 200ms to load
+      const loaderTimer = setTimeout(() => {
+        setShowLoader(true);
+      }, 100);
+      
+      // Store timer reference for cleanup
+      (handlePrevModalImage as any).loaderTimer = loaderTimer;
     }
   };
 
@@ -1425,6 +1460,40 @@ const ShopNow = () => {
                         minHeight: { xs: '45vh', md: '100%' }
                       }}
                     >
+                      {/* Smart Loading Spinner - Only shows if loading takes > 200ms */}
+                      {showLoader && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 10,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 2,
+                          }}
+                        >
+                          <CircularProgress 
+                            size={60}
+                            thickness={4}
+                            sx={{
+                              color: theme.palette.primary.main,
+                            }}
+                          />
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            }}
+                          >
+                            Loading image...
+                          </Typography>
+                        </Box>
+                      )}
+                      
                       {(() => {
                         const images = getProductImages(selectedImage);
                         if (images && images.length > 0 && modalImageIndex < images.length) {
@@ -1442,9 +1511,27 @@ const ShopNow = () => {
                                   maxHeight: '100%',
                                   objectFit: 'contain',
                                   objectPosition: 'center',
+                                  opacity: imageLoading ? 0 : 1,
+                                  transition: 'opacity 0.3s ease-in-out',
                                 }}
                                 priority
+                                onLoad={() => {
+                                  setImageLoading(false);
+                                  setShowLoader(false);
+                                  // Clear any pending loader timers
+                                  if ((handleImageClick as any).loaderTimer) {
+                                    clearTimeout((handleImageClick as any).loaderTimer);
+                                  }
+                                  if ((handleNextModalImage as any).loaderTimer) {
+                                    clearTimeout((handleNextModalImage as any).loaderTimer);
+                                  }
+                                  if ((handlePrevModalImage as any).loaderTimer) {
+                                    clearTimeout((handlePrevModalImage as any).loaderTimer);
+                                  }
+                                }}
                                 onError={(e: any) => {
+                                  setImageLoading(false);
+                                  setShowLoader(false);
                                   const img = e.target as HTMLImageElement;
                                   img.style.display = 'none';
                                   const fallback = img.parentElement?.querySelector('.modal-no-image-fallback');
@@ -1538,7 +1625,21 @@ const ShopNow = () => {
                      {getProductImages(selectedImage).map((image: string, index: number) => (
                        <Box
                          key={index}
-                         onClick={() => setModalImageIndex(index)}
+                         onClick={() => {
+                           if (index !== modalImageIndex) {
+                             setImageLoading(true);
+                             setShowLoader(false);
+                             setModalImageIndex(index);
+                             
+                             // Only show loader if image takes more than 200ms to load
+                             const loaderTimer = setTimeout(() => {
+                               setShowLoader(true);
+                             }, 100);
+                             
+                             // Store timer reference for cleanup
+                             (setModalImageIndex as any).loaderTimer = loaderTimer;
+                           }
+                         }}
                          sx={{
                            width: { xs: 12, sm: 14, md: 16 },
                            height: { xs: 12, sm: 14, md: 16 },
@@ -1587,7 +1688,7 @@ const ShopNow = () => {
                        transition: 'all 0.2s ease',
                      }}
                    >
-                                         <ArrowBack />
+                             <ArrowBack />
                   </IconButton>
                   
                                      <IconButton

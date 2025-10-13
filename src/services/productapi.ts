@@ -1092,7 +1092,6 @@ class ProductApi {
    */
   async getVehicleTrims(modelId: number): Promise<any[]> {
     try {
-      console.log(`🚗 Fetching vehicle trims for model ID: ${modelId}...`);
       const response = await fetch(`${this.baseUrl}/vehicle-models/${modelId}/trims`, {
         method: 'GET',
         headers: this.getHeaders(),
@@ -1103,10 +1102,8 @@ class ProductApi {
       }
 
       const data = await response.json();
-      console.log('✅ Vehicle trims fetched successfully:', data);
       return data.data || data;
     } catch (error) {
-      console.error('❌ Error fetching vehicle trims:', error);
       throw error;
     }
   }
@@ -1116,7 +1113,6 @@ class ProductApi {
    */
   async getVehicleTrimById(trimId: number): Promise<any> {
     try {
-      console.log(`🚗 Fetching vehicle trim by ID: ${trimId}...`);
       const response = await fetch(`${this.baseUrl}/vehicle-trims/${trimId}`, {
         method: 'GET',
         headers: this.getHeaders(),
@@ -1127,10 +1123,8 @@ class ProductApi {
       }
 
       const data = await response.json();
-      console.log('✅ Vehicle trim fetched successfully:', data);
       return data.data || data;
     } catch (error) {
-      console.error('❌ Error fetching vehicle trim:', error);
       throw error;
     }
   }

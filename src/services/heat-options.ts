@@ -15,7 +15,6 @@ class HeatOptionsService {
       }
       return { data: [], meta: {} };
     } catch (error: any) {
-      console.error('Error fetching heat options:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch heat options');
     }
   }
@@ -26,7 +25,6 @@ class HeatOptionsService {
       const response = await api.get(`/heat-options/${id}`);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error fetching heat option:', error);
       if (error.response?.status === 404) {
         throw new Error('Heat option not found');
       }
@@ -70,16 +68,6 @@ class HeatOptionsService {
           });
         }
 
-        // Debug: Log FormData contents
-        console.log('Heat Option FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post('/heat-options', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -99,9 +87,6 @@ class HeatOptionsService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error creating heat option:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       throw new Error(error.response?.data?.message || 'Failed to create heat option');
     }
   }
@@ -145,16 +130,6 @@ class HeatOptionsService {
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
         
-        // Debug: Log FormData contents
-        console.log('Heat Option Update FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post(`/heat-options/${id}`, formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -174,9 +149,6 @@ class HeatOptionsService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error updating heat option:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       if (error.response?.status === 404) {
         throw new Error('Heat option not found');
       }
@@ -190,7 +162,6 @@ class HeatOptionsService {
       const response = await api.delete(`/heat-options/${id}`);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error deleting heat option:', error);
       if (error.response?.status === 404) {
         throw new Error('Heat option not found');
       }
@@ -204,7 +175,6 @@ class HeatOptionsService {
       const response = await api.get('/price-tiers', { params });
       return response.data?.data || response.data || [];
     } catch (error: any) {
-      console.error('Error fetching price tiers:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch price tiers');
     }
   }

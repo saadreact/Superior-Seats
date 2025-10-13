@@ -1048,7 +1048,7 @@ const EditProduct2Page = () => {
 
   if (initialLoading) {
     return (
-      <AdminLayout title="Edit Product - Products 2">
+      <AdminLayout title="Edit Product">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>

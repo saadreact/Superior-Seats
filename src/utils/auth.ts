@@ -7,16 +7,16 @@ import { User } from '@/store/authSlice';
  * @returns boolean indicating if user is super admin
  */
 export const isSuperAdmin = (user: User | null, isAuthenticated: boolean): boolean => {
-  console.log('🔍 isSuperAdmin - Input:', { user, isAuthenticated });
+ 
   
   if (!user || !isAuthenticated) {
-    console.log('🔍 isSuperAdmin - Early return: No user or not authenticated');
+    
     return false;
   }
   
   // Check if user has role with is_super_admin flag
   if (user.role?.is_super_admin) {
-    console.log('🔍 isSuperAdmin - Found super admin via role.is_super_admin');
+ 
     return true;
   }
   
@@ -26,17 +26,17 @@ export const isSuperAdmin = (user: User | null, isAuthenticated: boolean): boole
       role.name === 'super_admin' || 
       role.name === 'admin'
     );
-    console.log('🔍 isSuperAdmin - Checking roles:', user.roles, 'Result:', hasAdminRole);
+   
     if (hasAdminRole) return true;
   }
   
   // Fallback check for role_type
   if (user.role_type === 'super_admin' || user.role_type === 'admin') {
-    console.log('🔍 isSuperAdmin - Found admin via role_type:', user.role_type);
+   
     return true;
   }
   
-  console.log('🔍 isSuperAdmin - No admin privileges found');
+ 
   return false;
 };
 

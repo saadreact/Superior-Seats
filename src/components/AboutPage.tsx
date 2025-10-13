@@ -76,7 +76,7 @@ const AboutPage = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.85) 0%, rgba(211, 47, 47, 0.65) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.35) 0%, rgba(211, 47, 47, 0.25) 100%)',
             zIndex: 1,
           },
         }}
@@ -273,7 +273,7 @@ const AboutPage = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.65) 100%)',
           zIndex: 1,
         }
       }}>
@@ -612,21 +612,21 @@ const AboutPage = () => {
            >
              Why Choose Superior Seats?
            </MotionTypography>
-           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-             <Box
-               sx={{
-                 display: 'grid',
-                 gridTemplateColumns: {
-                   xs: '1fr',
-                   sm: 'repeat(2, 1fr)',
-                   md: 'repeat(3, 1fr)',
-                   lg: 'repeat(6, 1fr)',
-                 },
-                 gap: { xs: 2, sm: 3, md: 4 },
-                 width: '100%',
-                 maxWidth: 1400,
-               }}
-             >
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(2, 1fr)',
+                  md: 'repeat(3, 1fr)',
+                  lg: 'repeat(5, 1fr)',
+                },
+                gap: { xs: 2, sm: 3, md: 4 },
+                width: '100%',
+                maxWidth: 1400,
+              }}
+            >
                {/* Custom Fit Design */}
                <Card
                  sx={{
@@ -1014,106 +1014,9 @@ const AboutPage = () => {
                  >
                    We stand behind our work with full warranty.
                  </Typography>
-               </Card>
+              </Card>
 
-               {/* Professional Installation */}
-               <Card
-                 sx={{
-                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
-                   minHeight: { xs: 160, sm: 250, md: 280 },
-                   display: 'flex',
-                   flexDirection: 'column',
-                   justifyContent: 'flex-start',
-                   alignItems: 'center',
-                   textAlign: 'center',
-                   p: { xs: 1.5, sm: 2.5, md: 3 },
-                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
-                   transition: 'all 0.3s ease',
-                   cursor: 'pointer',
-                   '&:hover': {
-                     transform: 'translateY(-4px) scale(1.02)',
-                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                     '& .icon': {
-                       transform: 'rotate(360deg) scale(1.1)',
-                     },
-                     '& .title': {
-                       color: '#d32f2f',
-                     },
-                   },
-                 }}
-               >
-                 {/* Icon Circle */}
-                 <Box
-                   className="icon"
-                   sx={{
-                     position: 'relative',
-                     width: 60,
-                     height: 60,
-                     borderRadius: '50%',
-                     backgroundColor: '#d32f2f',
-                     color: 'white',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     fontSize: '1.2rem',
-                     fontWeight: 'bold',
-                     mb: { xs: 1.5, sm: 2 },
-                     border: '3px solid white',
-                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
-                     transition: 'all 0.3s ease',
-                     '&::before': {
-                       content: '""',
-                       position: 'absolute',
-                       top: '-6px',
-                       left: '-6px',
-                       right: '-6px',
-                       bottom: '-6px',
-                       borderRadius: '50%',
-                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-                       zIndex: -1,
-                       opacity: 0.8,
-                       transform: 'scale(0.8)',
-                       transition: 'all 0.3s ease',
-                     },
-                     '&:hover::before': {
-                       opacity: 1,
-                       transform: 'scale(1.1)',
-                     },
-                   }}
-                 >
-                   <CheckCircle sx={{ fontSize: '1.5rem' }} />
-                 </Box>
-
-                 {/* Title */}
-                 <Typography
-                   className="title"
-                   variant="h6"
-                   sx={{
-                     fontWeight: 'medium',
-                     mb: { xs: 1.5, sm: 2 },
-                     fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                     transition: 'color 0.3s ease',
-                   }}
-                 >
-                   Professional Installation
-                 </Typography>
-
-                 {/* Description */}
-                 <Typography
-                   variant="body1"
-                   sx={{
-                     color: 'text.secondary',
-                     fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
-                     lineHeight: 1.5,
-                     flexGrow: 1,
-                     fontWeight: 'regular',
-                   }}
-                 >
-                   Expert installation and setup for optimal performance.
-                 </Typography>
-               </Card>
-
-               {/* Ongoing Support */}
+              {/* Ongoing Support */}
                <Card
                  sx={{
                    height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },

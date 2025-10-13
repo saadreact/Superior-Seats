@@ -113,7 +113,6 @@ class VehicleTrimsApiService {
       }
       return { data: [], meta: {} };
     } catch (error: any) {
-      console.error('Error fetching vehicle trims:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch vehicle trims');
     }
   }
@@ -133,7 +132,6 @@ class VehicleTrimsApiService {
       }
       throw new Error('Invalid response structure');
     } catch (error: any) {
-      console.error('Error fetching vehicle trim:', error);
       if (error.response?.status === 404) {
         throw new Error('Vehicle trim not found');
       }
@@ -159,8 +157,6 @@ class VehicleTrimsApiService {
       }
       return response.data;
     } catch (error: any) {
-      console.error('Error creating vehicle trim:', error);
-      
       // Handle 422 validation errors
       if (error.response?.status === 422) {
         const validationErrors = error.response?.data?.errors || error.response?.data?.message;
@@ -201,8 +197,6 @@ class VehicleTrimsApiService {
       }
       return response.data;
     } catch (error: any) {
-      console.error('Error updating vehicle trim:', error);
-      
       if (error.response?.status === 404) {
         throw new Error('Vehicle trim not found');
       }
@@ -242,7 +236,6 @@ class VehicleTrimsApiService {
       }
       return response.data;
     } catch (error: any) {
-      console.error('Error deleting vehicle trim:', error);
       if (error.response?.status === 404) {
         throw new Error('Vehicle trim not found');
       }

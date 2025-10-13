@@ -35,7 +35,7 @@ const profileSchema = z.object({
   phone: z.string().min(1, "Phone number is required"),
   address: z.string().min(5, "Address must be at least 5 characters"),
   city: z.string().min(2, "City must be at least 2 characters"),
-  state: z.string().min(2, "State must be at least 2 characters"),
+  state: z.string().min(2, "Select a State"),
   company_name: z.string().min(2, "Company name must be at least 2 characters"),
   // Address fields
   shipping_address: z.string().optional(),
