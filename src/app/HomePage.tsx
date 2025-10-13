@@ -423,7 +423,10 @@ const HomePage = () => {
         </Container>
       </Box>
 
-      {/* Video Section */}
+      {/* Brand Carousel Section - Moved before Crafters */}
+      <TruckCarousel />
+
+      {/* Video Section - Moved before Crafters */}
       <Box sx={{ 
         position: 'relative', 
         width: '100%', 
@@ -1300,9 +1303,6 @@ const HomePage = () => {
         </Container>
       </Box>
       */}
-     
-      {/* Brand Carousel Section */}
-      <TruckCarousel />
       
       {/* Product Details Modal */}
       <Dialog
