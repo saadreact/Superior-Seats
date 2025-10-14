@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
   Container,
@@ -277,18 +278,26 @@ const HeroSection = () => {
               left: 0,
               right: 0,
               bottom: 0,
-              background: `url('${backgroundImages[currentImageIndex]}')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundAttachment: 'fixed',
               willChange: 'transform',
               transform: 'translateZ(0)',
               backfaceVisibility: 'hidden',
               animation: slideDirection === 'left' ? 'slideFromRight 0.8s ease-in-out' : 'slideFromLeft 0.8s ease-in-out',
               zIndex: 1,
             }}
-          />
+          >
+            <Image
+              src={backgroundImages[currentImageIndex]}
+              alt="Hero background"
+              fill
+              priority={currentImageIndex === 0}
+              quality={85}
+              sizes="100vw"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center',
+              }}
+            />
+          </Box>
     <Container maxWidth="xl" disableGutters sx={{ position: 'relative', zIndex: 2 }}>
                   {/* Main Content Container - Easy to reposition */}
                                      <Box
