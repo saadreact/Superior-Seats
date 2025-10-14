@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
   Container,
@@ -735,16 +736,15 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Box
-                  component="img"
+                <Image
                   src={picture.image}
                   alt={`Project ${picture.id}`}
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
+                  fill
+                  priority={index < 2}
+                  quality={80}
+                  loading={index < 2 ? 'eager' : 'lazy'}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{
                     objectFit: 'contain',
                     transition: 'transform 0.5s ease',
                   }}
@@ -856,16 +856,15 @@ const HomePage = () => {
                 },
               }}
             >
-              <Box
-                component="img"
+              <Image
                 src="/LandingPage/Fw_ Seats/image0 (12).jpeg"
                 alt="Custom Seat Installation 1"
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
+                fill
+                priority={false}
+                quality={80}
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                style={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
                 }}
@@ -896,16 +895,15 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Box
-                  component="img"
+                <Image
                   src="/LandingPage/Fw_ Seats/IMG_2797.JPEG"
                   alt="Custom Seat Installation 2"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
+                  fill
+                  priority={false}
+                  quality={75}
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, 25vw"
+                  style={{
                     objectFit: 'cover',
                     transition: 'transform 0.5s ease',
                   }}
@@ -928,16 +926,15 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Box
-                  component="img"
+                <Image
                   src="/LandingPage/Fw__Seats%20(1)/IMG_3590.jpg"
                   alt="Custom Seat Installation 3"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
+                  fill
+                  priority={false}
+                  quality={75}
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, 25vw"
+                  style={{
                     objectFit: 'cover',
                     transition: 'transform 0.5s ease',
                   }}
@@ -961,16 +958,15 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Box
-                  component="img"
+                <Image
                   src="/LandingPage/Fw__Seats%20(1)/IMG_5557.JPG"
                   alt="Custom Seat Installation 4"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
+                  fill
+                  priority={false}
+                  quality={75}
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{
                     objectFit: 'cover',
                     transition: 'transform 0.5s ease',
                   }}
@@ -1003,16 +999,14 @@ const HomePage = () => {
                 },
               }}
             >
-              <Box
-                component="img"
+              <Image
                 src="/LandingPage/Fw__Seats%20(1)/IMG_7077.jpg"
                 alt="Custom Seat Installation 5"
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
+                fill
+                quality={75}
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                style={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
                 }}
@@ -1035,16 +1029,14 @@ const HomePage = () => {
                 },
               }}
             >
-              <Box
-                component="img"
+              <Image
                 src="/LandingPage/Fw__FW__/1000001039.jpg"
                 alt="Custom Seat Installation 6"
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
+                fill
+                quality={75}
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                style={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
                 }}
@@ -1067,16 +1059,14 @@ const HomePage = () => {
                 },
               }}
             >
-              <Box
-                component="img"
+              <Image
                 src="/LandingPage/Fw__Seats%20(1)/IMG_8107.jpeg"
                 alt="Custom Seat Installation 7"
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
+                fill
+                quality={75}
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                style={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
                 }}
