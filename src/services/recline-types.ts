@@ -15,7 +15,6 @@ class ReclineTypesService {
       }
       return { data: [], meta: {} };
     } catch (error: any) {
-      console.error('Error fetching recline types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch recline types');
     }
   }
@@ -26,7 +25,6 @@ class ReclineTypesService {
       const response = await api.get(`/recline-types/${id}`);
       return response.data?.data?.recline_type || response.data?.recline_type || response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error fetching recline type:', error);
       if (error.response?.status === 404) {
         throw new Error('Recline type not found');
       }
@@ -70,16 +68,6 @@ class ReclineTypesService {
           });
         }
 
-        // Debug: Log FormData contents
-        console.log('Recline Type FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post('/recline-types', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -107,9 +95,6 @@ class ReclineTypesService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error creating recline type:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       throw new Error(error.response?.data?.message || 'Failed to create recline type');
     }
   }
@@ -157,16 +142,6 @@ class ReclineTypesService {
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
         
-        // Debug: Log FormData contents
-        console.log('Recline Type Update FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post(`/recline-types/${id}`, formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -195,9 +170,6 @@ class ReclineTypesService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error updating recline type:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       if (error.response?.status === 404) {
         throw new Error('Recline type not found');
       }
@@ -211,7 +183,6 @@ class ReclineTypesService {
       const response = await api.delete(`/recline-types/${id}`);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error deleting recline type:', error);
       if (error.response?.status === 404) {
         throw new Error('Recline type not found');
       }
@@ -225,7 +196,6 @@ class ReclineTypesService {
       const response = await api.get('/price-tiers', { params });
       return response.data?.data || response.data || [];
     } catch (error: any) {
-      console.error('Error fetching price tiers:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch price tiers');
     }
   }

@@ -103,7 +103,6 @@ class ShopApi {
 
       return response.data;
     } catch (error) {
-      console.error('❌ ShopApi - getProducts error:', error);
       throw error;
     }
   }
@@ -123,7 +122,6 @@ class ShopApi {
 
       return response.data;
     } catch (error) {
-      console.error(`❌ ShopApi - getProduct error for ID ${id}:`, error);
       throw error;
     }
   }
@@ -188,7 +186,6 @@ class ShopApi {
 
       return response.data;
     } catch (error) {
-      console.error('❌ ShopApi - getCategories error:', error);
       throw error;
     }
   }
@@ -208,7 +205,6 @@ class ShopApi {
 
       return response.data;
     } catch (error) {
-      console.error('❌ ShopApi - getVehicleTrims error:', error);
       throw error;
     }
   }

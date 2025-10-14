@@ -59,8 +59,7 @@ export class ContactPageAPI {
         To: 'info@superiorseatingllc.com', // Add To field for email structure
       };
 
-      console.log('📧 Sending contact form to:', `${API_BASE_URL}/contact`);
-      console.log('📧 Contact form data:', transformedData);
+    
 
       // Try the contact endpoint first
       let response: AxiosResponse<ContactApiResponse> | undefined;
@@ -78,8 +77,6 @@ export class ContactPageAPI {
         );
       } catch (endpointError) {
         // If contact endpoint doesn't exist, try alternative endpoints
-        console.log('📧 Contact endpoint failed, trying alternative endpoints...');
-        
         // Try sending as a general message or inquiry
         const alternativeData = {
           ...transformedData,
@@ -92,7 +89,7 @@ export class ContactPageAPI {
         
         for (const endpoint of possibleEndpoints) {
           try {
-            console.log(`📧 Trying endpoint: ${endpoint}`);
+          
             response = await axios.post(
               `${API_BASE_URL}${endpoint}`,
               alternativeData,
@@ -103,10 +100,10 @@ export class ContactPageAPI {
                 timeout: this.timeout,
               }
             );
-            console.log(`📧 Success with endpoint: ${endpoint}`);
+          
             break;
           } catch (altError) {
-            console.log(`📧 Endpoint ${endpoint} failed:`, altError);
+        
             if (endpoint === possibleEndpoints[possibleEndpoints.length - 1]) {
               // If all alternative endpoints fail, throw the original error
               throw endpointError;
@@ -119,7 +116,7 @@ export class ContactPageAPI {
         throw new Error('No response received from any endpoint');
       }
 
-      console.log('📧 Contact form response:', response.data);
+     
 
       return {
         success: true,
@@ -127,7 +124,7 @@ export class ContactPageAPI {
         data: response.data,
       };
     } catch (error) {
-      console.error('📧 Contact API failed:', error);
+      
       const errorResult = this.handleError(error);
       
       // If all API endpoints fail, provide a fallback option
@@ -155,7 +152,7 @@ export class ContactPageAPI {
 
   // Handle different types of errors
   private handleError(error: unknown): ContactApiError {
-    console.error('Contact API Error:', error);
+  
 
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;

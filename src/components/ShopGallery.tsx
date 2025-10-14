@@ -332,13 +332,6 @@ const ShopGallery = () => {
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', severity: 'success' });
 
   const handleAddToCart = (item: Product) => {
-    // Check stock before adding
-    const stock = Number((item as any)?.stock ?? NaN);
-    if (!Number.isFinite(stock) || stock <= 0) {
-      setSnackbar({ open: true, message: 'Out of stock', severity: 'error' });
-      return;
-    }
-    
     dispatch(addItem({
       id: item.id,
       title: item.name,
@@ -346,7 +339,6 @@ const ShopGallery = () => {
       image: getProductImages(item)[0] || '/placeholder-image.jpg',
       description: item.description || '',
       category: shopNowApis.getCategoryName(item.category) || 'seat',
-      stock: stock, // Include stock information
     }));
     setSnackbar({ open: true, message: 'Added to cart', severity: 'success' });
   };
@@ -766,7 +758,7 @@ const ShopGallery = () => {
                              // handleCustomize(item); // FUNCTION: Navigate to customize page with item details
                              
                              // Temporary: Show alert that feature is coming soon
-                             alert('Customize feature coming soon!');
+                             alert('Customize feature is coming soon!');
                            }}
                                                        sx={{
                               borderColor: theme.palette.primary.main,
@@ -1289,7 +1281,7 @@ const ShopGallery = () => {
                             // handleCloseLightbox();
                             
                             // Temporary: Show alert that feature is coming soon
-                            alert('Customize feature coming soon!');
+                            alert('Customize feature is coming soon!');
                           }}
                           sx={{
                             position: 'absolute',
@@ -1421,7 +1413,7 @@ const ShopGallery = () => {
                             // handleCloseLightbox();
                             
                             // Temporary: Show alert that feature is coming soon
-                            alert('Customize feature coming soon!');
+                            alert('Customize feature is coming soon!');
                           }}
                           sx={{
                             display: { xs: 'flex', sm: 'none' }, // Only show on mobile

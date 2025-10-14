@@ -123,7 +123,7 @@ export const registerUser = createAsyncThunk(
     address: string;
     city: string;
     state: string;
-    company_name: string;
+    company_name?: string;
   }, { rejectWithValue }) => {
     try {
       const result = await apiService.register(userData);

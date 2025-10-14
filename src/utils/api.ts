@@ -150,7 +150,7 @@ class ApiService {
     address: string;
     city: string;
     state: string;
-    company_name: string;
+    company_name?: string;
   }) {
     const response = await api.post('/register', userData);
     const { data } = response.data;

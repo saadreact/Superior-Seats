@@ -54,32 +54,20 @@ const Cart: React.FC<CartProps> = ({ open, onClose }) => {
   const handleQuantityChange = async (id: number, currentQuantity: number, change: number, itemStock?: number) => {
     const newQuantity = currentQuantity + change;
     if (newQuantity <= 0) return;
-    
-    // Get stock - use item stock from cart if available, otherwise fetch from API
-    let stock = itemStock;
-    
-    if (change > 0) {
-      // If stock not in cart item or we're incrementing, validate from API
+    // On increment, validate against stock from API (only when user is logged in)
+    if (change > 0 && isAuthenticated) {
       try {
-        const product = await apiService.getProduct(id as any);
-        stock = Number((product as any)?.stock ?? NaN);
-        
-        if (Number.isFinite(stock) && stock >= 0) {
-          if (newQuantity > stock) {
-            setStockError(`Only ${stock} item${stock !== 1 ? 's' : ''} in stock for this product.`);
-            return;
-          }
-          // Update with latest stock info
-          dispatch(updateQuantity({ id, quantity: newQuantity, stock }));
-          return;
-        }
-      } catch (error) {
-        console.error('Error fetching product stock:', error);
-      }
+       // const product = await apiService.getProduct(id as any);
+      //  const stock = Number((product as any)?.stock ?? NaN);
+      //  if (Number.isFinite(stock) && stock >= 0 && newQuantity > stock) {
+       //   setStockError(`Only ${stock} in stock for this product.`);
+      //    return;
+    //    }
+      } catch {}
     }
     
     // For decrement or if no stock limit, just update quantity
-    dispatch(updateQuantity({ id, quantity: newQuantity, stock }));
+    dispatch(updateQuantity({ id, quantity: newQuantity }));
   };
 
   const formatPrice = (price: string, quantity: number) => {

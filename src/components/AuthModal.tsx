@@ -49,9 +49,8 @@ const signUpSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
   address: z.string().min(5, 'Address must be at least 5 characters'),
-  city: z.string().min(2, 'City must be at least 2 characters'),
-  state: z.string().min(2, 'State must be at least 2 characters'),
-  company_name: z.string().min(2, 'Company name must be at least 2 characters'),
+  city: z.string().min(2, 'Choose any city'),
+  state: z.string().min(2, 'Select a State'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -186,7 +185,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     address: '',
     city: '',
     state: '',
-    company_name: '',
   });
 
   const [countryCode] = useState('+1'); // Fixed to US code only
@@ -222,7 +220,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         address: '',
         city: '',
         state: '',
-        company_name: '',
       });
     }
   }, [isAuthenticated, onClose, justAuthenticated, tabValue]);
@@ -354,7 +351,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
       address: signUpForm.address,
       city: signUpForm.city,
       state: signUpForm.state,
-      company_name: signUpForm.company_name,
     }));
 
     // Check if registration failed
@@ -398,7 +394,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
       address: '',
       city: '',
       state: '',
-      company_name: '',
     });
     setTabValue(0);
     setJustAuthenticated(false);
@@ -418,10 +413,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   };
 
   const handleForgotPassword = async () => {
-    console.log('handleForgotPassword called with email:', forgotPasswordEmail);
-    
     if (!forgotPasswordEmail.trim()) {
-      console.log('Email is empty');
       setSnackbar({
         open: true,
         message: 'Please enter your email address',
@@ -431,7 +423,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     }
 
     if (!forgotPasswordEmail.includes('@')) {
-      console.log('Email format is invalid');
       setSnackbar({
         open: true,
         message: 'Please enter a valid email address',
@@ -440,12 +431,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
       return;
     }
 
-    console.log('Starting forgot password API call...');
     setForgotPasswordLoading(true);
     try {
-      console.log('Calling apiService.forgotPassword...');
       const result = await apiService.forgotPassword(forgotPasswordEmail);
-      console.log('API call successful:', result);
       setSnackbar({
         open: true,
         message: 'Password reset email sent successfully! Please check your email and click the reset link to set a new password.',
@@ -454,7 +442,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
       setShowForgotPassword(false);
       setForgotPasswordEmail('');
     } catch (error: any) {
-      console.error('API call failed:', error);
       setSnackbar({
         open: true,
         message: error.message || 'Failed to send password reset email. Please try again.',
@@ -710,7 +697,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                         },
                       }}
                       onClick={() => {
-                        console.log('Forgot password button clicked');
                         setShowForgotPassword(true);
                       }}
                     >
@@ -1032,31 +1018,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     ))}
                   </TextField>
                 </Box>
-
-                <TextField
-                  fullWidth
-                  label="Company Name"
-                  type="text"
-                  value={signUpForm.company_name}
-                  onChange={handleSignUpChange('company_name')}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSignUp();
-                    }
-                  }}
-                  error={!!errors.company_name}
-                  helperText={errors.company_name}
-                  variant="outlined"
-                  size="small"
-                  sx={{ 
-                    mb: 2,
-                    ...commonTextFieldStyles,
-                    '& .MuiFormHelperText-root': {
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      marginLeft: 0,
-                    },
-                  }}
-                />
 
                 <TextField
                   fullWidth

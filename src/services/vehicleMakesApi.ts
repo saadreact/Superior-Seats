@@ -111,7 +111,6 @@ class VehicleMakesApiService {
       }
       return { data: [], meta: {} };
     } catch (error: any) {
-      console.error('Error fetching vehicle makes:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch vehicle makes');
     }
   }
@@ -131,7 +130,6 @@ class VehicleMakesApiService {
       }
       throw new Error('Invalid response structure');
     } catch (error: any) {
-      console.error('Error fetching vehicle make:', error);
       if (error.response?.status === 404) {
         throw new Error('Vehicle make not found');
       }
@@ -156,8 +154,6 @@ class VehicleMakesApiService {
       }
       return response.data;
     } catch (error: any) {
-      console.error('Error creating vehicle make:', error);
-      
       // Handle 422 validation errors
       if (error.response?.status === 422) {
         const validationErrors = error.response?.data?.errors || error.response?.data?.message;
@@ -197,8 +193,6 @@ class VehicleMakesApiService {
       }
       return response.data;
     } catch (error: any) {
-      console.error('Error updating vehicle make:', error);
-      
       if (error.response?.status === 404) {
         throw new Error('Vehicle make not found');
       }
@@ -238,7 +232,6 @@ class VehicleMakesApiService {
       }
       return response.data;
     } catch (error: any) {
-      console.error('Error deleting vehicle make:', error);
       if (error.response?.status === 404) {
         throw new Error('Vehicle make not found');
       }

@@ -15,7 +15,6 @@ class MaterialTypesService {
       }
       return { data: [], meta: {} };
     } catch (error: any) {
-      console.error('Error fetching material types:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch material types');
     }
   }
@@ -26,7 +25,6 @@ class MaterialTypesService {
       const response = await api.get(`/material-types/${id}`);
       return response.data?.data?.material_type || response.data?.material_type || response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error fetching material type:', error);
       if (error.response?.status === 404) {
         throw new Error('Material type not found');
       }
@@ -72,16 +70,6 @@ class MaterialTypesService {
           });
         }
 
-        // Debug: Log FormData contents
-        console.log('Material Type FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post('/material-types', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -110,9 +98,6 @@ class MaterialTypesService {
         return response.data?.data || response.data;
       }
     } catch (error: any) {
-      console.error('Error creating material type:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       throw new Error(error.response?.data?.message || 'Failed to create material type');
     }
   }
@@ -158,16 +143,6 @@ class MaterialTypesService {
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
         
-        // Debug: Log FormData contents
-        console.log('Material Type Update FormData being sent:');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
         const response = await api.post(`/material-types/${id}`, formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -207,12 +182,6 @@ class MaterialTypesService {
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
         
-        // Debug: Log FormData contents
-        console.log('Material Type Update FormData (no image) being sent:');
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}: ${value}`);
-        }
-        
         const response = await api.post(`/material-types/${id}`, formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -228,9 +197,6 @@ class MaterialTypesService {
         return response.data;
       }
     } catch (error: any) {
-      console.error('Error updating material type:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       if (error.response?.status === 404) {
         throw new Error('Material type not found');
       }
@@ -244,7 +210,6 @@ class MaterialTypesService {
       const response = await api.delete(`/material-types/${id}`);
       return response.data?.data || response.data;
     } catch (error: any) {
-      console.error('Error deleting material type:', error);
       if (error.response?.status === 404) {
         throw new Error('Material type not found');
       }
@@ -258,7 +223,6 @@ class MaterialTypesService {
       const response = await api.get('/price-tiers', { params });
       return response.data?.data || response.data || [];
     } catch (error: any) {
-      console.error('Error fetching price tiers:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch price tiers');
     }
   }
