@@ -245,10 +245,10 @@ const AboutPage = () => {
         px: { xs: 0.5, sm: 1.5, md: 2.5, lg: 3.5 },
         backgroundColor: '#fafafa', 
         backgroundImage: {
-          xs: 'url(/Gallery/Patriotism/pngwing.com.png)',
-          sm: 'url(/Gallery/Patriotism/pngwing.com.png)',
-          md: 'url(/Gallery/Patriotism/pngwing.com.png)',
-          lg: 'url(/Gallery/Patriotism/pngwing.com.png)',
+          xs: 'url(/Gallery/Patriotism/American01.png)',
+          sm: 'url(/Gallery/Patriotism/American01.png)',
+          md: 'url(/Gallery/Patriotism/American01.png)',
+          lg: 'url(/Gallery/Patriotism/American01.png)',
         }, 
         backgroundSize: {
           xs: 'cover',
@@ -273,7 +273,7 @@ const AboutPage = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.65) 100%)',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.65) 100%)',
           zIndex: 1,
         }
       }}>
@@ -309,14 +309,15 @@ const AboutPage = () => {
                 variant="h6" 
                 sx={{ 
                   mb: { xs: 1, sm: 2, md: 2.5 }, 
-                  color: 'text.secondary', 
+                  fontWeight: '500',
+                  color: 'black', 
                   lineHeight: { xs: 1.1, sm: 1.6, md: 1.8 },
                   fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem', lg: '1.1rem' },
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
                   hyphens: 'auto',
                   maxWidth: '100%',
-                  fontWeight: 'regular',
+                 
                 }}
               >
               At Superior Seating, every seat begins with your vision. We combine cutting-edge technology, timeless craftsmanship, and a deep passion for design to deliver seating solutions that are as unique as the people who use them.
@@ -325,7 +326,8 @@ const AboutPage = () => {
                  variant="body1" 
                  sx={{ 
                    mb: { xs: 1, sm: 1.5, md: 2, lg: 3 }, 
-                   color: 'text.secondary', 
+                   fontWeight: '500',
+                   color: 'black', 
                    lineHeight: { xs: 1.2, sm: 1.4, md: 1.6, lg: 1.7 },
                    fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },
                    wordWrap: 'break-word',
@@ -340,7 +342,8 @@ const AboutPage = () => {
                <Typography 
                  variant="body1" 
                  sx={{ 
-                   color: 'text.secondary',
+                  fontWeight: '500',
+                  color: 'black', 
                     mb: { xs: 1, sm: 1.3, md: 2, lg: 3 },  
                    lineHeight: { xs: 1.2, sm: 1.4, md: 1.4, lg: 1.5 },
                    fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '1rem' },

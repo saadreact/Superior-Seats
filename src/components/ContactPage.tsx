@@ -69,7 +69,7 @@ const ContactPage = () => {
   const commonTextFieldStyles = {
     '& .MuiOutlinedInput-root': {
       borderRadius: 2,
-      height: '35px',
+      height: '44px',
       backgroundColor: 'rgba(255,255,255,0.8)',
       '&:hover fieldset': {
         borderColor: 'primary.main',
@@ -82,9 +82,24 @@ const ContactPage = () => {
         backgroundColor: 'white',
       },
     },
+    '& .MuiOutlinedInput-input': {
+      height: '44px',
+      lineHeight: '44px',
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+    // Center only the placeholder text for inputs and textareas
+    '& input::placeholder': {
+      textAlign: 'center',
+      opacity: 0.8,
+    },
+    '& textarea::placeholder': {
+      textAlign: 'center',
+      opacity: 0.8,
+    },
     '& .MuiInputLabel-root': {
       color: 'text.secondary',
-      transform: 'translate(14px, 5.5px) scale(1)',
+      transform: 'translate(14px, 10px) scale(1)',
       '&.Mui-focused': {
         color: 'primary.main',
         transform: 'translate(14px, -9px) scale(0.75)',
@@ -135,15 +150,36 @@ const ContactPage = () => {
     }
   };
 
+  const [touched, setTouched] = useState<Partial<Record<keyof ContactFormData, boolean>>>({});
+
   const handleInputChange = (field: keyof ContactFormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value || '';
-    validateField(field, value);
+    // live update value, but only validate if field has been touched after blur or after submit
+    if (field === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '');
+      setFormData(prev => ({ ...prev, [field]: digitsOnly }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
+    if (touched[field]) {
+      validateField(field, value);
+    }
   };
+
+  // We intentionally avoid per-field blur validation to only show errors after submit
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
     try {
+      // Mark all fields touched so validation messages show only after submit
+      setTouched({ firstName: true, lastName: true, email: true, phone: true, company: true, subject: true, message: true });
+
+      // Run validation for all fields before submit
+      (Object.keys(formData) as (keyof ContactFormData)[]).forEach((key) => {
+        validateField(key, formData[key] || '');
+      });
+
       // Validate the entire form
       const validatedData = contactFormSchema.parse(formData);
       
@@ -256,7 +292,14 @@ const ContactPage = () => {
       )}
 
       {/* Contact Form */}
-      <Box sx={{ backgroundColor: '#fafafa', pb: { xs: 4, sm: 5, md: 6 } }}>
+      <Box sx={{ 
+        backgroundImage: 'linear-gradient(rgba(255,255,255,0.4), rgba(112, 112, 112, 0.4)), url(/Gallery/Truckimages/truck11.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        pb: { xs: 4, sm: 5, md: 6 },
+        pt: { xs: 2, sm: 3, md: 4 }
+      }}>
         <Container maxWidth="md">
           <Typography
             variant="h3"
@@ -296,13 +339,13 @@ const ContactPage = () => {
               }}
             >
                          <form onSubmit={handleSubmit}>
-               <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
                 
 
                                  {/* Name Fields */}
-                 <Box sx={{ 
-                   display: 'flex', 
-                   gap: { xs: 2, sm: 3 },
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: { xs: 1.5, sm: 2 },
                    flexDirection: { xs: 'column', sm: 'row' }
                  }}>
                                        <TextField
@@ -336,9 +379,9 @@ const ContactPage = () => {
                  </Box>
 
                                  {/* Contact Fields */}
-                 <Box sx={{ 
-                   display: 'flex', 
-                   gap: { xs: 2, sm: 3 },
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: { xs: 1.5, sm: 2 },
                    flexDirection: { xs: 'column', md: 'row' }
                  }}>
                                      <TextField
@@ -356,13 +399,13 @@ const ContactPage = () => {
                        ...commonTextFieldStyles,
                      }}
                    />
-                  <TextField
+                 <TextField
                     label="Phone"
                     type="tel"
                     value={formData.phone}
                     onChange={handleInputChange('phone')}
                     onFocus={() => setIsPhoneFocused(true)}
-                    onBlur={() => setIsPhoneFocused(false)}
+                   onBlur={() => setIsPhoneFocused(false)}
                     required
                     variant="outlined"
                     size="small"
@@ -391,7 +434,7 @@ const ContactPage = () => {
                       flex: 1,
                       ...commonTextFieldStyles,
                       '& .MuiInputLabel-root': {
-                        transform: 'translate(60px, 5.5px) scale(1)',
+                        transform: 'translate(60px, 10px) scale(1)',
                         '&.Mui-focused': {
                           transform: 'translate(14px, -9px) scale(0.75)'
                         },
@@ -460,6 +503,17 @@ const ContactPage = () => {
                       '&.Mui-focused': {
                         backgroundColor: 'white',
                       },
+                    },
+                    '& .MuiOutlinedInput-inputMultiline': {
+                      paddingTop: '10px',
+                      paddingBottom: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                    },
+                    // Ensure multiline placeholder is centered
+                    '& textarea::placeholder': {
+                      textAlign: 'center',
+                      opacity: 0.8,
                     },
                     '& .MuiInputLabel-root': {
                       color: 'text.secondary',
@@ -584,7 +638,7 @@ const ContactPage = () => {
 
             }}
           >
-            Find Us
+            Visit Our Location
           </Typography>
           <Box
             sx={{
