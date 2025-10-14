@@ -255,107 +255,71 @@ const Gallery = () => {
         </Container>
       </Box>
 
-      {/* Workshop Craftsmanship Section */}
-      <Box sx={{ 
-        py: { xs: 6, md: 8, lg: 10 },
-        backgroundColor: '#f8f9fa',
-      }}>
+      {/* Workshop Craftsmanship Section (no grid; split into distinct sections) */}
+      <Box sx={{ py: { xs: 6, md: 8, lg: 10 }, backgroundColor: '#f8f9fa' }}>
         <Container maxWidth="xl">
           <MotionBox
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
             sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}
           >
-            <Typography
-              variant="overline"
-              sx={{
-                color: 'primary.main',
-                fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '1rem' },
-                letterSpacing: 2,
-              }}
-            >
+            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2 }}>
               BEHIND THE CRAFT
             </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                mt: 2,
-                mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
-                fontWeight: 600,
-                color: 'text.primary',
-              }}
-            >
+            <Typography variant="h2" sx={{ mt: 2, fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' } }}>
               Where Excellence Begins
             </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                fontSize: { xs: '1rem', md: '1.125rem' },
-                color: 'text.secondary',
-                maxWidth: '800px',
-                mx: 'auto',
-                lineHeight: 1.8,
-              }}
-            >
-              Our state-of-the-art workshop is where passion meets precision. Each seat goes through meticulous 
-              quality checks and craftsmanship processes to ensure we deliver nothing but the best.
+            <Typography sx={{ mt: 2, color: 'text.secondary', maxWidth: 800, mx: 'auto' }}>
+              Our workshop is where passion meets precision. Explore select moments from the floor—each paired with
+              a short story about what makes our process different.
             </Typography>
           </MotionBox>
 
-          {/* Workshop Images Grid */}
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-              gap: { xs: 2, md: 3 },
-            }}
-          >
-            {workPicturesTruck.slice(1, 7).map((item, index) => (
-              <MotionBox
-                key={item.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.2 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                sx={{
-                  position: 'relative',
-                  paddingTop: '75%',
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  transition: 'all 0.4s ease',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 20px 40px rgba(211, 47, 47, 0.2)',
-                    '& .workshop-image': {
-                      transform: 'scale(1.1)',
-                    },
-                  },
-                }}
-                onClick={() => handleImageClick(item, index + 1)}
-              >
-                <Box
-                  component="img"
-                  src={item.image}
-                  alt={`Workshop ${index + 1}`}
-                  className="workshop-image"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transition: 'transform 0.6s ease',
-                  }}
-                />
-              </MotionBox>
-            ))}
+          {/* Section A */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 3, md: 6 }, mb: { xs: 6, md: 10 } }}>
+            <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600 }}>MATERIAL SELECTION</Typography>
+              <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700 }}>Premium Components, Handpicked</Typography>
+              <Typography sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
+                We source leathers, foams, and hardware for longevity and comfort. Each project begins with exacting
+                standards so the final product withstands thousands of miles.
+              </Typography>
+            </MotionBox>
+            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
+              <Image src="/Gallery/Truckimages/truck02.jpg" alt="Workshop materials" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" priority />
+            </Box>
+          </Box>
+
+          {/* Section B */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1.1fr' }, gap: { xs: 3, md: 6 }, alignItems: 'center', mb: { xs: 6, md: 10 } }}>
+            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
+              <Image src="/Gallery/Truckimages/truck04.jpg" alt="Precision cutting" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+            </Box>
+            <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600 }}>PATTERNING & CUT</Typography>
+              <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700 }}>Cut With Exactness</Typography>
+              <Typography sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
+                Patterns are drafted for fit and durability, then cut to precise tolerances. This ensures consistent
+                panel alignment and a stronger finished seat.
+              </Typography>
+            </MotionBox>
+          </Box>
+
+          {/* Section C */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 3, md: 6 }, mb: { xs: 6, md: 2 } }}>
+            <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600 }}>ASSEMBLY</Typography>
+              <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700 }}>Built by Craftspeople</Typography>
+              <Typography sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
+                Skilled upholstery technicians assemble every seat by hand, ensuring tight seams, smooth contours,
+                and dependable performance.
+              </Typography>
+            </MotionBox>
+            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
+              <Image src="/Gallery/Truckimages/truck07.jpg" alt="Assembly" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+            </Box>
           </Box>
         </Container>
       </Box>
@@ -472,7 +436,7 @@ const Gallery = () => {
         </Container>
       </Box>
 
-      {/* Quality & Detail Section with Remaining Workshop Images */}
+      {/* Quality & Detail Section with More Trucks */}
       <Box sx={{ 
         py: { xs: 6, md: 8, lg: 10 },
         backgroundColor: '#f8f9fa',
@@ -496,16 +460,7 @@ const Gallery = () => {
             >
               ATTENTION TO DETAIL
             </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                mt: 2,
-                mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
-                fontWeight: 600,
-                color: 'text.primary',
-              }}
-            >
+            <Typography variant="h2" sx={{ mt: 2, mb: 3, fontSize: { xs: '2rem', md: '3rem' }, fontWeight: 700 }}>
               Every Stitch Matters
             </Typography>
             <Typography
@@ -523,54 +478,11 @@ const Gallery = () => {
             </Typography>
           </MotionBox>
 
-          {/* Grid with remaining workshop images */}
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-              gap: { xs: 2, md: 3 },
-            }}
-          >
-            {workPicturesTruck.slice(8).map((item, index) => (
-              <MotionBox
-                key={item.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.2 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                sx={{
-                  position: 'relative',
-                  paddingTop: '100%',
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  transition: 'all 0.4s ease',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 20px 40px rgba(211, 47, 47, 0.2)',
-                    '& .detail-image': {
-                      transform: 'scale(1.1)',
-                    },
-                  },
-                }}
-                onClick={() => handleImageClick(item, index + 8)}
-              >
-                <Box
-                  component="img"
-                  src={item.image}
-                  alt={`Quality detail ${index + 1}`}
-                  className="detail-image"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transition: 'transform 0.6s ease',
-                  }}
-                />
+          {/* Clean 3-up grid of truck images */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 3 } }}>
+            {["/Gallery/Truckimages/truck08.jpg","/Gallery/Truckimages/truck09.jpg","/Gallery/Truckimages/truck10.jpg"].map((src, idx) => (
+              <MotionBox key={src} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6, delay: idx * 0.1 }} sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
+                <Image src={src} alt={`Truck ${idx+1}`} fill sizes="(max-width: 900px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
               </MotionBox>
             ))}
           </Box>
