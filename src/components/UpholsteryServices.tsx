@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -40,6 +41,42 @@ const upholsteryImages = [
   { id: 6, src: '/Upholstery/IMG_3526.jpg', alt: 'Custom Boat Cushions' },
   { id: 7, src: '/Upholstery/IMG_3527.jpg', alt: 'Marine Interior Design' },
   { id: 8, src: '/Upholstery/IMG_3528.jpg', alt: 'Luxury Boat Upholstery' },
+];
+
+// Headings and copy for each showcase image
+const showcaseCopy = [
+  {
+    title: 'Premium Marine Seating',
+    text: 'Built for comfort and longevity with UV-stable, mildew-resistant materials that look great season after season.'
+  },
+  {
+    title: 'Sun‑Safe. Water‑Ready.',
+    text: 'Marine-grade vinyl and performance fabrics that stand up to sun, spray, and salt without sacrificing feel.'
+  },
+  {
+    title: 'Custom Boat Interiors',
+    text: 'Tailored layouts, matching trims, and thoughtful details to elevate every inch of your vessel.'
+  },
+  {
+    title: 'Helm Seats & Consoles',
+    text: 'Ergonomic captain’s chairs and helm pads designed for support during long days on the water.'
+  },
+  {
+    title: 'Restorations That Last',
+    text: 'From torn seats to full interior refreshes—durable, color‑matched restorations you can trust.'
+  },
+  {
+    title: 'Tailored Cushions',
+    text: 'High‑density foams, quick‑dry construction, and precise patterning for a perfect fit.'
+  },
+  {
+    title: 'Precision Stitching',
+    text: 'Double‑stitched seams, reinforced stress points, and consistent panel alignment.'
+  },
+  {
+    title: 'Luxury Finishes',
+    text: 'Embossing, contrast stitching, piping, and textures that bring a premium look to your craft.'
+  },
 ];
 
 const services = [
@@ -334,7 +371,7 @@ const UpholsteryServices = () => {
         </Container>
       </Box>
 
-      {/* Gallery Section */}
+      {/* Gallery Section - Marine Upholstery Showcase */}
       <Box sx={{ 
         py: { xs: 6, md: 8, lg: 10 },
         backgroundColor: '#fafafa',
@@ -385,98 +422,57 @@ const UpholsteryServices = () => {
             </Typography>
           </MotionBox>
 
-          {/* Image Gallery Grid */}
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { 
-                xs: '1fr', 
-                sm: 'repeat(2, 1fr)', 
-                md: 'repeat(3, 1fr)', 
-                lg: 'repeat(4, 1fr)' 
-              },
-              gap: { xs: 2, sm: 2.5, md: 3 },
-            }}
-          >
-            {upholsteryImages.map((image, index) => (
+          {/* Alternating sections using the 8 images */}
+          {upholsteryImages.map((image, index) => (
+            <Box
+              key={image.id}
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: { xs: 3, md: 6 },
+                alignItems: 'center',
+                mb: { xs: 6, md: 10 },
+              }}
+            >
+              {/* Content */}
               <MotionBox
-                key={image.id}
-                initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: false, amount: 0.2 }}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: (index % 8) * 0.05,
-                  ease: [0.4, 0, 0.2, 1]
-                }}
-                sx={{
-                  position: 'relative',
-                  paddingTop: '100%',
-                  cursor: 'pointer',
-                  overflow: 'hidden',
-                  borderRadius: 2,
-                  backgroundColor: '#fff',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                  '&:hover': {
-                    transform: 'translateY(-12px)',
-                    boxShadow: '0 20px 40px rgba(211, 47, 47, 0.2)',
-                    '& .image': {
-                      transform: 'scale(1.08)',
-                    },
-                    '& .overlay': {
-                      opacity: 1,
-                    },
-                  },
-                  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                }}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6 }}
+                sx={{ order: { xs: 2, md: index % 2 === 0 ? 1 : 2 } }}
+              >
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2 }}>
+                  MARINE UPHOLSTERY
+                </Typography>
+                <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700, fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+                  {showcaseCopy[index]?.title || image.alt}
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.9, fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                  {showcaseCopy[index]?.text || image.alt}
+                </Typography>
+              </MotionBox>
+
+              {/* Image */}
+              <MotionBox
+                initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6 }}
+                sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', order: { xs: 1, md: index % 2 === 0 ? 2 : 1 } }}
                 onClick={() => handleImageClick(image)}
               >
-                <Box
-                  component="img"
+                <Image
                   src={image.src}
                   alt={image.alt}
-                  className="image"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                  }}
+                  fill
+                  sizes="(max-width: 900px) 100vw, 50vw"
+                  style={{ objectFit: 'cover' }}
+                  priority={index < 2}
                 />
-                
-                {/* Overlay */}
-                <Box
-                  className="overlay"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(180deg, transparent 0%, rgba(211, 47, 47, 0.8) 100%)',
-                    opacity: 0,
-                    transition: 'opacity 0.5s ease',
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    p: 2,
-                  }}
-                >
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'white',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {image.alt}
-                  </Typography>
-                </Box>
               </MotionBox>
-            ))}
-          </Box>
+            </Box>
+          ))}
         </Container>
       </Box>
 
