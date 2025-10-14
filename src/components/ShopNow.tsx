@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
@@ -85,6 +85,7 @@ const ShopNow = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('Added to cart'); // Snackbar message
   const [imageLoading, setImageLoading] = useState(true); // Track image loading state
   const [showLoader, setShowLoader] = useState(false); // Only show loader if loading takes > 200ms
+  const imageLoadingRef = useRef(true); // Ref to track loading state for timer callbacks
 
   // API State
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
@@ -225,6 +226,25 @@ const ShopNow = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, customerId, isAuthenticated]);
 
+  // Cleanup effect to clear any pending timers when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear any pending loader timers on unmount
+      if ((handleImageClick as any).loaderTimer) {
+        clearTimeout((handleImageClick as any).loaderTimer);
+      }
+      if ((handleNextModalImage as any).loaderTimer) {
+        clearTimeout((handleNextModalImage as any).loaderTimer);
+      }
+      if ((handlePrevModalImage as any).loaderTimer) {
+        clearTimeout((handlePrevModalImage as any).loaderTimer);
+      }
+      if ((setModalImageIndex as any).loaderTimer) {
+        clearTimeout((setModalImageIndex as any).loaderTimer);
+      }
+    };
+  }, []);
+
   // Use server-side filtered products directly (no client-side filtering needed)
   const filteredImages = apiProducts;
   const currentItems = apiProducts; // All products are already paginated from server
@@ -269,19 +289,34 @@ const ShopNow = () => {
     setModalImageIndex(0); // Reset modal image index when opening modal
     setImageLoading(true);
     setShowLoader(false);
+    imageLoadingRef.current = true; // Set ref to true when starting to load
     
     // Only show loader if image takes more than 200ms to load
     const loaderTimer = setTimeout(() => {
-      if (imageLoading) {
+      // Only show loader if we're still in loading state
+      if (imageLoadingRef.current) {
         setShowLoader(true);
       }
-    }, 100);
+    }, 200);
     
     // Store timer reference for cleanup
     (handleImageClick as any).loaderTimer = loaderTimer;
   };
 
   const handleCloseLightbox = () => {
+    // Clear any pending loader timers when closing modal
+    if ((handleImageClick as any).loaderTimer) {
+      clearTimeout((handleImageClick as any).loaderTimer);
+    }
+    if ((handleNextModalImage as any).loaderTimer) {
+      clearTimeout((handleNextModalImage as any).loaderTimer);
+    }
+    if ((handlePrevModalImage as any).loaderTimer) {
+      clearTimeout((handlePrevModalImage as any).loaderTimer);
+    }
+    if ((setModalImageIndex as any).loaderTimer) {
+      clearTimeout((setModalImageIndex as any).loaderTimer);
+    }
     setSelectedImage(null);
   };
 
@@ -353,12 +388,15 @@ const ShopNow = () => {
       const nextIndex = (modalImageIndex + 1) % productImages.length;
       setImageLoading(true);
       setShowLoader(false);
+      imageLoadingRef.current = true; // Set ref to true when starting to load
       setModalImageIndex(nextIndex);
       
       // Only show loader if image takes more than 200ms to load
       const loaderTimer = setTimeout(() => {
-        setShowLoader(true);
-      }, 100);
+        if (imageLoadingRef.current) {
+          setShowLoader(true);
+        }
+      }, 200);
       
       // Store timer reference for cleanup
       (handleNextModalImage as any).loaderTimer = loaderTimer;
@@ -371,12 +409,15 @@ const ShopNow = () => {
       const prevIndex = modalImageIndex === 0 ? productImages.length - 1 : modalImageIndex - 1;
       setImageLoading(true);
       setShowLoader(false);
+      imageLoadingRef.current = true; // Set ref to true when starting to load
       setModalImageIndex(prevIndex);
       
       // Only show loader if image takes more than 200ms to load
       const loaderTimer = setTimeout(() => {
-        setShowLoader(true);
-      }, 100);
+        if (imageLoadingRef.current) {
+          setShowLoader(true);
+        }
+      }, 200);
       
       // Store timer reference for cleanup
       (handlePrevModalImage as any).loaderTimer = loaderTimer;
@@ -1518,6 +1559,7 @@ const ShopNow = () => {
                                 onLoad={() => {
                                   setImageLoading(false);
                                   setShowLoader(false);
+                                  imageLoadingRef.current = false; // Set ref to false when image loads
                                   // Clear any pending loader timers
                                   if ((handleImageClick as any).loaderTimer) {
                                     clearTimeout((handleImageClick as any).loaderTimer);
@@ -1528,10 +1570,27 @@ const ShopNow = () => {
                                   if ((handlePrevModalImage as any).loaderTimer) {
                                     clearTimeout((handlePrevModalImage as any).loaderTimer);
                                   }
+                                  if ((setModalImageIndex as any).loaderTimer) {
+                                    clearTimeout((setModalImageIndex as any).loaderTimer);
+                                  }
                                 }}
                                 onError={(e: any) => {
                                   setImageLoading(false);
                                   setShowLoader(false);
+                                  imageLoadingRef.current = false; // Set ref to false when image fails
+                                  // Clear any pending loader timers
+                                  if ((handleImageClick as any).loaderTimer) {
+                                    clearTimeout((handleImageClick as any).loaderTimer);
+                                  }
+                                  if ((handleNextModalImage as any).loaderTimer) {
+                                    clearTimeout((handleNextModalImage as any).loaderTimer);
+                                  }
+                                  if ((handlePrevModalImage as any).loaderTimer) {
+                                    clearTimeout((handlePrevModalImage as any).loaderTimer);
+                                  }
+                                  if ((setModalImageIndex as any).loaderTimer) {
+                                    clearTimeout((setModalImageIndex as any).loaderTimer);
+                                  }
                                   const img = e.target as HTMLImageElement;
                                   img.style.display = 'none';
                                   const fallback = img.parentElement?.querySelector('.modal-no-image-fallback');
@@ -1629,12 +1688,15 @@ const ShopNow = () => {
                            if (index !== modalImageIndex) {
                              setImageLoading(true);
                              setShowLoader(false);
+                             imageLoadingRef.current = true; // Set ref to true when starting to load
                              setModalImageIndex(index);
                              
                              // Only show loader if image takes more than 200ms to load
                              const loaderTimer = setTimeout(() => {
-                               setShowLoader(true);
-                             }, 100);
+                               if (imageLoadingRef.current) {
+                                 setShowLoader(true);
+                               }
+                             }, 200);
                              
                              // Store timer reference for cleanup
                              (setModalImageIndex as any).loaderTimer = loaderTimer;
