@@ -1,6 +1,7 @@
 export const stats = [
     { label: 'Seats Manufactured', value: '20,000+', icon: 'CheckCircle' },
     { label: 'Years Experience', value: '25+', icon: 'TrendingUp' },
+    { label: 'Seat Models', value: '50+', icon: 'Star' },
 
     // { label: 'Happy Customers', value: '98%', icon: 'Star' },
     // { label: 'Team Members', value: '25+', icon: 'People' },
