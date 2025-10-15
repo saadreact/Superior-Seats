@@ -48,6 +48,12 @@ export interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  // 2FA related states
+  requiresTwoFactor: boolean;
+  twoFactorToken: string | null;
+  pendingLoginEmail: string | null;
+  // Email verification related states
+  emailVerificationRequired: boolean;
 }
 
 // Async thunks
@@ -173,6 +179,48 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const verifyTwoFactor = createAsyncThunk(
+  'auth/verifyTwoFactor',
+  async (data: { email: string; otp: string; twoFactorToken?: string }, { rejectWithValue }) => {
+    try {
+      const result = await apiService.verifyTwoFactor(data.email, data.otp, data.twoFactorToken);
+      return result;
+    } catch (error: any) {
+      // Handle different types of errors
+      if (error.response?.status === 422) {
+        const errorData = error.response?.data?.errors;
+        if (errorData?.message) {
+          return rejectWithValue(errorData.message);
+        }
+        if (errorData?.errors) {
+          const validationErrors = Object.values(errorData.errors).flat();
+          return rejectWithValue(validationErrors.join(', '));
+        }
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.values(errorData)
+            .filter(val => typeof val === 'string' || Array.isArray(val))
+            .flat();
+          if (errorMessages.length > 0) {
+            return rejectWithValue(errorMessages.join(', '));
+          }
+        }
+      }
+      
+      if (error.response?.status === 401) {
+        const errorMessage = error.response?.data?.errors?.message || 
+                           error.response?.data?.message || 
+                           'Invalid verification code. Please try again.';
+        return rejectWithValue(errorMessage);
+      }
+      
+      const errorMessage = error.response?.data?.errors?.message || 
+                          error.response?.data?.message || 
+                          '2FA verification failed. Please try again.';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
@@ -199,6 +247,12 @@ const initialState: AuthState = {
   isAuthenticated: false,
   loading: false,
   error: null,
+  // 2FA related states
+  requiresTwoFactor: false,
+  twoFactorToken: null,
+  pendingLoginEmail: null,
+  // Email verification related states
+  emailVerificationRequired: false,
 };
 
 // Auth slice
@@ -220,6 +274,16 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
+      state.requiresTwoFactor = false;
+      state.twoFactorToken = null;
+      state.pendingLoginEmail = null;
+      state.emailVerificationRequired = false;
+    },
+    clearTwoFactorState: (state) => {
+      state.requiresTwoFactor = false;
+      state.twoFactorToken = null;
+      state.pendingLoginEmail = null;
+      state.emailVerificationRequired = false;
     },
   },
   extraReducers: (builder) => {
@@ -228,17 +292,74 @@ const authSlice = createSlice({
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.requiresTwoFactor = false;
+        state.twoFactorToken = null;
+        state.pendingLoginEmail = null;
+        state.emailVerificationRequired = false;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
         state.error = null;
+        
+        // Check if 2FA is required
+        if (action.payload.requiresTwoFactor) {
+          state.requiresTwoFactor = true;
+          state.twoFactorToken = action.payload.twoFactorToken || null;
+          state.pendingLoginEmail = action.payload.email || null;
+          state.user = null;
+          state.token = null;
+          state.isAuthenticated = false;
+          state.emailVerificationRequired = false;
+        } else if (action.payload.emailVerificationRequired) {
+          // Email verification required
+          state.emailVerificationRequired = true;
+          state.pendingLoginEmail = action.payload.email || null;
+          state.user = null;
+          state.token = null;
+          state.isAuthenticated = false;
+          state.requiresTwoFactor = false;
+          state.twoFactorToken = null;
+        } else {
+          // Normal login success
+          state.user = action.payload.user;
+          state.token = action.payload.token;
+          state.isAuthenticated = true;
+          state.requiresTwoFactor = false;
+          state.twoFactorToken = null;
+          state.pendingLoginEmail = null;
+          state.emailVerificationRequired = false;
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.requiresTwoFactor = false;
+        state.twoFactorToken = null;
+        state.pendingLoginEmail = null;
+        state.emailVerificationRequired = false;
+      });
+
+    // 2FA Verification
+    builder
+      .addCase(verifyTwoFactor.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyTwoFactor.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
+        state.requiresTwoFactor = false;
+        state.twoFactorToken = null;
+        state.pendingLoginEmail = null;
+        state.emailVerificationRequired = false;
+        state.error = null;
+      })
+      .addCase(verifyTwoFactor.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        // Keep 2FA state so user can try again
       });
 
     // Register
@@ -249,9 +370,11 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
+        // Don't automatically authenticate user after registration
+        // User needs to verify email and login manually
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
@@ -282,5 +405,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, setCredentials, logout } = authSlice.actions;
+export const { clearError, setCredentials, logout, clearTwoFactorState } = authSlice.actions;
 export default authSlice.reducer; 

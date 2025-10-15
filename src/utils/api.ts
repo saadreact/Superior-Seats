@@ -108,23 +108,60 @@ class ApiService {
 
   // Authentication
   async login(email: string, password: string) {
-    const response = await api.post('/login', { email, password });
+    try {
+      const response = await api.post('/login', { email, password });
     
     // Handle different response structures
-    let token, user;
+    let token, user, requiresTwoFactor, twoFactorToken, emailVerificationRequired;
+    
     if (response.data.data) {
       // Nested structure: response.data.data
       token = response.data.data.token;
       user = response.data.data.user;
+      requiresTwoFactor = response.data.data.requires_two_factor;
+      twoFactorToken = response.data.data.two_factor_token;
+      emailVerificationRequired = response.data.data.email_verification_required;
     } else if (response.data.token) {
       // Direct structure: response.data
       token = response.data.token;
       user = response.data.user;
+      requiresTwoFactor = response.data.requires_two_factor;
+      twoFactorToken = response.data.two_factor_token;
+      emailVerificationRequired = response.data.email_verification_required;
+    } else if (response.data.errors && response.data.errors.email_verification_required) {
+      // Error response with email verification required
+      emailVerificationRequired = response.data.errors.email_verification_required;
+      token = null;
+      user = null;
+      requiresTwoFactor = false;
+      twoFactorToken = null;
     } else {
       throw new Error('Invalid response structure from login API');
     }
     
-    // Store token in localStorage for immediate use
+    // If 2FA is required, don't store token yet
+    if (requiresTwoFactor) {
+      return {
+        user: null,
+        token: null,
+        requiresTwoFactor: true,
+        twoFactorToken: twoFactorToken,
+        email: email
+      };
+    }
+    
+    // If email verification is required, don't store token yet
+    if (emailVerificationRequired) {
+      return {
+        user: null,
+        token: null,
+        requiresTwoFactor: false,
+        emailVerificationRequired: true,
+        email: email
+      };
+    }
+    
+    // Store token in localStorage for immediate use (only if 2FA not required)
     if (typeof window !== 'undefined' && token) {
       localStorage.setItem('auth_token', token);
       // Store token generation time
@@ -133,10 +170,26 @@ class ApiService {
       this.startAutoRefresh();
     }
     
-    return {
-      user,
-      token
-    };
+      return {
+        user,
+        token,
+        requiresTwoFactor: false,
+        emailVerificationRequired: false
+      };
+    } catch (error: any) {
+      // Check if this is an email verification required error
+      if (error.response?.data?.errors?.email_verification_required) {
+        return {
+          user: null,
+          token: null,
+          requiresTwoFactor: false,
+          emailVerificationRequired: true,
+          email: email
+        };
+      }
+      // Re-throw other errors
+      throw error;
+    }
   }
 
   async register(userData: {
@@ -155,14 +208,8 @@ class ApiService {
     const response = await api.post('/register', userData);
     const { data } = response.data;
     
-    // Store token
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', data.token);
-      // Store token generation time
-      localStorage.setItem('token_generated_at', Date.now().toString());
-      // Start auto-refresh timer
-      this.startAutoRefresh();
-    }
+    // Don't store token or start auto-refresh after registration
+    // User needs to verify email and login manually
     
     // Ensure the user object has the name field from the registration data
     const userWithName = {
@@ -171,7 +218,7 @@ class ApiService {
       username: userData.email // Use email as username
     };
     
-    // Return the same structure as login for consistency
+    // Return the same structure as login for consistency, but don't store auth data
     return {
       user: userWithName,
       token: data.token
@@ -272,6 +319,73 @@ class ApiService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to reset password');
+    }
+  }
+
+  // Request email verification OTP
+  async requestEmailOtp(email: string) {
+    try {
+      const payload = {
+        email: email
+      };
+      const response = await this.api.post('/auth/resend-otp', payload);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to send verification code');
+    }
+  }
+
+  // Verify email with OTP
+  async verifyEmailOtp(email: string, otp: string) {
+    try {
+      const payload = {
+        email: email,
+        otp: otp
+      };
+      console.log('🔍 Sending email verification payload:', payload);
+      const response = await this.api.post('/auth/verify-email', payload);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to verify email');
+    }
+  }
+
+  // Verify 2FA and complete login
+  async verifyTwoFactor(email: string, otp: string, twoFactorToken?: string) {
+    try {
+      const payload = {
+        email: email,
+        otp: otp,
+        ...(twoFactorToken && { two_factor_token: twoFactorToken })
+      };
+      console.log('🔍 Sending 2FA verification payload:', payload);
+      const response = await this.api.post('/auth/verify-two-factor', payload);
+      
+      // Handle response structure
+      let token, user;
+      if (response.data.data) {
+        token = response.data.data.token;
+        user = response.data.data.user;
+      } else if (response.data.token) {
+        token = response.data.token;
+        user = response.data.user;
+      } else {
+        throw new Error('Invalid response structure from 2FA verification API');
+      }
+      
+      // Store token in localStorage after successful 2FA verification
+      if (typeof window !== 'undefined' && token) {
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('token_generated_at', Date.now().toString());
+        this.startAutoRefresh();
+      }
+      
+      return {
+        user,
+        token
+      };
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to verify 2FA code');
     }
   }
 
