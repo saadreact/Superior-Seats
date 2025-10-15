@@ -460,7 +460,8 @@ const HomePage = () => {
               height: '100%',
               maxHeight: { xs: 240, sm: 320, md: 420, lg: 520 },
               objectFit: 'cover',
-              display: 'block'
+              display: 'block',
+              filter: 'brightness(1.3) contrast(1.1)',
             }}
           >
             <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/mp4" />

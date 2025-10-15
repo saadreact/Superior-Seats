@@ -172,7 +172,6 @@ const UpholsteryServices = () => {
               sx={{
                 mt: 2,
                 mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
                 fontWeight: 600,
                 color: 'text.primary',
               }}
@@ -182,7 +181,6 @@ const UpholsteryServices = () => {
             <Typography
               variant="body1"
               sx={{
-                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
                 color: 'text.secondary',
                 maxWidth: '800px',
                 mx: 'auto',
@@ -304,7 +302,6 @@ const UpholsteryServices = () => {
               variant="h3"
               sx={{
                 mb: 3,
-                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 600,
               }}
             >
@@ -313,7 +310,6 @@ const UpholsteryServices = () => {
             <Typography
               variant="body1"
               sx={{
-                fontSize: { xs: '1rem', md: '1.125rem' },
                 color: 'text.secondary',
                 maxWidth: '700px',
                 mx: 'auto',
@@ -400,7 +396,6 @@ const UpholsteryServices = () => {
               sx={{
                 mt: 2,
                 mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
                 fontWeight: 600,
                 color: 'text.primary',
               }}
@@ -410,7 +405,6 @@ const UpholsteryServices = () => {
             <Typography
               variant="body1"
               sx={{
-                fontSize: { xs: '1rem', md: '1.125rem' },
                 color: 'text.secondary',
                 maxWidth: '700px',
                 mx: 'auto',
@@ -445,10 +439,10 @@ const UpholsteryServices = () => {
                 <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2 }}>
                   MARINE UPHOLSTERY
                 </Typography>
-                <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700, fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+                <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700 }}>
                   {showcaseCopy[index]?.title || image.alt}
                 </Typography>
-                <Typography sx={{ color: 'text.secondary', lineHeight: 1.9, fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.9 }}>
                   {showcaseCopy[index]?.text || image.alt}
                 </Typography>
               </MotionBox>
@@ -509,7 +503,6 @@ const UpholsteryServices = () => {
               variant="h2"
               sx={{
                 mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
                 fontWeight: 700,
               }}
             >
@@ -519,7 +512,6 @@ const UpholsteryServices = () => {
               variant="h6"
               sx={{
                 mb: 5,
-                fontSize: { xs: '1rem', md: '1.25rem' },
                 opacity: 0.95,
                 lineHeight: 1.8,
               }}
