@@ -31,9 +31,9 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { loginUser, registerUser, clearError, logoutUser } from '@/store/authSlice';
+import { loginUser, registerUser, clearError, logoutUser, verifyTwoFactor, clearTwoFactorState } from '@/store/authSlice';
 import { apiService } from '@/utils/api';
-// import TwoFactorAuthModal from './TwoFactorAuthModal';
+import TwoFactorAuthModal from './TwoFactorAuthModal';
 
 // Zod validation schemas
 const signInSchema = z.object({
@@ -161,13 +161,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
-  // Two-factor authentication state (commented out for now)
-  // const [showTwoFactor, setShowTwoFactor] = useState(false);
-  // const [pendingLoginEmail, setPendingLoginEmail] = useState('');
+  // Email verification state
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState('');
+
+  // 2FA state
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
 
   // Redux state
   const dispatch = useAppDispatch();
-  const { loading, error, isAuthenticated } = useAppSelector((state: any) => state.auth);
+  const { loading, error, isAuthenticated, requiresTwoFactor, twoFactorToken, pendingLoginEmail, emailVerificationRequired } = useAppSelector((state: any) => state.auth);
 
   // Form states
   const [signInForm, setSignInForm] = useState({
@@ -235,6 +238,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
       dispatch(clearError());
     }
   }, [error, dispatch]);
+
+  // Handle automatic 2FA modal opening
+  useEffect(() => {
+    if ((requiresTwoFactor || emailVerificationRequired) && pendingLoginEmail) {
+      setShowTwoFactor(true);
+      // Automatically resend OTP when 2FA modal opens
+      handleResendTwoFactorOtp();
+    }
+  }, [requiresTwoFactor, emailVerificationRequired, pendingLoginEmail]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -330,10 +342,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         severity: 'error',
       });
     } else if (loginUser.fulfilled.match(result)) {
-      // Two-factor authentication is commented out for now
-      // setPendingLoginEmail(signInForm.email);
-      // setShowTwoFactor(true);
-      setJustAuthenticated(true);
+      // If 2FA is not required, set authenticated flag
+      if (!result.payload.requiresTwoFactor) {
+        setJustAuthenticated(true);
+      }
+      // If 2FA is required, the useEffect will handle opening the modal
     }
   };
 
@@ -375,13 +388,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         severity: 'error',
       });
     } else if (registerUser.fulfilled.match(result)) {
-      setJustAuthenticated(true);
+      // Show email verification modal instead of directly authenticating
+      setPendingVerificationEmail(signUpForm.email);
+      setShowEmailVerification(true);
     }
   };
 
   const handleClose = () => {
     onClose();
     dispatch(clearError());
+    dispatch(clearTwoFactorState());
     setErrors({});
     setSignInForm({ email: '', password: '' });
     setSignUpForm({ 
@@ -399,10 +415,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     setJustAuthenticated(false);
     setShowForgotPassword(false);
     setForgotPasswordEmail('');
-    // Two-factor authentication is commented out for now
-    // setShowTwoFactor(false);
-    // setPendingLoginEmail('');
-    // Reset country code to default
+    setShowEmailVerification(false);
+    setPendingVerificationEmail('');
+    setShowTwoFactor(false);
   };
 
   const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -452,24 +467,57 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
     }
   };
 
-  // Two-factor authentication handlers (commented out for now)
-  // const handleTwoFactorSuccess = () => {
-  //   setShowTwoFactor(false);
-  //   setJustAuthenticated(true);
-  //   setSnackbar({
-  //     open: true,
-  //     message: 'Two-factor authentication successful! Login completed.',
-  //     severity: 'success',
-  //   });
-  // };
+  // Email verification handlers
+  const handleEmailVerificationSuccess = () => {
+    setShowEmailVerification(false);
+    // Don't set justAuthenticated to true - user needs to login manually
+    setSnackbar({
+      open: true,
+      message: 'Email verified successfully! Please sign in with your credentials.',
+      severity: 'success',
+    });
+    // Switch to sign in tab after successful verification
+    setTabValue(0);
+  };
 
-  // const handleTwoFactorClose = () => {
-  //   setShowTwoFactor(false);
-  //   setPendingLoginEmail('');
-  //   // If user closes 2FA modal without completing verification, log them out
-  //   // since they haven't completed the full authentication process
-  //   dispatch(logoutUser());
-  // };
+  const handleEmailVerificationClose = () => {
+    setShowEmailVerification(false);
+    setPendingVerificationEmail('');
+    // Switch to sign in tab when user closes verification modal
+    setTabValue(0);
+    // Don't logout - user can still try to login manually
+  };
+
+  // 2FA handlers
+  const handleTwoFactorSuccess = () => {
+    setShowTwoFactor(false);
+    setJustAuthenticated(true);
+    dispatch(clearTwoFactorState());
+  };
+
+  const handleTwoFactorClose = () => {
+    setShowTwoFactor(false);
+    dispatch(clearTwoFactorState());
+  };
+
+  const handleResendTwoFactorOtp = async () => {
+    if (pendingLoginEmail) {
+      try {
+        await apiService.requestEmailOtp(pendingLoginEmail);
+        setSnackbar({
+          open: true,
+          message: 'New OTP sent to your email!',
+          severity: 'success',
+        });
+      } catch (error: any) {
+        setSnackbar({
+          open: true,
+          message: error.message || 'Failed to resend OTP. Please try again.',
+          severity: 'error',
+        });
+      }
+    }
+  };
 
   // Common field styles - matching EditProfileModal field sizes
   const commonTextFieldStyles = {
@@ -1256,15 +1304,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Two-Factor Authentication Modal (commented out for now) */}
-      {/* 
+      {/* Email Verification Modal */}
       <TwoFactorAuthModal
-        open={showTwoFactor}
-        onClose={handleTwoFactorClose}
-        onSuccess={handleTwoFactorSuccess}
-        email={pendingLoginEmail}
+        open={showEmailVerification}
+        onClose={handleEmailVerificationClose}
+        onSuccess={handleEmailVerificationSuccess}
+        email={pendingVerificationEmail}
+        mode="email-verification"
       />
-      */}
+
+      {/* 2FA Modal */}
+        <TwoFactorAuthModal
+          open={showTwoFactor}
+          onClose={handleTwoFactorClose}
+          onSuccess={handleTwoFactorSuccess}
+          email={pendingLoginEmail}
+          mode={emailVerificationRequired ? "email-verification" : "two-factor"}
+          twoFactorToken={twoFactorToken}
+        />
 
       {/* Snackbar for notifications */}
       <Snackbar

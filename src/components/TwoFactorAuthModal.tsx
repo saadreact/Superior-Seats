@@ -18,28 +18,39 @@ import {
 import {
   Close as CloseIcon,
   Security as SecurityIcon,
+  Email as EmailIcon,
 } from '@mui/icons-material';
+import { apiService } from '@/utils/api';
+import { useAppDispatch } from '@/store/hooks';
+import { verifyTwoFactor } from '@/store/authSlice';
 
 interface TwoFactorAuthModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
   email?: string;
+  mode?: 'two-factor' | 'email-verification';
+  twoFactorToken?: string;
 }
 
 const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({ 
   open, 
   onClose, 
   onSuccess, 
-  email 
+  email,
+  mode = 'two-factor',
+  twoFactorToken
 }) => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [shakeAnimation, setShakeAnimation] = useState(false);
   const inputRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const dispatch = useAppDispatch();
 
   // Static verification code for demo purposes
   const STATIC_CODE = '123456';
@@ -49,7 +60,9 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
     if (open) {
       setCode(['', '', '', '', '', '']);
       setError(null);
+      setSuccess(null);
       setLoading(false);
+      setShakeAnimation(false);
     }
   }, [open]);
 
@@ -67,9 +80,12 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
       nextInput?.focus();
     }
 
-    // Clear error when user starts typing
+    // Clear error and success when user starts typing
     if (error) {
       setError(null);
+    }
+    if (success) {
+      setSuccess(null);
     }
   };
 
@@ -105,44 +121,84 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
 
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Static verification - accept the static code or any 6-digit code for demo
-      if (fullCode === STATIC_CODE || /^\d{6}$/.test(fullCode)) {
-        onSuccess();
+      if (mode === 'email-verification') {
+        // Use email verification API
+        await apiService.verifyEmailOtp(email || '', fullCode);
+        setSuccess('Email verified successfully! You can now sign in.');
+        // Call success callback after a short delay to show success message
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
       } else {
-        setError('Invalid verification code. Please try again.');
+        // Two-factor authentication - use Redux action
+        const result = await dispatch(verifyTwoFactor({
+          email: email || '',
+          otp: fullCode,
+          twoFactorToken: twoFactorToken
+        }));
+        
+        if (verifyTwoFactor.fulfilled.match(result)) {
+          setSuccess('2FA verification successful! Logging you in...');
+          // Call success callback after a short delay to show success message
+          setTimeout(() => {
+            onSuccess();
+          }, 1500);
+        } else {
+          const errorMessage = result.payload as string || 'Invalid verification code. Please try again.';
+          setError(errorMessage);
+          triggerShakeAnimation();
+        }
       }
-    } catch (err) {
-      setError('Verification failed. Please try again.');
+    } catch (err: any) {
+      const errorMessage = err.message || 'Verification failed. Please try again.';
+      setError(errorMessage);
+      triggerShakeAnimation();
     } finally {
       setLoading(false);
     }
+  };
+
+  const triggerShakeAnimation = () => {
+    setShakeAnimation(true);
+    setTimeout(() => {
+      setShakeAnimation(false);
+    }, 500);
   };
 
   const handleClose = () => {
     onClose();
     setCode(['', '', '', '', '', '']);
     setError(null);
+    setSuccess(null);
     setLoading(false);
+    setShakeAnimation(false);
   };
 
   const handleResendCode = async () => {
     setLoading(true);
     setError(null);
+    setSuccess(null);
     
     try {
-      // Simulate resend delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (mode === 'email-verification') {
+        // Use resend OTP API
+        await apiService.requestEmailOtp(email || '');
+        setSuccess('New OTP sent to your email!');
+      } else {
+        // Simulate resend delay for two-factor
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setSuccess('New code sent!');
+      }
       
       // Reset code
       setCode(['', '', '', '', '', '']);
       
-    } catch (err) {
-      setError('Failed to resend code. Please try again.');
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to resend code. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -179,7 +235,11 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'center' }}>
-          <SecurityIcon sx={{ color: '#DA291C', fontSize: '1.5rem' }} />
+          {mode === 'email-verification' ? (
+            <EmailIcon sx={{ color: '#DA291C', fontSize: '1.5rem' }} />
+          ) : (
+            <SecurityIcon sx={{ color: '#DA291C', fontSize: '1.5rem' }} />
+          )}
           <Typography 
             variant={isMobile ? "h6" : "h5"} 
             component="div" 
@@ -189,7 +249,7 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
               fontSize: { xs: '1.125rem', sm: '1.375rem' },
             }}
           >
-            Two-Factor Authentication
+            {mode === 'email-verification' ? 'Email Verification' : 'Two-Factor Authentication'}
           </Typography>
         </Box>
         <IconButton
@@ -219,7 +279,7 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
               color: 'text.primary'
             }}
           >
-            Enter Verification Code
+            {mode === 'email-verification' ? 'Enter Email Verification Code' : 'Enter Verification Code'}
           </Typography>
           
           <Typography 
@@ -230,7 +290,10 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
               lineHeight: 1.6
             }}
           >
-            We have sent a 6-digit verification code to your email address.
+            {mode === 'email-verification' 
+              ? 'We have sent a 6-digit verification code to your email address to complete your registration.'
+              : 'We have sent a 6-digit verification code to your email address.'
+            }
             {email && (
               <Box component="span" sx={{ fontWeight: 500, color: 'primary.main' }}>
                 {' '}{email}
@@ -238,13 +301,15 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
             )}
           </Typography>
 
-          <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
-            <Typography variant="body2">
-              <strong>Demo Mode:</strong> Please enter the verification code manually.
-              <br />
-              <strong>Demo Code:</strong> {STATIC_CODE}
-            </Typography>
-          </Alert>
+          {mode === 'two-factor' && (
+            <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+              <Typography variant="body2">
+                <strong>Demo Mode:</strong> Please enter the verification code manually.
+                <br />
+                <strong>Demo Code:</strong> {STATIC_CODE}
+              </Typography>
+            </Alert>
+          )}
         </Box>
 
         {/* Code Input Fields */}
@@ -253,7 +318,13 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
           justifyContent: 'center', 
           gap: 1, 
           mb: 3,
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
+          animation: shakeAnimation ? 'shake 0.5s ease-in-out' : 'none',
+          '@keyframes shake': {
+            '0%, 100%': { transform: 'translateX(0)' },
+            '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
+            '20%, 40%, 60%, 80%': { transform: 'translateX(5px)' },
+          }
         }}>
           {code.map((digit, index) => (
             <TextField
@@ -297,6 +368,12 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
         {error && (
           <Alert severity="error" sx={{ mb: 3, textAlign: 'left' }}>
             {error}
+          </Alert>
+        )}
+
+        {success && (
+          <Alert severity="success" sx={{ mb: 3, textAlign: 'left' }}>
+            {success}
           </Alert>
         )}
 
@@ -347,20 +424,21 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
           </Button>
         </Box>
 
-        {/* Demo Instructions */}
-        <Box sx={{ mt: 4, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-            <strong>Demo Instructions:</strong>
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'left' }}>
-            • Enter the 6-digit code manually
-            <br />
-            • Use any 6-digit number to verify
-            <br />
-            • Demo code: {STATIC_CODE}
-          
-          </Typography>
-        </Box>
+        {/* Demo Instructions - Only show for two-factor mode */}
+        {mode === 'two-factor' && (
+          <Box sx={{ mt: 4, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              <strong>Demo Instructions:</strong>
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'left' }}>
+              • Enter the 6-digit code manually
+              <br />
+              • Use any 6-digit number to verify
+              <br />
+              • Demo code: {STATIC_CODE}
+            </Typography>
+          </Box>
+        )}
       </DialogContent>
     </Dialog>
   );
