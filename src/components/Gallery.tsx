@@ -43,7 +43,7 @@ const sectionVariants = {
   },
 };
 
-const Gallery = () => {
+const Gallery = () => { 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
@@ -179,7 +179,6 @@ const Gallery = () => {
                 sx={{
                   mt: 2,
                   mb: 3,
-                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
                   fontWeight: 600,
                   color: 'text.primary',
                 }}
@@ -189,7 +188,6 @@ const Gallery = () => {
               <Typography
                 variant="body1"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
                   color: 'text.secondary',
                   lineHeight: 1.8,
                   mb: 3,
@@ -202,7 +200,6 @@ const Gallery = () => {
               <Typography
                 variant="body1"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
                   color: 'text.secondary',
                   lineHeight: 1.8,
                 }}
@@ -268,7 +265,7 @@ const Gallery = () => {
             <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2 }}>
               BEHIND THE CRAFT
             </Typography>
-            <Typography variant="h2" sx={{ mt: 2, fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' } }}>
+            <Typography variant="h2" sx={{ mt: 2, fontWeight: 700 }}>
               Where Excellence Begins
             </Typography>
             <Typography sx={{ mt: 2, color: 'text.secondary', maxWidth: 800, mx: 'auto' }}>
@@ -400,7 +397,6 @@ const Gallery = () => {
                 sx={{
                   mt: 2,
                   mb: 3,
-                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
                   fontWeight: 600,
                   color: 'text.primary',
                 }}
@@ -410,7 +406,6 @@ const Gallery = () => {
               <Typography
                 variant="body1"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
                   color: 'text.secondary',
                   lineHeight: 1.8,
                   mb: 3,
@@ -423,7 +418,6 @@ const Gallery = () => {
               <Typography
                 variant="body1"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
                   color: 'text.secondary',
                   lineHeight: 1.8,
                 }}
@@ -460,13 +454,12 @@ const Gallery = () => {
             >
               ATTENTION TO DETAIL
             </Typography>
-            <Typography variant="h2" sx={{ mt: 2, mb: 3, fontSize: { xs: '2rem', md: '3rem' }, fontWeight: 700 }}>
+            <Typography variant="h2" sx={{ mt: 2, mb: 3, fontWeight: 700 }}>
               Every Stitch Matters
             </Typography>
             <Typography
               variant="body1"
               sx={{
-                fontSize: { xs: '1rem', md: '1.125rem' },
                 color: 'text.secondary',
                 maxWidth: '800px',
                 mx: 'auto',
@@ -516,7 +509,6 @@ const Gallery = () => {
               sx={{
                 mt: 2,
                 mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
                 fontWeight: 600,
                 color: 'text.primary',
               }}
@@ -526,7 +518,6 @@ const Gallery = () => {
             <Typography
               variant="body1"
               sx={{
-                fontSize: { xs: '1rem', md: '1.125rem' },
                 color: 'text.secondary',
                 maxWidth: '700px',
                 mx: 'auto',
