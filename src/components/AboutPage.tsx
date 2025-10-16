@@ -655,31 +655,31 @@ const AboutPage = () => {
             {
               title: "Custom Fit Design",
               description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
-              image: "/Gallery/Truckimages/truck01.jpg",
+              image: "/Gallery/Truckimages/01f.png",
               icon: <CheckCircle />
             },
             {
               title: "Premium Materials",
               description: "Highest quality leather, fabric, and materials. We use only the finest materials that are built to last and provide exceptional comfort.",
-              image: "/Gallery/Truckimages/truck02.jpg",
+              image: "/Gallery/Truckimages/lf.png",
               icon: <CheckCircle />
             },
             {
               title: "Expert Craftsmanship",
               description: "Skilled artisans handcraft each seat with precision. Our experienced craftsmen bring decades of expertise to every project.",
-              image: "/Gallery/Truckimages/truck03.jpg",
+              image: "/Gallery/Truckimages/03fa.png",
               icon: <CheckCircle />
             },
             {
               title: "Comprehensive Warranty",
               description: "We stand behind our work with full warranty. Your investment is protected with our comprehensive warranty coverage.",
-              image: "/Gallery/Truckimages/truck04.jpg",
+              image: "/Gallery/Truckimages/09.png",
               icon: <CheckCircle />
             },
             {
               title: "Ongoing Support",
               description: "We're here for you even after purchase. Our commitment to customer satisfaction extends well beyond the initial sale.",
-              image: "/Gallery/Truckimages/truck05.jpg",
+              image: "/Gallery/Truckimages/05.png",
               icon: <CheckCircle />
             }
           ].map((item, index) => (
