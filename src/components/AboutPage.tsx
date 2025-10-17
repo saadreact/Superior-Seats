@@ -715,7 +715,7 @@ const AboutPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: false, amount: 0.2 }}
                   transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 + index * 0.1 }}
-                  sx={{ mt: 1, mb: 2, fontWeight: 700, fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.2rem', lg: '2.5rem', xl: '2.5rem' } }}
+                  sx={{ mt: 1, mb: 2, fontWeight: 'medium', fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.2rem', lg: '2.5rem', xl: '2.5rem' } }}
                 >
                   {item.title}
                 </MotionTypography>
