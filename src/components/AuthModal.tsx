@@ -566,7 +566,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             minHeight: isMobile ? '100vh' : 'auto',
             maxWidth: isMobile ? '100%' : '450px',
             width: isMobile ? '100%' : '90%',
-            maxHeight: isMobile ? '100vh' : '90vh',
+            maxHeight: isMobile ? '100vh' : { xs: '90vh', sm: '90vh', md: '100vh', lg: '98vh', xl: '90vh' },
             overflow: 'hidden',
           },
         }}
@@ -576,29 +576,76 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            pb: 1,
+            pb: 0,
+            height: '50px',
             px: { xs: 2, sm: 3 },
-            pt: { xs: 2, sm: 2.5 },
+           // pt: { xs: 2, sm: 2.5, md: 2, lg: 2, xl: 2, xxl: 2},
             borderBottom: '1px solid',
             borderColor: 'divider',
+            position: 'relative',
           }}
         >
-          <Typography 
-            variant={isMobile ? "h6" : "h5"} 
-            component="div" 
-            sx={{ 
-              fontWeight: 600,
-              color: '#DA291C',
-              fontSize: { xs: '1.125rem', sm: '1.375rem', md: '1rem', lg: '1.3rem', xl: '1.4rem', xxl: '1.67rem' },
-              textAlign: 'center',
-              flex: 1,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            {tabValue === 0 ? 'Login' : 'Sign Up'}
-          </Typography>
+          {/* Navigation Links */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2,
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'relative'
+          }}>
+            <Typography
+              variant="h6"
+              component="div"
+              onClick={() => setTabValue(0)}
+              sx={{
+                fontWeight: 600,
+                color: tabValue === 0 ? '#DA291C' : 'text.secondary',
+                fontSize: { xs: '1rem', sm: '1.125rem' },
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  color: '#DA291C',
+                },
+              }}
+            >
+              Login
+            </Typography>
+            <Typography
+              variant="h6"
+              component="div"
+              onClick={() => setTabValue(1)}
+              sx={{
+                fontWeight: 600,
+                color: tabValue === 1 ? '#DA291C' : 'text.secondary',
+                fontSize: { xs: '1rem', sm: '1.125rem' },
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  color: '#DA291C',
+                },
+              }}
+            >
+              Sign Up
+            </Typography>
+            
+            {/* Red indicator line */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: '-1px', // Position it right below the divider
+                left: tabValue === 0 ? '38%' : '59%', // Position at 38% for Login, 55% for Sign Up
+                transform: 'translateX(-50%)', // Center the line on the text
+                width: tabValue === 0 ? '52px' : '70px', // Different widths: 35px for Login, 50px for Sign Up
+                height: '3px',
+                backgroundColor: '#DA291C',
+                borderRadius: '2px 2px 0 0',
+                transition: 'all 0.3s ease',
+
+
+              }}
+            />
+          </Box>
           <IconButton
             aria-label="close"
             onClick={handleClose}
@@ -616,31 +663,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         </DialogTitle>
 
         <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
-          <Box sx={{ borderBottom: 0.5, borderColor: 'divider' }}>
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              aria-label="authentication tabs"
-              centered
-              sx={{
-                '& .MuiTab-root': {
-                  fontWeight: 500,
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  textTransform: 'none',
-                  py: { xs: 1.25, sm: 1.5, md: 1, lg: 1, xl: 1, xxl: 1},
-                  minHeight: { xs: '44px', sm: '48px' },
-                },
-                '& .MuiTabs-indicator': {
-                  height: 3,
-                  borderRadius: '3px 3px 0 0',
-                  backgroundColor: '#DA291C',
-                },
-              }}
-            >
-              <Tab label="Sign In" />
-              <Tab label="Sign Up" />
-            </Tabs>
-          </Box>
 
           <Box sx={{ overflow: 'hidden' }}>
             <TabPanel value={tabValue} index={0}>
@@ -651,18 +673,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                 mx: 'auto',
                 width: '100%'
               }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 1.5, 
-                    fontWeight: 600,
-                    fontSize: { xs: '1rem', sm: '1.125rem' },
-                    textAlign: 'center',
-                    color: 'text.primary'
-                  }}
-                >
-                  Sign in to your account
-                </Typography>
+          
 
                 <Box sx={{ mx: { xs: 2, sm: 3, md: 4, lg: 3, xl: 3 } }}>
                   <TextField
@@ -788,6 +799,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     </Button>
                   </Box>
                 </Box>
+
               </Box>
             </TabPanel>
 
@@ -795,11 +807,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               <Box sx={{ 
                 p: { xs: 3, sm: 4, md: 3, lg: 3, xl: 3, xxl: 3},
                 pb: { xs: 4, sm: 5, md: 4, lg: 4, xl: 4, xxl: 4},
+                py: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0, xxl: 0},
                 maxWidth: '600px',
                 mx: 'auto',
                 width: '100%',
-                maxHeight: { md: '70vh', lg: '70vh' },
-                overflowY: { md: 'auto', lg: 'auto' },
+                maxHeight: { xs: '70vh', sm: '70vh', md: '100vh', lg: '95vh', xl: '70vh' },
+                minHeight: { xs: 'auto', sm: 'auto', md: '100vh', lg: '100vh', xl: 'auto' },
+                overflowY: { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto', xl: 'auto' },
                 '&::-webkit-scrollbar': {
                   width: '6px',
                 },
@@ -817,7 +831,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               }}>
                 
 
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, mb: 1.3 }}>
                   <TextField
                     fullWidth
                     label="First Name"
@@ -838,6 +852,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                       '& .MuiFormHelperText-root': {
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         marginLeft: 0,
+                    
                       },
                     }}
                   />
@@ -883,7 +898,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   variant="outlined"
                   size="small"
                   sx={{ 
-                    mb: 2,
+                    mb: 1,
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -960,7 +975,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         )
       }}
       sx={{
-        mb: 2,
+        mb: 1.3,
         ...commonTextFieldStyles,
         "& .MuiFormHelperText-root": {
           fontSize: { xs: "0.75rem", sm: "0.875rem" },
@@ -1001,7 +1016,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   variant="outlined"
                   size="small"
                   sx={{ 
-                    mb: 2,
+                    mb: 1.3,
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -1097,7 +1112,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     ),
                   }}
                   sx={{ 
-                    mb: 2,
+                    mb: 1.3,
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -1136,7 +1151,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     ),
                   }}
                   sx={{ 
-                    mb: 3,
+                    mb: 1.3,
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -1158,7 +1173,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     }}
                     sx={{
                       px: { xs: 4, sm: 6 },
-                      py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 },
+                      py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 , xl: 1, xxl: 1},
                       borderRadius: 2,
                       textTransform: 'none',
                       letterSpacing: 0.5,
@@ -1177,6 +1192,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign Up'}
                   </Button>
                 </Box>
+
               </Box>
             </TabPanel>
           </Box>
