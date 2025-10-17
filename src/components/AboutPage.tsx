@@ -191,7 +191,7 @@ const AboutPage = () => {
               flexDirection: { xs: 'row', sm: 'row', md: 'column', lg: 'column' },
               flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap' },
               justifyContent: { xs: 'center', sm: 'center', md: 'flex-start', lg: 'flex-start' },
-              gap: { xs: 2, sm: 2.5, md: 3, lg: '10px', xl: '10px' },
+              gap: { xs: 2, sm: 2.5, md: 3, lg: '12px', xl: '12px' },
               width: { xs: '100%', sm: '100%', md: '100%', lg: '350px', xl: '400px' },
               order: { xs: 2, lg: 1 },
               maxWidth: { xs: '100%', lg: '400px' }
@@ -200,12 +200,13 @@ const AboutPage = () => {
                 <Card key={index} sx={{ 
                   textAlign: 'center', 
                   p: { xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3 }, 
-                  height: { xs: 100, sm: 120, md: 140, lg: 150, xl: 150 },
+                  height: { xs: 100, sm: 120, md: 140, lg: 140, xl: 140 },
                   width: { xs: 'calc(50% - 8px)', sm: 'calc(33.333% - 12px)', md: '100%', lg: '100%', xl: '100%' },
                   minWidth: { xs: '140px', sm: '160px', md: 'auto', lg: 'auto', xl: 'auto' },
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
+                  alignItems: 'center',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                   transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                   cursor: 'pointer',
@@ -229,8 +230,11 @@ const AboutPage = () => {
                     sx={{ 
                       color: 'primary.main', 
                       mb: { xs: 0.5, sm: 1, md: 1.5, lg: 2, xl: 2 },
-                      fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem', lg: '2rem', xl: '2rem' },
+                      fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.2rem', lg: '2.5rem', xl: '2.5rem' },
                       transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
                     {getIcon(stat.icon)}
@@ -245,6 +249,7 @@ const AboutPage = () => {
                       fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2rem' },
                       transition: 'color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                       lineHeight: { xs: 1.1, sm: 1.2, md: 1.3, lg: 1.3, xl: 1.3 },
+                      textAlign: 'center',
                     }}
                   >
                     {stat.value}
@@ -254,7 +259,7 @@ const AboutPage = () => {
                     variant="body2" 
                     sx={{ 
                       color: 'text.secondary',
-                      fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '0.9rem' },
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.1rem' },
                       transition: 'color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                       lineHeight: { xs: 1.2, sm: 1.3, md: 1.4, lg: 1.4, xl: 1.4 },
                       textAlign: 'center',
@@ -630,10 +635,10 @@ const AboutPage = () => {
          <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4, lg: 0, xl: 0 } }}>
            <MotionTypography 
              variant="h3" 
-             initial={{ opacity: 0, y: 30 }}
-             whileInView={{ opacity: 1, y: 0 }}
+             initial={{ opacity: 0, y: 50, scale: 0.9 }}
+             whileInView={{ opacity: 1, y: 0, scale: 1 }}
              viewport={{ once: false, amount: 0.1 }}
-             transition={{ duration: 0.8, ease: "easeOut" }}
+             transition={{ duration: 1, ease: "easeOut" }}
              sx={{ 
                textAlign: 'center', 
                fontWeight: 'medium', 
@@ -644,510 +649,128 @@ const AboutPage = () => {
            >
              Why Choose Superior Seats?
            </MotionTypography>
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          
+          {/* Why Choose Us Cards with alternating layout */}
+          {[
+            {
+              title: "Custom Fit Design",
+              description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
+              image: "/Gallery/Truckimages/01f.png",
+              icon: <CheckCircle />
+            },
+            {
+              title: "Premium Materials",
+              description: "Highest quality leather, fabric, and materials. We use only the finest materials that are built to last and provide exceptional comfort.",
+              image: "/Gallery/Truckimages/lf.png",
+              icon: <CheckCircle />
+            },
+            {
+              title: "Expert Craftsmanship",
+              description: "Skilled artisans handcraft each seat with precision. Our experienced craftsmen bring decades of expertise to every project.",
+              image: "/Gallery/Truckimages/03fa.png",
+              icon: <CheckCircle />
+            },
+            {
+              title: "Comprehensive Warranty",
+              description: "We stand behind our work with full warranty. Your investment is protected with our comprehensive warranty coverage.",
+              image: "/Gallery/Truckimages/09.png",
+              icon: <CheckCircle />
+            },
+            {
+              title: "Ongoing Support",
+              description: "We're here for you even after purchase. Our commitment to customer satisfaction extends well beyond the initial sale.",
+              image: "/Gallery/Truckimages/05.png",
+              icon: <CheckCircle />
+            }
+          ].map((item, index) => (
             <Box
-              sx={{
+              key={index}
+                   sx={{
                 display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  md: 'repeat(3, 1fr)',
-                  lg: 'repeat(5, 1fr)',
-                },
-                gap: { xs: 2, sm: 2.5, md: 3, lg: 4, xl: 4 },
-                width: '100%',
-                maxWidth: { xs: '100%', sm: '600px', md: '900px', lg: 1400, xl: 1400 },
-                px: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 }
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: { xs: 3, md: 6 },
+                     alignItems: 'center',
+                mb: { xs: 6, md: 10 },
               }}
             >
-               {/* Custom Fit Design */}
-               <Card
-                 sx={{
-                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
-                   minHeight: { xs: 180, sm: 220, md: 240, lg: 280, xl: 280 },
-                   display: 'flex',
-                   flexDirection: 'column',
-                   justifyContent: 'flex-start',
-                   alignItems: 'center',
-                   textAlign: 'center',
-                   p: { xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3 },
-                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
-                   transition: 'all 0.3s ease',
-                   cursor: 'pointer',
-                   borderRadius: { xs: 2, sm: 2.5, md: 3, lg: 3, xl: 3 },
-                   '&:hover': {
-                     transform: 'translateY(-4px) scale(1.02)',
-                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                     '& .icon': {
-                       transform: 'rotate(360deg) scale(1.1)',
-                     },
-                     '& .title': {
-                       color: '#d32f2f',
-                     },
-                   },
-                 }}
-               >
-                 {/* Icon Circle */}
-                 <Box
-                   className="icon"
-                   sx={{
-                     position: 'relative',
-                     width: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     height: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     borderRadius: '50%',
-                     backgroundColor: '#d32f2f',
-                     color: 'white',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem', lg: '1.2rem', xl: '1.2rem' },
-                     fontWeight: 'bold',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     border: { xs: '2px solid white', sm: '3px solid white', md: '3px solid white', lg: '3px solid white', xl: '3px solid white' },
-                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
-                     transition: 'all 0.3s ease',
-                     '&::before': {
-                       content: '""',
-                       position: 'absolute',
-                       top: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       left: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       right: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       bottom: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       borderRadius: '50%',
-                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-                       zIndex: -1,
-                       opacity: 0.8,
-                       transform: 'scale(0.8)',
-                       transition: 'all 0.3s ease',
-                     },
-                     '&:hover::before': {
-                       opacity: 1,
-                       transform: 'scale(1.1)',
-                     },
-                   }}
-                 >
-                   <CheckCircle sx={{ fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem', lg: '1.5rem', xl: '1.5rem' } }} />
+              {/* Content */}
+              <MotionBox
+                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50, y: 20 }}
+                whileInView={{ opacity: 1, x: 0, y: 0 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: "easeOut",
+                  delay: index * 0.1
+                }}
+                sx={{ order: { xs: 2, md: index % 2 === 0 ? 1 : 2 } }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              
+               
                  </Box>
+                <MotionTypography 
+                  variant="h3" 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.2 }}
+                  transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 + index * 0.1 }}
+                  sx={{ mt: 1, mb: 2, fontWeight: 700, fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.2rem', lg: '2.5rem', xl: '2.5rem' } }}
+                >
+                  {item.title}
+                </MotionTypography>
+                <MotionTypography 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.2 }}
+                  transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 + index * 0.1 }}
+                  sx={{ color: 'text.secondary', lineHeight: 1.9, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem', lg: '1.2rem', xl: '1.2rem' } }}
+                >
+                  {item.description}
+                </MotionTypography>
+              </MotionBox>
 
-                 {/* Title */}
-                 <Typography
-                   className="title"
-                   variant="h6"
-                   sx={{
-                     fontWeight: 'medium',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.1rem' },
-                     transition: 'color 0.3s ease',
-                   }}
-                 >
-                   Custom Fit Design
-                 </Typography>
-
-                 {/* Description */}
-                 <Typography
-                   variant="body1"
-                   sx={{
-                     color: 'text.secondary',
-                     fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.9rem', xl: '0.9rem' },
-                     lineHeight: 1.5,
-                     flexGrow: 1,
-                     fontWeight: 'regular',
-                   }}
-                 >
-                   Designed specifically for your vehicle and body type.
-                 </Typography>
-               </Card>
-
-               {/* Premium Materials */}
-               <Card
-                 sx={{
-                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
-                   minHeight: { xs: 160, sm: 250, md: 280 },
-                   display: 'flex',
-                   flexDirection: 'column',
-                   justifyContent: 'flex-start',
-                   alignItems: 'center',
-                   textAlign: 'center',
-                   p: { xs: 1.5, sm: 2.5, md: 3 },
-                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
-                   transition: 'all 0.3s ease',
-                   cursor: 'pointer',
-                   '&:hover': {
-                     transform: 'translateY(-4px) scale(1.02)',
-                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                     '& .icon': {
-                       transform: 'rotate(360deg) scale(1.1)',
-                     },
-                     '& .title': {
-                       color: '#d32f2f',
-                     },
-                   },
-                 }}
-               >
-                 {/* Icon Circle */}
-                 <Box
-                   className="icon"
-                   sx={{
-                     position: 'relative',
-                     width: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     height: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     borderRadius: '50%',
-                     backgroundColor: '#d32f2f',
-                     color: 'white',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem', lg: '1.2rem', xl: '1.2rem' },
-                     fontWeight: 'bold',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     border: { xs: '2px solid white', sm: '3px solid white', md: '3px solid white', lg: '3px solid white', xl: '3px solid white' },
-                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
-                     transition: 'all 0.3s ease',
-                     '&::before': {
-                       content: '""',
-                       position: 'absolute',
-                       top: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       left: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       right: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       bottom: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       borderRadius: '50%',
-                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-                       zIndex: -1,
-                       opacity: 0.8,
-                       transform: 'scale(0.8)',
-                       transition: 'all 0.3s ease',
-                     },
-                     '&:hover::before': {
-                       opacity: 1,
-                       transform: 'scale(1.1)',
-                     },
-                   }}
-                 >
-                   <CheckCircle sx={{ fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem', lg: '1.5rem', xl: '1.5rem' } }} />
+              {/* Image */}
+              <MotionBox
+                initial={{ opacity: 0, x: index % 2 === 0 ? 50 : -50, y: 20, scale: 0.9 }}
+                whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: "easeOut",
+                  delay: index * 0.1 + 0.2
+                }}
+                sx={{
+                  position: 'relative',
+                  paddingTop: '70%', 
+                  borderRadius: 2, 
+                  overflow: 'hidden', 
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)', 
+                  order: { xs: 1, md: index % 2 === 0 ? 2 : 1 },
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  }
+                }}
+              >
+                <Box
+                  component="img"
+                  src={item.image}
+                  alt={item.title}
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              </MotionBox>
                  </Box>
-
-                 {/* Title */}
-                 <Typography
-                   className="title"
-                   variant="h6"
-                   sx={{
-                     fontWeight: 'medium',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.1rem' },
-                     transition: 'color 0.3s ease',
-                   
-                   }}
-                 >
-                   Premium Materials
-                 </Typography>
-
-                 {/* Description */}
-                 <Typography
-                   variant="body1"
-                   sx={{
-                     color: 'text.secondary',
-                     fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.9rem', xl: '0.9rem' },
-                     lineHeight: 1.5,
-                     flexGrow: 1,
-                     fontWeight: 'regular',
-                   }}
-                 >
-                   Highest quality leather, fabric, and materials.
-                 </Typography>
-               </Card>
-
-               {/* Expert Craftsmanship */}
-               <Card
-                 sx={{
-                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
-                   minHeight: { xs: 160, sm: 250, md: 280 },
-                   display: 'flex',
-                   flexDirection: 'column',
-                   justifyContent: 'flex-start',
-                   alignItems: 'center',
-                   textAlign: 'center',
-                   p: { xs: 1.5, sm: 2.5, md: 3 },
-                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
-                   transition: 'all 0.3s ease',
-                   cursor: 'pointer',
-                   '&:hover': {
-                     transform: 'translateY(-4px) scale(1.02)',
-                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                     '& .icon': {
-                       transform: 'rotate(360deg) scale(1.1)',
-                     },
-                     '& .title': {
-                       color: '#d32f2f',
-                     },
-                   },
-                 }}
-               >
-                 {/* Icon Circle */}
-                 <Box
-                   className="icon"
-                   sx={{
-                     position: 'relative',
-                     width: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     height: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     borderRadius: '50%',
-                     backgroundColor: '#d32f2f',
-                     color: 'white',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem', lg: '1.2rem', xl: '1.2rem' },
-                     fontWeight: 'bold',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     border: { xs: '2px solid white', sm: '3px solid white', md: '3px solid white', lg: '3px solid white', xl: '3px solid white' },
-                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
-                     transition: 'all 0.3s ease',
-                     '&::before': {
-                       content: '""',
-                       position: 'absolute',
-                       top: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       left: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       right: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       bottom: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       borderRadius: '50%',
-                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-                       zIndex: -1,
-                       opacity: 0.8,
-                       transform: 'scale(0.8)',
-                       transition: 'all 0.3s ease',
-                     },
-                     '&:hover::before': {
-                       opacity: 1,
-                       transform: 'scale(1.1)',
-                     },
-                   }}
-                 >
-                   <CheckCircle sx={{ fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem', lg: '1.5rem', xl: '1.5rem' } }} />
-                 </Box>
-
-                 {/* Title */}
-                 <Typography
-                   className="title"
-                   variant="h6"
-                   sx={{
-                     fontWeight: 'medium',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.1rem' },
-                     transition: 'color 0.3s ease',
-                   }}
-                 >
-                   Expert Craftsmanship
-                 </Typography>
-
-                 {/* Description */}
-                 <Typography
-                   variant="body1"
-                   sx={{
-                     color: 'text.secondary',
-                     fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.9rem', xl: '0.9rem' },
-                     lineHeight: 1.5,
-                     flexGrow: 1,
-                     fontWeight: 'regular',
-                   }}
-                 >
-                   Skilled artisans handcraft each seat with precision.
-                 </Typography>
-               </Card>
-
-               {/* Comprehensive Warranty */}
-               <Card
-                 sx={{
-                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
-                   minHeight: { xs: 160, sm: 250, md: 280 },
-                   display: 'flex',
-                   flexDirection: 'column',
-                   justifyContent: 'flex-start',
-                   alignItems: 'center',
-                   textAlign: 'center',
-                   p: { xs: 1.5, sm: 2.5, md: 3 },
-                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
-                   transition: 'all 0.3s ease',
-                   cursor: 'pointer',
-                   '&:hover': {
-                     transform: 'translateY(-4px) scale(1.02)',
-                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                     '& .icon': {
-                       transform: 'rotate(360deg) scale(1.1)',
-                     },
-                     '& .title': {
-                       color: '#d32f2f',
-                     },
-                   },
-                 }}
-               >
-                 {/* Icon Circle */}
-                 <Box
-                   className="icon"
-                   sx={{
-                     position: 'relative',
-                     width: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     height: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     borderRadius: '50%',
-                     backgroundColor: '#d32f2f',
-                     color: 'white',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem', lg: '1.2rem', xl: '1.2rem' },
-                     fontWeight: 'bold',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     border: { xs: '2px solid white', sm: '3px solid white', md: '3px solid white', lg: '3px solid white', xl: '3px solid white' },
-                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
-                     transition: 'all 0.3s ease',
-                     '&::before': {
-                       content: '""',
-                       position: 'absolute',
-                       top: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       left: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       right: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       bottom: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       borderRadius: '50%',
-                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-                       zIndex: -1,
-                       opacity: 0.8,
-                       transform: 'scale(0.8)',
-                       transition: 'all 0.3s ease',
-                     },
-                     '&:hover::before': {
-                       opacity: 1,
-                       transform: 'scale(1.1)',
-                     },
-                   }}
-                 >
-                   <CheckCircle sx={{ fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem', lg: '1.5rem', xl: '1.5rem' } }} />
-                 </Box>
-
-                 {/* Title */}
-                 <Typography
-                   className="title"
-                   variant="h6"
-                   sx={{
-                     fontWeight: 'medium',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.1rem' },
-                     transition: 'color 0.3s ease',
-                   }}
-                 >
-                   Comprehensive Warranty
-                 </Typography>
-
-                 {/* Description */}
-                 <Typography
-                   variant="body1"
-                   sx={{
-                     color: 'text.secondary',
-                     fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.9rem', xl: '0.9rem' },
-                     lineHeight: 1.5,
-                     flexGrow: 1,
-                     fontWeight: 'regular',
-                   }}
-                 >
-                   We stand behind our work with full warranty.
-                 </Typography>
-              </Card>
-
-              {/* Ongoing Support */}
-               <Card
-                 sx={{
-                   height: { xs: 'auto', sm: '100%', md: '100%', lg: '100%', xl: '100%' },
-                   minHeight: { xs: 160, sm: 250, md: 280 },
-                   display: 'flex',
-                   flexDirection: 'column',
-                   justifyContent: 'flex-start',
-                   alignItems: 'center',
-                   textAlign: 'center',
-                   p: { xs: 1.5, sm: 2.5, md: 3 },
-                   boxShadow: '0 4px 20px rgba(0,0,0,0)',
-                   transition: 'all 0.3s ease',
-                   cursor: 'pointer',
-                   '&:hover': {
-                     transform: 'translateY(-4px) scale(1.02)',
-                     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)',
-                     '& .icon': {
-                       transform: 'rotate(360deg) scale(1.1)',
-                     },
-                     '& .title': {
-                       color: '#d32f2f',
-                     },
-                   },
-                 }}
-               >
-                 {/* Icon Circle */}
-                 <Box
-                   className="icon"
-                   sx={{
-                     position: 'relative',
-                     width: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     height: { xs: 50, sm: 55, md: 60, lg: 60, xl: 60 },
-                     borderRadius: '50%',
-                     backgroundColor: '#d32f2f',
-                     color: 'white',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem', lg: '1.2rem', xl: '1.2rem' },
-                     fontWeight: 'bold',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     border: { xs: '2px solid white', sm: '3px solid white', md: '3px solid white', lg: '3px solid white', xl: '3px solid white' },
-                     boxShadow: '0 8px 20px rgba(211, 47, 47, 0.4)',
-                     transition: 'all 0.3s ease',
-                     '&::before': {
-                       content: '""',
-                       position: 'absolute',
-                       top: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       left: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       right: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       bottom: { xs: '-4px', sm: '-5px', md: '-6px', lg: '-6px', xl: '-6px' },
-                       borderRadius: '50%',
-                       background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-                       zIndex: -1,
-                       opacity: 0.8,
-                       transform: 'scale(0.8)',
-                       transition: 'all 0.3s ease',
-                     },
-                     '&:hover::before': {
-                       opacity: 1,
-                       transform: 'scale(1.1)',
-                     },
-                   }}
-                 >
-                   <CheckCircle sx={{ fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem', lg: '1.5rem', xl: '1.5rem' } }} />
-                 </Box>
-
-                 {/* Title */}
-                 <Typography
-                   className="title"
-                   variant="h6"
-                   sx={{
-                     fontWeight: 'medium',
-                     mb: { xs: 1, sm: 1.5, md: 2, lg: 2, xl: 2 },
-                     fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.1rem' },
-                     transition: 'color 0.3s ease',
-                   }}
-                 >
-                   Ongoing Support
-                 </Typography>
-
-                 {/* Description */}
-                 <Typography
-                   variant="body1"
-                   sx={{
-                     color: 'text.secondary',
-                     fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.9rem', xl: '0.9rem' },
-                     lineHeight: 1.5,
-                     flexGrow: 1,
-                     fontWeight: 'regular',
-                   }}
-                 >
-                   We&apos;re here for you even after purchase.
-                 </Typography>
-               </Card>
-             </Box>
-           </Box>
+          ))}
          </Container>
        </Box>
 

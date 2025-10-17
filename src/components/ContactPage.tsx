@@ -303,7 +303,7 @@ const ContactPage = () => {
               px: { xs: 2, sm: 0 },
             }}
           >
-            Send Us a Messages
+            Send Us a Message
           </Typography>
 
           <Box sx={{ 
