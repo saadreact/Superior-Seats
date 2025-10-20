@@ -566,7 +566,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             minHeight: isMobile ? '100vh' : 'auto',
             maxWidth: isMobile ? '100%' : '450px',
             width: isMobile ? '100%' : '90%',
-            maxHeight: isMobile ? '100vh' : { xs: '90vh', sm: '90vh', md: '100vh', lg: '98vh', xl: '90vh' },
+            maxHeight: isMobile ? '100vh' : { xs: '90vh', sm: '90vh', md: '100vh', lg: '98vh', xl: '65vh' },
             overflow: 'hidden',
           },
         }}
@@ -588,9 +588,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
           {/* Navigation Links */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 2,
+            gap: 3,
             flex: 1,
-            justifyContent: 'center',
+            mt: { xs: 0, sm: 0, md: 0, lg: -1, xl: -1, xxl: -1},
+         
+            justifyContent: 'center', 
             alignItems: 'center',
             position: 'relative'
           }}>
@@ -600,6 +602,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               onClick={() => setTabValue(0)}
               sx={{
                 fontWeight: 600,
+                mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 },
                 color: tabValue === 0 ? '#DA291C' : 'text.secondary',
                 fontSize: { xs: '1rem', sm: '1.125rem' },
                 cursor: 'pointer',
@@ -617,6 +620,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               onClick={() => setTabValue(1)}
               sx={{
                 fontWeight: 600,
+                mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 },
                 color: tabValue === 1 ? '#DA291C' : 'text.secondary',
                 fontSize: { xs: '1rem', sm: '1.125rem' },
                 cursor: 'pointer',
@@ -650,6 +654,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             aria-label="close"
             onClick={handleClose}
             sx={{
+              mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5, xxl: 1.5},
+              mr: { xs: 2, sm: 3, md: 4, lg: -1, xl: -1, xxl: -1},
               color: 'grey.500',
               p: { xs: 0.75, sm: 1 },
               '&:hover': {
@@ -669,6 +675,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               <Box sx={{ 
                 p: { xs: 3, sm: 4, md: 1, lg: 1, xl: 1, xxl: 1},
                 pb: { xs: 4, sm: 5, md: 1, lg: 1, xl: 1, xxl: 1},
+                py: { xs: 0, sm: 0, md: 0, lg: 2, xl: 2, xxl: 2},
                 maxWidth: '600px',
                 mx: 'auto',
                 width: '100%'
@@ -692,7 +699,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     variant="outlined"
                     size="small"
                     sx={{ 
-                      mb: 2,
+                      mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 },
                       ...commonTextFieldStyles,
                       '& .MuiFormHelperText-root': {
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -733,7 +740,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                       ),
                     }}
                     sx={{ 
-                      mb: 0.5,
+                      mb: 1.5,
                       ...commonTextFieldStyles,
                       '& .MuiFormHelperText-root': {
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -807,12 +814,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               <Box sx={{ 
                 p: { xs: 3, sm: 4, md: 3, lg: 3, xl: 3, xxl: 3},
                 pb: { xs: 4, sm: 5, md: 4, lg: 4, xl: 4, xxl: 4},
-                py: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0, xxl: 0},
+                py: { xs: 0, sm: 0, md: 0, lg: 0, xl: 2, xxl: 2},
                 maxWidth: '600px',
                 mx: 'auto',
                 width: '100%',
-                maxHeight: { xs: '70vh', sm: '70vh', md: '100vh', lg: '95vh', xl: '70vh' },
-                minHeight: { xs: 'auto', sm: 'auto', md: '100vh', lg: '100vh', xl: 'auto' },
+                maxHeight: { xs: '70vh', sm: '70vh', md: '100vh', lg: '95vh', xl: '80vh' },
+                minHeight: { xs: 'auto', sm: 'auto', md: '100vh', lg: '100vh', xl: '70vh' },
                 overflowY: { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto', xl: 'auto' },
                 '&::-webkit-scrollbar': {
                   width: '6px',
@@ -831,7 +838,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
               }}>
                 
 
-                <Box sx={{ display: 'flex', gap: 2, mb: 1.3 }}>
+                <Box sx={{ display: 'flex', gap: 2, mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 } }}>
                   <TextField
                     fullWidth
                     label="First Name"
@@ -898,7 +905,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   variant="outlined"
                   size="small"
                   sx={{ 
-                    mb: 1,
+                    mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 },
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -975,7 +982,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
         )
       }}
       sx={{
-        mb: 1.3,
+        mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 },
         ...commonTextFieldStyles,
         "& .MuiFormHelperText-root": {
           fontSize: { xs: "0.75rem", sm: "0.875rem" },
@@ -1016,7 +1023,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   variant="outlined"
                   size="small"
                   sx={{ 
-                    mb: 1.3,
+                    mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 },
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -1025,7 +1032,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, mb: { xs: 2, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 } }}>
                   <TextField
                     fullWidth
                     label="City"
@@ -1112,7 +1119,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     ),
                   }}
                   sx={{ 
-                    mb: 1.3,
+                    mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 },
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -1151,7 +1158,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     ),
                   }}
                   sx={{ 
-                    mb: 1.3,
+                    mb: { xs: 1.3, sm: 1.3, md: 1.3, lg: 1.3, xl: 1.5 },
                     ...commonTextFieldStyles,
                     '& .MuiFormHelperText-root': {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -1173,7 +1180,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     }}
                     sx={{
                       px: { xs: 4, sm: 6 },
-                      py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 , xl: 1, xxl: 1},
+                      mt: { xs: 1, sm: 1.5, lg: 1, md: 1.2 , xl: 1, xxl: 1},
                       borderRadius: 2,
                       textTransform: 'none',
                       letterSpacing: 0.5,
@@ -1298,13 +1305,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                 color: 'rgba(255, 255, 255, 0.3)',
               }}
               sx={{
-                px: 6,
-                py: 1.5,
+                px: { xs: 4, sm: 6 },
+                py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 },
+                mb: 3,
                 borderRadius: 2,
                 textTransform: 'none',
                 letterSpacing: 0.5,
                 transition: 'all 0.3s ease',
-                minWidth: 180,
+                minWidth: { xs: 160, sm: 180 },
+                width: { xs: '100%', sm: 'auto' },
                 boxShadow: 'none',
                 '&:hover': {
                   boxShadow: 'none',
