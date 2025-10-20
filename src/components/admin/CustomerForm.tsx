@@ -48,11 +48,13 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     is_active: true,
     // Shipping Address Fields
     shipping_address: '',
+    shipping_address_line_2: '',
     shipping_city: '',
     shipping_state: '',
     shipping_zip: '',
     // Billing Address Fields
     billing_address: '',
+    billing_address_line_2: '',
     billing_city: '',
     billing_state: '',
     billing_zip: '',
@@ -103,11 +105,13 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         is_active: customer.is_active !== undefined ? customer.is_active : true,
         // Shipping Address Fields - extract from nested object or use direct properties
         shipping_address: customer.shipping_address?.street || customer.shipping_address || '',
+        shipping_address_line_2: customer.shipping_address?.street_2 || customer.shipping_address_line_2 || '',
         shipping_city: customer.shipping_address?.city || customer.shipping_city || '',
         shipping_state: customer.shipping_address?.state || customer.shipping_state || '',
         shipping_zip: customer.shipping_address?.postal_code || customer.shipping_zip || '',
         // Billing Address Fields - extract from nested object or use direct properties
         billing_address: customer.billing_address?.street || customer.billing_address || '',
+        billing_address_line_2: customer.billing_address?.street_2 || customer.billing_address_line_2 || '',
         billing_city: customer.billing_address?.city || customer.billing_city || '',
         billing_state: customer.billing_address?.state || customer.billing_state || '',
         billing_zip: customer.billing_address?.postal_code || customer.billing_zip || '',
@@ -116,10 +120,12 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       // Log the form data to see what's being set
       console.log('Form data being set:', {
         shipping_address: customer.shipping_address?.street || customer.shipping_address || '',
+        shipping_address_line_2: customer.shipping_address?.street_2 || customer.shipping_address_line_2 || '',
         shipping_city: customer.shipping_address?.city || customer.shipping_city || '',
         shipping_state: customer.shipping_address?.state || customer.shipping_state || '',
         shipping_zip: customer.shipping_address?.postal_code || customer.shipping_zip || '',
         billing_address: customer.billing_address?.street || customer.billing_address || '',
+        billing_address_line_2: customer.billing_address?.street_2 || customer.billing_address_line_2 || '',
         billing_city: customer.billing_address?.city || customer.billing_city || '',
         billing_state: customer.billing_address?.state || customer.billing_state || '',
         billing_zip: customer.billing_address?.postal_code || customer.billing_zip || '',
@@ -246,38 +252,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isViewMode}
           />
 
-          <FormField
-            name="address"
-            label="Address"
-            value={formData.address}
-            onChange={(value) => handleFieldChange('address', value)}
-            required
-            error={allErrors.address}
-            disabled={isViewMode}
-          />
-
-          <FormField
-            name="city"
-            label="City"
-            value={formData.city}
-            onChange={(value) => handleFieldChange('city', value)}
-            error={allErrors.city}
-            disabled={isViewMode}
-          />
-
-          <SelectField
-            name="state"
-            label="State"
-            value={formData.state}
-            onChange={(value) => handleFieldChange('state', value)}
-            options={US_STATES.map(state => ({
-              value: state.value,
-              label: state.label
-            }))}
-            error={allErrors.state}
-            disabled={isViewMode}
-         
-          />
+          {/* Removed address/city/state per requirement */}
         </Grid>
       </Box>
 
@@ -328,10 +303,19 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         >
           <FormField
             name="shipping_address"
-            label="Address"
+            label="Address Line I"
             value={formData.shipping_address}
             onChange={(value) => handleFieldChange('shipping_address', value)}
             error={allErrors.shipping_address}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="shipping_address_line_2"
+            label="Address Line II"
+            value={formData.shipping_address_line_2}
+            onChange={(value) => handleFieldChange('shipping_address_line_2', value)}
+            error={allErrors.shipping_address_line_2}
             disabled={isViewMode}
           />
 
@@ -417,10 +401,19 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         >
           <FormField
             name="billing_address"
-            label="Address"
+            label="Address Line I"
             value={formData.billing_address}
             onChange={(value) => handleFieldChange('billing_address', value)}
             error={allErrors.billing_address}
+            disabled={isViewMode}
+          />
+
+          <FormField
+            name="billing_address_line_2"
+            label="Address Line II"
+            value={formData.billing_address_line_2}
+            onChange={(value) => handleFieldChange('billing_address_line_2', value)}
+            error={allErrors.billing_address_line_2}
             disabled={isViewMode}
           />
 

@@ -52,11 +52,14 @@ const CreateCustomerPage = () => {
     is_active: true,
     // Shipping Address Fields
     shipping_address: '',
+    shipping_address_line_2: '',
+
     shipping_city: '',
     shipping_state: '',
     shipping_zip: '',
     // Billing Address Fields
     billing_address: '',
+    billing_address_line_2: '',
     billing_city: '',
     billing_state: '',
     billing_zip: '',
@@ -123,6 +126,7 @@ const CreateCustomerPage = () => {
         // Shipping Address Object
         shipping_address: {
           street: formData.shipping_address || '',
+          street_2: formData.shipping_address_line_2 || '',
           city: formData.shipping_city || '',
           state: formData.shipping_state || '',
           postal_code: formData.shipping_zip || '',
@@ -133,6 +137,7 @@ const CreateCustomerPage = () => {
         // Billing Address Object
         billing_address: {
           street: formData.billing_address || '',
+          street_2: formData.billing_address_line_2 || '',
           city: formData.billing_city || '',
           state: formData.billing_state || '',
           postal_code: formData.billing_zip || '',
@@ -341,41 +346,14 @@ const CreateCustomerPage = () => {
                     error={allErrors.phone}
                   />
 
-                  <FormField
-                    name="address"
-                    label="Address"
-                    value={formData.address}
-                    onChange={(value) => handleFieldChange('address', value)}
-                    required
-                    error={allErrors.address}
-                  />
-
-                  <FormField
-                    name="city"
-                    label="City"
-                    value={formData.city}
-                    onChange={(value) => handleFieldChange('city', value)}
-                    error={allErrors.city}
-                  />
-
-                  <SelectField
-                    name="state"
-                    label="State"
-                    value={formData.state}
-                    onChange={(value) => handleFieldChange('state', value)}
-                    options={US_STATES.map(state => ({
-                      value: state.value,
-                      label: state.label
-                    }))}
-                    error={allErrors.state}
-                  />
+              
                 </Grid>
               </Box>
 
               {/* Business Information */}
               <Box sx={{ mb: 1.5 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
-                  Business Information
+                  Business Name
                 </Typography>
                 <Grid
                   display="grid"
@@ -418,39 +396,51 @@ const CreateCustomerPage = () => {
                 >
                   <FormField
                     name="shipping_address"
-                    label="Address"
+                    label="Address Line I"
                     value={formData.shipping_address}
                     onChange={(value) => handleFieldChange('shipping_address', value)}
                     error={allErrors.shipping_address}
                   />
-
                   <FormField
-                    name="shipping_city"
-                    label="City"
-                    value={formData.shipping_city}
-                    onChange={(value) => handleFieldChange('shipping_city', value)}
-                    error={allErrors.shipping_city}
+                    name="shipping_address_line_2"
+                    label="Address Line II"
+                    value={formData.shipping_address_line_2}
+                    onChange={(value) => handleFieldChange('shipping_address_line_2', value)}
+                    error={allErrors.shipping_address_line_2}
                   />
 
-                  <SelectField
-                    name="shipping_state"
-                    label="State"
-                    value={formData.shipping_state}
-                    onChange={(value) => handleFieldChange('shipping_state', value)}
-                    options={US_STATES.map(state => ({
-                      value: state.value,
-                      label: state.label
-                    }))}
-                    error={allErrors.shipping_state}
-                  />
-
-                  <FormField
-                    name="shipping_zip"
-                    label="ZIP Code"
-                    value={formData.shipping_zip}
-                    onChange={(value) => handleFieldChange('shipping_zip', value)}
-                    error={allErrors.shipping_zip}
-                  />
+                  <Grid
+                    display="grid"
+                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                    gap={{ xs: 1, md: 1.5 }}
+                    sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}
+                  >
+                    <FormField
+                      name="shipping_city"
+                      label="City"
+                      value={formData.shipping_city}
+                      onChange={(value) => handleFieldChange('shipping_city', value)}
+                      error={allErrors.shipping_city}
+                    />
+                    <SelectField
+                      name="shipping_state"
+                      label="State"
+                      value={formData.shipping_state}
+                      onChange={(value) => handleFieldChange('shipping_state', value)}
+                      options={US_STATES.map(state => ({
+                        value: state.value,
+                        label: state.label
+                      }))}
+                      error={allErrors.shipping_state}
+                    />
+                    <FormField
+                      name="shipping_zip"
+                      label="ZIP Code"
+                      value={formData.shipping_zip}
+                      onChange={(value) => handleFieldChange('shipping_zip', value)}
+                      error={allErrors.shipping_zip}
+                    />
+                  </Grid>
                 </Grid>
               </Box>
 
@@ -472,6 +462,7 @@ const CreateCustomerPage = () => {
                       setFormData(prev => ({
                         ...prev,
                         billing_address: prev.shipping_address,
+                        billing_address_line_2: prev.shipping_address_line_2,
                         billing_city: prev.shipping_city,
                         billing_state: prev.shipping_state,
                         billing_zip: prev.shipping_zip
@@ -501,39 +492,52 @@ const CreateCustomerPage = () => {
                 >
                   <FormField
                     name="billing_address"
-                    label="Address"
+                    label="Address Line I"
                     value={formData.billing_address}
                     onChange={(value) => handleFieldChange('billing_address', value)}
                     error={allErrors.billing_address}
                   />
 
                   <FormField
-                    name="billing_city"
-                    label="City"
-                    value={formData.billing_city}
-                    onChange={(value) => handleFieldChange('billing_city', value)}
-                    error={allErrors.billing_city}
+                    name="billing_address_line_2"
+                    label="Address Line II"
+                    value={formData.billing_address_line_2}
+                    onChange={(value) => handleFieldChange('billing_address_line_2', value)}
+                    error={allErrors.billing_address_line_2}
                   />
 
-                  <SelectField
-                    name="billing_state"
-                    label="State"
-                    value={formData.billing_state}
-                    onChange={(value) => handleFieldChange('billing_state', value)}
-                    options={US_STATES.map(state => ({
-                      value: state.value,
-                      label: state.label
-                    }))}
-                    error={allErrors.billing_state}
-                  />
-
-                  <FormField
-                    name="billing_zip"
-                    label="ZIP Code"
-                    value={formData.billing_zip}
-                    onChange={(value) => handleFieldChange('billing_zip', value)}
-                    error={allErrors.billing_zip}
-                  />
+                  <Grid
+                    display="grid"
+                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                    gap={{ xs: 1, md: 1.5 }}
+                    sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}
+                  >
+                    <FormField
+                      name="billing_city"
+                      label="City"
+                      value={formData.billing_city}
+                      onChange={(value) => handleFieldChange('billing_city', value)}
+                      error={allErrors.billing_city}
+                    />
+                    <SelectField
+                      name="billing_state"
+                      label="State"
+                      value={formData.billing_state}
+                      onChange={(value) => handleFieldChange('billing_state', value)}
+                      options={US_STATES.map(state => ({
+                        value: state.value,
+                        label: state.label
+                      }))}
+                      error={allErrors.billing_state}
+                    />
+                    <FormField
+                      name="billing_zip"
+                      label="ZIP Code"
+                      value={formData.billing_zip}
+                      onChange={(value) => handleFieldChange('billing_zip', value)}
+                      error={allErrors.billing_zip}
+                    />
+                  </Grid>
                 </Grid>
               </Box>
 
