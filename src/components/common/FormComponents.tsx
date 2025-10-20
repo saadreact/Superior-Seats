@@ -67,7 +67,8 @@ export const FormField: React.FC<FormFieldProps> = ({
       mb: 1,
       width: '100%',
       '& .MuiOutlinedInput-root': {
-        height: '45px',
+        height: multiline ? 'auto' : '45px',
+        minHeight: multiline ? 'auto' : '45px',
         borderRadius: 2,
         '&:hover .MuiOutlinedInput-notchedOutline': {
           borderColor: 'primary.main',

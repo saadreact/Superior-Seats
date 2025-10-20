@@ -52,6 +52,7 @@ import {
   FullscreenExit,
 } from '@mui/icons-material';
 import Footer from '@/components/Footer';
+import HeroImageSlider from '@/components/HeroImageSlider';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -273,115 +274,7 @@ const HomePage = () => {
         <HeroSection />
       </Box>
       
-      {/* About Section - Inspired by B&G intro */}
-      {/* COMMENTED OUT FOR NOW
-      <Box sx={{ 
-        py: { xs: 6, md: 8, lg: 10 },
-        backgroundColor: 'white',
-        position: 'relative',
-      }}>
-        <Container maxWidth="lg">
-          <MotionBox
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-            sx={{ textAlign: 'center', mb: 6 }}
-          >
-            <Typography
-              variant="overline"
-              sx={{
-                color: 'primary.main',
-                fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '1rem' },
-                letterSpacing: 2,
-              }}
-            >
-              GOING BEYOND THE BUILD
-            </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                mt: 2,
-                mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
-                fontWeight: 600,
-                color: 'text.primary',
-              }}
-            >
-              Crafting Excellence, One Seat at a Time
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
-                color: 'text.secondary',
-                maxWidth: '800px',
-                mx: 'auto',
-                lineHeight: 1.8,
-              }}
-            >
-              We&apos;re building with spirit for our people, our partners, our communities, and the future we share.
-              With over 25 years of experience, we&apos;ve mastered the art of creating premium seating solutions
-              that combine comfort, durability, and style.
-            </Typography>
-          </MotionBox>
-
-          <MotionBox
-            variants={productsContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: false, amount: 0.2 }}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-              gap: { xs: 3, md: 4 },
-            }}
-          >
-            {values.map((value, index) => (
-              <MotionCard
-                key={index}
-                variants={productCardVariants}
-                sx={{
-                  height: '100%',
-                  p: 4,
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-                  },
-                }}
-              >
-                <Box sx={{ mb: 3 }}>
-                  {getIcon(value.icon)}
-                </Box>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    mb: 2,
-                    fontWeight: 600,
-                    fontSize: { xs: '1.25rem', md: '1.5rem' },
-                  }}
-                >
-                  {value.title}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: 'text.secondary',
-                    lineHeight: 1.7,
-                    fontSize: { xs: '0.95rem', md: '1rem' },
-                  }}
-                >
-                  {value.description}
-                </Typography>
-              </MotionCard>
-            ))}
-          </MotionBox>
-        </Container>
-      </Box>
-      */}
+  
 
       {/* Stats Section */}
       <Box sx={{ 
@@ -427,7 +320,7 @@ const HomePage = () => {
       {/* Brand Carousel Section - Moved before Crafters */}
       <TruckCarousel />
 
-      {/* Video Section - Moved before Crafters */}
+      {/* Image Slider Section (replaces video) */}
       <Box sx={{ 
         position: 'relative', 
         width: '100%', 
@@ -436,78 +329,24 @@ const HomePage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: { xs: 240, sm: 320, md: 420, lg: 520 }
+        minHeight: { xs: 260, sm: 360, md: 460, lg: 560 }
       }}>
-        <Box ref={videoContainerRef} sx={{ 
+        <Box sx={{ 
           position: 'relative', 
-          maxWidth: '1440px', 
           width: '100%',
           height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          minHeight: { xs: 260, sm: 360, md: 460, lg: 560 }
         }}>
-          <Box
-            ref={videoRef}
-            component="video"
+          <HeroImageSlider
+            images={[ 
+              '/Gallery/HeroHd/01.jpg',
+              '/Gallery/HeroHd/02.jpg',
+              '/Gallery/HeroHd/03.jpg',
+              '/Gallery/HeroHd/04.jpg',
+            ]}
             autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            sx={{ 
-              width: '100%', 
-              height: '100%',
-              maxHeight: { xs: 240, sm: 320, md: 420, lg: 520 },
-              objectFit: 'cover',
-              display: 'block',
-              filter: 'brightness(1.3) contrast(1.1)',
-            }}
-          >
-            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/mp4" />
-            <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/quicktime" />
-          </Box>
-          <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)' }} />
-          
-          {/* Unmute Button */}
-          <IconButton
-            onClick={handleToggleMute}
-            sx={{
-              position: 'absolute',
-              bottom: 20,
-              right: 70,
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              color: 'white',
-              backdropFilter: 'blur(8px)',
-              '&:hover': {
-                backgroundColor: 'rgba(211, 47, 47, 0.8)',
-              },
-              transition: 'all 0.3s ease',
-              zIndex: 2,
-            }}
-          >
-            {isMuted ? <VolumeOff /> : <VolumeUp />}
-          </IconButton>
-
-          {/* Fullscreen Button */}
-          <IconButton
-            onClick={handleToggleFullscreen}
-            sx={{
-              position: 'absolute',
-              bottom: 20,
-              right: 20,
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              color: 'white',
-              backdropFilter: 'blur(8px)',
-              '&:hover': {
-                backgroundColor: 'rgba(211, 47, 47, 0.8)',
-              },
-              transition: 'all 0.3s ease',
-              zIndex: 2,
-            }}
-          >
-            {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
-          </IconButton>
+            intervalMs={4000}
+          />
         </Box>
       </Box>
 

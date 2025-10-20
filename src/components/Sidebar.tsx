@@ -22,6 +22,7 @@ import {
   Dashboard as DashboardIcon,
   Category as CategoryIcon,
   People as PeopleIcon,
+  Person as PersonIcon,
   ShoppingCart as OrderIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
@@ -107,6 +108,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Payments',
       icon: <MoneyIcon />,
       href: '/admin/payments',
+    },
+    {
+      text: 'Update Admin',
+      icon: <PersonIcon />,
+      href: '/admin/admin-profile',
     },
   
   ];

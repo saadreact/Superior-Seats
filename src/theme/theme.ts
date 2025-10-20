@@ -1,6 +1,35 @@
 import { createTheme } from '@mui/material/styles';
 
+// Extend MUI breakpoints to include ultra-high resolutions
+declare module '@mui/material/styles' {
+  interface BreakpointOverrides {
+    xs: true;
+    sm: true;
+    md: true;
+    lg: true;
+    xl: true;
+    '4xl': true;
+    '5xl': true;
+    '6xl': true;
+    '8xl': true;
+  }
+}
+
 export const theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      lg: 1200,
+      xl: 1536,
+      // Custom ultra-high resolutions
+      '4xl': 3840, // 4K UHD width
+      '5xl': 5120, // 5K width
+      '6xl': 6016, // 6K width
+      '8xl': 7680, // 8K UHD width
+    },
+  },
   palette: {
     primary: {
      main: '#d32f2f', // Superior Seats Red (updated from DA291C)

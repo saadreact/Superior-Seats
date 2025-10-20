@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -14,9 +14,11 @@ import {
   useMediaQuery,
   Snackbar,
   Alert,
+  IconButton,
 } from '@mui/material';
 import LogoButton from './LogoButton';
 import { motion } from 'framer-motion';
+import { VolumeOff, VolumeUp, Fullscreen, FullscreenExit } from '@mui/icons-material';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -82,6 +84,12 @@ const HeroSection = () => {
   
   // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+
+  // Video state (same behavior as HomePage video section)
+  const [isMuted, setIsMuted] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (!isAutoPlaying) return;
@@ -202,6 +210,86 @@ const HeroSection = () => {
   };
 
 
+  const handleToggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleToggleFullscreen = async () => {
+    if (!videoContainerRef.current) return;
+
+    try {
+      if (!isFullscreen) {
+        if (videoContainerRef.current.requestFullscreen) {
+          await videoContainerRef.current.requestFullscreen();
+        } else if ((videoContainerRef.current as any).webkitRequestFullscreen) {
+          await (videoContainerRef.current as any).webkitRequestFullscreen();
+        } else if ((videoContainerRef.current as any).mozRequestFullScreen) {
+          await (videoContainerRef.current as any).mozRequestFullScreen();
+        } else if ((videoContainerRef.current as any).msRequestFullscreen) {
+          await (videoContainerRef.current as any).msRequestFullscreen();
+        }
+        setIsFullscreen(true);
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Error toggling fullscreen:', error);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  const [videoProgress, setVideoProgress] = useState(0);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    const onTimeUpdate = () => {
+      const duration = el.duration || 0;
+      const current = el.currentTime || 0;
+      setVideoProgress(duration > 0 ? current / duration : 0);
+    };
+
+    const onLoadedMetadata = () => onTimeUpdate();
+
+    el.addEventListener('timeupdate', onTimeUpdate);
+    el.addEventListener('loadedmetadata', onLoadedMetadata);
+
+    return () => {
+      el.removeEventListener('timeupdate', onTimeUpdate);
+      el.removeEventListener('loadedmetadata', onLoadedMetadata);
+    };
+  }, []);
+
   return (
                   <Box
         sx={{
@@ -269,34 +357,82 @@ const HeroSection = () => {
           }
         }}
       >
-                  {/* Background Image with Slide Animation */}
+                  {/* Background Image with Slide Animation (commented out) */}
+          {/**
           <Box
             key={animationKey}
+            sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          >
+            <Image src={backgroundImages[currentImageIndex]} alt="Hero background" fill />
+          </Box>
+          */}
+
+          {/* Video Background */}
+          <Box
+            ref={videoContainerRef}
             sx={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              willChange: 'transform',
-              transform: 'translateZ(0)',
-              backfaceVisibility: 'hidden',
-              animation: slideDirection === 'left' ? 'slideFromRight 0.8s ease-in-out' : 'slideFromLeft 0.8s ease-in-out',
+              inset: 0,
               zIndex: 1,
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'black',
             }}
           >
-            <Image
-              src={backgroundImages[currentImageIndex]}
-              alt="Hero background"
-              fill
-              priority={currentImageIndex === 0}
-              quality={85}
-              sizes="100vw"
-              style={{
+            <Box
+              ref={videoRef}
+              component="video"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              sx={{
+                width: '100%',
+                height: '100%',
                 objectFit: 'cover',
-                objectPosition: 'center',
+                display: 'block',
+                filter: 'brightness(1.2) contrast(1.05)',
               }}
-            />
+            >
+              <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/mp4" />
+              <source src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`} type="video/quicktime" />
+            </Box>
+            <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%)' }} />
+
+            <IconButton
+              onClick={handleToggleMute}
+              sx={{
+                position: 'absolute',
+                bottom: 16,
+                right: 66,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: 'white',
+                backdropFilter: 'blur(8px)',
+                transition: 'all 0.3s ease',
+                zIndex: 2,
+              }}
+            >
+              {isMuted ? <VolumeOff /> : <VolumeUp />}
+            </IconButton>
+
+            <IconButton
+              onClick={handleToggleFullscreen}
+              sx={{
+                position: 'absolute',
+                bottom: 16,
+                right: 16,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: 'white',
+                backdropFilter: 'blur(8px)',
+                transition: 'all 0.3s ease',
+                zIndex: 2,
+              }}
+            >
+              {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+            </IconButton>
           </Box>
     <Container maxWidth="xl" disableGutters sx={{ position: 'relative', zIndex: 2 }}>
                   {/* Main Content Container - Easy to reposition */}
@@ -412,7 +548,7 @@ const HeroSection = () => {
                               display: { xs: 'block', sm: 'block' },
                               px: { xs: 2, sm: 0 },
                               py: { xs: 0.5, sm: 1, md: 3, lg: 2 },
-                                                            textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
+                              textAlign: { xs: 'left', sm: 'left', md: 'center', lg: 'center', xl: 'center' },
                                alignSelf: { xs: 'flex-start', sm: 'flex-start', md: 'center', lg: 'center', xl: 'center' },
                             }}
                           >
@@ -475,7 +611,8 @@ const HeroSection = () => {
                     </Box>
       </Container>
 
-             {/* Enhanced Slide Indicators */}
+        {/* Enhanced Slide Indicators (commented out for video) */}
+        {/**
         <Box
           sx={{
             position: 'absolute',
@@ -490,28 +627,10 @@ const HeroSection = () => {
           }}
         >
           {backgroundImages.map((_, index) => (
-            <motion.div
-              key={index}
-              // Removed hover effects as requested
-              style={{
-                cursor: 'default',
-              }}
-            >
-              <Box
-                sx={{
-                  width: { xs: 6, sm: 8, md: 10, lg: 11, xl: 12 },
-                  height: { xs: 6, sm: 8, md: 10, lg: 11, xl: 12 },
-                  borderRadius: '50%',
-                  backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255, 255, 255, 0.4)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'default',
-                  // Removed hover effect as requested
-                }}
-                onClick={() => handleImageChange(index)}
-              />
-            </motion.div>
+            <Box key={index} sx={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.4)' }} />
           ))}
         </Box>
+        */}
 
                {/* Enhanced Progress Bar */}
         <Box
@@ -542,7 +661,7 @@ const HeroSection = () => {
         >
           <motion.div
             initial={{ width: 0 }}
-            animate={{ width: `${((currentImageIndex + 1) / backgroundImages.length) * 100}%` }}
+            animate={{ width: `${Math.round(Math.min(100, Math.max(0, videoProgress * 100)))}%` }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
             style={{
               height: '100%',
