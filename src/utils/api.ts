@@ -2932,6 +2932,33 @@ class ApiService {
       throw new Error(error.response?.data?.message || 'Failed to load dashboard overview');
     }
   }
+
+  // Admin Management
+  async getAdmin(id: number) {
+    try {
+      const response = await api.get(`/admins/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching admin:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Admin not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch admin');
+    }
+  }
+
+  async updateAdmin(id: number, data: any) {
+    try {
+      const response = await api.put(`/admins/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating admin:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Admin not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update admin');
+    }
+  }
 }
 
 // Export singleton instance

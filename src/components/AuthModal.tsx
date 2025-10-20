@@ -195,6 +195,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isXlUp = useMediaQuery(theme.breakpoints.up('xl'));
 
   // Close modal when user is authenticated
   useEffect(() => {
@@ -566,7 +567,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             minHeight: isMobile ? '100vh' : 'auto',
             maxWidth: isMobile ? '100%' : '450px',
             width: isMobile ? '100%' : '90%',
-            maxHeight: isMobile ? '100vh' : { xs: '90vh', sm: '90vh', md: '100vh', lg: '98vh', xl: '65vh' },
+            maxHeight: isMobile ? '100vh' : { xs: '90vh', sm: '90vh', md: '100vh', lg: '98vh', xl: '65vh', '4xl': '65vh', '5xl': '55vh', '6xl': '50vh', '8xl': '45vh' },
             overflow: 'hidden',
           },
         }}
@@ -818,9 +819,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                 maxWidth: '600px',
                 mx: 'auto',
                 width: '100%',
-                maxHeight: { xs: '70vh', sm: '70vh', md: '100vh', lg: '95vh', xl: '80vh' },
+                maxHeight: isXlUp ? '70vh' : { xs: '70vh', sm: '70vh', md: '100vh', lg: '95vh', xl: '80vh' },
                 minHeight: { xs: 'auto', sm: 'auto', md: '100vh', lg: '100vh', xl: '70vh' },
-                overflowY: { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto', xl: 'auto' },
+                overflowY: isXlUp ? 'auto' : { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto', xl: 'auto' },
                 '&::-webkit-scrollbar': {
                   width: '6px',
                 },
