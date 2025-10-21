@@ -57,12 +57,14 @@ const CreateCustomerPage = () => {
     shipping_city: '',
     shipping_state: '',
     shipping_zip: '',
+    shipping_country: 'US',
     // Billing Address Fields
     billing_address: '',
     billing_address_line_2: '',
     billing_city: '',
     billing_state: '',
     billing_zip: '',
+    billing_country: 'US',
   });
   const [priceTiers, setPriceTiers] = useState<any[]>([]);
   const [priceTiersLoading, setPriceTiersLoading] = useState(false);
@@ -130,7 +132,7 @@ const CreateCustomerPage = () => {
           city: formData.shipping_city || '',
           state: formData.shipping_state || '',
           postal_code: formData.shipping_zip || '',
-          country: 'US',
+          country: formData.shipping_country || 'US',
           phone: formData.phone || '',
           is_default: true
         },
@@ -141,7 +143,7 @@ const CreateCustomerPage = () => {
           city: formData.billing_city || '',
           state: formData.billing_state || '',
           postal_code: formData.billing_zip || '',
-          country: 'US',
+          country: formData.billing_country || 'US',
           phone: formData.phone || '',
           is_default: true
         }
@@ -167,10 +169,12 @@ const CreateCustomerPage = () => {
               else if (field === 'billing_address.city') frontendFieldName = 'billing_city';
               else if (field === 'billing_address.state') frontendFieldName = 'billing_state';
               else if (field === 'billing_address.postal_code') frontendFieldName = 'billing_zip';
+              else if (field === 'billing_address.country') frontendFieldName = 'billing_country';
               else if (field === 'shipping_address.street') frontendFieldName = 'shipping_address';
               else if (field === 'shipping_address.city') frontendFieldName = 'shipping_city';
               else if (field === 'shipping_address.state') frontendFieldName = 'shipping_state';
               else if (field === 'shipping_address.postal_code') frontendFieldName = 'shipping_zip';
+              else if (field === 'shipping_address.country') frontendFieldName = 'shipping_country';
               
               fieldErrors[frontendFieldName] = String(arr[0]);
             }
@@ -411,7 +415,7 @@ const CreateCustomerPage = () => {
 
                   <Grid
                     display="grid"
-                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr 1fr' }}
                     gap={{ xs: 1, md: 1.5 }}
                     sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}
                   >
@@ -440,6 +444,13 @@ const CreateCustomerPage = () => {
                       onChange={(value) => handleFieldChange('shipping_zip', value)}
                       error={allErrors.shipping_zip}
                     />
+                    <FormField
+                      name="shipping_country"
+                      label="Country"
+                      value={formData.shipping_country}
+                      onChange={(value) => handleFieldChange('shipping_country', value)}
+                      error={allErrors.shipping_country}
+                    />
                   </Grid>
                 </Grid>
               </Box>
@@ -465,7 +476,8 @@ const CreateCustomerPage = () => {
                         billing_address_line_2: prev.shipping_address_line_2,
                         billing_city: prev.shipping_city,
                         billing_state: prev.shipping_state,
-                        billing_zip: prev.shipping_zip
+                        billing_zip: prev.shipping_zip,
+                        billing_country: prev.shipping_country
                       }));
                     }}
                     sx={{
@@ -508,7 +520,7 @@ const CreateCustomerPage = () => {
 
                   <Grid
                     display="grid"
-                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr 1fr' }}
                     gap={{ xs: 1, md: 1.5 }}
                     sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}
                   >
@@ -536,6 +548,13 @@ const CreateCustomerPage = () => {
                       value={formData.billing_zip}
                       onChange={(value) => handleFieldChange('billing_zip', value)}
                       error={allErrors.billing_zip}
+                    />
+                    <FormField
+                      name="billing_country"
+                      label="Country"
+                      value={formData.billing_country}
+                      onChange={(value) => handleFieldChange('billing_country', value)}
+                      error={allErrors.billing_country}
                     />
                   </Grid>
                 </Grid>

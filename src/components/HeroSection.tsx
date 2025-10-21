@@ -385,7 +385,7 @@ const HeroSection = () => {
               ref={videoRef}
               component="video"
               autoPlay
-              muted
+              muted={isMuted}
               loop
               playsInline
               preload="auto"
@@ -465,7 +465,7 @@ const HeroSection = () => {
                         }}
                       >
         {/* Logo Container */}
-                   <Box
+                   {/* <Box
                                                      sx={{
                              position: { md: 'absolute', lg: 'absolute', xl: 'absolute' },
                              left: { md: '50%', lg: '50%', xl: '50%' },
@@ -491,7 +491,7 @@ const HeroSection = () => {
                                 handleSnackbarOpen();
                               }} />
                             </motion.div>
-                      </Box>
+                      </Box> */}
                       
                                              {/* Text Content Container */}
                        <MotionBox
@@ -557,7 +557,7 @@ const HeroSection = () => {
                           </MotionTypography>
                         
                                            {/* Customize Button */}
-                   <Box
+                   {/* <Box
                              sx={{
                                                                                                position: { xs: 'absolute', sm: 'absolute', md: 'static', lg: 'static', xl: 'static' },
                                 bottom: { xs: '-80px', sm: '-80px', md: 'auto', lg: 'auto', xl: 'auto' },
@@ -605,7 +605,7 @@ const HeroSection = () => {
                              Customize Coming Soon
                                                         </Button>
                            </motion.div>
-                          </Box>
+                          </Box> */}
                         </MotionBox>
                       </MotionBox>
                     </Box>
