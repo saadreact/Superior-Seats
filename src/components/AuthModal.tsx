@@ -567,7 +567,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             minHeight: isMobile ? '100vh' : 'auto',
             maxWidth: isMobile ? '100%' : '450px',
             width: isMobile ? '100%' : '90%',
-            maxHeight: isMobile ? '100vh' : { xs: '90vh', sm: '90vh', md: '100vh', lg: '98vh', xl: '65vh', '4xl': '65vh', '5xl': '55vh', '6xl': '50vh', '8xl': '45vh' },
+            maxHeight: isMobile ? '100vh' : { xs: '90vh', sm: '90vh', md: '100vh', lg: '98vh', xl: '80vh', xxl: '75vh' },
             overflow: 'hidden',
           },
         }}
@@ -814,14 +814,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
             <TabPanel value={tabValue} index={1}>
               <Box sx={{ 
                 p: { xs: 3, sm: 4, md: 3, lg: 3, xl: 3, xxl: 3},
-                pb: { xs: 4, sm: 5, md: 4, lg: 4, xl: 4, xxl: 4},
+                pb: { xs: 4, sm: 5, md: 4, lg: 4, xl: 2, xxl: 2},
                 py: { xs: 0, sm: 0, md: 0, lg: 0, xl: 2, xxl: 2},
                 maxWidth: '600px',
                 mx: 'auto',
                 width: '100%',
-                maxHeight: isXlUp ? '70vh' : { xs: '70vh', sm: '70vh', md: '100vh', lg: '95vh', xl: '80vh' },
-                minHeight: { xs: 'auto', sm: 'auto', md: '100vh', lg: '100vh', xl: '70vh' },
-                overflowY: isXlUp ? 'auto' : { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto', xl: 'auto' },
+                maxHeight: isXlUp ? '70vh' : { xs: '70vh', sm: '70vh', md: '100vh', lg: '95vh', xl: '75vh', xxl: '70vh' },
+                minHeight: { xs: 'auto', sm: 'auto', md: '100vh', lg: '100vh', xl: '60vh', xxl: '60vh' },
+                overflowY: isXlUp ? 'auto' : { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto', xl: 'auto', xxl: 'auto' },
                 '&::-webkit-scrollbar': {
                   width: '6px',
                 },
@@ -1168,7 +1168,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                   }}
                 />
 
-                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  width: '100%', 
+                  mt: { xs: 2, sm: 2.5, lg: 2, md: 2.2, xl: 2, xxl: 2 },
+                  mb: { xs: 2, sm: 2, lg: 2, md: 2, xl: 2, xxl: 2 },
+                  position: 'relative',
+                  zIndex: 1
+                }}>
                   <Button
                     variant="contained"
                     onClick={handleSignUp}
@@ -1181,7 +1189,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose }) => {
                     }}
                     sx={{
                       px: { xs: 4, sm: 6 },
-                      mt: { xs: 1, sm: 1.5, lg: 1, md: 1.2 , xl: 1, xxl: 1},
+                      py: { xs: 1, sm: 1.5, lg: 1, md: 1.2 },
                       borderRadius: 2,
                       textTransform: 'none',
                       letterSpacing: 0.5,

@@ -321,7 +321,7 @@ const HomePage = () => {
       <TruckCarousel />
 
       {/* Image Slider Section (replaces video) */}
-      <Box sx={{ 
+      {/* <Box sx={{ 
         position: 'relative', 
         width: '100%', 
         overflow: 'hidden', 
@@ -348,7 +348,7 @@ const HomePage = () => {
             intervalMs={4000}
           />
         </Box>
-      </Box>
+      </Box> */}
 
       {/* Our Process Section - Inspired by B&G */}
       <Box sx={{ 
