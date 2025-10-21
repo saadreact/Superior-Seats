@@ -62,12 +62,14 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
     shipping_city: '',
     shipping_state: '',
     shipping_zip: '',
+    shipping_country: 'US',
     // Billing Address Fields
     billing_address: '',
     billing_address_line_2: '',
     billing_city: '',
     billing_state: '',
     billing_zip: '',
+    billing_country: 'US',
   });
   const resolvedParams = React.use(params);
 
@@ -116,11 +118,13 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
           shipping_city: customerData.shipping_city || '',
           shipping_state: customerData.shipping_state || '',
           shipping_zip: customerData.shipping_zip || '',
+          shipping_country: customerData.shipping_country || 'US',
           billing_address: customerData.billing_address || '',
           billing_address_line_2: customerData.billing_address_line_2 || '',
           billing_city: customerData.billing_city || '',
           billing_state: customerData.billing_state || '',
           billing_zip: customerData.billing_zip || '',
+          billing_country: customerData.billing_country || 'US',
         }));
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -185,7 +189,7 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
           city: formData.shipping_city || '',
           state: formData.shipping_state || '',
           postal_code: formData.shipping_zip || '',
-          country: 'US',
+          country: formData.shipping_country || 'US',
           phone: formData.phone || '',
           is_default: true
         },
@@ -196,7 +200,7 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
           city: formData.billing_city || '',
           state: formData.billing_state || '',
           postal_code: formData.billing_zip || '',
-          country: 'US',
+          country: formData.billing_country || 'US',
           phone: formData.phone || '',
           is_default: true
         }
@@ -236,11 +240,13 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
             else if (field === 'billing_address.city') frontendFieldName = 'billing_city';
             else if (field === 'billing_address.state') frontendFieldName = 'billing_state';
             else if (field === 'billing_address.postal_code') frontendFieldName = 'billing_zip';
+            else if (field === 'billing_address.country') frontendFieldName = 'billing_country';
             else if (field === 'shipping_address.street') frontendFieldName = 'shipping_address';
             else if (field === 'shipping_address.street_2') frontendFieldName = 'shipping_address_line_2';
             else if (field === 'shipping_address.city') frontendFieldName = 'shipping_city';
             else if (field === 'shipping_address.state') frontendFieldName = 'shipping_state';
             else if (field === 'shipping_address.postal_code') frontendFieldName = 'shipping_zip';
+            else if (field === 'shipping_address.country') frontendFieldName = 'shipping_country';
             
             fieldErrors[frontendFieldName] = String(arr[0]);
           }
@@ -471,7 +477,7 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
 
                   <Grid
                     display="grid"
-                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr 1fr' }}
                     gap={{ xs: 1, md: 1.5 }}
                     sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}
                   >
@@ -500,6 +506,13 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
                       onChange={(value) => handleFieldChange('shipping_zip', value)}
                       error={serverErrors.shipping_zip}
                     />
+                    <FormField
+                      name="shipping_country"
+                      label="Country"
+                      value={formData.shipping_country}
+                      onChange={(value) => handleFieldChange('shipping_country', value)}
+                      error={serverErrors.shipping_country}
+                    />
                   </Grid>
                 </Grid>
               </Box>
@@ -525,7 +538,8 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
                         billing_address_line_2: prev.shipping_address_line_2,
                         billing_city: prev.shipping_city,
                         billing_state: prev.shipping_state,
-                        billing_zip: prev.shipping_zip
+                        billing_zip: prev.shipping_zip,
+                        billing_country: prev.shipping_country
                       }));
                     }}
                     sx={{
@@ -568,7 +582,7 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
 
                   <Grid
                     display="grid"
-                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }}
+                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr 1fr' }}
                     gap={{ xs: 1, md: 1.5 }}
                     sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}
                   >
@@ -596,6 +610,13 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
                       value={formData.billing_zip}
                       onChange={(value) => handleFieldChange('billing_zip', value)}
                       error={serverErrors.billing_zip}
+                    />
+                    <FormField
+                      name="billing_country"
+                      label="Country"
+                      value={formData.billing_country}
+                      onChange={(value) => handleFieldChange('billing_country', value)}
+                      error={serverErrors.billing_country}
                     />
                   </Grid>
                 </Grid>
