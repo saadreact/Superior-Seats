@@ -186,7 +186,19 @@ export default function ShopOrderWizard() {
   useEffect(() => {
     let active = true;
     const q = searchInput.trim();
-    if (q.length < 2) { setSearchResults([]); return; }
+    
+    // If no search input, show first 5 products by default
+    if (q.length === 0) {
+      setSearchResults(products.slice(0, 5));
+      return;
+    }
+    
+    // If search input is less than 2 characters, clear results
+    if (q.length < 2) { 
+      setSearchResults([]); 
+      return; 
+    }
+    
     const t = setTimeout(async () => {
       try {
         const res = await apiService.getProducts({ search: q, per_page: 20 });
@@ -199,7 +211,7 @@ export default function ShopOrderWizard() {
       }
     }, 250);
     return () => { active = false; clearTimeout(t); };
-  }, [searchInput]);
+  }, [searchInput, products]);
 
   // Prefill customer info using same logic as EditProfileModal.loadCustomerFromAPI
   useEffect(() => {

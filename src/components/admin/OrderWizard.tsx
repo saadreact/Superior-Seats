@@ -249,7 +249,19 @@ const OrderWizard: React.FC = () => {
 	useEffect(() => {
 		let active = true;
 		const q = searchInput.trim();
-		if (q.length < 2) { setSearchResults([]); return; }
+		
+		// If no search input, show first 5 products by default
+		if (q.length === 0) {
+			setSearchResults(products.slice(0, 5));
+			return;
+		}
+		
+		// If search input is less than 2 characters, clear results
+		if (q.length < 2) { 
+			setSearchResults([]); 
+			return; 
+		}
+		
 		const t = setTimeout(async () => {
 			try {
 				const res = await apiService.getProducts({ search: q, per_page: 20 });
@@ -262,7 +274,7 @@ const OrderWizard: React.FC = () => {
 			}
 		}, 250);
 		return () => { active = false; clearTimeout(t); };
-	}, [searchInput]);
+	}, [searchInput, products]);
 
 	const getProductById = (id: number): ProductOption | undefined => {
 		return (searchResults.find(s => s.id === id) || products.find(p => p.id === id)) as any;
