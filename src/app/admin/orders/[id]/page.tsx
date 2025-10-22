@@ -880,7 +880,8 @@ console.log("order",order)
           onClose={() => setVariantsDrawerOpen(false)}
           productId={selectedOrderItem?.product_id || null}
           initialSelections={selectedOrderItem?.variants || {}}
-          basePrice={selectedOrderItem?.unit_price || 0}
+          basePrice={0}
+          displayPrice={selectedOrderItem?.unit_price || 0}
           readOnly={true}
           onApply={() => {}} // No-op for read-only mode
         />
