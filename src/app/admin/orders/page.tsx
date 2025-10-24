@@ -510,6 +510,7 @@ const OrdersPage = () => {
     { value: 'confirmed', label: 'Confirmed' },
     { value: 'shipped', label: 'Shipped' },
     { value: 'delivered', label: 'Delivered' },
+    { value: 'paid', label: 'Paid' },
     { value: 'cancelled', label: 'Cancelled' },
   ];
 

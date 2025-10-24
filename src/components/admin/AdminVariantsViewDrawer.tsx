@@ -23,6 +23,7 @@ interface AdminVariantsDrawerProps {
 	productId: number | null;
 	initialSelections?: VariantSelections | null;
 	basePrice?: number;
+	displayPrice?: number; // For read-only mode: show this price instead of calculating
 	onApply: (payload: { selections: VariantSelections; newUnitPrice: number }) => void;
 	readOnly?: boolean;
 }
@@ -32,7 +33,8 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	onClose, 
 	productId, 
 	initialSelections, 
-	basePrice = 0 
+	basePrice = 0,
+	displayPrice
 }) => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -101,6 +103,10 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	};
 
 	const totalPrice = useMemo(() => {
+		// If displayPrice is provided (read-only mode with saved order), use it directly
+		if (displayPrice !== undefined) return displayPrice;
+		
+		// Otherwise, calculate from basePrice + variants
 		if (!variations) return basePrice;
 		const lookup: Record<keyof VariantSelections, any[]> = {
 			materialType: variations.material_types || [],
@@ -121,7 +127,7 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 			return sum + price;
 		}, 0);
 		return Math.max(0, basePrice + variantsSum);
-	}, [variations, selections, basePrice]);
+	}, [variations, selections, basePrice, displayPrice]);
 
 	const MaterialAppearanceRow = () => {
 		const material = getItem(variations?.material_types || [], selections.materialType);
