@@ -27,6 +27,7 @@ import {
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import TruckCarousel from '@/components/TruckCarousel';
+import LogoButton from '@/components/LogoButton';
 import { seatingProducts, stats } from '@/data/homepage';
 import { values, process as processSteps } from '@/data/About';
 import { workPictures } from '@/data/Gallery';
@@ -274,7 +275,256 @@ const HomePage = () => {
         <HeroSection />
       </Box>
       
-  
+      {/* New Superior Seating LLC Section */}
+      <Box sx={{ 
+        py: { xs: 6, md: 5, lg: 5 ,xl: 5},
+        background: 'linear-gradient(135deg, #ffffff 0%, #d32f2f 100%)',
+        position: 'relative',
+        minHeight: { xs: 'auto', md: '400px', lg: '400px', xl: '400px' }
+      }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', height: '100%' }}>
+          {/* Mobile/Tablet Layout (xs, sm) */}
+          <MotionBox
+            sx={{
+              display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' },
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 4,
+              textAlign: 'center'
+            }}
+          >
+            {/* Logo Button - Mobile */}
+            <MotionBox
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <LogoButton onClick={() => {
+                handleSnackbarOpen();
+              }} />
+            </MotionBox>
+
+            {/* Company Name - Mobile */}
+            <MotionTypography
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              sx={{
+                fontSize: { xs: "2rem", sm: "2.5rem" },
+                fontWeight: "bold",
+                lineHeight: { xs: 1.1, sm: 1.15 },
+                color: 'white',
+                textAlign: 'center',
+                textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+              }}
+            >
+              Superior Seating LLC
+            </MotionTypography>
+
+            {/* Description - Mobile */}
+            <MotionTypography
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              sx={{
+                opacity: 0.95,
+                fontSize: { xs: "0.85rem", sm: "0.875rem" },
+                letterSpacing: "0.5px",
+                fontWeight: 300,
+                lineHeight: { xs: 1.3, sm: 1.4 },
+                textAlign: "center",
+                color: 'white',
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.3)",
+                px: { xs: 2, sm: 0 },
+                py: { xs: 0.5, sm: 1 },
+                mb: { xs: 3, sm: 4 }
+              }}
+            >
+              Premium Truck, RV, and Van seating with custom
+              <br />
+              <span style={{ textAlign: "center", display: "block", width: "100%" }}>
+                options and superior craftsmanship
+              </span>
+            </MotionTypography>
+
+            {/* Customize Button - Mobile */}
+            <MotionBox
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                width: '100%',
+                mt: { xs: 1, sm: 1.5 }
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  handleSnackbarOpen();
+                }}
+                sx={{
+                  border: '2px solid text.primary',
+                  color: 'text.primary',
+                  borderColor: 'text.primary',
+                  backgroundColor: 'white',
+                  fontSize: { xs: '0.875rem', sm: '0.9rem' },
+                  fontWeight: 600,
+                  px: { xs: 2, sm: 2.5 },
+                  py: { xs: 1, sm: 1.25 },
+                  borderRadius: { xs: 2, sm: 2.5 },
+                  textTransform: 'none',
+                  letterSpacing: '0.5px',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Customize Coming Soon
+              </Button>
+            </MotionBox>
+          </MotionBox>
+
+          {/* Desktop Layout (md, lg, xl) - Keep existing design */}
+          <MotionBox
+            sx={{
+              display: { xs: 'none', sm: 'none', md: 'block', lg: 'block', xl: 'block' }
+            }}
+          >
+            {/* Logo Button - Desktop */}
+            <MotionBox
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: false, amount: 0.1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              sx={{
+                position: 'absolute',
+                left: { md: '40%', lg: '40%', xl: '42%' },
+                top: { md: '70px', lg: '90px', xl: '70px' },
+                transform: 'translate(-50%, -50%)',
+                marginTop: { md: '-50px', lg: '-50px', xl: '-70px' },
+                marginLeft: { md: '-270px', lg: '-370px', xl: '-530px' },
+                flexShrink: 0,
+                alignSelf: 'center',
+                zIndex: 20,
+              }}
+            >
+              <LogoButton onClick={() => {
+                handleSnackbarOpen();
+              }} />
+            </MotionBox>
+
+            {/* Text Content - Desktop */}
+            <MotionBox
+              sx={{
+                position: 'absolute',
+                left: '50%',
+                top: { md: '130px', lg: '140px', xl: '140px' },
+                transform: 'translate(-50%, -50%)',
+                textAlign: "left",
+                minWidth: 0,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "flex-start",
+                zIndex: 15,
+              }}
+            >
+              {/* Company Name - Desktop */}
+              <MotionTypography
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                sx={{
+                  fontSize: { md: "3rem", lg: "4.2rem", xl: "5rem" },
+                  fontWeight: "bold",
+                  lineHeight: { md: 1.2, lg: 1.2, xl: 1.2 },
+                  color: 'white',
+                  textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+                  mb: { md: 0.75, lg: 0.75 },
+                  mt: { md: 6, lg: 7, xl: 7 },
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  textAlign: "left",
+                }}
+              >
+                Superior Seating LLC
+              </MotionTypography>
+
+              {/* Description - Desktop */}
+              <MotionTypography
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                sx={{
+                  opacity: 0.95,
+                  fontSize: { md: "1rem", lg: "1.8rem", xl: "2.2rem" },
+                  letterSpacing: "0.5px",
+                  fontWeight: 300,
+                  lineHeight: { md: 1.4, lg: 1.4 },
+                  color: 'white',
+                  textShadow: "1px 1px 2px rgba(0, 0, 0, 0.3)",
+                  py: { md: 3, lg: 2 },
+                  textAlign: "center",
+                  alignSelf: "center",
+                  mb: { md: 1, lg: 1, xl: 1 }
+                }}
+              >
+                Premium Truck, RV, and Van seating with custom
+                <br />
+                <span style={{ textAlign: "center", display: "block", width: "100%" }}>
+                  options and superior craftsmanship
+                </span>
+              </MotionTypography>
+
+              {/* Customize Button - Desktop */}
+              <MotionBox
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  width: '100%',
+                  mt: { md: 1, lg: 1, xl: 1 },
+                  zIndex: 25,
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    handleSnackbarOpen();
+                  }}
+                  sx={{
+                    border: '2px solid text.primary',
+                    color: 'text.primary',
+                    borderColor: 'text.primary',
+                    backgroundColor: 'white',
+                    fontSize: { md: '0.9rem', lg: '1rem', xl: '1.5rem' },
+                    fontWeight: 600,
+                    px: { md: 3, lg: 4, xl: 8 },
+                    py: { md: 1, lg: 1, xl: 1 },
+                    mt: { md: 2.5, lg: 1, xl: 2 },
+                    borderRadius: { md: 3 },
+                    textTransform: 'none',
+                    letterSpacing: '0.5px',
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  Customize Coming Soon
+                </Button>
+              </MotionBox>
+            </MotionBox>
+          </MotionBox>
+        </Container>
+      </Box>
 
       {/* Stats Section */}
       <Box sx={{ 
@@ -916,223 +1166,8 @@ const HomePage = () => {
         </Container>
       </Box>
 
-      {/* Testimonials Section */}
-      {/* COMMENTED OUT FOR NOW
-      <Box sx={{ 
-        py: { xs: 6, md: 8, lg: 10 },
-        backgroundColor: '#fafafa',
-      }}>
-        <Container maxWidth="lg">
-          <MotionBox
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-            sx={{ textAlign: 'center', mb: 6 }}
-          >
-            <Typography
-              variant="overline"
-              sx={{
-                color: 'primary.main',
-                fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '1rem' },
-                letterSpacing: 2,
-              }}
-            >
-              TESTIMONIALS
-            </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                mt: 2,
-                mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
-                fontWeight: 600,
-                color: 'text.primary',
-              }}
-            >
-              What Our Customers Say
-            </Typography>
-          </MotionBox>
+      
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-              gap: { xs: 3, md: 4 },
-            }}
-          >
-            {testimonials.map((testimonial, index) => (
-              <MotionCard
-                key={testimonial.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.6, delay: index * 0.15 }}
-                sx={{
-                  height: '100%',
-                  p: 4,
-                  position: 'relative',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-                  },
-                }}
-              >
-                <FormatQuote 
-                  sx={{ 
-                    fontSize: 48,
-                    color: 'primary.main',
-                    opacity: 0.2,
-                    position: 'absolute',
-                    top: 16,
-                    left: 16,
-                  }} 
-                />
-                <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} sx={{ fontSize: 20, color: 'warning.main' }} />
-                  ))}
-                </Box>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    mb: 3,
-                    color: 'text.secondary',
-                    lineHeight: 1.8,
-                    fontStyle: 'italic',
-                  }}
-                >
-                  &ldquo;{testimonial.text}&rdquo;
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      bgcolor: 'primary.main',
-                    }}
-                  >
-                    {testimonial.name.charAt(0)}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {testimonial.name}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      {testimonial.role}
-                    </Typography>
-                  </Box>
-                </Box>
-              </MotionCard>
-            ))}
-          </Box>
-        </Container>
-      </Box>
-      */}
-
-      {/* Call to Action Section */}
-      {/* COMMENTED OUT FOR NOW
-      <Box sx={{ 
-        py: { xs: 8, md: 10, lg: 12 },
-        background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.95) 0%, rgba(139, 0, 0, 0.95) 100%)',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: 'url(/Gallery/Truckimages/truck01.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.15,
-          zIndex: 0,
-        },
-      }}>
-        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
-          <MotionBox
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-            sx={{ textAlign: 'center' }}
-          >
-            <Typography
-              variant="h2"
-              sx={{
-                mb: 3,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
-                fontWeight: 700,
-              }}
-            >
-              Ready to Experience Superior Comfort?
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                mb: 5,
-                fontSize: { xs: '1rem', md: '1.25rem' },
-                opacity: 0.95,
-                lineHeight: 1.8,
-              }}
-            >
-              Join thousands of satisfied customers who&apos;ve transformed their vehicles with our custom seating solutions.
-            </Typography>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              justifyContent="center"
-            >
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => router.push('/contact')}
-                sx={{
-                  bgcolor: 'white',
-                  color: 'primary.main',
-                  px: 4,
-                  py: 2,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.9)',
-                    transform: 'translateY(-2px)',
-                  },
-                }}
-              >
-                Get a Quote
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={() => router.push('/shop-now')}
-                sx={{
-                  borderColor: 'white',
-                  color: 'white',
-                  borderWidth: 2,
-                  px: 4,
-                  py: 2,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  '&:hover': {
-                    borderWidth: 2,
-                    bgcolor: 'rgba(255,255,255,0.1)',
-                    transform: 'translateY(-2px)',
-                  },
-                }}
-              >
-                Shop Now
-              </Button>
-            </Stack>
-          </MotionBox>
-        </Container>
-      </Box>
-      */}
       
       {/* Product Details Modal */}
       <Dialog
