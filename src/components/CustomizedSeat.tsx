@@ -271,7 +271,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [selectedIncludedArm, setSelectedIncludedArm] = useState('');
   
 
-
   // Helper function to get price from API response
   const getPriceFromItem = (item: any): number => {
     if (!item) return 0;
@@ -483,9 +482,9 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
              )}
             </Box>
 
-          {/* Right Column - 3D Customization Panel */}
+          {/* Right Column - Customization Options */}
           <Box className={styles.rightColumn}>
-            {/* EXACT CUSTOMIZATION PANEL FROM MODEL FOLDER */}
+            {/* CUSTOMIZATION PANEL FROM MODEL FOLDER - Contains all options */}
             <CustomizationPanel 
               modelId={modelId}
               onModelIdChange={setModelId}
@@ -503,7 +502,86 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               onToggleIndividualControls={() => setShowIndividualControls3D(!showIndividualControls3D)}
               onMeshHighlight={handleMeshHighlight}
               onMeshUnhighlight={handleMeshUnhighlight}
+              vehicleTrimData={vehicleTrimData}
+              vehicleTrimLoading={vehicleTrimLoading}
+              variations={variations}
+              selectedRecline={selectedRecline}
+              onReclineChange={setSelectedRecline}
+              selectedLumber={selectedLumber}
+              onLumberChange={setSelectedLumber}
+              selectedHeatingCooling={selectedHeatingCooling}
+              onHeatingCoolingChange={setSelectedHeatingCooling}
+              selectedSeatType={selectedSeatType}
+              onSeatTypeChange={setSelectedSeatType}
+              selectedItemType={selectedItemType}
+              onItemTypeChange={setSelectedItemType}
+              selectedSeatStyle={selectedSeatStyle}
+              onSeatStyleChange={setSelectedSeatStyle}
+              selectedMaterialType={selectedMaterialType}
+              onMaterialTypeChange={setSelectedMaterialType}
+              selectedIncludedArm={selectedIncludedArm}
+              onIncludedArmChange={setSelectedIncludedArm}
             />
+            
+            {/* ===== PRICE CARD ===== */}
+            {productData && (
+              <Card className={styles.priceCard}>
+                <CardContent className={styles.priceContent}>
+                  <Box className={styles.priceLayout}>
+                    <Typography variant="h4" className={styles.totalPrice}>
+                      US ${totalPrice.toFixed(2)}
+                    </Typography>
+                  
+                    <Box className={styles.addToCartContainer}>
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        startIcon={<ShoppingCart sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }} />}
+                        onClick={() => {
+                          const materialName = selectedTexture === 'none' ? 'No Material' : 
+                            variations?.material_types?.find((m: any) => m.id.toString() === selectedTexture)?.name || 'Custom Material';
+                          const colorName = selectedColor === 'none' ? 'No Color' : 
+                            variations?.colors?.find((c: any) => c.id.toString() === selectedColor)?.name || 'Custom Color';
+                          const stitchingName = selectedStitching === 'none' ? 'No Stitching' : 
+                            variations?.seat_stitch_patterns?.find((s: any) => s.id.toString() === selectedStitching)?.name || 'Custom Stitching';
+
+                          dispatch(addItem({
+                            id: productData.id,
+                            title: `${productData.name} - ${materialName} ${colorName} ${stitchingName}`,
+                            price: `$${totalPrice}`,
+                            image: productData.primary_image?.image_url || '/placeholder-image.jpg',
+                            description: `${productData.description} with ${materialName} material, ${colorName} color, and ${stitchingName} stitching`,
+                            category: productData.category?.name || 'seat',
+                            stock: (productData as any)?.stock,
+                            variants: {
+                              materialType: selectedTexture && selectedTexture !== 'none' ? selectedTexture : '',
+                              color: selectedColor && selectedColor !== 'none' ? selectedColor : '',
+                              seatStitchPattern: selectedStitching && selectedStitching !== 'none' ? selectedStitching : '',
+                              reclineType: selectedRecline || '',
+                              lumbarType: selectedLumber || '',
+                              heatOption: selectedHeatingCooling || '',
+                              seatType: selectedSeatType || '',
+                              itemType: selectedItemType || '',
+                              seatStyle: selectedSeatStyle || '',
+                              armType: selectedIncludedArm || '',
+                            },
+                          }));
+
+                          setSnackbar({
+                            open: true,
+                            message: 'Successfully added to cart!',
+                            severity: 'success',
+                          });
+                        }}
+                        className={styles.addToCartButton}
+                      >
+                        Add to Cart
+                      </Button>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            )}
           </Box>
          </Box>
       </Container>
@@ -513,13 +591,13 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleSnackbarClose}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
-          onClose={handleSnackbarClose} 
-          severity={snackbar.severity} 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
           {snackbar.message}
@@ -529,4 +607,4 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   );
 };
 
-export default CustomizedSeat; 
+export default CustomizedSeat;

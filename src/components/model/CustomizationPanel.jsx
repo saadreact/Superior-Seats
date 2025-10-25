@@ -20,7 +20,27 @@ function CustomizationPanel({
   onMeshHighlight,
   onMeshUnhighlight,
   patternId,
-  onPatternChange
+  onPatternChange,
+  // API-based props
+  vehicleTrimData,
+  vehicleTrimLoading,
+  variations,
+  selectedRecline,
+  onReclineChange,
+  selectedLumber,
+  onLumberChange,
+  selectedHeatingCooling,
+  onHeatingCoolingChange,
+  selectedSeatType,
+  onSeatTypeChange,
+  selectedItemType,
+  onItemTypeChange,
+  selectedSeatStyle,
+  onSeatStyleChange,
+  selectedMaterialType,
+  onMaterialTypeChange,
+  selectedIncludedArm,
+  onIncludedArmChange
 }) {
   // State for managing color palette visibility and patterns
   const [showFabricPalette, setShowFabricPalette] = useState(false);
@@ -526,6 +546,324 @@ function CustomizationPanel({
         </div>
 
       </div>
+
+      {/* VEHICLE FITMENTS SECTION */}
+      {vehicleTrimData && (
+        <div style={{ marginBottom: '20px' }}>
+          <h3 style={{ 
+            margin: '0 0 15px 0', 
+            fontSize: '16px', 
+            color: '#555'
+          }}>
+            Vehicle Fitments
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                Vehicle Make
+              </label>
+              <input
+                type="text"
+                value={vehicleTrimData.model?.make?.name || 'Unknown Make'}
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  backgroundColor: '#f5f5f5',
+                  color: '#333'
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                Vehicle Model
+              </label>
+              <input
+                type="text"
+                value={vehicleTrimData.model?.name || 'Unknown Model'}
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  backgroundColor: '#f5f5f5',
+                  color: '#333'
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                Vehicle Trim
+              </label>
+              <input
+                type="text"
+                value={vehicleTrimData.name || 'Unknown Trim'}
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  backgroundColor: '#f5f5f5',
+                  color: '#333'
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VARIATION SECTION */}
+      {variations && (
+        <div style={{ marginBottom: '20px' }}>
+          <h3 style={{ 
+            margin: '0 0 15px 0', 
+            fontSize: '16px', 
+            color: '#555'
+          }}>
+            Variation
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {variations.recline_types && variations.recline_types.length > 0 && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                  Recline
+                </label>
+                <select
+                  value={selectedRecline || ''}
+                  onChange={(e) => onReclineChange && onReclineChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    color: '#333'
+                  }}
+                >
+                  <option value="" disabled>Select Recline</option>
+                  {variations.recline_types.map((recline) => (
+                    <option key={recline.id} value={recline.id.toString()}>
+                      {recline.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {variations.lumbar_types && variations.lumbar_types.length > 0 && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                  Lumbar
+                </label>
+                <select
+                  value={selectedLumber || ''}
+                  onChange={(e) => onLumberChange && onLumberChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    color: '#333'
+                  }}
+                >
+                  <option value="" disabled>Select Lumbar</option>
+                  {variations.lumbar_types.map((lumber) => (
+                    <option key={lumber.id} value={lumber.id.toString()}>
+                      {lumber.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {variations.heat_options && variations.heat_options.length > 0 && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                  Heating and Cooling
+                </label>
+                <select
+                  value={selectedHeatingCooling || ''}
+                  onChange={(e) => onHeatingCoolingChange && onHeatingCoolingChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    color: '#333'
+                  }}
+                >
+                  <option value="" disabled>Select Heating/Cooling</option>
+                  {variations.heat_options.map((heatingCooling) => (
+                    <option key={heatingCooling.id} value={heatingCooling.id.toString()}>
+                      {heatingCooling.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* SEAT SECTION */}
+      {variations && (
+        <div style={{ marginBottom: '20px' }}>
+          <h3 style={{ 
+            margin: '0 0 15px 0', 
+            fontSize: '16px', 
+            color: '#555'
+          }}>
+            Seat
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {variations.seat_types && variations.seat_types.length > 0 && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                  Seat Type
+                </label>
+                <select
+                  value={selectedSeatType || ''}
+                  onChange={(e) => onSeatTypeChange && onSeatTypeChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    color: '#333'
+                  }}
+                >
+                  <option value="" disabled>Select Seat Type</option>
+                  {variations.seat_types.map((seatType) => (
+                    <option key={seatType.id} value={seatType.id.toString()}>
+                      {seatType.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {variations.item_types && variations.item_types.length > 0 && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                  Item Type
+                </label>
+                <select
+                  value={selectedItemType || ''}
+                  onChange={(e) => onItemTypeChange && onItemTypeChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    color: '#333'
+                  }}
+                >
+                  <option value="" disabled>Select Item Type</option>
+                  {variations.item_types.map((itemType) => (
+                    <option key={itemType.id} value={itemType.id.toString()}>
+                      {itemType.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {variations.seat_styles && variations.seat_styles.length > 0 && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                  Seat Style
+                </label>
+                <select
+                  value={selectedSeatStyle || ''}
+                  onChange={(e) => onSeatStyleChange && onSeatStyleChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    color: '#333'
+                  }}
+                >
+                  <option value="" disabled>Select Seat Style</option>
+                  {variations.seat_styles.map((seatStyle) => (
+                    <option key={seatStyle.id} value={seatStyle.id.toString()}>
+                      {seatStyle.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {variations.material_types && variations.material_types.length > 0 && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                  Material Type
+                </label>
+                <select
+                  value={selectedMaterialType || ''}
+                  onChange={(e) => onMaterialTypeChange && onMaterialTypeChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    color: '#333'
+                  }}
+                >
+                  <option value="" disabled>Select Material Type</option>
+                  {variations.material_types.map((materialType) => (
+                    <option key={materialType.id} value={materialType.id.toString()}>
+                      {materialType.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {variations.arm_types && variations.arm_types.length > 0 && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
+                  Included Arm
+                </label>
+                <select
+                  value={selectedIncludedArm || ''}
+                  onChange={(e) => onIncludedArmChange && onIncludedArmChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    color: '#333'
+                  }}
+                >
+                  <option value="" disabled>Select Included Arm</option>
+                  {variations.arm_types.map((includedArm) => (
+                    <option key={includedArm.id} value={includedArm.id.toString()}>
+                      {includedArm.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* INDIVIDUAL CONTROLS TOGGLE */}
       <div style={{ marginBottom: '20px' }}>
