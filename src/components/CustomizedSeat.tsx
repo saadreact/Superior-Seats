@@ -484,7 +484,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             </Box>
 
           {/* Right Column - 3D Customization Panel */}
-          <Box className={styles.rightColumn} sx={{ padding: 0, overflow: 'hidden' }}>
+          <Box className={styles.rightColumn}>
             {/* EXACT CUSTOMIZATION PANEL FROM MODEL FOLDER */}
             <CustomizationPanel 
               modelId={modelId}
