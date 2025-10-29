@@ -204,7 +204,7 @@ const EmailResetTemplate: React.FC<EmailResetTemplateProps> = ({ onBack }) => {
                       fontSize: { xs: '0.8rem', sm: '0.9rem' },
                     }}
                   >
-                    This link will expire in 24 hours for your security. If you didn't request this password reset, please ignore this email or contact our support team.
+                    This link will expire in 24 hours for your security. If you didn&apos;t request this password reset, please ignore this email or contact our support team.
                   </Typography>
                 </Box>
               </Box>
