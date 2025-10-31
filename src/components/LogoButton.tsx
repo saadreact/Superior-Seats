@@ -41,46 +41,55 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
         variant="contained"
         size="large"
         onClick={onClick}
-        // Removed hover effects as requested
+        initial={{ opacity: 0, rotateY: 0 }}
+        whileInView={{ 
+          opacity: 1,
+          rotateY: 360,
+          transition: { 
+            duration: 2.5, 
+            ease: "easeInOut",
+            delay: 0.1
+          }
+        }}
+        viewport={{ once: false, amount: 0.1, margin: "0px 0px -100px 0px" }}
+        whileHover={{ 
+          rotateY: 360,
+          transition: { 
+            duration: 2.5, 
+            ease: "easeInOut"
+          }
+        }}
+        whileTap={{ 
+          scale: 0.95,
+          transition: { duration: 0.1 }
+        }}
         sx={{
-          backgroundColor: 'white',
+          backgroundColor: 'transparent',
           color: '#DA291C',
           borderRadius: '50%',   // S logo  size button
-          width: { xs: '90px', sm: '80px', md: '100px', lg: '120px', xl: '160px' },
-          height: { xs: '90px', sm: '80px', md: '100px', lg: '120px', xl: '160px' },
+          width: { xs: '120px', sm: '110px', md: '130px', lg: '150px', xl: '180px' },
+          height: { xs: '120px', sm: '110px', md: '130px', lg: '150px', xl: '180px' },
           minWidth: 'unset',
           position: 'relative',
           overflow: 'hidden',
           zIndex: 20,
-          // Removed hover effect as requested
-          transition: 'all 0.3s ease-in-out',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          boxShadow: 'none',
+          '&:hover': {
+            backgroundColor: 'transparent',
+          },
         }}
       >
-                 <Box
-                   sx={{
-                     position: 'absolute',
-                     top: '50%',
-                     left: '50%',
-                     transform: 'translate(-50%, -50%)',
-                     width: { xs: '70px', sm: '60px', md: '70px', lg: '80px', xl: '100px' },
-                     height: { xs: '70px', sm: '60px', md: '70px', lg: '80px', xl: '100px' },
-                     filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
-                   }}
-                 >
-                                       <Image
-                      src="/superiorlogo/SButton.png"
-                      alt="Superior Seating Logo"
-                      width={90}
-                      height={90}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                      }}
-                      priority
-                    />
-                 </Box>
+        <Image
+          src="/superiorlogo/sp.png"
+          alt="Superior Seating Logo"
+          fill
+          style={{
+            objectFit: 'cover',
+            filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
+            borderRadius: '50%',
+          }}
+          priority
+        />
       </MotionButton>
     </Tooltip>
   );

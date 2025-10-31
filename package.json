@@ -15,8 +15,6 @@
     "@mui/icons-material": "^7.2.0",
     "@mui/lab": "^7.0.0-beta.13",
     "@mui/material": "^7.2.0",
-    "@react-three/drei": "^10.6.1",
-    "@react-three/fiber": "^9.3.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@square/web-payments-sdk-types": "^1.5.2",
     "@types/node": "^24.1.0",
@@ -36,9 +34,11 @@
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
     "square": "^39.0.0",
-    "three": "^0.178.0",
     "typescript": "^5.8.3",
-    "zod": "^4.0.14"
+    "zod": "^4.0.14",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.3.0",
+    "three": "^0.180.0"
   },
   "keywords": [
     "nextjs",
