@@ -493,7 +493,8 @@ const ShopNow = () => {
       id: item.id
     });
     
-    alert('Customize feature is coming soon!');
+    // Navigate to customize page
+    router.push('/customize-your-seat');
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -1782,12 +1783,8 @@ const ShopNow = () => {
                           variant="outlined"
                           size="small"
                           onClick={() => {
-                            // TODO: Uncomment when customize page is ready
-                            // handleCustomize(selectedImage);
-                            // handleCloseLightbox();
-                            
-                            // Temporary: Show snackbar that feature is coming soon
-                            handleSnackbarOpen('This feature is coming Soon');
+                            handleCustomize(selectedImage);
+                            handleCloseLightbox();
                           }}
                           sx={{
                             position: 'absolute',
@@ -1915,12 +1912,8 @@ const ShopNow = () => {
                           variant="outlined"
                           size="medium"
                           onClick={() => {
-                            // TODO: Uncomment when customize page is ready
-                            // handleCustomize(selectedImage);
-                            // handleCloseLightbox();
-                            
-                            // Temporary: Show snackbar that feature is coming soon
-                            handleSnackbarOpen('This feature is coming Soon');
+                            handleCustomize(selectedImage);
+                            handleCloseLightbox();
                           }}
                           sx={{
                             display: { xs: 'flex', sm: 'none' }, // Only show on mobile
