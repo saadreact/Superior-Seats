@@ -43,7 +43,7 @@ export interface Color {
 export const colors: Color[] = [
   { id: 'none', name: 'None', hex: '#cccccc', price: 0 }, 
   { id: 'black', name: 'Classic Black', hex: '#000000', price: 0 }, 
-  { id: 'red', name: 'Bold Red', hex: '#d32f2f', price: 50 },
+  { id: 'red', name: 'Bold Red', hex: '#e53935', price: 50 },
   { id: 'beige', name: 'Elegant Beige', hex: '#f5f5dc', price: 25 },
   { id: 'gray', name: 'Modern Gray', hex: '#808080', price: 30 },
   { id: 'brown', name: 'Rich Brown', hex: '#8b4513', price: 40 },
