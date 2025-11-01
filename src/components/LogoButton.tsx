@@ -66,9 +66,11 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
         sx={{
           backgroundColor: 'transparent',
           color: '#DA291C',
-          borderRadius: '50%',   // S logo  size button
-          width: { xs: '120px', sm: '110px', md: '130px', lg: '150px', xl: '180px' },
-          height: { xs: '120px', sm: '110px', md: '130px', lg: '150px', xl: '180px' },
+          borderRadius: '50%',
+          marginTop: { xs: '-10px', sm: '-10px', md: '45px', lg: '20px', xl: '45px' },  
+          marginLeft: { xs: '-10px', sm: '-10px', md: '-25px', lg: '-35px', xl: '15px' }, // S logo  size button
+          width: { xs: '140px', sm: '140px', md: '150px', lg: '170px', xl: '200px' },
+          height: { xs: '120px', sm: '120px', md: '130px', lg: '150px', xl: '180px' },
           minWidth: 'unset',
           position: 'relative',
           overflow: 'hidden',

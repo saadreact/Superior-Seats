@@ -6,7 +6,7 @@ export interface WorkImage {
 
 // Work pictures - you can add your actual work images here
 export const workPictures: WorkImage[] = [
-  { id: 1, image: '/Gallery/01.png' },
+  { id: 1, image: '/Gallery/double.png' },
   { id: 2, image: '/Gallery/02.png' },
   { id: 3, image: '/Gallery/03.png' },
 
@@ -15,7 +15,7 @@ export const workPictures: WorkImage[] = [
   { id: 7, image: '/Gallery/07.png' },
   { id: 8, image: '/Gallery/08.png' },
   { id: 9, image: '/Gallery/09.png' },
-  { id: 10, image: '/Gallery/10.png' },
+  { id: 10, image: '/Gallery/blackStar.png' },
   { id: 11, image: '/Gallery/11.png' },
  
  
@@ -23,7 +23,7 @@ export const workPictures: WorkImage[] = [
  
 
   { id: 17, image: '/Gallery/17.png' },
-  { id: 18, image: '/Gallery/18.png' },
+  { id: 18, image: '/Gallery/skyblue.png' },
   { id: 19, image: '/Gallery/19.png' },
   { id: 20, image: '/Gallery/20.png' },
  
@@ -34,7 +34,7 @@ export const workPictures: WorkImage[] = [
   { id: 26, image: '/Gallery/26.png' },
   { id: 27, image: '/Gallery/27.png' },
   { id: 28, image: '/Gallery/28.png' },
-  { id: 29, image: '/Gallery/29.png' },
+  { id: 29, image: '/Gallery/single.png' },
 
 
   

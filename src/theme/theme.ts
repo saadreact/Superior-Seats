@@ -32,10 +32,10 @@ export const theme = createTheme({
   },
   palette: {
     primary: {
-     main: '#d32f2f', // Superior Seats Red (updated from DA291C)
+     main: '#e53935', // More vibrant red
     //  main: '#da291c',  //Client color 
-      light: '#ff6659',
-      dark: '#9a0007',
+      light: '#ff6f60',
+      dark: '#b71c1c',
     },
     secondary: {
       main: '#000000', // Black
@@ -163,11 +163,11 @@ export const theme = createTheme({
           },
           // Add custom class for gradient styling
           '&.gradient-style': {
-            background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+            background: 'linear-gradient(135deg, #e53935 0%, #b71c1c 100%)',
             color: 'white',
             boxShadow: 'none',
             '&:hover': {
-              background: 'linear-gradient(135deg, #d32f2f 0%, #9a0007 100%)',
+              background: 'linear-gradient(135deg, #e53935 0%, #b71c1c 100%)',
               boxShadow: 'none',
               transform: 'translateY(-2px)',
             },
@@ -188,7 +188,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: 'white',
-          color: '#d32f2f',
+          color: '#e53935',
         },
       },
     },
