@@ -581,9 +581,14 @@ const Gallery = () => {
                   sx={{
                     position: 'relative',
                     width: '100%',
-                    paddingTop: '100%',
+                    minHeight: { xs: '250px', sm: '300px', md: '350px', lg: '400px' },
+                    height: { xs: '250px', sm: '300px', md: '350px', lg: '400px' },
                     overflow: 'hidden',
                     borderRadius: 2,
+                    backgroundColor: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
                   {item.image && item.image.trim() !== '' ? (
@@ -592,12 +597,9 @@ const Gallery = () => {
                         src={item.image}
                         alt={`Gallery image ${item.id}`}
                         style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
                           width: '100%',
                           height: '100%',
-                          objectFit: 'cover',
+                          objectFit: 'contain',
                           backgroundColor: '#f5f5f5',
                           transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
