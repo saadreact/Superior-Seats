@@ -98,11 +98,13 @@ const Header = () => {
 
   const menuItems = [
     { text: 'Home', href: '/' },
+    { text: 'Fleet & Builder Solutions', href: '/fleet-builder-solutions' },
     // TODO: Uncomment when customize page is ready
     // { text: 'Build Your Own Seat', href: '/custom-seats' },
     { text: 'Shop Now', href: '/shop-now' },
     { text: 'Gallery', href: '/gallery' },
     { text: 'Upholstery Services', href: '/upholstery' },
+    { text: 'Upfitting', href: '/upfitting' },
     { text: 'About', href: '/about' },
     { text: 'Contact', href: '/contact' },
   ];
