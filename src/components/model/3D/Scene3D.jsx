@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useState } from 'react';
+import React, { Suspense, useRef, useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -101,11 +101,71 @@ const LIGHTING_ENVIRONMENTS = {
   }
 };
 
-function Scene3D({ modelId, stitchColor, fabricColor, fabricType, patternId, meshCustomizations, highlightedMesh }) {
+const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, patternId, meshCustomizations, highlightedMesh, onPartRightClick, seatType }, ref) => {
   const controlsRef = useRef();
+  const canvasRef = useRef();
   const [lightingEnv, setLightingEnv] = useState('daylight');
   
   const currentEnv = LIGHTING_ENVIRONMENTS[lightingEnv];
+
+  // Expose capture function to parent
+  useImperativeHandle(ref, () => ({
+    captureImages: async () => {
+      const images = [];
+      const angles = [
+        { position: [3, 2, 3], name: 'front-right' },
+        { position: [-3, 2, 3], name: 'front-left' },
+        { position: [3, 2, -3], name: 'back-right' },
+        { position: [-3, 2, -3], name: 'back-left' },
+        { position: [0, 5, 0], name: 'top' },
+        { position: [4, 1, 0], name: 'side-right' }
+      ];
+
+      for (const angle of angles) {
+        // Move camera to position
+        if (controlsRef.current) {
+          controlsRef.current.object.position.set(...angle.position);
+          controlsRef.current.target.set(0, 0, 0);
+          controlsRef.current.update();
+        }
+
+        // Wait for render
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Capture screenshot
+        if (canvasRef.current) {
+          const canvas = canvasRef.current.querySelector('canvas');
+          if (canvas) {
+            const dataUrl = canvas.toDataURL('image/png');
+            images.push({ angle: angle.name, dataUrl });
+          }
+        }
+      }
+
+      // Reset camera
+      if (controlsRef.current) {
+        controlsRef.current.object.position.set(3, 2, 3);
+        controlsRef.current.target.set(0, 0, 0);
+        controlsRef.current.update();
+      }
+
+      return images;
+    }
+  }));
+  
+  // Prevent browser context menu globally
+  useEffect(() => {
+    const preventContextMenu = (e) => {
+      e.preventDefault();
+      return false;
+    };
+    
+    document.addEventListener('contextmenu', preventContextMenu);
+    
+    return () => {
+      document.removeEventListener('contextmenu', preventContextMenu);
+    };
+  }, []);
   
   const resetCamera = () => {
     if (controlsRef.current) {
@@ -119,7 +179,7 @@ function Scene3D({ modelId, stitchColor, fabricColor, fabricType, patternId, mes
   };
   
   return (
-    <div style={{ 
+    <div ref={canvasRef} style={{ 
       width: '100%', 
       height: '100%', 
       background: currentEnv.backgroundColor,
@@ -128,7 +188,7 @@ function Scene3D({ modelId, stitchColor, fabricColor, fabricType, patternId, mes
       padding: 0
     }}>
       <Canvas
-        camera={{ 
+        camera={{
           position: [3, 2, 3], 
           fov: 60,
           near: 0.1,
@@ -139,10 +199,12 @@ function Scene3D({ modelId, stitchColor, fabricColor, fabricType, patternId, mes
           alpha: false,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          outputColorSpace: THREE.SRGBColorSpace
+          outputColorSpace: THREE.SRGBColorSpace,
+          preserveDrawingBuffer: true
         }}
         shadows
         style={{ background: currentEnv.backgroundColor }}
+        onContextMenu={(e) => e.preventDefault()}
       >
         {/* Set scene background dynamically */}
         <color attach="background" args={[currentEnv.backgroundColor]} />
@@ -199,6 +261,8 @@ function Scene3D({ modelId, stitchColor, fabricColor, fabricType, patternId, mes
             meshCustomizations={meshCustomizations}
             highlightedMesh={highlightedMesh}
             ambientStrength={currentEnv.ambientStrength}
+            onPartRightClick={onPartRightClick}
+            seatType={seatType}
           />
         </Suspense>
         
@@ -325,6 +389,8 @@ function Scene3D({ modelId, stitchColor, fabricColor, fabricType, patternId, mes
       </button>
     </div>
   );
-}
+});
+
+Scene3D.displayName = 'Scene3D';
 
 export default Scene3D;

@@ -21,6 +21,8 @@ function CustomizationPanel({
   onMeshUnhighlight,
   patternId,
   onPatternChange,
+  seatType = 'single',
+  onSeatTypeChange,
   // API-based props
   vehicleTrimData,
   vehicleTrimLoading,
@@ -32,7 +34,7 @@ function CustomizationPanel({
   selectedHeatingCooling,
   onHeatingCoolingChange,
   selectedSeatType,
-  onSeatTypeChange,
+  onSeatTypeChangeAPI,
   selectedItemType,
   onItemTypeChange,
   selectedSeatStyle,
@@ -154,7 +156,11 @@ function CustomizationPanel({
   const meshParts = [
     { name: 'base', displayName: 'Base' },
     { name: 'seat_bottom', displayName: 'Seat Bottom' },
+    { name: 'seat_bottom_upper', displayName: 'Seat Bottom Upper' },
+    { name: 'seat_bottom_lower', displayName: 'Seat Bottom Lower' },
     { name: 'seat_back', displayName: 'Seat Back' },
+    { name: 'seat_back_upper', displayName: 'Seat Back Upper' },
+    { name: 'seat_back_lover', displayName: 'Seat Back Lower' },
     { name: 'headset_front', displayName: 'Headrest Front' },
     { name: 'headset_back', displayName: 'Headrest Back' },
     { name: 'left_arm_upper', displayName: 'Left Arm Upper' },
@@ -281,7 +287,114 @@ function CustomizationPanel({
         </div>
       </div>
       
-      {/* PATTERN SELECTION SECTION */}
+      {/* TWO TONE TOGGLE */}
+      <div style={{ marginBottom: '25px' }}>
+        <h3 style={{ 
+          margin: '0 0 15px 0', 
+          fontSize: '16px', 
+          color: '#555',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          Two Tone
+        </h3>
+        
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          border: '1px solid #ddd',
+          borderRadius: '6px',
+          background: seatType === 'two-tone' ? '#e7f3ff' : '#ffffff'
+        }}>
+          <div>
+            <div style={{
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#333',
+              marginBottom: '4px'
+            }}>
+              {seatType === 'two-tone' ? 'Two-Tone Mode Active' : 'Enable Two Tone Mode'}
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: '#666',
+              lineHeight: '1.4'
+            }}>
+              {seatType === 'two-tone' ? 'Right-click on seat parts to customize' : 'Uniform color and pattern'}
+            </div>
+          </div>
+          
+          {/* iOS-style Toggle Switch */}
+          <label style={{
+            position: 'relative',
+            display: 'inline-block',
+            width: '50px',
+            height: '28px',
+            cursor: 'pointer',
+            flexShrink: 0
+          }}>
+            <input
+              type="checkbox"
+              checked={seatType === 'two-tone'}
+              onChange={(e) => {
+                if (!onSeatTypeChange) {
+                  console.error('❌ onSeatTypeChange is not defined!');
+                  return;
+                }
+                
+                if (e.target.checked) {
+                  onSeatTypeChange('two-tone');
+                  // Reset pattern to default when switching to two-tone
+                  if (patternId !== 'default') {
+                    onPatternChange('default');
+                  }
+                } else {
+                  onSeatTypeChange('single');
+                  // Clear mesh customizations when switching to single tone
+                  Object.keys(meshCustomizations).forEach(key => {
+                    onMeshCustomizationChange(key, {});
+                  });
+                }
+              }}
+              style={{
+                opacity: 0,
+                width: 0,
+                height: 0
+              }}
+            />
+            <span style={{
+              position: 'absolute',
+              cursor: 'pointer',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: seatType === 'two-tone' ? '#34C759' : '#ccc',
+              transition: '0.3s',
+              borderRadius: '28px'
+            }}>
+              <span style={{
+                position: 'absolute',
+                content: '',
+                height: '22px',
+                width: '22px',
+                left: seatType === 'two-tone' ? '25px' : '3px',
+                bottom: '3px',
+                backgroundColor: 'white',
+                transition: '0.3s',
+                borderRadius: '50%',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
+              }} />
+            </span>
+          </label>
+        </div>
+      </div>
+      
+      {/* PATTERN SELECTION SECTION - Only shown for Single Tone */}
+      {seatType === 'single' && (
       <div style={{ marginBottom: '25px' }}>
         <h3 style={{ 
           margin: '0 0 15px 0', 
@@ -400,6 +513,7 @@ function CustomizationPanel({
           })}
         </div>
       </div>
+      )}
       
       {/* FABRIC COLOR SECTION */}
       <div style={{ marginBottom: '25px' }}>
