@@ -131,7 +131,7 @@ const UpholsteryServices = () => {
       
       {/* Hero Section */}
       <HeroSectionCommon
-        title="Upholstery Services"
+        title="Excellence in Marine, Home, and RV Upholstery"
         description="Premium marine and automotive upholstery solutions crafted with precision and passion."
         height={{
           xs: '75px',
@@ -176,7 +176,7 @@ const UpholsteryServices = () => {
                 color: 'text.primary',
               }}
             >
-              Excellence in Marine Upholstery
+           Excellence in Marine & Furniture Upholstery 
             </Typography>
             <Typography
               variant="body1"
@@ -187,9 +187,7 @@ const UpholsteryServices = () => {
                 lineHeight: 1.8,
               }}
             >
-              From luxury yachts to fishing vessels, we specialize in creating stunning, durable upholstery 
-              that enhances your boating experience. Our expert craftsmen use only the finest marine-grade 
-              materials to ensure your investment stands the test of time and the elements.
+              From elegant home furnishings to custom RV interiors, our upholstery specialists deliver exceptional comfort and craftsmanship. We build and recover RV seating to your exact specifications and restore home furniture with precision and care.
             </Typography>
           </MotionBox>
 

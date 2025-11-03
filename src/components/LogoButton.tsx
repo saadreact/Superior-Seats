@@ -42,20 +42,30 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
         size="large"
         onClick={onClick}
         initial={{ opacity: 0, rotateY: 0 }}
+        animate={{
+          rotateY: 360,
+        }}
+        transition={{
+          rotateY: {
+            duration: 2.5,
+            repeat: Infinity,
+            ease: [0.25, 0.1, 0.25, 1], // Custom cubic-bezier for smoother, slower start
+            repeatDelay: 0.5,
+          },
+        }}
         whileInView={{ 
           opacity: 1,
-          rotateY: 360,
           transition: { 
-            duration: 2.5, 
+            duration: 1,
             ease: "easeInOut",
             delay: 0.1
           }
         }}
         viewport={{ once: false, amount: 0.1, margin: "0px 0px -100px 0px" }}
         whileHover={{ 
-          rotateY: 360,
+          scale: 1.05,
           transition: { 
-            duration: 2.5, 
+            duration: 0.3, 
             ease: "easeInOut"
           }
         }}

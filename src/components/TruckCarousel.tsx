@@ -43,10 +43,10 @@ const TruckCarousel = () => {
   return (
     <Box
       sx={{
-        mt: { xs: 1, md: 2, lg: 1, xl: 1.5 },
+        mt: { xs: 0, md: 0, lg: 0, xl: 0 },
         backgroundColor: '#f8f9fa',
         overflow: 'hidden',
-        marginBottom: { xs: 1, md: 1, lg: 2, xl: 2 },
+       // marginBottom: { xs: 1, md: 1, lg: 2, xl: 2 },
         width: '100%',
         py: { xs: 3, md: 4, lg: 5, xl: 6 },
         minHeight: { xs: '200px', md: '250px', lg: '300px', xl: '350px' },

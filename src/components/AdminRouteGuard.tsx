@@ -19,8 +19,8 @@ const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({ children }) => {
   const userIsSuperAdmin = isSuperAdmin(user, isAuthenticated);
 
   useEffect(() => {
-    // If loading (during logout) or user is not authenticated or not super admin, redirect
-    if (loading || (!isAuthenticated || !userIsSuperAdmin)) {
+    // Only redirect if NOT loading and user is not authenticated or not super admin
+    if (!loading && (!isAuthenticated || !userIsSuperAdmin)) {
       router.push('/');
     }
   }, [user, isAuthenticated, loading, userIsSuperAdmin, router]);

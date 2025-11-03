@@ -40,15 +40,24 @@ export const workPictures: WorkImage[] = [
   
 ]; 
 export const workPicturesTruck: WorkImage[] = [
-  { id: 1, image: '/Gallery/Truckimages/truck01.jpg' },
-  { id: 2, image: '/Gallery/Truckimages/truck02.jpg' },
-  { id: 3, image: '/Gallery/Truckimages/truck03.jpg' },
-  { id: 4, image: '/Gallery/Truckimages/truck04.jpg' },
-  { id: 5, image: '/Gallery/Truckimages/truck05.jpg' },
-  { id: 6, image: '/Gallery/Truckimages/truck06.jpg' },
+  { id: 1, image: '/Gallery/Truckimages/u01.png' },
+  { id: 2, image: '/Gallery/Truckimages/u02.png' },
+  { id: 3, image: '/Gallery/Truckimages/u03.png' },
+  { id: 4, image: '/Gallery/Truckimages/u04.png' },
+  { id: 5, image: '/Gallery/Truckimages/u05.png' },
+  { id: 6, image: '/Gallery/Truckimages/u06.png' },
   { id: 7, image: '/Gallery/Truckimages/truck07.jpg' },
   { id: 8, image: '/Gallery/Truckimages/truck08.jpg' },
   { id: 9, image: '/Gallery/Truckimages/truck09.jpg' },
   { id: 10, image: '/Gallery/Truckimages/truck10.jpg' },
   { id: 11, image: '/Gallery/Truckimages/truck11.jpg' },
+]; 
+export const workPicturesSeats: WorkImage[] = [
+  { id: 1, image: '/Gallery/Truckimages/u01.png' },
+  { id: 2, image: '/Gallery/Truckimages/u02.png' },
+  { id: 3, image: '/Gallery/Truckimages/u03.png' },
+  { id: 4, image: '/Gallery/Truckimages/u04.png' },
+  { id: 5, image: '/Gallery/Truckimages/u05.png' },
+  { id: 6, image: '/Gallery/Truckimages/u06.png' },
+ 
 ]; 
