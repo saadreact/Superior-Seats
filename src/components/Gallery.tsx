@@ -235,7 +235,7 @@ const Gallery = () => {
               >
                 <Box
                   component="img"
-                  src={workPicturesTruck[0]?.image}
+                  src={workPicturesTruck[1]?.image}
                   alt="Professional truck seating"
                   sx={{
                     position: 'absolute',
@@ -285,14 +285,14 @@ const Gallery = () => {
               </Typography>
             </MotionBox>
             <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/truck02.jpg" alt="Workshop materials" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" priority />
+              <Image src="/Gallery/Truckimages/u03.png" alt="Workshop materials" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" priority />
             </Box>
           </Box>
 
           {/* Section B */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1.1fr' }, gap: { xs: 3, md: 6 }, alignItems: 'center', mb: { xs: 6, md: 10 } }}>
             <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/truck04.jpg" alt="Precision cutting" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+              <Image src="/Gallery/Truckimages/u04.png" alt="Precision cutting" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
             </Box>
             <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
               <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600 }}>PATTERNING & CUT</Typography>
@@ -315,7 +315,7 @@ const Gallery = () => {
               </Typography>
             </MotionBox>
             <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/truck07.jpg" alt="Assembly" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+              <Image src="/Gallery/Truckimages/u05.png" alt="Assembly" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
             </Box>
           </Box>
         </Container>
@@ -360,7 +360,7 @@ const Gallery = () => {
               >
                 <Box
                   component="img"
-                  src={workPicturesTruck[7]?.image}
+                  src={workPicturesTruck[5]?.image}
                   alt="Interior excellence"
                   sx={{
                     position: 'absolute',
@@ -473,7 +473,7 @@ const Gallery = () => {
 
           {/* Clean 3-up grid of truck images */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 3 } }}>
-            {["/Gallery/Truckimages/truck08.jpg","/Gallery/Truckimages/truck09.jpg","/Gallery/Truckimages/truck10.jpg"].map((src, idx) => (
+            {["/Gallery/Truckimages/u01.png","/Gallery/Truckimages/u07.png","/Gallery/Truckimages/u04.png"].map((src, idx) => (
               <MotionBox key={src} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6, delay: idx * 0.1 }} sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
                 <Image src={src} alt={`Truck ${idx+1}`} fill sizes="(max-width: 900px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
               </MotionBox>

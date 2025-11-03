@@ -274,6 +274,7 @@ const HomePage = () => {
       <Box sx={{ mt: 0, pt: 0 }}>
         <HeroSection />
       </Box>
+      <TruckCarousel />
       
       {/* New Superior Seating LLC Section */}
       <Box sx={{ 
@@ -304,9 +305,9 @@ const HomePage = () => {
             src="/Gallery/Patriotism/fc.png"
             alt="Superior Seating LLC"
             sx={{
-              width: { xs: '250px', sm: '400px', md: '450px', lg: '500px', xl: '750px' },
+              width: { xs: '250px', sm: '400px', md: '450px', lg: '500px', xl: '700px' },
               height: { xs: '150px', sm: '225px', md: '280px', lg: '300px', xl: '375px' },
-              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-83px', xl: '-80px' },
+              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-83px', xl: '-88px' },
               marginRight: { xs: '-30px', sm: '-40px', md: '-50px', lg: '-50px', xl: '-68px' },
               borderRadius: 2,
               objectFit: 'cover',
@@ -314,6 +315,7 @@ const HomePage = () => {
             }}
           />
         </MotionBox>
+
 
         <Container maxWidth="lg" sx={{ position: 'relative', height: '100%' }}>
 
@@ -404,7 +406,7 @@ const HomePage = () => {
                 mb: { xs: 3, sm: 4, md: 1, lg: 1, xl: 1 }
               }}
             >
-              Premium Truck, RV, and Van seating with custom
+              Premium Truck, Semi Truck,RV, and Van seating with custom
               <br />
               <span style={{ textAlign: "center", display: "block", width: "100%" }}>
                 options and superior craftsmanship
@@ -456,37 +458,9 @@ const HomePage = () => {
       </Box>
 
       {/* Brand Carousel Section - Moved before Crafters */}
-      <TruckCarousel />
+    
 
-      {/* Image Slider Section (replaces video) */}
-      {/* <Box sx={{ 
-        position: 'relative', 
-        width: '100%', 
-        overflow: 'hidden', 
-        backgroundColor: 'black',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: { xs: 260, sm: 360, md: 460, lg: 560 }
-      }}>
-        <Box sx={{ 
-          position: 'relative', 
-          width: '100%',
-          height: '100%',
-          minHeight: { xs: 260, sm: 360, md: 460, lg: 560 }
-        }}>
-          <HeroImageSlider
-            images={[ 
-              '/Gallery/HeroHd/01.jpg',
-              '/Gallery/HeroHd/02.jpg',
-              '/Gallery/HeroHd/03.jpg',
-              '/Gallery/HeroHd/04.jpg',
-            ]}
-            autoPlay
-            intervalMs={4000}
-          />
-        </Box>
-      </Box> */}
+   
 
       {/* Our Process Section - Inspired by B&G */}
       <Box sx={{ 

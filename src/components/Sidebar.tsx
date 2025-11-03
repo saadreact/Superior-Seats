@@ -44,6 +44,7 @@ import {
   ColorLens as ColorIcon,
   Style as StyleIcon,
   DirectionsCar as VehicleIcon,
+  Email as EmailIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -108,6 +109,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Payments',
       icon: <MoneyIcon />,
       href: '/admin/payments',
+    },
+    {
+      text: 'Email Templates',
+      icon: <EmailIcon />,
+      href: '/admin/email-templates',
     },
     {
       text: 'Update Admin',
