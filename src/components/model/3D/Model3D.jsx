@@ -12,7 +12,9 @@ function Model3D({
   meshCustomizations = {}, // Individual mesh customizations
   highlightedMesh = null, // Mesh name to highlight
   patternId = null, // Pattern ID for dynamic pattern loading
-  ambientStrength = 0.5 // Ambient lighting strength from environment
+  ambientStrength = 0.5, // Ambient lighting strength from environment
+  onPartRightClick = null, // Right-click handler for parts
+  seatType = 'single' // Seat type (single or two-tone)
 }) {
   const meshRef = useRef();
   const materialsRef = useRef(new Map()); // Track materials for updates
@@ -50,6 +52,18 @@ function Model3D({
     //stitch2: modelConfig.textures.stitch2,
     //brick: modelConfig.textures.brick
   });
+  
+  // Define which parts can be customized in two-tone mode
+  const customizableParts = [
+    'seat_bottom_upper',
+    'seat_bottom_lower',
+    'seat_back_upper',
+    'seat_back_lover', // Note: typo in original mesh name
+    'headset_front',
+    'headset_back',
+    'left_arm_upper',
+    'right_arm_upper'
+  ];
   
   // Define seat part categories for material assignment
   const seatParts = {
@@ -111,9 +125,20 @@ function Model3D({
         
         // Get customizations for this specific mesh
         const meshCustomization = meshCustomizations[child.name] || {};
-        const finalFabricColor = meshCustomization.fabricColor || config.color;
+        let finalFabricColor = meshCustomization.fabricColor || config.color;
         const finalStitchColor = meshCustomization.stitchColor || stitchColor;
         const finalFabricType = meshCustomization.fabricType || config.fabricType;
+        const finalPatternId = meshCustomization.patternId || patternId;
+        
+        // In two-tone mode, darken customizable parts that haven't been customized yet
+        const isCustomizablePart = customizableParts.includes(child.name);
+        const isCustomized = !!meshCustomization.fabricColor;
+        if (seatType === 'two-tone' && isCustomizablePart && !isCustomized) {
+          // Darken the color by 20% to indicate it's editable
+          const color = new THREE.Color(finalFabricColor);
+          color.multiplyScalar(0.8);
+          finalFabricColor = '#' + color.getHexString();
+        }
         
         // Create material using ShaderManager
         if (finalFabricType === 'metal') {
@@ -145,9 +170,22 @@ function Model3D({
             type: finalFabricType,
             fabricColor: finalFabricColor,
             stitchColor: finalStitchColor,
-            patternId: patternId,
+            patternId: finalPatternId,
             ambientStrength: ambientStrength
           });
+          
+          // Apply per-part pattern if it differs from global pattern
+          if (finalPatternId && finalPatternId !== patternId) {
+            ShaderManager.updateMaterial(
+              child.material,
+              finalFabricType,
+              null,
+              null,
+              finalPatternId,
+              originalTexturesRef.current,
+              null
+            ).catch(err => console.warn(`Failed to apply pattern ${finalPatternId} to ${child.name}:`, err));
+          }
         }
         
         child.castShadow = true;
@@ -158,7 +196,9 @@ function Model3D({
     });
     
     console.log('📊 Parts Summary:', partCounts);
-  }, [scene, textures, fabricColor, stitchColor, fabricType, meshCustomizations, modelId, patternId, ambientStrength]);
+  }, [scene, textures, fabricColor, stitchColor, fabricType, modelId, patternId, ambientStrength, seatType]);
+  // Note: meshCustomizations removed from deps to prevent full material rebuild on customization changes
+  // Dynamic updates are handled by the separate useEffect below
 
 // Handle dynamic material updates using ShaderManager
   useEffect(() => {
@@ -167,16 +207,35 @@ function Model3D({
       
       materialsRef.current.forEach((materialData, meshName) => {
         const meshCustomization = meshCustomizations[meshName] || {};
-        const newFabricColor = meshCustomization.fabricColor || fabricColor;
+        let newFabricColor = meshCustomization.fabricColor || fabricColor;
         const newStitchColor = meshCustomization.stitchColor || stitchColor;
+        const newPatternId = meshCustomization.patternId || patternId;
+        
+        // In two-tone mode, darken customizable parts that haven't been customized yet
+        const isCustomizablePart = customizableParts.includes(meshName);
+        const isCustomized = !!meshCustomization.fabricColor;
+        if (seatType === 'two-tone' && isCustomizablePart && !isCustomized) {
+          // Darken the color by 20% to indicate it's editable
+          const color = new THREE.Color(newFabricColor);
+          color.multiplyScalar(0.8);
+          newFabricColor = '#' + color.getHexString();
+        }
         
         // Check if colors, pattern, or ambient strength changed to avoid unnecessary updates
         const fabricChanged = materialData.fabricColor !== newFabricColor;
         const stitchChanged = materialData.stitchColor !== newStitchColor;
-        const patternChanged = materialData.patternId !== patternId;
+        const patternChanged = materialData.patternId !== newPatternId;
         const ambientChanged = materialData.ambientStrength !== ambientStrength;
         
         if (fabricChanged || stitchChanged || patternChanged || ambientChanged) {
+          if (fabricChanged || stitchChanged || patternChanged) {
+            console.log(`🔄 Updating ${meshName}:`, {
+              fabricChanged: fabricChanged ? `${materialData.fabricColor} → ${newFabricColor}` : false,
+              stitchChanged: stitchChanged ? `${materialData.stitchColor} → ${newStitchColor}` : false,
+              patternChanged: patternChanged ? `${materialData.patternId} → ${newPatternId}` : false
+            });
+          }
+        
           if (materialData.type === 'standard') {
             // Update standard PBR material
             if (fabricChanged) {
@@ -190,13 +249,13 @@ function Model3D({
               materialData.type, 
               fabricChanged ? newFabricColor : null, 
               stitchChanged ? newStitchColor : null,
-              patternChanged ? patternId : null,
+              patternChanged ? newPatternId : null,
               originalTexturesRef.current, // Pass original textures for default pattern
               ambientChanged ? ambientStrength : null
             ).then(() => {
               if (fabricChanged) materialData.fabricColor = newFabricColor;
               if (stitchChanged) materialData.stitchColor = newStitchColor;
-              if (patternChanged) materialData.patternId = patternId;
+              if (patternChanged) materialData.patternId = newPatternId;
               if (ambientChanged) materialData.ambientStrength = ambientStrength;
             });
             
@@ -210,7 +269,7 @@ function Model3D({
     };
     
     updateMaterials();
-  }, [fabricColor, stitchColor, meshCustomizations, patternId, ambientStrength]);
+  }, [fabricColor, stitchColor, meshCustomizations, patternId, ambientStrength, seatType]);
 
 // Handle mesh highlighting
   useEffect(() => {
@@ -256,6 +315,28 @@ function Model3D({
     };
   }, [highlightedMesh, scene]);
 
+  // Handle click events on meshes
+  const handlePointerDown = (event) => {
+    // Only handle right-clicks in two-tone mode
+    if (event.button !== 2 || seatType !== 'two-tone' || !onPartRightClick) return;
+    
+    event.stopPropagation();
+    
+    // Get the clicked object
+    const clickedObject = event.object;
+    
+    // Check if this is a customizable part
+    if (clickedObject && customizableParts.includes(clickedObject.name)) {
+      // Calculate screen position for popup
+      const position = {
+        x: event.clientX,
+        y: event.clientY
+      };
+      
+      onPartRightClick(clickedObject.name, position);
+    }
+  };
+
   return (
     scene && (
       <primitive
@@ -264,6 +345,7 @@ function Model3D({
         scale={modelConfig?.scale || [1, 1, 1]}
         position={modelConfig?.position || [0.5, 0, 0]}
         rotation={modelConfig?.rotation || [0, 0, 0]}
+        onPointerDown={handlePointerDown}
       />
     )
   );

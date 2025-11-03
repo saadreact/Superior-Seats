@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react'
-import Scene3D from './3D/Scene3D'
-import CustomizationPanel from './CustomizationPanel'
-import PartCustomizationPopup from './PartCustomizationPopup'
-import SubmitButton from './SubmitButton'
-import './model.css'
+import Scene3D from './components/3D/Scene3D'
+import CustomizationPanel from './components/CustomizationPanel'
+import PartCustomizationPopup from './components/PartCustomizationPopup'
+import SubmitButton from './components/SubmitButton'
+import './App.css'
 
-function Model() {
+function App() {
   const scene3DRef = useRef();
   const [modelId, setModelId] = useState('1'); // New state for model selection
   const [stitchColor, setStitchColor] = useState('#ffffff');
@@ -32,7 +32,7 @@ function Model() {
   };
 
   // Seat type change handler that preserves/restores two-tone edits
-  const handleSeatTypeChange = (nextType) => { 
+  const handleSeatTypeChange = (nextType) => {
     if (nextType === 'single') {
       // Save current two-tone customizations and clear them from view
       setSavedTwoToneCustomizations(meshCustomizations);
@@ -176,4 +176,4 @@ function Model() {
   )
 }
 
-export default Model
+export default App

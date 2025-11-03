@@ -7,16 +7,30 @@ import * as THREE from 'three';
 
 // Model-specific pattern configuration
 // Each model loads patterns from its corresponding folder: assets/patterns/{modelId}/
-export const getModelPatterns = (modelId) => {
+export const getModelPatterns = (modelId, isTwoTone = false) => {
   const basePath = `/assets/patterns/${modelId}`;
-  return [
-    { id: `${modelId}-1`, name: 'Pattern 1', path: `${basePath}/1.jpg`, preview: `${basePath}/1-preview.jpg` },
-    { id: `${modelId}-2`, name: 'Pattern 2', path: `${basePath}/02.jpg`, preview: `${basePath}/02-preview.jpg` },
-    { id: `${modelId}-3`, name: 'Pattern 3', path: `${basePath}/03.jpg`, preview: `${basePath}/03-preview.jpg` },
-    { id: `${modelId}-4`, name: 'Pattern 4', path: `${basePath}/04.jpg`, preview: `${basePath}/04-preview.jpg` },
-    { id: `${modelId}-5`, name: 'Pattern 5', path: `${basePath}/05.jpg`, preview: `${basePath}/05-preview.jpg` },
-    { id: `${modelId}-6`, name: 'Pattern 6', path: `${basePath}/06.jpg`, preview: `${basePath}/06-preview.jpg` }
-  ];
+  
+  if (isTwoTone) {
+    // Two-tone specific patterns
+    return [
+      { id: `${modelId}-1-twotone`, name: 'Two-Tone Pattern 1', path: `${basePath}/1-twotone.png`, preview: `${basePath}/1-twotone.png` },
+      { id: `${modelId}-2-twotone`, name: 'Two-Tone Pattern 2', path: `${basePath}/2-twotone.png`, preview: `${basePath}/2-twotone.png` },
+      { id: `${modelId}-3-twotone`, name: 'Two-Tone Pattern 3', path: `${basePath}/3-twotone.png`, preview: `${basePath}/3-twotone.png` },
+      { id: `${modelId}-4-twotone`, name: 'Two-Tone Pattern 4', path: `${basePath}/4-twotone.png`, preview: `${basePath}/4-twotone.png` },
+      { id: `${modelId}-5-twotone`, name: 'Two-Tone Pattern 5', path: `${basePath}/5-twotone.png`, preview: `${basePath}/5-twotone.png` },
+      { id: `${modelId}-6-twotone`, name: 'Two-Tone Pattern 6', path: `${basePath}/6-twotone.png`, preview: `${basePath}/6-twotone.png` }
+    ];
+  } else {
+    // Single tone patterns
+    return [
+      { id: `${modelId}-1`, name: 'Pattern 1', path: `${basePath}/1.jpg`, preview: `${basePath}/1-preview.jpg` },
+      { id: `${modelId}-2`, name: 'Pattern 2', path: `${basePath}/02.jpg`, preview: `${basePath}/02-preview.jpg` },
+      { id: `${modelId}-3`, name: 'Pattern 3', path: `${basePath}/03.jpg`, preview: `${basePath}/03-preview.jpg` },
+      { id: `${modelId}-4`, name: 'Pattern 4', path: `${basePath}/04.jpg`, preview: `${basePath}/04-preview.jpg` },
+      { id: `${modelId}-5`, name: 'Pattern 5', path: `${basePath}/05.jpg`, preview: `${basePath}/05-preview.jpg` },
+      { id: `${modelId}-6`, name: 'Pattern 6', path: `${basePath}/06.jpg`, preview: `${basePath}/06-preview.jpg` }
+    ];
+  }
 };
 
 // Default pattern (fallback)
@@ -35,9 +49,9 @@ class PatternLoader {
   /**
    * Get patterns for a specific model
    */
-  getPatternsForModel(modelId) {
+  getPatternsForModel(modelId, isTwoTone = false) {
     const patterns = [DEFAULT_PATTERN];
-    const modelPatterns = getModelPatterns(modelId);
+    const modelPatterns = getModelPatterns(modelId, isTwoTone);
     patterns.push(...modelPatterns);
     return patterns;
   }
@@ -47,10 +61,11 @@ class PatternLoader {
    */
   getAllPatterns() {
     const allPatterns = [DEFAULT_PATTERN];
-    // Load patterns for both model 1 and model 2
+    // Load patterns for both model 1 and model 2 (both single and two-tone)
     ['1', '2'].forEach(modelId => {
-      const modelPatterns = getModelPatterns(modelId);
-      allPatterns.push(...modelPatterns);
+      const modelPatterns = getModelPatterns(modelId, false); // Single tone
+      const twoTonePatterns = getModelPatterns(modelId, true); // Two tone
+      allPatterns.push(...modelPatterns, ...twoTonePatterns);
     });
     return allPatterns;
   }
@@ -79,6 +94,11 @@ class PatternLoader {
           texture.generateMipmaps = true;
           texture.minFilter = THREE.LinearMipmapLinearFilter;
           texture.magFilter = THREE.LinearFilter;
+          
+          // Apply different scaling for two-tone patterns
+          if (patternPath.includes('twotone')) {
+            texture.repeat.set(3, 3); // Make texture smaller (repeat 3x)
+          }
           
           // Cache the texture
           this.loadedTextures.set(patternPath, texture);
@@ -121,10 +141,13 @@ class PatternLoader {
       return DEFAULT_PATTERN;
     }
 
-    // Search through all model patterns
+    // Search through all model patterns (both single and two-tone)
     for (const modelId of ['1', '2']) {
-      const modelPatterns = getModelPatterns(modelId);
-      const pattern = modelPatterns.find(p => p.id === patternId);
+      const singleTonePatterns = getModelPatterns(modelId, false);
+      const twoTonePatterns = getModelPatterns(modelId, true);
+      const allModelPatterns = [...singleTonePatterns, ...twoTonePatterns];
+      
+      const pattern = allModelPatterns.find(p => p.id === patternId);
       if (pattern) {
         return pattern;
       }
@@ -178,8 +201,8 @@ export const patternLoader = new PatternLoader();
 /**
  * Convenience function to get pattern options for a specific model
  */
-export const getPatternOptionsForModel = (modelId) => {
-  return patternLoader.getPatternsForModel(modelId).map(pattern => ({
+export const getPatternOptionsForModel = (modelId, isTwoTone = false) => {
+  return patternLoader.getPatternsForModel(modelId, isTwoTone).map(pattern => ({
     id: pattern.id,
     name: pattern.name,
     path: pattern.path,
