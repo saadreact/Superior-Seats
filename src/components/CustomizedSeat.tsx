@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { Grid } from '@mui/material'; 
@@ -39,12 +39,20 @@ const Scene3D = dynamic(() => import('@/components/model/3D/Scene3D'), {
       <p>Loading 3D Model...</p>
     </div>
   )
-});
+}) as any;
 
 const CustomizationPanel = dynamic(() => import('@/components/model/CustomizationPanel'), { 
   ssr: false,
   loading: () => <div>Loading...</div>
-});
+}) as any;
+
+const PartCustomizationPopup = dynamic(() => import('@/components/model/PartCustomizationPopup'), { 
+  ssr: false 
+}) as any;
+
+const SubmitButton = dynamic(() => import('@/components/model/SubmitButton'), { 
+  ssr: false 
+}) as any;
 import {
   Box,
   Container,
@@ -120,14 +128,19 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // 3D MODEL STATE - State for 3D model customization
+  const scene3DRef = useRef<any>(null); // Ref for Scene3D to capture images
   const [modelId, setModelId] = useState('1'); // Model selection (1 or 2)
   const [stitchColor3D, setStitchColor3D] = useState('#ffffff'); // 3D stitch color
   const [fabricColor3D, setFabricColor3D] = useState('#ffffff'); // 3D fabric color
   const [fabricType3D, setFabricType3D] = useState('leather'); // 3D fabric type
   const [patternId3D, setPatternId3D] = useState('default'); // 3D pattern selection
+  const [seatType3D, setSeatType3D] = useState('single'); // Two-Tone mode: 'single' or 'two-tone'
+  const [savedTwoToneCustomizations3D, setSavedTwoToneCustomizations3D] = useState<Record<string, any>>({}); // Saved two-tone customizations
   const [meshCustomizations3D, setMeshCustomizations3D] = useState<Record<string, any>>({}); // Individual mesh customizations
   const [showIndividualControls3D, setShowIndividualControls3D] = useState(false); // Show/hide individual controls
   const [highlightedMesh3D, setHighlightedMesh3D] = useState<string | null>(null); // Highlighted mesh for preview
+  const [popupState3D, setPopupState3D] = useState<any>(null); // Popup state for part customization
+  const [isSubmitting3D, setIsSubmitting3D] = useState(false); // Submission state
 
   // Variation data state
   const [variations, setVariations] = useState<ProductVariations | null>(null);
@@ -401,6 +414,105 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     setHighlightedMesh3D(null);
   };
 
+  // Two-Tone mode handler
+  const handleSeatTypeChange = (nextType: string) => {
+    console.log('🔄 Seat type changing from', seatType3D, 'to', nextType);
+    if (nextType === 'single') {
+      // Save current two-tone customizations and clear them from view
+      setSavedTwoToneCustomizations3D(meshCustomizations3D);
+      setMeshCustomizations3D({});
+      setSeatType3D('single');
+    } else if (nextType === 'two-tone') {
+      // Restore saved two-tone customizations if available
+      setMeshCustomizations3D(prev => Object.keys(savedTwoToneCustomizations3D).length ? savedTwoToneCustomizations3D : prev);
+      setSeatType3D('two-tone');
+    }
+  };
+
+  // Right-click handler for part customization (Two-Tone mode only)
+  const handlePartRightClick = (partName: string, position: any) => {
+    // Only allow right-click customization in two-tone mode
+    if (seatType3D === 'two-tone') {
+      console.log('🎯 Right-click on part:', partName);
+      setPopupState3D({ partName, position });
+    }
+  };
+
+  const handlePopupClose = () => {
+    setPopupState3D(null);
+  };
+
+  const handlePopupApply = (customization: any) => {
+    if (popupState3D) {
+      console.log(`🎯 Applying customization to ${popupState3D.partName}:`, customization);
+      handleMeshCustomizationChange(popupState3D.partName, customization);
+    }
+  };
+
+  // Submit design handler - captures images from multiple angles
+  const handleSubmit = async () => {
+    setIsSubmitting3D(true);
+    try {
+      console.log('📸 Starting image capture...');
+      
+      // Capture images from different angles
+      const images = await scene3DRef.current.captureImages();
+      
+      // Generate unique ID
+      const uniqueId = `design_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      console.log(`✅ Captured ${images.length} images with ID: ${uniqueId}`);
+      
+      // In a real application, you would send these to a backend API
+      // For now, we'll download them locally
+      images.forEach((img: any, index: number) => {
+        const link = document.createElement('a');
+        link.download = `${uniqueId}_${img.angle}.png`;
+        link.href = img.dataUrl;
+        link.click();
+      });
+      
+      // Also save configuration as JSON
+      const config = {
+        id: uniqueId,
+        timestamp: new Date().toISOString(),
+        modelId,
+        fabricType: fabricType3D,
+        fabricColor: fabricColor3D,
+        stitchColor: stitchColor3D,
+        patternId: patternId3D,
+        seatType: seatType3D,
+        meshCustomizations: meshCustomizations3D,
+        // Include product data if available
+        productId: productData?.id,
+        productName: productData?.name,
+        variations: {
+          recline: selectedRecline,
+          lumber: selectedLumber,
+          heatingCooling: selectedHeatingCooling,
+          seatType: selectedSeatType,
+          itemType: selectedItemType,
+          seatStyle: selectedSeatStyle,
+          materialType: selectedMaterialType,
+          includedArm: selectedIncludedArm
+        }
+      };
+      
+      const configBlob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+      const configLink = document.createElement('a');
+      configLink.download = `${uniqueId}_config.json`;
+      configLink.href = URL.createObjectURL(configBlob);
+      configLink.click();
+      
+      alert(`Design submitted successfully! ID: ${uniqueId}\n${images.length} images captured.`);
+    } catch (error) {
+      console.error('❌ Failed to capture images:', error);
+      alert('Failed to submit design. Please try again.');
+    } finally {
+      setIsSubmitting3D(false);
+    }
+  };
+
   return (
     <Box className={styles.mainContainer}>
       {showHeader && <Header />}
@@ -433,20 +545,28 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       <Container maxWidth="xl" className={styles.configContainer}>
         <Box className={styles.gridContainer}>
           {/* Left Column - 3D Viewer */}
-          <Box className={styles.leftColumn}>
+          <Box className={styles.leftColumn} sx={{ position: 'relative' }}>
             <Card className={styles.viewerCard}>
               <Box className={styles.viewerBackground}>
                 {/* 3D MODEL VIEWER - Replaced image display with Scene3D */}
                 <Box className={styles.imageDisplayArea} sx={{ position: 'relative', width: '100%', height: '100%' }}>
                   <Scene3D 
+                    ref={scene3DRef}
                     modelId={modelId}
                     stitchColor={stitchColor3D}
                     fabricColor={fabricColor3D}
                     fabricType={fabricType3D}
                     patternId={patternId3D}
+                    seatType={seatType3D}
                     meshCustomizations={meshCustomizations3D}
                     highlightedMesh={highlightedMesh3D}
+                    onPartRightClick={handlePartRightClick}
                   />
+                  
+                  {/* Submit Design Button - Positioned in 3D viewer */}
+                  <Box sx={{ position: 'absolute', bottom: '20px', right: '20px', zIndex: 1000 }}>
+                    <SubmitButton onSubmit={handleSubmit} disabled={isSubmitting3D} />
+                  </Box>
                 </Box>
               </Box>
             </Card>
@@ -496,6 +616,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               onFabricTypeChange={setFabricType3D}
               patternId={patternId3D}
               onPatternChange={setPatternId3D}
+              seatType={seatType3D}
+              onSeatTypeChange={handleSeatTypeChange}
               meshCustomizations={meshCustomizations3D}
               onMeshCustomizationChange={handleMeshCustomizationChange}
               showIndividualControls={showIndividualControls3D}
@@ -512,7 +634,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               selectedHeatingCooling={selectedHeatingCooling}
               onHeatingCoolingChange={setSelectedHeatingCooling}
               selectedSeatType={selectedSeatType}
-              onSeatTypeChange={setSelectedSeatType}
+              onSeatTypeChangeAPI={setSelectedSeatType}
               selectedItemType={selectedItemType}
               onItemTypeChange={setSelectedItemType}
               selectedSeatStyle={selectedSeatStyle}
@@ -587,6 +709,20 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       </Container>
 
       <Footer />
+
+      {/* Part Customization Popup - Only shown in Two-Tone mode when right-clicking parts */}
+      {popupState3D && (
+        <PartCustomizationPopup
+          partName={popupState3D.partName}
+          position={popupState3D.position}
+          onClose={handlePopupClose}
+          currentCustomization={meshCustomizations3D[popupState3D.partName]}
+          onApply={handlePopupApply}
+          modelId={modelId}
+          seatType={seatType3D}
+          fabricColor={fabricColor3D}
+        />
+      )}
 
       {/* Snackbar for notifications */}
       <Snackbar
