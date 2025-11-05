@@ -6,6 +6,7 @@ import ReduxProvider from '@/components/ReduxProvider';
 import Script from 'next/script';
 import AutoRefreshInitializer from '@/components/AutoRefreshInitializer';
 import UserStatusChecker from '@/components/UserStatusChecker';
+import FloatingLogoButton from '@/components/FloatingLogoButton';
 
 // import FloatingButtonWrapper from '@/components/FloatingButtonWrapper';
 import './globals.css';
@@ -47,6 +48,7 @@ export default function RootLayout({
               <AutoRefreshInitializer />
               <UserStatusChecker />
               {children}
+              <FloatingLogoButton />
               {/* <FloatingButtonWrapper /> */}
             </SelectedItemProvider>
           </ThemeRegistry>
