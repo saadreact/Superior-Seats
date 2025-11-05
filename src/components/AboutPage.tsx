@@ -655,7 +655,7 @@ const AboutPage = () => {
             {
               title: "Custom Fit Design",
               description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
-              image: "/Gallery/Truckimages/01f.png",
+              image: "/Gallery/Truckimages/c11.png",
               icon: <CheckCircle />
             },
             {

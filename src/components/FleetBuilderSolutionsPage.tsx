@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import {
   Box,
   Container,
@@ -96,29 +95,62 @@ const FleetBuilderSolutionsPage = () => {
                   color: 'text.secondary',
                   lineHeight: 1.8,
                   fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
+                  mb: { xs: 3, sm: 4 },
                 }}
               >
                 From design and prototyping to full-scale production, our team delivers comfort, durability, and craftsmanship your customers will notice.
               </Typography>
+              
+              {/* Horizontal Image under text */}
+              <MotionBox
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8 }}
+                sx={{ mt: { xs: 2, sm: 3 } }}
+              >
+                <Box
+                  sx={{
+                    display: 'inline-block',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    maxWidth: '100%',
+                    width: '100%',
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src="/Gallery/Truckimages/c11.png"
+                    alt="Custom seating solutions"
+                    sx={{
+                      display: 'block',
+                      width: '100%',
+                      height: 'auto',
+                      maxWidth: '100%',
+                    }}
+                  />
+                </Box>
+              </MotionBox>
             </MotionBox>
 
-            {/* Image */}
+            {/* Images Grid */}
             <MotionBox
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8 }}
-              sx={{ order: { xs: 1, md: 2 } }}
+              sx={{ order: { xs: 1, md: 2 }, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
             >
               <Box
                 sx={{
-                  position: 'relative',
-                  paddingTop: '75%',
+                  display: 'inline-block',
                   borderRadius: 3,
                   overflow: 'hidden',
                   boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                   cursor: 'pointer',
                   transition: 'all 0.4s ease',
+                  maxWidth: '100%',
                   '&:hover': {
                     transform: 'translateY(-8px)',
                     boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
@@ -127,15 +159,27 @@ const FleetBuilderSolutionsPage = () => {
               >
                 <Box
                   component="img"
-                  src="/Gallery/Truckimages/u09.png"
+                  src="/Gallery/Truckimages/c1.png"
                   alt="Fleet and builder solutions"
                   sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
+                    display: 'block',
                     width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
+                    height: { 
+                      xs: 'auto', 
+                      sm: 'auto', 
+                      md: 'auto',
+                      lg: '800px', 
+                      xl: '800px' 
+                    },
+                    maxHeight: { 
+                      xs: '400px', 
+                      sm: '500px', 
+                      md: '600px',
+                      lg: '800px', 
+                      xl: '800px' 
+                    },
+                    maxWidth: '100%',
+                    objectFit: 'contain',
                   }}
                 />
               </Box>
@@ -150,7 +194,7 @@ const FleetBuilderSolutionsPage = () => {
           <MotionBox
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.7 }}
             sx={{ textAlign: 'center', mb: { xs: 3, sm: 4, md: 6 } }}
           >
@@ -166,47 +210,185 @@ const FleetBuilderSolutionsPage = () => {
           </MotionBox>
 
           {/* Fleet Buses */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 2, sm: 3, md: 6 }, mb: { xs: 4, sm: 6, md: 10 } }}>
-            <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
-              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>FLEET BUSES</Typography>
-              <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Large-Scale Solutions</Typography>
-              <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
-                Large-scale seating solutions for public transit, school buses, and commercial fleet operations. 
-                We deliver high-volume orders with consistent quality and on-time delivery.
-              </Typography>
-            </MotionBox>
-            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/u11.png" alt="Fleet buses" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" priority />
+          <Box sx={{ mb: { xs: 4, sm: 6, md: 10 } }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 2, sm: 3, md: 6 }, mb: { xs: 3, sm: 4, md: 5 } }}>
+              <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.7 }}>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>FLEET BUSES</Typography>
+                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Large-Scale Solutions</Typography>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
+                  Large-scale seating solutions for public transit, school buses, and commercial fleet operations. 
+                  We deliver high-volume orders with consistent quality and on-time delivery.
+                </Typography>
+              </MotionBox>
+              {/* Parallel Images Container */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: { xs: 2, sm: 2, md: 3 } }}>
+                <MotionBox
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: false, amount: 0.3 }}
+                  transition={{ duration: 0.7 }}
+                >
+                  <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
+                    <Box
+                      component="img"
+                      src="/Gallery/Truckimages/c2.png"
+                      alt="Fleet buses"
+                      sx={{
+                        display: 'block',
+                        width: '100%',
+                        height: { 
+                          xs: 'auto', 
+                          sm: 'auto', 
+                          md: 'auto',
+                          lg: 'auto', 
+                          xl: 'auto' 
+                        },
+                        maxHeight: { 
+                          xs: '300px', 
+                          sm: '350px', 
+                          md: '400px',
+                          lg: 'none', 
+                          xl: 'none' 
+                        },
+                        maxWidth: '100%',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  </Box>
+                </MotionBox>
+                <MotionBox
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: false, amount: 0.3 }}
+                  transition={{ duration: 0.7, delay: 0.1 }}
+                >
+                  <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
+                    <Box
+                      component="img"
+                      src="/Gallery/Truckimages/c10.png"
+                      alt="Fleet buses 2"
+                      sx={{
+                        display: 'block',
+                        width: '100%',
+                        height: { 
+                          xs: 'auto', 
+                          sm: 'auto', 
+                          md: 'auto',
+                          lg: 'auto', 
+                          xl: 'auto' 
+                        },
+                        maxHeight: { 
+                          xs: '300px', 
+                          sm: '350px', 
+                          md: '400px',
+                          lg: 'none', 
+                          xl: 'none' 
+                        },
+                        maxWidth: '100%',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  </Box>
+                </MotionBox>
+              </Box>
             </Box>
           </Box>
 
           {/* Limos */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1.1fr' }, gap: { xs: 2, sm: 3, md: 6 }, alignItems: 'center', mb: { xs: 4, sm: 6, md: 10 } }}>
-            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/u12.png" alt="Luxury limos" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+          <Box sx={{ mb: { xs: 4, sm: 6, md: 10 } }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1.1fr' }, gap: { xs: 2, sm: 3, md: 6 }, alignItems: 'center', mb: { xs: 3, sm: 4, md: 5 } }}>
+              <MotionBox
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.7 }}
+              >
+                <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
+                  <Box
+                    component="img"
+                    src="/Gallery/Truckimages/limo.png"
+                    alt="Luxury limos"
+                    sx={{
+                      display: 'block',
+                      width: '100%',
+                      height: 'auto',
+                      maxWidth: '100%',
+                    }}
+                  />
+                </Box>
+              </MotionBox>
+              <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.7 }}>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>LUXURY LIMOUSINES</Typography>
+                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Executive Transportation</Typography>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
+                  Luxury seating for executive transportation and special occasions. Premium materials and elegant 
+                  designs that match the sophistication of high-end limousines.
+                </Typography>
+              </MotionBox>
             </Box>
-            <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
-              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>LUXURY LIMOUSINES</Typography>
-              <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Executive Transportation</Typography>
-              <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
-                Luxury seating for executive transportation and special occasions. Premium materials and elegant 
-                designs that match the sophistication of high-end limousines.
-              </Typography>
-            </MotionBox>
+        
           </Box>
 
           {/* RV & Van Upfitters */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 2, sm: 3, md: 6 }, mb: { xs: 4, sm: 2, md: 2 } }}>
-            <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
-              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>RV & VAN UPFITTERS</Typography>
-              <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Custom Solutions</Typography>
-              <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
-                Custom solutions for recreational vehicles and commercial vans. We understand the unique challenges 
-                of RV and van customization, delivering seats that maximize space while providing ultimate comfort.
-              </Typography>
-            </MotionBox>
-            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/u13.png" alt="RV and vans" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+          <Box sx={{ mb: { xs: 4, sm: 2, md: 2 } }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 2, sm: 3, md: 6 }, mb: { xs: 3, sm: 4, md: 5 } }}>
+              <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.7 }}>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>RV & VAN UPFITTERS</Typography>
+                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Custom Solutions</Typography>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
+                  Custom solutions for recreational vehicles and commercial vans. We understand the unique challenges 
+                  of RV and van customization, delivering seats that maximize space while providing ultimate comfort.
+                </Typography>
+              </MotionBox>
+              <MotionBox
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.7 }}
+              >
+                <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
+                  <Box
+                    component="img"
+                    src="/Gallery/Truckimages/c4.png"
+                    alt="RV and vans"
+                    sx={{
+                      display: 'block',
+                      width: '100%',
+                      height: 'auto',
+                      maxWidth: '100%',
+                    }}
+                  />
+                </Box>
+              </MotionBox>
+            </Box>
+            {/* Additional RV & Van Images */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: { xs: 2, sm: 3, md: 4 } }}>
+              {[
+                { src: '/Gallery/Truckimages/c12.png', alt: 'RV and vans 2' },
+                { src: '/Gallery/Truckimages/13.png', alt: 'RV and vans 3' },
+              ].map((image, index) => (
+                <MotionBox
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.3 }}
+                  transition={{ duration: 0.7, delay: index * 0.1 }}
+                >
+                  <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
+                    <Box
+                      component="img"
+                      src={image.src}
+                      alt={image.alt}
+                      sx={{
+                        display: 'block',
+                        width: '100%',
+                        height: 'auto',
+                        maxWidth: '100%',
+                      }}
+                    />
+                  </Box>
+                </MotionBox>
+              ))}
             </Box>
           </Box>
         </Container>

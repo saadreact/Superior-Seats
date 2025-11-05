@@ -504,7 +504,7 @@ const UpholsteryServices = () => {
                 fontWeight: 700,
               }}
             >
-              Ready to Transform Your Vessel?
+              Ready to Transform Your Boat, RV, or Home Furniture?
             </Typography>
             <Typography
               variant="h6"
