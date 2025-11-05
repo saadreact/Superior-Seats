@@ -24,6 +24,7 @@ export class ShaderManager {
     targetTex.anisotropy = sourceTex.anisotropy || targetTex.anisotropy;
     targetTex.offset.copy(sourceTex.offset);
     targetTex.repeat.copy(sourceTex.repeat);
+    
     targetTex.center?.copy?.(sourceTex.center || { x: 0, y: 0 });
     targetTex.rotation = sourceTex.rotation || 0;
     // Ensure flipY matches how other textures are configured
