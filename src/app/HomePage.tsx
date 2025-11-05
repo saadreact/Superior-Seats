@@ -305,9 +305,9 @@ const HomePage = () => {
             src="/Gallery/Patriotism/fc.png"
             alt="Superior Seating LLC"
             sx={{
-              width: { xs: '250px', sm: '400px', md: '450px', lg: '500px', xl: '700px' },
+              width: { xs: '250px', sm: '400px', md: '450px', lg: '450px', xl: '500px' },
               height: { xs: '150px', sm: '225px', md: '280px', lg: '300px', xl: '375px' },
-              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-83px', xl: '-88px' },
+              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-83px', xl: '-114px' },
               marginRight: { xs: '-30px', sm: '-40px', md: '-50px', lg: '-50px', xl: '-68px' },
               borderRadius: 2,
               objectFit: 'cover',
@@ -369,7 +369,7 @@ const HomePage = () => {
               viewport={{ once: false, amount: 0.1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
               sx={{
-                fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "4.2rem", xl: "5rem" },
+                fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "3.5rem", xl: "4.5rem" },
                 fontWeight: "bold",
                 lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2, xl: 1.2 },
                 color: 'white',

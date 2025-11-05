@@ -403,7 +403,7 @@ const Footer: React.FC<FooterProps> = () => {
                     mb: 0.25,
                   }}
                 >
-                  Monday - Friday
+                  Tuesday - Friday
                 </Typography>
                 <Typography
                   sx={{
