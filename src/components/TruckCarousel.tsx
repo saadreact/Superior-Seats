@@ -48,7 +48,7 @@ const TruckCarousel = () => {
         overflow: 'hidden',
        // marginBottom: { xs: 1, md: 1, lg: 2, xl: 2 },
         width: '100%',
-        py: { xs: 3, md: 4, lg: 1, xl: 1},
+       // py: { xs: 3, md: 4, lg: 1, xl: 1},
         minHeight: { xs: '200px', md: '220px', lg: '220px', xl: '220x' },
         display: 'flex',
         justifyContent: 'center',

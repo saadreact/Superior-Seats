@@ -36,6 +36,7 @@ interface HeroSectionProps {
     xl?: string;
     xxl?: string;
   };
+  singleLineTitle?: boolean;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({
@@ -59,7 +60,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     lg: '1.125rem',
     xl: '1.25rem',
     xxl: '1.25rem'
-  }
+  },
+  singleLineTitle = false
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -122,16 +124,27 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <Typography
           variant="h3"
           sx={{
-            fontSize: titleFontSize,
+            fontSize: singleLineTitle 
+              ? { 
+                  xs: '0.9rem', 
+                  sm: '1.1rem', 
+                  md: '1.5rem', 
+                  lg: '2rem', 
+                  xl: '2.5rem' 
+                }
+              : titleFontSize,
             fontWeight: 'medium',
             mb: { xs: 0.25, sm: 0.5, md: 0.75, lg: 1 },
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
             lineHeight: { xs: 1.2, sm: 1.3, md: 1.2, lg: 1.2 },
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
+            wordBreak: singleLineTitle ? 'normal' : 'break-word',
+            overflowWrap: singleLineTitle ? 'normal' : 'break-word',
+            whiteSpace: singleLineTitle ? 'nowrap' : 'normal',
             minWidth: 0,
             px: { xs: 0.5, sm: 1 },
             display: 'block',
+            overflow: singleLineTitle ? 'hidden' : 'visible',
+            textOverflow: singleLineTitle ? 'ellipsis' : 'clip',
           }}
         >
           {title}

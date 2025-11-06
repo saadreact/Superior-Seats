@@ -375,7 +375,7 @@ const HomePage = () => {
                 color: 'white',
                 textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
                 mb: { xs: 0, md: 0.75, lg: 0.75 },
-                mt: { xs: 0, md: 6, lg: 7, xl: 7 },
+                mt: { xs: 0, md: 6, lg: 7, xl: 3 },
                 whiteSpace: { xs: "normal", md: "nowrap" },
                 overflow: { xs: "visible", md: "hidden" },
                 textOverflow: { xs: "clip", md: "ellipsis" },
@@ -403,10 +403,10 @@ const HomePage = () => {
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.3)",
                 px: { xs: 2, sm: 0, md: 0 },
                 py: { xs: 0.5, sm: 1, md: 3, lg: 2 },
-                mb: { xs: 3, sm: 4, md: 1, lg: 1, xl: 1 }
+               // mb: { xs: 3, sm: 4, md: 1, lg: 1, xl: 1 }
               }}
             >
-              Premium Truck, Semi Truck,RV, and Van seating with custom
+              Premium Truck, SemiTruck,RV, and Van seating with custom
               <br />
               <span style={{ textAlign: "center", display: "block", width: "100%" }}>
                 options and superior craftsmanship
@@ -418,7 +418,7 @@ const HomePage = () => {
 
       {/* Stats Section */}
       <Box sx={{ 
-        py: { xs: 6, md: 8, lg: 10 },
+        py: { xs: 3, md: 3, lg: 3, xl: 3 },
         background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
         position: 'relative',
       }}>
@@ -431,7 +431,7 @@ const HomePage = () => {
             variant="h3"
             sx={{
               textAlign: 'center',
-              mb: 6,
+              mb: 3,
               fontSize: { xs: '1.75rem', md: '2.5rem', lg: '3rem' },
               fontWeight: 600,
             }}
@@ -464,7 +464,7 @@ const HomePage = () => {
 
       {/* Our Process Section - Inspired by B&G */}
       <Box sx={{ 
-        py: { xs: 6, md: 8, lg: 10 },
+        py: { xs: 3, md: 3, lg: 3, xl: 3 },
         backgroundColor: 'white',
         position: 'relative',
       }}>
@@ -490,8 +490,8 @@ const HomePage = () => {
             <Typography
               variant="h2"
               sx={{
-                mt: 2,
-                mb: 3,
+                mt: 0,
+                mb: 2,
                 fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
                 fontWeight: 600,
                 color: 'text.primary',
