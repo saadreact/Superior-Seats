@@ -131,7 +131,7 @@ const UpholsteryServices = () => {
       
       {/* Hero Section */}
       <HeroSectionCommon
-        title="Excellence in Marine, Home, and RV Upholstery"
+        title="Ready to Transform Your Boat,RV,or Home Furniture"
         description="Premium marine and automotive upholstery solutions crafted with precision and passion."
         height={{
           xs: '75px',
@@ -141,6 +141,7 @@ const UpholsteryServices = () => {
           xl: '105px',
           xxl: '115px'
         }}
+        singleLineTitle={true}
       />
 
       {/* Introduction Section */}

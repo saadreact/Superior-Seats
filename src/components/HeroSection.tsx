@@ -23,6 +23,7 @@ import {
   VolumeUp,
   Fullscreen,
   FullscreenExit,
+  Facebook,
 } from "@mui/icons-material";
 
 const MotionBox = motion.create(Box);
@@ -447,39 +448,29 @@ const HeroSection = () => {
           }}
         />
 
-        {/* Facebook Button */}
-        <Button
+        {/* Facebook Icon */}
+        <IconButton
           component="a"
           href="https://www.facebook.com/people/Superior-Seating-LLC/61576399660914/"
           target="_blank"
           rel="noopener noreferrer"
-          variant="outlined"
           sx={{
             position: "absolute",
             bottom: 16,
             right: 116,
-            borderColor: 'white',
-            color: 'white',
             backgroundColor: "rgba(0, 0, 0, 0.6)",
+            color: "white",
             backdropFilter: "blur(8px)",
-            px: { xs: 1.5, sm: 2, md: 2.5 },
-            py: 0.75,
-            fontSize: { xs: '0.75rem', sm: '0.875rem', md: '0.875rem' },
-            fontWeight: 600,
-            borderRadius: 1,
-            textTransform: 'none',
-            minWidth: 'auto',
-            '&:hover': {
-              borderColor: '#1877F2',
-              backgroundColor: 'rgba(24, 119, 242, 0.3)',
-              transform: 'scale(1.05)',
-            },
-            transition: 'all 0.3s ease',
+            transition: "all 0.3s ease",
             zIndex: 2,
+            '&:hover': {
+              backgroundColor: 'rgba(24, 119, 242, 0.8)',
+              transform: 'scale(1.1)',
+            },
           }}
         >
-          Facebook
-        </Button>
+          <Facebook />
+        </IconButton>
 
         <IconButton
           onClick={handleToggleMute}

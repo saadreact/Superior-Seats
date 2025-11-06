@@ -34,9 +34,10 @@ const FloatingLogoButton = () => {
         variant="contained"
         size="large"
         onClick={handleClick}
-        initial={{ opacity: 0, rotateY: 0 }}
+        initial={{ rotateY: 0 }}
         animate={{
           rotateY: 360,
+          opacity: 1,
         }}
         transition={{
           rotateY: {
@@ -45,16 +46,11 @@ const FloatingLogoButton = () => {
             ease: [0.25, 0.1, 0.25, 1],
             repeatDelay: 0.5,
           },
-        }}
-        whileInView={{ 
-          opacity: 1,
-          transition: { 
-            duration: 1,
+          opacity: {
+            duration: 0.5,
             ease: "easeInOut",
-            delay: 0.1
-          }
+          },
         }}
-        viewport={{ once: false, amount: 0.1, margin: "0px 0px -100px 0px" }}
         whileHover={{ 
           scale: 1.05,
           transition: { 
@@ -78,6 +74,7 @@ const FloatingLogoButton = () => {
           boxShadow: 'none',
           padding: 0,
           margin: 0,
+          opacity: 1,
           '&:hover': {
             backgroundColor: 'transparent',
             boxShadow: 'none',

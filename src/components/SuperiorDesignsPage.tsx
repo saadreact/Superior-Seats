@@ -9,6 +9,7 @@ import {
   Button,
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import { OpenInNew } from '@mui/icons-material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
@@ -108,26 +109,42 @@ const SuperiorDesignsPage = () => {
               </Typography>
               <Button
                 variant="contained"
+                size="medium"
                 href="https://www.superiordesignsllc.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 component="a"
+                startIcon={<OpenInNew />}
+                disableRipple={false}
+                TouchRippleProps={{
+                  center: true,
+                  color: 'rgba(255, 255, 255, 0.3)',
+                }}
                 sx={{
-                  px: { xs: 2, sm: 3, md: 4 },
-                  py: { xs: 1.25, sm: 1.5, md: 2 },
-                  fontSize: { xs: '0.875rem', sm: '0.9375rem', md: '1rem' },
-                  fontWeight: 600,
+                  px: { xs: 3, sm: 5, md: 6 },
+                  py: { xs: 1.2, sm: 1.5, md: 1.2, lg: 1 },
+                  borderRadius: { xs: 1.5, sm: 2 },
                   textTransform: 'none',
-                  borderRadius: 2,
-                  boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 30px rgba(211, 47, 47, 0.4)',
-                  },
+                  letterSpacing: 0.5,
+                  fontSize: { xs: '0.95rem', sm: '1rem' },
+                  fontWeight: 500,
                   transition: 'all 0.3s ease',
+                  minWidth: { xs: '100%', sm: 180 },
+                  width: { xs: '100%', sm: 'auto' },
+                  maxWidth: { xs: '100%', sm: '300px' },
+                  boxShadow: 'none',
+                  '&:hover': {
+                    boxShadow: 'none',
+                  },
+                  '& .MuiTouchRipple-root': {
+                    borderRadius: { xs: 1.5, sm: 2 },
+                  },
+                  '& .MuiButton-startIcon': {
+                    marginRight: { xs: 0.5, sm: 1 },
+                  },
                 }}
               >
-                Visit Superior Designs LLC
+                Visit Superior Designs
               </Button>
             </MotionBox>
 
