@@ -307,7 +307,7 @@ const HomePage = () => {
             sx={{
               width: { xs: '250px', sm: '400px', md: '450px', lg: '450px', xl: '500px' },
               height: { xs: '150px', sm: '225px', md: '280px', lg: '300px', xl: '375px' },
-              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-83px', xl: '-114px' },
+              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-91px', xl: '-114px' },
               marginRight: { xs: '-30px', sm: '-40px', md: '-50px', lg: '-50px', xl: '-68px' },
               borderRadius: 2,
               objectFit: 'cover',
@@ -463,6 +463,7 @@ const HomePage = () => {
    
 
       {/* Our Process Section - Inspired by B&G */}
+      {/*
       <Box sx={{ 
         py: { xs: 3, md: 3, lg: 3, xl: 3 },
         backgroundColor: 'white',
@@ -513,7 +514,6 @@ const HomePage = () => {
             </Typography>
           </MotionBox>
 
-          {/* Process Steps */}
           <Box
             sx={{
               display: 'flex',
@@ -595,10 +595,11 @@ const HomePage = () => {
           </Box>
         </Container>
       </Box>
+      */}
 
       {/* Portfolio/Gallery Section - Full Width Images */}
       <Box sx={{ 
-        py: { xs: 6, md: 8, lg: 10 },
+        py: { xs: 3, md: 3, lg: 3, xl: 3 },
         background: 'linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%)',
       }}>
         <Container maxWidth="xl">

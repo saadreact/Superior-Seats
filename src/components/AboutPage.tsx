@@ -48,6 +48,43 @@ const AboutPage = () => {
     return iconMap[iconName] || <CheckCircle />;
   };
  
+  const legacyImages = [
+    "Comprehensive Warranty",
+    "Ongoing Support"
+  ];
+
+  const whyChooseItems = [
+    {
+      title: "Custom Fit Design",
+      description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
+      image: "/Gallery/double.png",
+      icon: <CheckCircle />
+    },
+    {
+      title: "Premium Materials",
+      description: "Highest quality leather, fabric, and materials. We use only the finest materials that are built to last and provide exceptional comfort.",
+      image: "/Gallery/skyblue.png",
+      icon: <CheckCircle />
+    },
+    {
+      title: "Expert Craftsmanship",
+      description: "Skilled artisans handcraft each seat with precision. Our experienced craftsmen bring decades of expertise to every project.",
+      image: "/Gallery/20.png",
+      icon: <CheckCircle />
+    },
+    {
+      title: "Comprehensive Warranty",
+      description: "We stand behind our work with full warranty. Your investment is protected with our comprehensive warranty coverage.",
+      image: "/Gallery/Truckimages/09.png",
+      icon: <CheckCircle />
+    },
+    {
+      title: "Ongoing Support",
+      description: "We're here for you even after purchase. Our commitment to customer satisfaction extends well beyond the initial sale.",
+      image: "/Gallery/Truckimages/05.png",
+      icon: <CheckCircle />
+    }
+  ];
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
@@ -651,38 +688,9 @@ const AboutPage = () => {
            </MotionTypography>
           
           {/* Why Choose Us Cards with alternating layout */}
-          {[
-            {
-              title: "Custom Fit Design",
-              description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
-              image: "/Gallery/double.png",
-              icon: <CheckCircle />
-            },
-            {
-              title: "Premium Materials",
-              description: "Highest quality leather, fabric, and materials. We use only the finest materials that are built to last and provide exceptional comfort.",
-              image: "/Gallery/Truckimages/lf.png",
-              icon: <CheckCircle />
-            },
-            {
-              title: "Expert Craftsmanship",
-              description: "Skilled artisans handcraft each seat with precision. Our experienced craftsmen bring decades of expertise to every project.",
-              image: "/Gallery/Truckimages/03fa.png",
-              icon: <CheckCircle />
-            },
-            {
-              title: "Comprehensive Warranty",
-              description: "We stand behind our work with full warranty. Your investment is protected with our comprehensive warranty coverage.",
-              image: "/Gallery/Truckimages/09.png",
-              icon: <CheckCircle />
-            },
-            {
-              title: "Ongoing Support",
-              description: "We're here for you even after purchase. Our commitment to customer satisfaction extends well beyond the initial sale.",
-              image: "/Gallery/Truckimages/05.png",
-              icon: <CheckCircle />
-            }
-          ].map((item, index) => (
+          {whyChooseItems.map((item, index) => {
+            const isLegacyImage = legacyImages.includes(item.title);
+            return (
             <Box
               key={index}
                    sx={{
@@ -741,14 +749,19 @@ const AboutPage = () => {
                   delay: index * 0.1 + 0.2
                 }}
                 sx={{
-                  position: 'relative',
-                  paddingTop: '70%', 
-                  borderRadius: 2, 
-                  overflow: 'hidden', 
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)', 
+                  position: isLegacyImage ? 'relative' : 'static',
+                  display: isLegacyImage ? 'block' : 'flex',
+                  alignItems: isLegacyImage ? 'stretch' : 'center',
+                  justifyContent: isLegacyImage ? 'flex-start' : 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   order: { xs: 1, md: index % 2 === 0 ? 2 : 1 },
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
+                  backgroundColor: isLegacyImage ? 'transparent' : '#ffffff',
+                  paddingTop: isLegacyImage ? '70%' : 0,
+                  height: isLegacyImage ? 'auto' : { xs: 220, sm: 260, md: 320, lg: 360 },
                   '&:hover': {
                     transform: 'translateY(-4px) scale(1.02)',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
@@ -760,17 +773,19 @@ const AboutPage = () => {
                   src={item.image}
                   alt={item.title}
                   sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
+                    position: isLegacyImage ? 'absolute' : 'static',
+                    top: isLegacyImage ? 0 : 'auto',
+                    left: isLegacyImage ? 0 : 'auto',
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
+                    objectFit: isLegacyImage ? 'cover' : 'contain',
+                    p: isLegacyImage ? 0 : { xs: 1.5, sm: 2 },
+                    display: 'block',
                   }}
                 />
               </MotionBox>
                  </Box>
-          ))}
+          );})}
          </Container>
        </Box>
 
