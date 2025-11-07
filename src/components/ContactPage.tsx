@@ -319,11 +319,13 @@ const ContactPage = () => {
                 flex: { xs: '0 0 auto', md: 1 },
                 maxWidth: { xs: '100%', sm: '400px', md: '340px', lg: '360px' },
                 width: { xs: '100%', md: 'auto' },
-                height: { xs: '250px', sm: '300px', md: '100%' },
+                height: { xs: '250px', sm: '300px', md: 'auto' },
                 minHeight: { xs: '250px', sm: '300px', md: 'auto' },
                 padding: '0px',
                 margin: { xs: '0 auto', md: '0px' },
-                display: 'block',
+                display: 'flex',
+                flexDirection: 'column',
+                alignSelf: { xs: 'center', md: 'stretch' },
                 borderRadius: 2,
                 backgroundColor: '#ffffff',
                 position: 'relative',
@@ -342,13 +344,16 @@ const ContactPage = () => {
             >
               <Box
                 component="img"
-                src="/Gallery/Truckimages/Americanseat.png"
+                src="/Gallery/28.png"
                 alt="Contact illustration"
                 sx={{
                   width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  borderRadius: 2,
+                  flexGrow: 1,
+                  height: { xs: '100%', sm: '100%', md: '100%' },
+                  maxHeight: { xs: 240, sm: 320, md: '100%' },
+                  objectFit: { xs: 'contain', sm: 'contain', md: 'cover' },
+                  borderRadius: { xs: 2, md: 3 },
+                  display: 'block',
                 }}
               />
             </Box>
