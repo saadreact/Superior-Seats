@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { AVAILABLE_MODELS, CUSTOMIZATION_OPTIONS } from './config/assets';
-import { COLOR_PALETTE } from './config/colorPalette';
+import { AVAILABLE_MODELS, CUSTOMIZATION_OPTIONS } from '../config/assets';
+import { COLOR_PALETTE } from '../config/colorPalette';
 import ColorPalettePicker from './ColorPalettePicker';
-import { getPatternOptionsForModel, patternLoader } from './utils/PatternLoader';
+import { getPatternOptionsForModel, patternLoader } from '../utils/PatternLoader';
 
 function CustomizationPanel({ 
   modelId,
@@ -21,28 +21,8 @@ function CustomizationPanel({
   onMeshUnhighlight,
   patternId,
   onPatternChange,
-  seatType = 'single',
-  onSeatTypeChange,
-  // API-based props
-  vehicleTrimData,
-  vehicleTrimLoading,
-  variations,
-  selectedRecline,
-  onReclineChange,
-  selectedLumber,
-  onLumberChange,
-  selectedHeatingCooling,
-  onHeatingCoolingChange,
-  selectedSeatType,
-  onSeatTypeChangeAPI,
-  selectedItemType,
-  onItemTypeChange,
-  selectedSeatStyle,
-  onSeatStyleChange,
-  selectedMaterialType,
-  onMaterialTypeChange,
-  selectedIncludedArm,
-  onIncludedArmChange
+  seatType,
+  onSeatTypeChange
 }) {
   // State for managing color palette visibility and patterns
   const [showFabricPalette, setShowFabricPalette] = useState(false);
@@ -175,7 +155,7 @@ function CustomizationPanel({
       width: '100%',
       height: '100vh',
       background: '#ffffff',
-      padding: '20px',
+      padding: '12px',
       boxSizing: 'border-box',
       overflowY: 'auto',
       overflowX: 'visible',
@@ -184,32 +164,30 @@ function CustomizationPanel({
       boxShadow: '2px 0 5px rgba(0,0,0,0.1)'
     }}>
       <h2 style={{ 
-        margin: '0 0 20px 0', 
-        fontSize: '18px', 
+        margin: '0 0 12px 0', 
+        fontSize: '16px', 
         color: '#333',
         textAlign: 'center',
         borderBottom: '2px solid #eee',
-        paddingBottom: '10px'
+        paddingBottom: '8px'
       }}>
         Seat Customization
       </h2>
       
-      
-      
       {/* FABRIC TYPE SELECTION */}
-      <div style={{ marginBottom: '25px' }}>
+      <div style={{ marginBottom: '12px' }}>
         <h3 style={{ 
-          margin: '0 0 15px 0', 
-          fontSize: '16px', 
+          margin: '0 0 8px 0', 
+          fontSize: '14px', 
           color: '#555',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '6px'
         }}>
           Fabric Type
         </h3>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
           {fabricTypeOptions.map((option) => (
             <button
               key={option.id}
@@ -221,9 +199,9 @@ function CustomizationPanel({
               }}
               onMouseLeave={() => setHoveredFabric(null)}
               style={{
-                padding: '6px',
-                border: fabricType === option.id ? '3px solid #007bff' : '2px solid #ddd',
-                borderRadius: '8px',
+                padding: '3px',
+                border: fabricType === option.id ? '2px solid #007bff' : '1px solid #ddd',
+                borderRadius: '4px',
                 background: '#ffffff',
                 cursor: 'pointer',
                 textAlign: 'center',
@@ -231,8 +209,8 @@ function CustomizationPanel({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '6px',
-                minHeight: '70px',
+                gap: '3px',
+                minHeight: '35px',
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow: fabricType === option.id ? '0 2px 8px rgba(0, 123, 255, 0.3)' : 'none'
@@ -242,18 +220,18 @@ function CustomizationPanel({
               {/* Fabric Image */}
               <div style={{
                 width: '100%',
-                height: '40px',
+                height: '20px',
                 backgroundImage: `url(${option.image})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
-                borderRadius: '4px',
+                borderRadius: '2px',
                 border: '1px solid #eee'
               }} />
               
               {/* Fabric Name */}
               <div style={{ 
-                fontSize: '8px', 
+                fontSize: '6px', 
                 fontWeight: fabricType === option.id ? 'bold' : 'normal',
                 color: fabricType === option.id ? '#007bff' : '#555',
                 lineHeight: '1.1',
@@ -266,14 +244,14 @@ function CustomizationPanel({
               {fabricType === option.id && (
                 <div style={{
                   position: 'absolute',
-                  top: '4px',
-                  right: '4px',
-                  width: '18px',
-                  height: '18px',
+                  top: '2px',
+                  right: '2px',
+                  width: '12px',
+                  height: '12px',
                   borderRadius: '50%',
                   backgroundColor: '#007bff',
                   color: 'white',
-                  fontSize: '11px',
+                  fontSize: '8px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -287,15 +265,88 @@ function CustomizationPanel({
         </div>
       </div>
       
-      {/* TWO TONE TOGGLE */}
-      <div style={{ marginBottom: '25px' }}>
+      {/* FABRIC COLOR SECTION */}
+      <div style={{ marginBottom: '12px' }}>
         <h3 style={{ 
-          margin: '0 0 15px 0', 
-          fontSize: '16px', 
+          margin: '0 0 8px 0', 
+          fontSize: '14px', 
           color: '#555',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '6px'
+        }}>
+          Fabric Color
+        </h3>
+        
+        {/* Fabric Color Palette - Always Visible */}
+        <div style={{ marginBottom: '6px' }}>
+          <div style={{
+            width: '100%',
+            backgroundColor: '#ffffff',
+            border: '1px solid #ddd',
+            borderRadius: '6px',
+            padding: '8px'
+          }}>
+            {/* Color Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(8, 1fr)',
+              gap: '3px',
+              maxHeight: '120px',
+              overflowY: 'auto'
+            }}>
+              {Object.values(COLOR_PALETTE).flat().map((color, index) => {
+                const colorId = `${color.name}-${color.hex}`;
+                const isSelected = fabricColor === color.hex;
+                
+                return (
+                <button
+                  key={`fabric-${colorId}`}
+                  onClick={() => onFabricColorChange(color.hex)}
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    backgroundColor: color.hex,
+                    border: isSelected ? '2px solid #007bff' : '1px solid #ddd',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  title={color.name}
+                  onMouseEnter={(e) => {
+                    e.target.style.boxShadow = '0 0 0 2px #007bff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  {isSelected && (
+                    <span style={{
+                      color: getTextColor(color.hex),
+                      fontSize: '12px',
+                      fontWeight: 'bold'
+                    }}>
+                      ✓
+                    </span>
+                  )}
+                </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+      </div>
+      
+      {/* TWO TONE TOGGLE */}
+      <div style={{ marginBottom: '12px' }}>
+        <h3 style={{ 
+          margin: '0 0 8px 0', 
+          fontSize: '14px', 
+          color: '#555',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
         }}>
           Two Tone
         </h3>
@@ -304,24 +355,24 @@ function CustomizationPanel({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '12px 16px',
+          padding: '8px 12px',
           border: '1px solid #ddd',
           borderRadius: '6px',
           background: seatType === 'two-tone' ? '#e7f3ff' : '#ffffff'
         }}>
           <div>
             <div style={{
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '500',
               color: '#333',
-              marginBottom: '4px'
+              marginBottom: '2px'
             }}>
               {seatType === 'two-tone' ? 'Two-Tone Mode Active' : 'Enable Two Tone Mode'}
             </div>
             <div style={{
-              fontSize: '12px',
+              fontSize: '10px',
               color: '#666',
-              lineHeight: '1.4'
+              lineHeight: '1.3'
             }}>
               {seatType === 'two-tone' ? 'Right-click on seat parts to customize' : 'Uniform color and pattern'}
             </div>
@@ -331,8 +382,8 @@ function CustomizationPanel({
           <label style={{
             position: 'relative',
             display: 'inline-block',
-            width: '50px',
-            height: '28px',
+            width: '44px',
+            height: '26px',
             cursor: 'pointer',
             flexShrink: 0
           }}>
@@ -340,17 +391,8 @@ function CustomizationPanel({
               type="checkbox"
               checked={seatType === 'two-tone'}
               onChange={(e) => {
-                if (!onSeatTypeChange) {
-                  console.error('❌ onSeatTypeChange is not defined!');
-                  return;
-                }
-                
                 if (e.target.checked) {
                   onSeatTypeChange('two-tone');
-                  // Reset pattern to default when switching to two-tone
-                  if (patternId !== 'default') {
-                    onPatternChange('default');
-                  }
                 } else {
                   onSeatTypeChange('single');
                   // Clear mesh customizations when switching to single tone
@@ -374,14 +416,14 @@ function CustomizationPanel({
               bottom: 0,
               backgroundColor: seatType === 'two-tone' ? '#34C759' : '#ccc',
               transition: '0.3s',
-              borderRadius: '28px'
+              borderRadius: '26px'
             }}>
               <span style={{
                 position: 'absolute',
                 content: '',
-                height: '22px',
-                width: '22px',
-                left: seatType === 'two-tone' ? '25px' : '3px',
+                height: '20px',
+                width: '20px',
+                left: seatType === 'two-tone' ? '21px' : '3px',
                 bottom: '3px',
                 backgroundColor: 'white',
                 transition: '0.3s',
@@ -393,16 +435,17 @@ function CustomizationPanel({
         </div>
       </div>
       
+      
       {/* PATTERN SELECTION SECTION - Only shown for Single Tone */}
       {seatType === 'single' && (
-      <div style={{ marginBottom: '25px' }}>
+      <div style={{ marginBottom: '12px' }}>
         <h3 style={{ 
-          margin: '0 0 15px 0', 
-          fontSize: '16px', 
+          margin: '0 0 8px 0', 
+          fontSize: '14px', 
           color: '#555',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '6px'
         }}>
           Pattern Selection
         </h3>
@@ -428,9 +471,9 @@ function CustomizationPanel({
                 }}
                 onMouseLeave={() => setHoveredPattern(null)}
                 style={{
-                  padding: '8px',
-                  border: isSelected ? '3px solid #007bff' : '1px solid #ddd',
-                  borderRadius: '6px',
+                  padding: '4px',
+                  border: isSelected ? '2px solid #007bff' : '1px solid #ddd',
+                  borderRadius: '4px',
                   background: '#ffffff',
                   cursor: 'pointer',
                   textAlign: 'center',
@@ -440,8 +483,8 @@ function CustomizationPanel({
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '4px',
-                  minHeight: '60px',
+                  gap: '2px',
+                  minHeight: '45px',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
@@ -451,15 +494,15 @@ function CustomizationPanel({
                 {isDefault ? (
                   <div style={{
                     width: '100%',
-                    height: '50px',
+                    height: '35px',
                     background: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%), linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%)',
-                    backgroundSize: '8px 8px',
-                    backgroundPosition: '0 0, 4px 4px',
-                    borderRadius: '3px',
+                    backgroundSize: '6px 6px',
+                    backgroundPosition: '0 0, 3px 3px',
+                    borderRadius: '2px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '12px',
+                    fontSize: '9px',
                     color: '#666'
                   }}>
                     None
@@ -467,22 +510,22 @@ function CustomizationPanel({
                 ) : (
                   <div style={{
                     width: '100%',
-                    height: '50px',
+                    height: '35px',
                     backgroundImage: pattern.thumbnail ? `url(${pattern.thumbnail})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
-                    borderRadius: '3px',
+                    borderRadius: '2px',
                     backgroundColor: '#f5f5f5'
                   }} />
                 )}
                 
                 {/* Pattern Name */}
                 <div style={{
-                  fontSize: '9px',
+                  fontSize: '7px',
                   color: isSelected ? '#007bff' : '#666',
                   fontWeight: isSelected ? 'bold' : 'normal',
-                  lineHeight: '1.2',
+                  lineHeight: '1.1',
                   textAlign: 'center',
                   wordBreak: 'break-word'
                 }}>
@@ -493,14 +536,14 @@ function CustomizationPanel({
                 {isSelected && (
                   <div style={{
                     position: 'absolute',
-                    top: '4px',
-                    right: '4px',
-                    width: '16px',
-                    height: '16px',
+                    top: '2px',
+                    right: '2px',
+                    width: '12px',
+                    height: '12px',
                     borderRadius: '50%',
                     backgroundColor: '#007bff',
                     color: 'white',
-                    fontSize: '10px',
+                    fontSize: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
@@ -514,108 +557,35 @@ function CustomizationPanel({
         </div>
       </div>
       )}
-      
-      {/* FABRIC COLOR SECTION */}
-      <div style={{ marginBottom: '25px' }}>
-        <h3 style={{ 
-          margin: '0 0 15px 0', 
-          fontSize: '16px', 
-          color: '#555',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          Fabric Color
-        </h3>
-        
-        {/* Fabric Color Palette - Always Visible */}
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{
-            width: '100%',
-            backgroundColor: '#ffffff',
-            border: '1px solid #ddd',
-            borderRadius: '8px',
-            padding: '12px'
-          }}>
-            {/* Color Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(8, 1fr)',
-              gap: '4px',
-              maxHeight: '150px',
-              overflowY: 'auto'
-            }}>
-              {Object.values(COLOR_PALETTE).flat().map((color, index) => {
-                const colorId = `${color.name}-${color.hex}`;
-                const isSelected = fabricColor === color.hex;
-                
-                return (
-                <button
-                  key={`fabric-${colorId}`}
-                  onClick={() => onFabricColorChange(color.hex)}
-                  style={{
-                    width: '35px',
-                    height: '35px',
-                    backgroundColor: color.hex,
-                    border: isSelected ? '3px solid #007bff' : '1px solid #ddd',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                  title={color.name}
-                  onMouseEnter={(e) => {
-                    e.target.style.boxShadow = '0 0 0 2px #007bff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  {isSelected && (
-                    <span style={{
-                      color: getTextColor(color.hex),
-                      fontSize: '14px',
-                      fontWeight: 'bold'
-                    }}>
-                      ✓
-                    </span>
-                  )}
-                </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-      </div>
 
       {/* STITCHING SECTION */}
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '12px' }}>
         <h3 style={{ 
-          margin: '0 0 15px 0', 
-          fontSize: '16px', 
+          margin: '0 0 8px 0', 
+          fontSize: '14px', 
           color: '#555',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '6px'
         }}>
           Stitching Color
         </h3>
         
         {/* Stitch Color Palette - Always Visible */}
-        <div style={{ marginBottom: '12px' }}>
+        <div style={{ marginBottom: '6px' }}>
           <div style={{
             width: '100%',
             backgroundColor: '#ffffff',
             border: '1px solid #ddd',
-            borderRadius: '8px',
-            padding: '12px'
+            borderRadius: '6px',
+            padding: '8px'
           }}>
             {/* Color Grid */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(8, 1fr)',
-              gap: '4px',
-              maxHeight: '150px',
+              gap: '3px',
+              maxHeight: '120px',
               overflowY: 'auto'
             }}>
               {Object.values(COLOR_PALETTE).flat().map((color, index) => {
@@ -627,11 +597,11 @@ function CustomizationPanel({
                   key={`stitch-${colorId}`}
                   onClick={() => onStitchColorChange(color.hex)}
                   style={{
-                    width: '35px',
-                    height: '35px',
+                    width: '28px',
+                    height: '28px',
                     backgroundColor: color.hex,
-                    border: isSelected ? '3px solid #007bff' : '1px solid #ddd',
-                    borderRadius: '4px',
+                    border: isSelected ? '2px solid #007bff' : '1px solid #ddd',
+                    borderRadius: '3px',
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
@@ -646,7 +616,7 @@ function CustomizationPanel({
                   {isSelected && (
                     <span style={{
                       color: getTextColor(color.hex),
-                      fontSize: '14px',
+                      fontSize: '12px',
                       fontWeight: 'bold'
                     }}>
                       ✓
@@ -661,347 +631,10 @@ function CustomizationPanel({
 
       </div>
 
-      {/* VEHICLE FITMENTS SECTION */}
-      {vehicleTrimData && (
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ 
-            margin: '0 0 15px 0', 
-            fontSize: '16px', 
-            color: '#555'
-          }}>
-            Vehicle Fitments
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                Vehicle Make
-              </label>
-              <input
-                type="text"
-                value={vehicleTrimData.model?.make?.name || 'Unknown Make'}
-                disabled
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  backgroundColor: '#f5f5f5',
-                  color: '#333'
-                }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                Vehicle Model
-              </label>
-              <input
-                type="text"
-                value={vehicleTrimData.model?.name || 'Unknown Model'}
-                disabled
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  backgroundColor: '#f5f5f5',
-                  color: '#333'
-                }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                Vehicle Trim
-              </label>
-              <input
-                type="text"
-                value={vehicleTrimData.name || 'Unknown Trim'}
-                disabled
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  backgroundColor: '#f5f5f5',
-                  color: '#333'
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VARIATION SECTION */}
-      {variations && (
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ 
-            margin: '0 0 15px 0', 
-            fontSize: '16px', 
-            color: '#555'
-          }}>
-            Variation
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {variations.recline_types && variations.recline_types.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                  Recline
-                </label>
-                <select
-                  value={selectedRecline || ''}
-                  onChange={(e) => onReclineChange && onReclineChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: '#fff',
-                    color: '#333'
-                  }}
-                >
-                  <option value="" disabled>Select Recline</option>
-                  {variations.recline_types.map((recline) => (
-                    <option key={recline.id} value={recline.id.toString()}>
-                      {recline.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {variations.lumbar_types && variations.lumbar_types.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                  Lumbar
-                </label>
-                <select
-                  value={selectedLumber || ''}
-                  onChange={(e) => onLumberChange && onLumberChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: '#fff',
-                    color: '#333'
-                  }}
-                >
-                  <option value="" disabled>Select Lumbar</option>
-                  {variations.lumbar_types.map((lumber) => (
-                    <option key={lumber.id} value={lumber.id.toString()}>
-                      {lumber.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {variations.heat_options && variations.heat_options.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                  Heating and Cooling
-                </label>
-                <select
-                  value={selectedHeatingCooling || ''}
-                  onChange={(e) => onHeatingCoolingChange && onHeatingCoolingChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: '#fff',
-                    color: '#333'
-                  }}
-                >
-                  <option value="" disabled>Select Heating/Cooling</option>
-                  {variations.heat_options.map((heatingCooling) => (
-                    <option key={heatingCooling.id} value={heatingCooling.id.toString()}>
-                      {heatingCooling.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* SEAT SECTION */}
-      {variations && (
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ 
-            margin: '0 0 15px 0', 
-            fontSize: '16px', 
-            color: '#555'
-          }}>
-            Seat
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {variations.seat_types && variations.seat_types.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                  Seat Type
-                </label>
-                <select
-                  value={selectedSeatType || ''}
-                  onChange={(e) => onSeatTypeChange && onSeatTypeChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: '#fff',
-                    color: '#333'
-                  }}
-                >
-                  <option value="" disabled>Select Seat Type</option>
-                  {variations.seat_types.map((seatType) => (
-                    <option key={seatType.id} value={seatType.id.toString()}>
-                      {seatType.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {variations.item_types && variations.item_types.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                  Item Type
-                </label>
-                <select
-                  value={selectedItemType || ''}
-                  onChange={(e) => onItemTypeChange && onItemTypeChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: '#fff',
-                    color: '#333'
-                  }}
-                >
-                  <option value="" disabled>Select Item Type</option>
-                  {variations.item_types.map((itemType) => (
-                    <option key={itemType.id} value={itemType.id.toString()}>
-                      {itemType.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {variations.seat_styles && variations.seat_styles.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                  Seat Style
-                </label>
-                <select
-                  value={selectedSeatStyle || ''}
-                  onChange={(e) => onSeatStyleChange && onSeatStyleChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: '#fff',
-                    color: '#333'
-                  }}
-                >
-                  <option value="" disabled>Select Seat Style</option>
-                  {variations.seat_styles.map((seatStyle) => (
-                    <option key={seatStyle.id} value={seatStyle.id.toString()}>
-                      {seatStyle.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {variations.material_types && variations.material_types.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                  Material Type
-                </label>
-                <select
-                  value={selectedMaterialType || ''}
-                  onChange={(e) => onMaterialTypeChange && onMaterialTypeChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: '#fff',
-                    color: '#333'
-                  }}
-                >
-                  <option value="" disabled>Select Material Type</option>
-                  {variations.material_types.map((materialType) => (
-                    <option key={materialType.id} value={materialType.id.toString()}>
-                      {materialType.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {variations.arm_types && variations.arm_types.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#666' }}>
-                  Included Arm
-                </label>
-                <select
-                  value={selectedIncludedArm || ''}
-                  onChange={(e) => onIncludedArmChange && onIncludedArmChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: '#fff',
-                    color: '#333'
-                  }}
-                >
-                  <option value="" disabled>Select Included Arm</option>
-                  {variations.arm_types.map((includedArm) => (
-                    <option key={includedArm.id} value={includedArm.id.toString()}>
-                      {includedArm.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* INDIVIDUAL CONTROLS TOGGLE */}
-      <div style={{ marginBottom: '20px' }}>
-        <button
-          onClick={onToggleIndividualControls}
-          style={{
-            width: '100%',
-            padding: '10px',
-            border: '1px solid #007bff',
-            borderRadius: '6px',
-            background: showIndividualControls ? '#007bff' : '#ffffff',
-            color: showIndividualControls ? '#ffffff' : '#007bff',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            transition: 'all 0.2s'
-          }}
-        >
-          {showIndividualControls ? 'Hide Individual Controls' : 'Show Individual Controls'}
-        </button>
-      </div>
+      {/* INFO MESSAGE FOR TWO-TONE MODE - Now shown inline in toggle */}
       
-      {/* INDIVIDUAL MESH CONTROLS */}
-      {showIndividualControls && (
+      {/* INDIVIDUAL MESH CONTROLS - Hidden, functionality moved to right-click */}
+      {false && (
         <div style={{ marginBottom: '25px' }}>
           <h3 style={{
             margin: '0 0 15px 0',
@@ -1072,7 +705,8 @@ function CustomizationPanel({
         </div>
       )}
 
-      {/* CURRENT SELECTION DISPLAY */}
+      {/* CURRENT SELECTION DISPLAY - Commented out to save space */}
+      {false && (
       <div style={{ 
         padding: '12px', 
         background: '#f8f9fa', 
@@ -1095,35 +729,38 @@ function CustomizationPanel({
           )}
         </div>
       </div>
+      )}
 
 
       {/* MODEL SELECTION */}
-      <div style={{ marginBottom: '25px' }}>
+      <div style={{ marginBottom: '12px' }}>
         <h3 style={{ 
-          margin: '0 0 15px 0', 
-          fontSize: '16px', 
+          margin: '0 0 8px 0', 
+          fontSize: '14px', 
           color: '#555',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '6px'
         }}>
           Model Selection
         </h3>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
           {AVAILABLE_MODELS.map(model => (
             <button
               key={model.id}
               onClick={() => onModelIdChange(model.id)}
               style={{
-                padding: '12px 8px',
-                border: modelId === model.id ? '2px solid #007bff' : '5px solid #ddd',
-                borderRadius: '6px',
-                background: modelId === model.id ? '#292f2fff' : '#292f2fff',
+                padding: '8px 6px',
+                border: modelId === model.id ? '2px solid #007bff' : '1px solid #ddd',
+                borderRadius: '4px',
+                background: modelId === model.id ? '#e7f3ff' : '#ffffff',
                 cursor: 'pointer',
                 textAlign: 'center',
                 transition: 'all 0.2s',
-                fontWeight: modelId === model.id ? 'bold' : 'normal'
+                fontSize: '12px',
+                fontWeight: modelId === model.id ? 'bold' : 'normal',
+                color: modelId === model.id ? '#007bff' : '#333'
               }}
               title={model.description}
             >
@@ -1139,7 +776,7 @@ function CustomizationPanel({
         <div style={{
           position: 'fixed',
           left: `${hoverPosition.x}px`,
-          top: `${hoverPosition.y - 220}px`,
+          top: `${hoverPosition.y + 30}px`,
           transform: 'translateX(-50%)',
           width: '200px',
           backgroundColor: 'white',

@@ -25,7 +25,9 @@ function SubmitButton({ onSubmit, disabled = false }) {
         onClick={handleClick}
         disabled={disabled}
         style={{
-          position: 'relative',
+          position: 'fixed',
+          bottom: '30px',
+          right: '30px',
           padding: '15px 30px',
           backgroundColor: disabled ? '#ccc' : '#28a745',
           color: 'white',
