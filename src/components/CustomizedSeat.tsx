@@ -385,19 +385,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               className="modelScope"
             >
               <ModelViewer />
-              {/* Mask bottom-left area to hide reset buttons */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  left: 0,
-                  bottom: 0,
-                  width: { xs: 220, sm: 280 },
-                  height: 90,
-                  background: '#ffffff',
-                  opacity: 1,
-                  pointerEvents: 'none',
-                }}
-              />
               {/* Force the internal fixed submit button to live inside this container */}
               <style jsx global>{`
                 .modelScope .App {
