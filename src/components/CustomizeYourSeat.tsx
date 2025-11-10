@@ -43,7 +43,6 @@ import {
 import Header from '@/components/Header';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
 import Footer from '@/components/Footer';
-// import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 
 // NEW IMPORTS: Added to enable communication with CustomizedSeat component
 import { useSelectedItem } from '@/contexts/SelectedItemContext'; // Context hook to set selected item data
@@ -54,7 +53,7 @@ import { RootState } from '@/store/store';
 // API IMPORTS
 import shopNowApis, { Product, Category } from '@/services/ShopNowApis';
 
-const ShopNow = () => {
+const CustomizeYourSeat = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -69,8 +68,8 @@ const ShopNow = () => {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth) || {};
   const cartItems = useSelector((state: RootState) => state.cart.items) || [];
   
-  // Check if we're on the ShopGallery or Shop Now page
-  const isOnShopGalleryPage = pathname === '/ShopGallery' || pathname === '/shop-now';
+  // Check if we're on the customize-your-seat page
+  const isOnCustomizeYourSeatPage = pathname === '/customize-your-seat';
   
   
   const [selectedMainCategory, setSelectedMainCategory] = useState('all');
@@ -138,7 +137,7 @@ const ShopNow = () => {
 
   // Function to fetch products with server-side pagination and filtering
   const fetchProducts = useCallback(async () => {
-    if (!isOnShopGalleryPage) {
+    if (!isOnCustomizeYourSeatPage) {
       return;
     }
     if ((fetchProducts as any).__inFlight) {
@@ -181,11 +180,16 @@ const ShopNow = () => {
       const productsResponse = await shopNowApis.getProducts(apiParams);
       
       if (productsResponse.status === 'success' && productsResponse.data) {
-        setApiProducts(productsResponse.data);
+        // CLIENT-SIDE FILTER: Only show products where is_customize_3d_product = true
+        const filteredProducts = productsResponse.data.filter((product: Product) => 
+          product.is_customize_3d_product === true
+        );
         
-        // Extract and set categories from products (only show categories with products)
+        setApiProducts(filteredProducts);
+        
+        // Extract and set categories from filtered products (only show categories with products)
         if (categories.length === 0) {
-          const extractedCategories = extractCategoriesFromProducts(productsResponse.data);
+          const extractedCategories = extractCategoriesFromProducts(filteredProducts);
           setCategories(extractedCategories);
         }
         
@@ -216,15 +220,15 @@ const ShopNow = () => {
     
     setLoading(false);
     (fetchProducts as any).__inFlight = false;
-  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, customerId, isAuthenticated, extractCategoriesFromProducts]);
+  }, [isOnCustomizeYourSeatPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, customerId, isAuthenticated, extractCategoriesFromProducts]);
 
   // Effect to fetch products - categories are extracted from products response
   useEffect(() => {
-    if (isOnShopGalleryPage) {
+    if (isOnCustomizeYourSeatPage) {
       fetchProducts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnShopGalleryPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, customerId, isAuthenticated]);
+  }, [isOnCustomizeYourSeatPage, currentPage, itemsPerPage, showSpecialOnly, selectedMainCategory, customerId, isAuthenticated]);
 
   // Cleanup effect to clear any pending timers when component unmounts
   useEffect(() => {
@@ -485,7 +489,7 @@ const ShopNow = () => {
     handleSnackbarOpen('Added to cart');
   };
 
-  // NEW FUNCTION: Handles item selection and navigation to customization page
+  // NEW FUNCTION: Handles item selection and navigation to 3D customization page
   const handleCustomize = (item: Product) => {
     
     // Set only the product ID in the context
@@ -493,8 +497,8 @@ const ShopNow = () => {
       id: item.id
     });
     
-    // Navigate to customize page
-    router.push('/customize-your-seat');
+    // Navigate to build-your-seat page (3D model)
+    router.push('/build-your-seat');
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -523,8 +527,8 @@ const ShopNow = () => {
       
              {/* Hero Section */}
                <HeroSectionCommon
-          title="Shop Now"
-          description="Discover our exclusive collection of premium seats with special pricing and unique features"
+          title="Customize Your Seat"
+          description="Build your perfect seat with our 3D customization tool"
           height={{
             xs: '75px',
             sm: '70px', 
@@ -534,9 +538,6 @@ const ShopNow = () => {
             xxl: '115px'
           }}
         />
-
-      {/* Breadcrumbs - Temporarily disabled */}
-      {/* <Breadcrumbs /> */}
 
 
              {/* Gallery Grid */}
@@ -687,7 +688,7 @@ const ShopNow = () => {
                   }}
                 >
                                    {selectedMainCategory === 'all' 
-                     ? 'All Products' 
+                     ? 'All Customizable Products' 
                      : apiMainCategories.find(cat => cat.value === selectedMainCategory)?.label || 'Products'
                    }
                 </Typography>
@@ -1167,8 +1168,8 @@ const ShopNow = () => {
                 overflowWrap: 'break-word',
               }}>
                                  {selectedMainCategory === 'all' 
-                   ? 'No products found'
-                   : `No products found for ${apiMainCategories.find(cat => cat.value === selectedMainCategory)?.label?.toLowerCase() || 'this category'}`
+                   ? 'No customizable products found'
+                   : `No customizable products found for ${apiMainCategories.find(cat => cat.value === selectedMainCategory)?.label?.toLowerCase() || 'this category'}`
                  }
               </Typography>
               <Typography variant="body1" sx={{ 
@@ -1331,23 +1332,23 @@ const ShopNow = () => {
         </Container>
       </Box>
 
-             {/* Lightbox Dialog */}
-       <Dialog
-         open={!!selectedImage}
-         onClose={handleCloseLightbox}
-         maxWidth="lg"
-         fullWidth
-         PaperProps={{
-           sx: {
-             backgroundColor: 'rgba(255, 255, 255, 0.99)',
-             color: 'black',
-             margin: { xs: 1, sm: 2, md: 4 },
-             maxWidth: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)', md: 'calc(100% - 64px)' },
-             maxHeight: { xs: 'calc(100vh - 16px)', sm: 'calc(100vh - 32px)', md: 'calc(100vh - 64px)' },
-             height: { xs: 'auto', md: '80vh' },
-           },
-         }}
-       >
+      {/* Lightbox Dialog - Identical to ShopNow but with "Build Your Own Seat" button visible */}
+      <Dialog
+        open={!!selectedImage}
+        onClose={handleCloseLightbox}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: 'rgba(255, 255, 255, 0.99)',
+            color: 'black',
+            margin: { xs: 1, sm: 2, md: 4 },
+            maxWidth: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)', md: 'calc(100% - 64px)' },
+            maxHeight: { xs: 'calc(100vh - 16px)', sm: 'calc(100vh - 32px)', md: 'calc(100vh - 64px)' },
+            height: { xs: 'auto', md: '80vh' },
+          },
+        }}
+      >
          <DialogContent sx={{ p: 0, position: 'relative', height: '100%' }}>
                      <IconButton
              onClick={handleCloseLightbox}
@@ -1490,7 +1491,7 @@ const ShopNow = () => {
                        );
                      })()}
 
-                    {/* Main Product Image */}
+                    {/* Main Product Image - Same as ShopNow */}
                     <Box
                       sx={{
                         position: 'relative',
@@ -1778,6 +1779,42 @@ const ShopNow = () => {
                                            <ArrowForward />
                    </IconButton>
 
+                                       {/* Build Your Own Seat Button - Bottom Right of Image Container (Desktop Only) */}
+                                                                 <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => {
+                            handleCustomize(selectedImage);
+                            handleCloseLightbox();
+                          }}
+                          sx={{
+                            position: 'absolute',
+                            bottom: { xs: 20, sm: 30, md: 30, lg: 30, xl: 30 },
+                            right: { xs: 12, sm: 16, md: 20 },
+                            display: { xs: 'none', sm: 'flex' }, // Only show on desktop
+                           borderColor: theme.palette.primary.main,
+                           color: theme.palette.primary.main,
+                           backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                           
+                           height: { xs: 36, sm: 40, md: 44 },
+                           px: { xs: 2, sm: 2.5, md: 3 },
+                           py: { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 , xl: 1.5},
+                           borderRadius: '10px',
+                           backdropFilter: 'blur(10px)',
+                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                           zIndex: 2,
+                           '&:hover': {
+                             backgroundColor: theme.palette.primary.main,
+                             color: 'white',
+                             boxShadow: `0 6px 20px ${theme.palette.primary.main}4D`,
+                             transform: 'translateY(-2px)',
+                           },
+                           transition: 'all 0.3s ease',
+                         }}
+                       >
+                         Build Your Own Seat
+                       </Button>
+                   
                   </Box>
 
                  {/* Bottom Container - Text Content (Mobile) / Left Container (Desktop) */}
@@ -1865,6 +1902,39 @@ const ShopNow = () => {
                     {selectedImage.description}
                   </Typography>
                   
+                                                                                                                                                   <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        width: '100%',
+                        gap: { xs: 2, sm: 0 } // Gap only for mobile
+                      }}>
+                       {/* BUILD YOUR OWN SEAT BUTTON - Only visible on mobile */}
+                                                                       <Button
+                          variant="outlined"
+                          size="medium"
+                          onClick={() => {
+                            handleCustomize(selectedImage);
+                            handleCloseLightbox();
+                          }}
+                          sx={{
+                            display: { xs: 'flex', sm: 'none' }, // Only show on mobile
+                            borderColor: theme.palette.primary.main,
+                            color: theme.palette.primary.main,
+                            backgroundColor: 'white',
+                            width: '100%',
+                            height: { xs: '44px', sm: '40px' },
+                            textTransform: 'none',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                            '&:hover': {
+                              backgroundColor: theme.palette.primary.main,
+                              color: 'white',
+                              boxShadow: `0 4px 12px ${theme.palette.primary.main}4D`,
+                            },
+                          }}
+                        >
+                          Build Your Own Seat
+                        </Button>
+                       
                        {/* ADD TO CART BUTTON */}
                                                                        <Button
                           variant="contained"
@@ -1895,6 +1965,7 @@ const ShopNow = () => {
                         >
                           {selectedImage.stock && selectedImage.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
                         </Button>
+                     </Box>
                </Box>
                </Box>
              )}
@@ -1922,4 +1993,5 @@ const ShopNow = () => {
   );
 };
 
-export default ShopNow; 
+export default CustomizeYourSeat;
+

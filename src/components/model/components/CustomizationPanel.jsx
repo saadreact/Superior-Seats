@@ -153,7 +153,7 @@ function CustomizationPanel({
   return (
     <div style={{
       width: '100%',
-      height: '100vh',
+      height: '100%',
       background: '#ffffff',
       padding: '12px',
       boxSizing: 'border-box',
