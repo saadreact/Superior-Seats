@@ -32,7 +32,7 @@ export const theme = createTheme({
   },
   palette: {
     primary: {
-     main: '#e53935', // More vibrant red
+     main: '#a91a12', // More vibrant red
     //  main: '#da291c',  //Client color 
       light: '#ff6f60',
       dark: '#b71c1c',

@@ -57,19 +57,19 @@ const AboutPage = () => {
     {
       title: "Custom Fit Design",
       description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
-      image: "/Gallery/double.png",
+      image: "/Gallery/doublevan.png",
       icon: <CheckCircle />
     },
     {
       title: "Premium Materials",
       description: "Highest quality leather, fabric, and materials. We use only the finest materials that are built to last and provide exceptional comfort.",
-      image: "/Gallery/skyblue.png",
+      image: "/Gallery/skybluevan.png",
       icon: <CheckCircle />
     },
     {
       title: "Expert Craftsmanship",
       description: "Skilled artisans handcraft each seat with precision. Our experienced craftsmen bring decades of expertise to every project.",
-      image: "/Gallery/20.png",
+      image: "/Gallery/brownblack.png",
       icon: <CheckCircle />
     },
     {
@@ -690,6 +690,7 @@ const AboutPage = () => {
           {/* Why Choose Us Cards with alternating layout */}
           {whyChooseItems.map((item, index) => {
             const isLegacyImage = legacyImages.includes(item.title);
+            const isModernImage = !isLegacyImage;
             return (
             <Box
               key={index}
@@ -750,18 +751,18 @@ const AboutPage = () => {
                 }}
                 sx={{
                   position: isLegacyImage ? 'relative' : 'static',
-                  display: isLegacyImage ? 'block' : 'flex',
-                  alignItems: isLegacyImage ? 'stretch' : 'center',
-                  justifyContent: isLegacyImage ? 'flex-start' : 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   borderRadius: 2,
                   overflow: 'hidden',
                   boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   order: { xs: 1, md: index % 2 === 0 ? 2 : 1 },
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  backgroundColor: isLegacyImage ? 'transparent' : '#ffffff',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 240, sm: 260, md: 320, lg: 360 },
                   paddingTop: isLegacyImage ? '70%' : 0,
-                  height: isLegacyImage ? 'auto' : { xs: 220, sm: 260, md: 320, lg: 360 },
                   '&:hover': {
                     transform: 'translateY(-4px) scale(1.02)',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
@@ -778,9 +779,9 @@ const AboutPage = () => {
                     left: isLegacyImage ? 0 : 'auto',
                     width: '100%',
                     height: '100%',
-                    objectFit: isLegacyImage ? 'cover' : 'contain',
-                    p: isLegacyImage ? 0 : { xs: 1.5, sm: 2 },
+                    objectFit: 'cover',
                     display: 'block',
+                    transition: 'transform 0.3s ease',
                   }}
                 />
               </MotionBox>
