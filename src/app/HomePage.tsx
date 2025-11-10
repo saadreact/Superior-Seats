@@ -279,7 +279,7 @@ const HomePage = () => {
       {/* New Superior Seating LLC Section */}
       <Box sx={{ 
         py: { xs: 6, md: 5, lg: 5 ,xl: 5},
-        backgroundImage: 'linear-gradient(135deg, rgba(240, 125, 125, 0.55) 0%, rgb(124, 0, 0) 100%)',
+        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -406,7 +406,7 @@ const HomePage = () => {
                // mb: { xs: 3, sm: 4, md: 1, lg: 1, xl: 1 }
               }}
             >
-              Premium Truck, SemiTruck,RV, and Van seating with custom
+              Premium Truck, SemiTruck, RV and Van seating with custom
               <br />
               <span style={{ textAlign: "center", display: "block", width: "100%" }}>
                 options and superior craftsmanship
