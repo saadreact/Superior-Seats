@@ -9,7 +9,7 @@
 
 .customization-panel {
   width: 30%;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   overflow-x: visible;
   flex-shrink: 0;
@@ -20,7 +20,7 @@
 
 .scene-container {
   width: 70%;
-  height: 100vh;
+  height: 100%;
   position: relative;
   flex-grow: 1;
 }

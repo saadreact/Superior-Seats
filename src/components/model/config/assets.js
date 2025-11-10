@@ -12,7 +12,8 @@ export const getModelConfig = (modelId) => {
       //metallic: `/assets/textures/${modelId}/Metallic.jpg`,
       //roughness: `/assets/textures/${modelId}/Roughness.jpg`,
       ao: `/assets/textures/${modelId}/AO.jpg`,
-      stitch: `/assets/textures/${modelId}/stich_png.png`,
+      // Note: stitch is now loaded dynamically based on pattern in Model3D.jsx
+      //stitch: `/assets/textures/${modelId}/stich_png.png`,
       //stitch1: `/assets/textures/${modelId}/stich_png1.png`,
       //stitch2: `/assets/textures/${modelId}/stich_png02.png`,
       //brick: `/assets/textures/${modelId}/brick.jpeg`
@@ -21,6 +22,28 @@ export const getModelConfig = (modelId) => {
     position: [0, -0.5, 0],
     rotation: [0, 0, 0]
   };
+};
+
+/**
+ * Get stitching texture path based on model and pattern
+ * Each pattern has its own stitching texture
+ * @param {string} modelId - Model ID (e.g., '1', '2')
+ * @param {string} patternId - Pattern ID (e.g., '1-1', '1-2', etc.)
+ * @returns {string} Path to stitching texture
+ */
+export const getStitchingPath = (modelId, patternId) => {
+  // Extract pattern number from patternId
+  // patternId format: '{modelId}-{patternNum}' or '{modelId}-{patternNum}-twotone'
+  let patternNum = '1'; // Default to pattern 1
+  
+  if (patternId && patternId !== 'default') {
+    const parts = patternId.split('-');
+    if (parts.length >= 2) {
+      patternNum = parts[1]; // Extract pattern number
+    }
+  }
+  
+  return `/assets/stitchings/${modelId}/${patternNum}/1.png`;
 };
 
 // Legacy support - keep existing MODELS export for compatibility

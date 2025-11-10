@@ -11,14 +11,14 @@ export const getModelPatterns = (modelId, isTwoTone = false) => {
   const basePath = `/assets/patterns/${modelId}`;
   
   if (isTwoTone) {
-    // Two-tone specific patterns
+    // Two-tone mode uses same patterns as single-tone (shared UV layout)
     return [
-      { id: `${modelId}-1-twotone`, name: 'Two-Tone Pattern 1', path: `${basePath}/1-twotone.png`, preview: `${basePath}/1-twotone.png` },
-      { id: `${modelId}-2-twotone`, name: 'Two-Tone Pattern 2', path: `${basePath}/2-twotone.png`, preview: `${basePath}/2-twotone.png` },
-      { id: `${modelId}-3-twotone`, name: 'Two-Tone Pattern 3', path: `${basePath}/3-twotone.png`, preview: `${basePath}/3-twotone.png` },
-      { id: `${modelId}-4-twotone`, name: 'Two-Tone Pattern 4', path: `${basePath}/4-twotone.png`, preview: `${basePath}/4-twotone.png` },
-      { id: `${modelId}-5-twotone`, name: 'Two-Tone Pattern 5', path: `${basePath}/5-twotone.png`, preview: `${basePath}/5-twotone.png` },
-      { id: `${modelId}-6-twotone`, name: 'Two-Tone Pattern 6', path: `${basePath}/6-twotone.png`, preview: `${basePath}/6-twotone.png` }
+      { id: `${modelId}-1`, name: 'Pattern 1', path: `${basePath}/1.jpg`, preview: `${basePath}/1-preview.jpg` },
+      { id: `${modelId}-2`, name: 'Pattern 2', path: `${basePath}/02.jpg`, preview: `${basePath}/02-preview.jpg` },
+      { id: `${modelId}-3`, name: 'Pattern 3', path: `${basePath}/03.jpg`, preview: `${basePath}/03-preview.jpg` },
+      { id: `${modelId}-4`, name: 'Pattern 4', path: `${basePath}/04.jpg`, preview: `${basePath}/04-preview.jpg` },
+      { id: `${modelId}-5`, name: 'Pattern 5', path: `${basePath}/05.jpg`, preview: `${basePath}/05-preview.jpg` },
+      { id: `${modelId}-6`, name: 'Pattern 6', path: `${basePath}/06.jpg`, preview: `${basePath}/06-preview.jpg` }
     ];
   } else {
     // Single tone patterns

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { COLOR_PALETTE, COLOR_CATEGORIES } from './config/colorPalette';
+import { COLOR_PALETTE, COLOR_CATEGORIES } from '../config/colorPalette';
 
 const ColorPalettePicker = ({ 
   currentColor, 
