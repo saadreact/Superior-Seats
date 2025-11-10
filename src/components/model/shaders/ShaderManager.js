@@ -9,6 +9,8 @@ import { createUltraleatherMaterial, updateUltraleatherUniforms } from './Ultral
 import { createBrisaDistressedMaterial, updateBrisaDistressedUniforms } from './BrisaDistressedMaterial';
 import { createCarrollLeatherMaterial, updateCarrollLeatherUniforms } from './CarrollLeatherMaterial';
 import { patternLoader } from '../utils/PatternLoader';
+import { getStitchingPath } from '../config/assets';
+import * as THREE from 'three';
 
 /**
  * Central shader manager for all fabric types
@@ -125,9 +127,11 @@ export class ShaderManager {
    * @param {string} stitchColor - Hex color for stitching (if applicable)
    * @param {object} textures - Texture objects
    * @param {number} ambientStrength - Ambient lighting strength (0.0 to 1.0)
+   * @param {boolean} isTwoTone - Whether we're in two-tone mode (affects UV mapping)
+   * @param {boolean} noStitching - Whether to disable stitching for this material
    * @returns {THREE.Material} The created material
    */
-  static createMaterial(fabricType, fabricColor, stitchColor, textures, ambientStrength = 0.5) {
+  static createMaterial(fabricType, fabricColor, stitchColor, textures, ambientStrength = 0.5, isTwoTone = false, noStitching = false) {
     const fabricConfig = this.fabricTypes[fabricType];
     
     if (!fabricConfig) {
@@ -139,11 +143,13 @@ export class ShaderManager {
     const specularPower = finalFabricConfig.specularPower || 20.0;
     const specularIntensity = finalFabricConfig.specularIntensity || 0.4;
     
+    console.log(`🎨 ShaderManager.createMaterial: ${fabricType}, noStitching=${noStitching}`);
+    
     // Create material based on type with material-specific specular properties
     if (finalFabricConfig.hasStitching) {
-      return finalFabricConfig.createMaterial(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity);
+      return finalFabricConfig.createMaterial(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
     } else {
-      return finalFabricConfig.createMaterial(fabricColor, textures, ambientStrength, specularPower, specularIntensity);
+      return finalFabricConfig.createMaterial(fabricColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
     }
   }
 
@@ -156,8 +162,9 @@ export class ShaderManager {
    * @param {string} patternId - New pattern ID (if applicable)
    * @param {object} originalTextures - Original textures for default pattern restoration
    * @param {number} ambientStrength - Ambient lighting strength (0.0 to 1.0)
+   * @param {string} modelId - Model ID for loading pattern-specific stitching
    */
-  static async updateMaterial(material, fabricType, fabricColor, stitchColor, patternId = null, originalTextures = null, ambientStrength = null) {
+  static async updateMaterial(material, fabricType, fabricColor, stitchColor, patternId = null, originalTextures = null, ambientStrength = null, modelId = '1') {
     const fabricConfig = this.fabricTypes[fabricType];
     
     if (!fabricConfig) {
@@ -180,11 +187,56 @@ export class ShaderManager {
         const currentTex = material.uniforms.diamondNormalMap.value;
         if (patternTexture && currentTex) {
           this.copySamplerSettings(patternTexture, currentTex);
+          
         }
 
         material.uniforms.diamondNormalMap.value = patternTexture;
         material.needsUpdate = true;
         console.log(`✅ Updated pattern to ${patternId} for ${fabricType}`);
+        
+        // Update stitching texture when pattern changes (each pattern has its own stitching)
+        if (material.uniforms.stitchMap && fabricConfig.hasStitching) {
+          try {
+            const stitchingPath = getStitchingPath(modelId, patternId);
+            const currentStitchTex = material.uniforms.stitchMap.value;
+            
+            const textureLoader = new THREE.TextureLoader();
+            const newStitchTexture = await new Promise((resolve, reject) => {
+              const texture = textureLoader.load(
+                stitchingPath,
+                (loadedTexture) => {
+                  loadedTexture.needsUpdate = true;
+                  resolve(loadedTexture);
+                },
+                undefined,
+                (error) => {
+                  console.warn(`Failed to load stitching texture ${stitchingPath}:`, error);
+                  reject(error);
+                }
+              );
+              
+              // Set properties immediately on the texture object (before it finishes loading)
+              // This is critical - flipY must be set BEFORE the texture is processed
+              texture.flipY = false;
+              texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+              texture.colorSpace = THREE.SRGBColorSpace;
+              
+              // Copy additional settings from current stitch texture if available
+              if (currentStitchTex) {
+                texture.offset.copy(currentStitchTex.offset);
+                texture.repeat.copy(currentStitchTex.repeat);
+                if (currentStitchTex.center) texture.center.copy(currentStitchTex.center);
+                texture.rotation = currentStitchTex.rotation || 0;
+              }
+            });
+            
+            // Update the stitching texture uniform
+            material.uniforms.stitchMap.value = newStitchTexture;
+            console.log(`✅ Updated stitching texture to ${stitchingPath}`);
+          } catch (error) {
+            console.warn(`Failed to update stitching for pattern ${patternId}:`, error);
+          }
+        }
       } catch (error) {
         console.warn(`Failed to update pattern ${patternId}:`, error);
       }

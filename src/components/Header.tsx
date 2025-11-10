@@ -48,6 +48,7 @@ const Header = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [shopNowMenuAnchor, setShopNowMenuAnchor] = useState<null | HTMLElement>(null);
   const [currentPath, setCurrentPath] = useState('');
   
   // Snackbar state
@@ -99,9 +100,14 @@ const Header = () => {
   const menuItems = [
     { text: 'Home', href: '/' },
     { text: 'Fleet & Builder Solutions', href: '/fleet-builder-solutions' },
-    // TODO: Uncomment when customize page is ready
-    // { text: 'Build Your Own Seat', href: '/custom-seats' },
-    { text: 'Shop Now', href: '/shop-now' },
+    { 
+      text: 'Shop Now', 
+      href: '/shop-now',
+      subItems: [
+        { text: 'Shop Now', href: '/shop-now' },
+        { text: 'Customize Your Seat', href: '/customize-your-seat' }
+      ]
+    },
     { text: 'Gallery', href: '/gallery' },
     { text: 'Upholstery Services', href: '/upholstery' },
     { text: 'Upfitting', href: '/upfitting' },
@@ -143,6 +149,14 @@ const Header = () => {
       severity: 'success',
     });
     handleUserMenuClose();
+  };
+
+  const handleShopNowMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setShopNowMenuAnchor(event.currentTarget);
+  };
+
+  const handleShopNowMenuClose = () => {
+    setShopNowMenuAnchor(null);
   };
 
   // Function to clear breadcrumb history when Home is clicked
@@ -188,27 +202,76 @@ const Header = () => {
       </Box>
              <List sx={{ flex: 1 }}>
          {menuItems.map((item) => (
-           <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
-             <ListItem 
-               onClick={item.text === 'Home' ? handleHomeClick : undefined}
-               sx={{
-                 py: 1.5,
-                 cursor: 'pointer',
-                 '&:hover': {
-                   backgroundColor: 'rgba(218, 41, 28, 0.05)',
-                 }
-               }}
-             >
-               <ListItemText 
-                 primary={item.text}
-                 primaryTypographyProps={{
-                   fontSize: { xs: '0.9rem', sm: '1rem' },
-                   fontWeight: 650,
-                   color: 'rgba(0, 0, 0, )',
-                 }}
-               />
-             </ListItem>
-           </Link>
+           <React.Fragment key={item.text}>
+             {item.subItems ? (
+               // If item has subItems, render parent and children
+               <>
+                 <ListItem 
+                   sx={{
+                     py: 1.5,
+                     cursor: 'default',
+                     backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                   }}
+                 >
+                   <ListItemText 
+                     primary={item.text}
+                     primaryTypographyProps={{
+                       fontSize: { xs: '0.9rem', sm: '1rem' },
+                       fontWeight: 700,
+                       color: 'rgba(0, 0, 0, )',
+                     }}
+                   />
+                 </ListItem>
+                 {item.subItems.map((subItem: any) => (
+                   <Link key={subItem.text} href={subItem.href} style={{ textDecoration: 'none' }}>
+                     <ListItem 
+                       onClick={() => setMobileOpen(false)}
+                       sx={{
+                         py: 1.5,
+                         pl: 4,
+                         cursor: 'pointer',
+                         '&:hover': {
+                           backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                         }
+                       }}
+                     >
+                       <ListItemText 
+                         primary={subItem.text}
+                         primaryTypographyProps={{
+                           fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                           fontWeight: 500,
+                           color: 'rgba(0, 0, 0, )',
+                         }}
+                       />
+                     </ListItem>
+                   </Link>
+                 ))}
+               </>
+             ) : (
+               // Regular menu item without subItems
+               <Link href={item.href} style={{ textDecoration: 'none' }}>
+                 <ListItem 
+                   onClick={item.text === 'Home' ? handleHomeClick : () => setMobileOpen(false)}
+                   sx={{
+                     py: 1.5,
+                     cursor: 'pointer',
+                     '&:hover': {
+                       backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                     }
+                   }}
+                 >
+                   <ListItemText 
+                     primary={item.text}
+                     primaryTypographyProps={{
+                       fontSize: { xs: '0.9rem', sm: '1rem' },
+                       fontWeight: 650,
+                       color: 'rgba(0, 0, 0, )',
+                     }}
+                   />
+                 </ListItem>
+               </Link>
+             )}
+           </React.Fragment>
                  ))}
         <Divider sx={{ my: 1.5 }} />
         {userIsSuperAdmin && (
@@ -385,25 +448,94 @@ const Header = () => {
                 }}>
                   {menuItems.map((item) => {
                     const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
+                    
+                    // If item has subItems, render with dropdown
+                    if (item.subItems) {
+                      return (
+                        <React.Fragment key={item.text}>
+                          <Button
+                            color="inherit"
+                            onClick={handleShopNowMenuClick}
+                            sx={{
+                              color: 'black',
+                              fontWeight: 500,
+                              fontSize: { md: '0.9rem', lg: '1rem', xl: '1.1rem' },
+                              px: { md: 0.5, lg: 1, xl: 1.25, sm: 0.5, xs: 0.5},
+                              py: { md: 0.5, lg: 0.55, xl: 1, sm: 0.5, xs: 0.5},
+                              whiteSpace: 'nowrap',
+                              minWidth: 'auto',
+                              backgroundColor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
+                              '&:hover': {
+                                backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                                color: 'black',
+                                transform: 'translateY(-0.25px)',
+                              },
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            {item.text}
+                          </Button>
+                          <Menu
+                            anchorEl={shopNowMenuAnchor}
+                            open={Boolean(shopNowMenuAnchor)}
+                            onClose={handleShopNowMenuClose}
+                            anchorOrigin={{
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                              vertical: 'top',
+                              horizontal: 'left',
+                            }}
+                            PaperProps={{
+                              sx: {
+                                mt: 0.5,
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                                borderRadius: 2,
+                              }
+                            }}
+                          >
+                            {item.subItems.map((subItem: any) => (
+                              <MenuItem 
+                                key={subItem.text}
+                                onClick={() => {
+                                  handleShopNowMenuClose();
+                                  router.push(subItem.href);
+                                }}
+                                sx={{ 
+                                  py: 1.5, 
+                                  px: 2, 
+                                  '&:hover': { 
+                                    backgroundColor: 'rgba(218, 41, 28, 0.05)' 
+                                  } 
+                                }}
+                              >
+                                {subItem.text}
+                              </MenuItem>
+                            ))}
+                          </Menu>
+                        </React.Fragment>
+                      );
+                    }
+                    
+                    // Regular menu item without subItems
                     return (
                       <Link key={item.text} href={item.href} style={{ textDecoration: 'none' }}>
-                                                                         <Button
+                        <Button
                           color="inherit"
                           onClick={item.text === 'Home' ? handleHomeClick : undefined}
                           sx={{
                             color: 'black',
                             fontWeight: 500,
                             fontSize: { md: '0.9rem', lg: '1rem', xl: '1.1rem' },
-                            // Further reduced padding for even smaller hover area
                             px: { md: 0.5, lg: 1, xl: 1.25, sm: 0.5, xs: 0.5},
                             py: { md: 0.5, lg: 0.55, xl: 1, sm: 0.5, xs: 0.5},
                             whiteSpace: 'nowrap',
                             minWidth: 'auto',
-                                                          backgroundColor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-                             '&:hover': {
-                               backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                               color: 'black',
-                              // Minimal transform for very subtle hover effect
+                            backgroundColor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
+                            '&:hover': {
+                              backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                              color: 'black',
                               transform: 'translateY(-0.25px)',
                             },
                             transition: 'all 0.2s ease',

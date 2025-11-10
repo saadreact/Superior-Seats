@@ -101,7 +101,7 @@ const LIGHTING_ENVIRONMENTS = {
   }
 };
 
-const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, patternId, meshCustomizations, highlightedMesh, onPartRightClick, seatType }, ref) => {
+const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, patternId, meshCustomizations, highlightedMesh, onPartRightClick, seatType, onResetModel, glowEditableParts }, ref) => {
   const controlsRef = useRef();
   const canvasRef = useRef();
   const [lightingEnv, setLightingEnv] = useState('daylight');
@@ -263,6 +263,7 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
             ambientStrength={currentEnv.ambientStrength}
             onPartRightClick={onPartRightClick}
             seatType={seatType}
+            glowEditableParts={glowEditableParts}
           />
         </Suspense>
         
@@ -335,58 +336,113 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
         ))}
       </div>
       
-      {/* Reset Camera Button */}
-      <button
-        onClick={resetCamera}
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          padding: '12px 20px',
-          backgroundColor: 'rgba(0, 123, 255, 0.85)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          fontWeight: '600',
-          boxShadow: '0 2px 8px rgba(0, 123, 255, 0.3)',
-          transition: 'all 0.2s ease',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          zIndex: 10,
-          backdropFilter: 'blur(10px)'
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = 'rgba(0, 86, 179, 0.95)';
-          e.target.style.transform = 'translateY(-2px)';
-          e.target.style.boxShadow = '0 4px 12px rgba(0, 123, 255, 0.4)';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = 'rgba(0, 123, 255, 0.85)';
-          e.target.style.transform = 'translateY(0)';
-          e.target.style.boxShadow = '0 2px 8px rgba(0, 123, 255, 0.3)';
-        }}
-        title="Reset camera to default position"
-      >
-        <svg 
-          width="16" 
-          height="16" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
-          strokeLinejoin="round"
+      {/* Reset Buttons Container */}
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '20px',
+        display: 'flex',
+        gap: '12px',
+        zIndex: 10
+      }}>
+        {/* Reset View Button */}
+        <button
+          onClick={resetCamera}
+          style={{
+            padding: '12px 20px',
+            backgroundColor: 'rgba(0, 123, 255, 0.85)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            boxShadow: '0 2px 8px rgba(0, 123, 255, 0.3)',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backdropFilter: 'blur(10px)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = 'rgba(0, 86, 179, 0.95)';
+            e.target.style.transform = 'translateY(-2px)';
+            e.target.style.boxShadow = '0 4px 12px rgba(0, 123, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'rgba(0, 123, 255, 0.85)';
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 2px 8px rgba(0, 123, 255, 0.3)';
+          }}
+          title="Reset camera to default position"
         >
-          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-          <path d="M21 3v5h-5" />
-          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-          <path d="M3 21v-5h5" />
-        </svg>
-        Reset View
-      </button>
+          <svg 
+            width="16" 
+            height="16" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+            <path d="M3 21v-5h5" />
+          </svg>
+          Reset View
+        </button>
+        
+        {/* Reset Model Button */}
+        <button
+          onClick={onResetModel}
+          style={{
+            padding: '12px 20px',
+            backgroundColor: 'rgba(220, 53, 69, 0.85)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            boxShadow: '0 2px 8px rgba(220, 53, 69, 0.3)',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backdropFilter: 'blur(10px)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = 'rgba(177, 35, 50, 0.95)';
+            e.target.style.transform = 'translateY(-2px)';
+            e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'rgba(220, 53, 69, 0.85)';
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 2px 8px rgba(220, 53, 69, 0.3)';
+          }}
+          title="Reset model to default settings"
+        >
+          <svg 
+            width="16" 
+            height="16" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+            <path d="M3 21v-5h5" />
+          </svg>
+          Reset Model
+        </button>
+      </div>
     </div>
   );
 });
