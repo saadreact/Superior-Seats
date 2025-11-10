@@ -288,7 +288,7 @@ const Gallery = () => {
               <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
                 <Box
                   component="img"
-                  src="/Gallery/Truckimages/brownchair.jpg"
+                  src="/Gallery/Truckimages/gallerypic.png"
                   alt="Workshop materials"
                   sx={{
                     display: 'block',

@@ -30,7 +30,7 @@ const Footer: React.FC<FooterProps> = () => {
         viewport={{ once: true }}
         sx={{
           py: { xs: 2, sm: 2.5, md: 3, lg: 3.5 },
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.main} 100%)`,
           color: theme.palette.primary.contrastText || "white",
           backdropFilter: "blur(10px)",
           borderTop: "1px solid rgba(255, 255, 255, 0.1)",
