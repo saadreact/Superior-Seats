@@ -231,7 +231,7 @@ const FleetBuilderSolutionsPage = () => {
                   <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
                     <Box
                       component="img"
-                      src="/Gallery/Truckimages/c2.png"
+                      src="/Gallery/Truckimages/cu2.png"
                       alt="Fleet buses"
                       sx={{
                         display: 'block',
