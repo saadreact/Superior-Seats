@@ -41,6 +41,7 @@ class SeatStitchPatternService {
     price: number;
     price_tier_ids: number[];
     price_adjustments?: Record<string, number>;
+    color_ids?: number[];
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -68,6 +69,13 @@ class SeatStitchPatternService {
           });
         }
 
+        // Append color IDs as array
+        if (data.color_ids && Array.isArray(data.color_ids)) {
+          data.color_ids.forEach(id => {
+            formData.append('color_ids[]', id.toString());
+          });
+        }
+
         const response = await api.post('/seat-stitch-patterns', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -89,7 +97,8 @@ class SeatStitchPatternService {
           cost: data.cost,
           price: data.price,
           price_tier_ids: data.price_tier_ids,
-          price_adjustments: data.price_adjustments
+          price_adjustments: data.price_adjustments,
+          color_ids: data.color_ids
         };
         const response = await api.post('/seat-stitch-patterns', jsonData);
         return response.data?.data || response.data;
@@ -108,6 +117,7 @@ class SeatStitchPatternService {
     price?: number;
     price_tier_ids?: number[];
     price_adjustments?: Record<string, number>;
+    color_ids?: number[];
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -135,6 +145,13 @@ class SeatStitchPatternService {
           });
         }
 
+        // Append color IDs as array
+        if (data.color_ids && Array.isArray(data.color_ids)) {
+          data.color_ids.forEach(id => {
+            formData.append('color_ids[]', id.toString());
+          });
+        }
+
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
         
@@ -159,7 +176,8 @@ class SeatStitchPatternService {
           cost: data.cost,
           price: data.price,
           price_tier_ids: data.price_tier_ids,
-          price_adjustments: data.price_adjustments
+          price_adjustments: data.price_adjustments,
+          color_ids: data.color_ids
         };
         const response = await api.put(`/seat-stitch-patterns/${id}`, jsonData);
         return response.data?.data || response.data;
