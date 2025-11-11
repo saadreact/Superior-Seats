@@ -42,6 +42,7 @@ class MaterialTypesService {
     is_active?: boolean;
     price_tier_ids: number[];
     price_adjustments?: Record<string, number>;
+    color_ids?: number[];
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -70,6 +71,13 @@ class MaterialTypesService {
           });
         }
 
+        // Append color IDs as array
+        if (data.color_ids && Array.isArray(data.color_ids)) {
+          data.color_ids.forEach(id => {
+            formData.append('color_ids[]', id.toString());
+          });
+        }
+
         const response = await api.post('/material-types', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -92,7 +100,8 @@ class MaterialTypesService {
           price: data.price,
           is_active: data.is_active,
           price_tier_ids: data.price_tier_ids,
-          price_adjustments: data.price_adjustments
+          price_adjustments: data.price_adjustments,
+          color_ids: data.color_ids
         };
         const response = await api.post('/material-types', jsonData);
         return response.data?.data || response.data;
@@ -112,6 +121,7 @@ class MaterialTypesService {
     is_active?: boolean;
     price_tier_ids?: number[];
     price_adjustments?: Record<string, number>;
+    color_ids?: number[];
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -137,6 +147,13 @@ class MaterialTypesService {
         if (data.price_adjustments) {
           Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
             formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
+          });
+        }
+
+        // Append color IDs as array
+        if (data.color_ids && Array.isArray(data.color_ids)) {
+          data.color_ids.forEach(id => {
+            formData.append('color_ids[]', id.toString());
           });
         }
 
@@ -176,6 +193,13 @@ class MaterialTypesService {
         if (data.price_adjustments) {
           Object.entries(data.price_adjustments).forEach(([tierId, adjustment]) => {
             formData.append(`price_adjustments[${tierId}]`, adjustment.toString());
+          });
+        }
+
+        // Append color IDs as array
+        if (data.color_ids && Array.isArray(data.color_ids)) {
+          data.color_ids.forEach(id => {
+            formData.append('color_ids[]', id.toString());
           });
         }
 
