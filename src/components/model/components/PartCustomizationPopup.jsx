@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as THREE from 'three';
-import { COLOR_PALETTE } from './config/colorPalette';
-import { getPatternOptionsForModel } from './utils/PatternLoader';
+import { COLOR_PALETTE } from '../config/colorPalette';
+import { getPatternOptionsForModel } from '../utils/PatternLoader';
 
 function PartCustomizationPopup({ 
   partName, 
@@ -11,21 +11,30 @@ function PartCustomizationPopup({
   onApply,
   modelId,
   seatType,
-  fabricColor
+  fabricColor,
+  globalPatternId,
+  isTwoToneSelector = false
 }) {
-  // Use the darkened color from the 3D model as initial color if not customized
+  // Use the actual color - if customized, use that; otherwise use global fabricColor
   const getInitialColor = () => {
     if (currentCustomization?.fabricColor) {
       return currentCustomization.fabricColor;
     }
-    // Calculate the darkened color (same as in Model3D.jsx)
-    const color = new THREE.Color(fabricColor);
-    color.multiplyScalar(0.8);
-    return '#' + color.getHexString();
+    // Use the global fabric color (the darkening is just a visual indicator in the 3D view)
+    return fabricColor;
+  };
+  
+  // Use the actual pattern - if customized, use that; otherwise use global pattern
+  const getInitialPattern = () => {
+    if (currentCustomization?.patternId) {
+      return currentCustomization.patternId;
+    }
+    // Use the global pattern (uncustomized parts inherit the global pattern)
+    return globalPatternId || 'default';
   };
   
   const [selectedColor, setSelectedColor] = useState(getInitialColor());
-  const [selectedPattern, setSelectedPattern] = useState(currentCustomization?.patternId || 'default');
+  const [selectedPattern, setSelectedPattern] = useState(getInitialPattern());
   const [availablePatterns, setAvailablePatterns] = useState([]);
 
   useEffect(() => {
@@ -89,7 +98,14 @@ function PartCustomizationPopup({
           backgroundColor: 'rgba(0, 0, 0, 0.3)',
           zIndex: 9999
         }}
-        onClick={onClose}
+        onClick={() => {
+          // Defer close to next frame to allow texture loading to complete
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              onClose();
+            });
+          });
+        }}
       />
       
       {/* Popup */}
@@ -126,7 +142,7 @@ function PartCustomizationPopup({
           color: '#333',
           fontWeight: 'bold'
         }}>
-          Customize {getDisplayName(partName)}
+          {isTwoToneSelector ? 'Select Color & Pattern' : `Customize ${getDisplayName(partName)}`}
         </h3>
         <button
           onClick={onClose}
