@@ -57,19 +57,19 @@ const AboutPage = () => {
     {
       title: "Custom Fit Design",
       description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
-      image: "/Gallery/doublevan.png",
+      image: "/Gallery/Truckimages/aaaaa.png",
       icon: <CheckCircle />
     },
     {
       title: "Premium Materials",
       description: "Highest quality leather, fabric, and materials. We use only the finest materials that are built to last and provide exceptional comfort.",
-      image: "/Gallery/skybluevan.png",
+      image: "/Gallery/Truckimages/cu6.png",
       icon: <CheckCircle />
     },
     {
       title: "Expert Craftsmanship",
       description: "Skilled artisans handcraft each seat with precision. Our experienced craftsmen bring decades of expertise to every project.",
-      image: "/Gallery/brownblack.png",
+      image: "/Gallery/Truckimages/cu3.png",
       icon: <CheckCircle />
     },
     {
@@ -690,7 +690,24 @@ const AboutPage = () => {
           {/* Why Choose Us Cards with alternating layout */}
           {whyChooseItems.map((item, index) => {
             const isLegacyImage = legacyImages.includes(item.title);
-            const isModernImage = !isLegacyImage;
+            const imgStyles = isLegacyImage
+              ? {
+                  position: 'absolute' as const,
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover' as const,
+                  display: 'block',
+                }
+              : {
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover' as const,
+                  display: 'block',
+                  transition: 'transform 0.3s ease',
+                  transform: item.title === 'Expert Craftsmanship' ? 'scale(1.06) translateY(4px)' : 'none',
+                };
             return (
             <Box
               key={index}
@@ -750,7 +767,7 @@ const AboutPage = () => {
                   delay: index * 0.1 + 0.2
                 }}
                 sx={{
-                  position: isLegacyImage ? 'relative' : 'static',
+                  position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -762,6 +779,7 @@ const AboutPage = () => {
                   transition: 'all 0.3s ease',
                   backgroundColor: '#ffffff',
                   height: { xs: 240, sm: 260, md: 320, lg: 360 },
+                  width: '100%',
                   paddingTop: isLegacyImage ? '70%' : 0,
                   '&:hover': {
                     transform: 'translateY(-4px) scale(1.02)',
@@ -773,17 +791,8 @@ const AboutPage = () => {
                   component="img"
                   src={item.image}
                   alt={item.title}
-                  sx={{
-                    position: isLegacyImage ? 'absolute' : 'static',
-                    top: isLegacyImage ? 0 : 'auto',
-                    left: isLegacyImage ? 0 : 'auto',
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: 'block',
-                    transition: 'transform 0.3s ease',
-                  }}
-                />
+                  sx={imgStyles}
+                 />
               </MotionBox>
                  </Box>
           );})}

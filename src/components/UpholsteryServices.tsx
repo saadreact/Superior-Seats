@@ -179,17 +179,55 @@ const UpholsteryServices = () => {
             >
            Excellence in Marine & Furniture Upholstery 
             </Typography>
-            <Typography
-              variant="body1"
+            <MotionBox
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.6 }}
               sx={{
-                color: 'text.secondary',
-                maxWidth: '800px',
-                mx: 'auto',
-                lineHeight: 1.8,
+                mt: { xs: 4, md: 6 },
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                alignItems: 'center',
+                gap: { xs: 3, md: 4, lg: 6 },
+                textAlign: 'left',
               }}
             >
-              From elegant home furnishings to custom RV interiors, our upholstery specialists deliver exceptional comfort and craftsmanship. We build and recover RV seating to your exact specifications and restore home furniture with precision and care.
-            </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                  flex: { md: '0 0 50%' },
+                  maxWidth: { xs: '100%', md: 'unset' },
+                }}
+              >
+                From elegant home furnishings to custom RV interiors, our upholstery specialists deliver exceptional comfort and craftsmanship. We build and recover RV seating to your exact specifications and restore home furniture with precision and care.
+              </Typography>
+              <Box
+                sx={{
+                  position: 'relative',
+                  flex: { md: '0 0 45%' },
+                  width: { xs: '100%', md: '100%' },
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+                  aspectRatio: { xs: '4 / 3', md: '16 / 10' },
+                  minHeight: { xs: 220, sm: 260, md: 320 },
+                }}
+              >
+                <Image
+                  src="/Gallery/Truckimages/cu7.jpg"
+                  alt="Custom upholstery showcased on seating"
+                  fill
+                  priority={false}
+                  sizes="(max-width: 600px) 100vw, (max-width: 960px) 45vw, 40vw"
+                  style={{
+                    objectFit: 'cover',
+                  }}
+                />
+              </Box>
+            </MotionBox>
           </MotionBox>
 
           {/* Services Grid */}

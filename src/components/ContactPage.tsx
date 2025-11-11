@@ -344,7 +344,7 @@ const ContactPage = () => {
             >
               <Box
                 component="img"
-                src="/Gallery/Truckimages/aboutpic.png"
+                src="/Gallery/Truckimages/cu1.jpg"
                 alt="Contact illustration"
                 sx={{
                   width: '100%',

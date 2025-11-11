@@ -4,12 +4,18 @@ import React from 'react';
 import { Button, Box } from '@mui/material';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 const MotionButton = motion.create(Button);
 
 const FloatingLogoButton = () => {
-  const router = useRouter();
+  const pathname = usePathname();
+
+  const isAdminRoute = pathname?.startsWith('/admin') || pathname?.startsWith('/square/admin');
+
+  if (isAdminRoute) {
+    return null;
+  }
 
   const handleClick = () => {
     // Scroll to top or navigate to home
