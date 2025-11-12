@@ -63,9 +63,6 @@ function InfoPopup({ onClose }) {
             </h3>
             <ol style={{ paddingLeft: '20px', margin: 0 }}>
               <li style={{ marginBottom: '8px' }}>
-                Enable <strong>&quot;Two Tone&quot;</strong> mode from the seat type selector
-              </li>
-              <li style={{ marginBottom: '8px' }}>
                 A popup will appear - select your desired <strong>color</strong> and <strong>pattern</strong>
               </li>
               <li style={{ marginBottom: '8px' }}>
@@ -120,6 +117,8 @@ function InfoPopup({ onClose }) {
             <p style={{ margin: 0 }}>
               Click the <strong>&quot;Reset Model&quot;</strong> button (bottom-left corner) to clear all 
               customizations and return to default settings. If you&apos;re in two-tone mode, the 
+              Click the <strong>&quot;Reset Model&quot;</strong> button (bottom-left corner) to clear all 
+              customizations and return to default settings. If you&apos;re in two-tone mode, the 
               color/pattern popup will reappear automatically.
             </p>
           </section>
@@ -140,6 +139,7 @@ function InfoPopup({ onClose }) {
                 If you click a non-editable area, valid parts will glow yellow briefly
               </li>
               <li>
+                Switch between &quot;Single Tone&quot; and &quot;Two Tone&quot; modes to compare designs
                 Switch between &quot;Single Tone&quot; and &quot;Two Tone&quot; modes to compare designs
               </li>
             </ul>
