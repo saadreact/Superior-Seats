@@ -26,6 +26,7 @@ import { ArrowBack as ArrowBackIcon, Save as SaveIcon, CloudUpload as CloudUploa
 import AdminLayout from '@/components/AdminLayout';
 import { seatStitchPatternService } from '@/services/seat-stitch-pattern';
 import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
+import { apiService } from '@/utils/api';
 
 interface PriceTier {
   id: number;
@@ -34,6 +35,13 @@ interface PriceTier {
   discount_off_retail_price: string;
   created_at: string;
   updated_at: string;
+}
+
+interface Color {
+  id: number;
+  name: string;
+  hex_code: string;
+  description?: string;
 }
 
 const EditSeatStitchPatternPage = () => {
@@ -46,6 +54,7 @@ const EditSeatStitchPatternPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
+  const [colors, setColors] = useState<Color[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   
@@ -55,7 +64,8 @@ const EditSeatStitchPatternPage = () => {
     image: null as File | null,
     price: 0,
     price_tier_ids: [] as number[],
-    price_adjustments: {} as Record<string, number>
+    price_adjustments: {} as Record<string, number>,
+    color_ids: [] as number[]
   });
   
   const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
@@ -73,8 +83,12 @@ const EditSeatStitchPatternPage = () => {
   const loadOptions = async () => {
     try {
       setLoadingOptions(true);
-      const priceTiersRes = await seatStitchPatternService.getPriceTiers();
+      const [priceTiersRes, colorsRes] = await Promise.all([
+        seatStitchPatternService.getPriceTiers(),
+        apiService.getColors({ per_page: 1000 })
+      ]);
       setPriceTiers(Array.isArray(priceTiersRes) ? priceTiersRes : []);
+      setColors(colorsRes?.data || []);
     } catch (err: any) {
       console.error('Error loading options:', err);
     } finally {
@@ -102,6 +116,9 @@ const EditSeatStitchPatternPage = () => {
         }
         return acc;
       }, {}) || {};
+      
+      // Extract color IDs from colors relationship
+      const colorIds = seatStitchPattern.colors?.map((color: any) => color.id) || [];
       
       // Enable price tiers if there are any price tiers
       const hasPriceTiers = priceTierIds.length > 0;
@@ -143,7 +160,8 @@ const EditSeatStitchPatternPage = () => {
         image: null,
         price: typeof seatStitchPattern.price === 'string' ? parseFloat(seatStitchPattern.price) : seatStitchPattern.price || 0,
         price_tier_ids: priceTierIds,
-        price_adjustments: priceAdjustments
+        price_adjustments: priceAdjustments,
+        color_ids: colorIds
       });
       setCurrentImage(seatStitchPattern.image || null);
     } catch (err: any) {
@@ -320,7 +338,8 @@ const EditSeatStitchPatternPage = () => {
             tier.id.toString(), 
             VariantsCalculation.getFinalPrice(tier)
           ])
-        ) : undefined
+        ) : undefined,
+        color_ids: formData.color_ids
       };
 
       // Debug: Log the data being sent
@@ -417,7 +436,57 @@ const EditSeatStitchPatternPage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{ mb: 3 }}
                 />
+
+                {/* Colors Multiselect */}
+                <FormControl fullWidth>
+                  <InputLabel id="colors-label">Colors</InputLabel>
+                  <Select
+                    labelId="colors-label"
+                    multiple
+                    value={formData.color_ids}
+                    onChange={(e) => handleInputChange('color_ids', e.target.value as number[])}
+                    input={<OutlinedInput label="Colors" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {(selected as number[]).map((colorId) => {
+                          const color = colors.find(c => c.id === colorId);
+                          return (
+                            <Chip
+                              key={colorId}
+                              label={color?.name || colorId}
+                              size="small"
+                              sx={{
+                                backgroundColor: color?.hex_code,
+                                color: color?.hex_code === '#ffffff' || color?.hex_code === '#fff' ? '#000' : '#fff'
+                              }}
+                            />
+                          );
+                        })}
+                      </Box>
+                    )}
+                  >
+                    {colors.map((color) => (
+                      <MenuItem key={color.id} value={color.id}>
+                        <Checkbox checked={formData.color_ids.includes(color.id)} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 0.5,
+                              backgroundColor: color.hex_code,
+                              border: 1,
+                              borderColor: 'divider',
+                            }}
+                          />
+                          <ListItemText primary={color.name} />
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 </Box>
 
                 {/* Pricing Information */}
