@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -24,16 +24,87 @@ import {
   TrendingUp,
   People,
   AutoAwesome,
+  VolumeOff,
+  VolumeUp,
+  Fullscreen,
+  FullscreenExit,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 // import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
-import { stats, values, process } from '@/data/About';
+import { stats, values, process as processSteps } from '@/data/About';
 
 const MotionTypography = motion.create(Typography);
 const MotionBox = motion.create(Box);
 
 const AboutPage = () => {
+  // Video state
+  const [isMuted, setIsMuted] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+
+  // Video handlers
+  const handleToggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleToggleFullscreen = async () => {
+    if (!videoContainerRef.current) return;
+
+    try {
+      if (!isFullscreen) {
+        // Enter fullscreen
+        if (videoContainerRef.current.requestFullscreen) {
+          await videoContainerRef.current.requestFullscreen();
+        } else if ((videoContainerRef.current as any).webkitRequestFullscreen) {
+          await (videoContainerRef.current as any).webkitRequestFullscreen();
+        } else if ((videoContainerRef.current as any).mozRequestFullScreen) {
+          await (videoContainerRef.current as any).mozRequestFullScreen();
+        } else if ((videoContainerRef.current as any).msRequestFullscreen) {
+          await (videoContainerRef.current as any).msRequestFullscreen();
+        }
+        setIsFullscreen(true);
+      } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Error toggling fullscreen:', error);
+    }
+  };
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
   // Icon mapping function
   const getIcon = (iconName: string) => {
     const iconMap: { [key: string]: React.ReactElement } = {
@@ -69,7 +140,7 @@ const AboutPage = () => {
     {
       title: "Expert Craftsmanship",
       description: "Skilled artisans handcraft each seat with precision. Our experienced craftsmen bring decades of expertise to every project.",
-      image: "/Gallery/Truckimages/cu3.png",
+      image: "/Gallery/Truckimages/cu10.png",
       icon: <CheckCircle />
     },
     {
@@ -95,10 +166,6 @@ const AboutPage = () => {
         sx={{
           mt: { xs: '56px', sm: '64px', md: '64px' },
           height: { xs: '40vh', sm: '50vh', md: '50vh', lg: '50vh', xl: '50vh' },
-          backgroundImage: 'url(/Gallery/Truckimages/Americanseat.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
           color: 'white',
           mb: { xs: 1, sm: 1.5, md: 2, lg: 1.5, xl: 1.5 },
           py: { xs: 3, sm: 4, md: 6, lg: 10, xl: 12 },
@@ -106,18 +173,95 @@ const AboutPage = () => {
           textAlign: 'center',
           position: 'relative',
           overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.35) 0%, rgba(211, 47, 47, 0.25) 100%)',
-            zIndex: 1,
-          },
         }}
       >
+        {/* Video Background */}
+        <Box
+          ref={videoContainerRef}
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'black',
+          }}
+        >
+          <Box
+            ref={videoRef}
+            component="video"
+            autoPlay
+            muted={isMuted}
+            loop
+            playsInline
+            preload="auto"
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+              filter: 'brightness(1.2) contrast(1.05)',
+            }}
+          >
+            <source
+              src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`}
+              type="video/mp4"
+            />
+            <source
+              src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`}
+              type="video/quicktime"
+            />
+          </Box>
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.35) 0%, rgba(211, 47, 47, 0.25) 100%)',
+            }}
+          />
+        </Box>
+
+        {/* Video Controls */}
+        <IconButton
+          onClick={handleToggleMute}
+          sx={{
+            position: 'absolute',
+            bottom: 16,
+            right: 66,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            color: 'white',
+            backdropFilter: 'blur(8px)',
+            transition: 'all 0.3s ease',
+            zIndex: 3,
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            },
+          }}
+        >
+          {isMuted ? <VolumeOff /> : <VolumeUp />}
+        </IconButton>
+
+        <IconButton
+          onClick={handleToggleFullscreen}
+          sx={{
+            position: 'absolute',
+            bottom: 16,
+            right: 16,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            color: 'white',
+            backdropFilter: 'blur(8px)',
+            transition: 'all 0.3s ease',
+            zIndex: 3,
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            },
+          }}
+        >
+          {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+        </IconButton>
+
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <Box sx={{ textAlign: 'center', width: '100%' }}>
             <MotionTypography
@@ -353,16 +497,17 @@ const AboutPage = () => {
                 height: '100%',
                 justifyContent: 'center'
               }}>
-                <MotionBox sx={{ 
-                  textAlign: { xs: 'center', md: 'left' },
-                  maxWidth: '100%',
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                }}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                <MotionBox 
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.1 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  sx={{ 
+                    textAlign: { xs: 'center', md: 'left' },
+                    maxWidth: '100%',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                  }}
                 >
                   <MotionTypography 
                     variant="h6" 
@@ -372,7 +517,7 @@ const AboutPage = () => {
                     transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
                     sx={{ 
                       mb: { xs: 1, sm: 1.5, md: 2, lg: 2.5, xl: 2.5 }, 
-                      fontWeight: '550',
+                      fontWeight: '500',
                       color: 'text.secondary', 
                       lineHeight: { xs: 1.4, sm: 1.5, md: 1.6, lg: 1.8, xl: 1.8 },
                       fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.2rem', xl: '1.2rem' },
@@ -560,7 +705,7 @@ const AboutPage = () => {
           px: { xs: 1, sm: 2, md: 3, lg: 0, xl: 0 }
         }}
       >
-        {process.map((step, index) => (
+        {processSteps.map((step: { step: string; title: string; description: string }, index: number) => (
           <Card
             key={index}
             sx={{
