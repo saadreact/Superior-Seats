@@ -31,7 +31,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { productApi } from '@/services/productapi';
+import { productApi, Product } from '@/services/productapi';
 import { apiService } from '@/utils/api';
 import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
@@ -70,6 +70,7 @@ interface ProductPage2Form {
   enablePriceTiers: boolean;
   
   isActive: boolean;
+  isCustomize3dProduct: boolean;
 }
 
 interface ProductItem {
@@ -125,6 +126,7 @@ const EditProduct2Page = () => {
     color: [],
     enablePriceTiers: false,
     isActive: true,
+    isCustomize3dProduct: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -368,6 +370,7 @@ const EditProduct2Page = () => {
           color: shouldShowNone(productWithImages.colors) ? ['None'] : extractNamesFromArray(productWithImages.colors || []),
           enablePriceTiers: hasPriceTiers, // Enable if price tiers exist
           isActive: productRes.is_active ?? true,
+          isCustomize3dProduct: productRes.is_customize_3d_product ?? false,
         });
         
         // Set calculated price tiers if they exist
@@ -895,6 +898,7 @@ const EditProduct2Page = () => {
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
+        is_customize_3d_product: formData.isCustomize3dProduct,
         show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Only send new images like create page
@@ -1144,6 +1148,25 @@ const EditProduct2Page = () => {
                         />
                       }
                       label="Active"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.isCustomize3dProduct}
+                          onChange={handleSwitchChange('isCustomize3dProduct')}
+                          color="primary"
+                        />
+                      }
+                      label="Enable 3D Customization"
                       labelPlacement="start"
                       sx={{ 
                         gap: 1,
