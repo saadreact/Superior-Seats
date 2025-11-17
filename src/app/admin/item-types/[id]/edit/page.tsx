@@ -32,7 +32,12 @@ const EditItemTypePage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+    image: null as File | null
+  });
+  
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     loadItemType();
@@ -46,7 +51,10 @@ const EditItemTypePage = () => {
       const itemtypes = await apiService.getItemType(parseInt(id));
       setFormData({
         name: itemtypes.name || '',
-        description: itemtypes.description || ''});
+        description: itemtypes.description || '',
+        image: null
+      });
+      setCurrentImage(itemtypes.image || null);
     } catch (err: any) {
       setError(err.message || 'Failed to load item type');
       console.error('Error loading item type:', err);
@@ -61,6 +69,25 @@ const EditItemTypePage = () => {
       [field]: value}));
   };
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, image: file }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, image: null }));
+    setImagePreview(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -73,7 +100,14 @@ const EditItemTypePage = () => {
       setLoading(true);
       setError(null);
       
-      await apiService.updateItemType(parseInt(id), formData);
+      // Include image in payload (optional)
+      const submissionData = {
+        name: formData.name.trim(),
+        description: formData.description.trim() || undefined,
+        image: formData.image || undefined
+      };
+      
+      await apiService.updateItemType(parseInt(id), submissionData);
       setSuccess('Item Type updated successfully!');
       
       // Redirect after a short delay
@@ -161,7 +195,76 @@ const EditItemTypePage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{ mb: 3 }}
                 />
+              </Box>
+
+              {/* Image Upload */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Image
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <Box>
+                  {/* Current Image */}
+                  {currentImage && !formData.image && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Current Image:
+                      </Typography>
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${currentImage}`}
+                        alt="Current"
+                        style={{
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
+                        }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div style="padding: 16px; color: #666; text-align: center;">Image failed to load</div>';
+                          }
+                        }}
+                      />
+                    </Box>
+                  )}
+
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                    type="file"
+                    onChange={handleImageChange}
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      sx={{ mb: 2 }}
+                    >
+                      {formData.image ? `Image Selected: ${formData.image.name}` : (currentImage ? 'Change Image' : 'Upload Image')}
+                    </Button>
+                  </label>
+                  {imagePreview && (
+                    <Box sx={{ mt: 2 }}>
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
               </Box>
 
               {/* Action Buttons */}

@@ -1,16 +1,11 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   Container,
   Typography,
   Card,
-  CardContent,
-  Avatar,
-  Chip,
-  Divider,
-  IconButton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
@@ -24,13 +19,10 @@ import {
   TrendingUp,
   People,
   AutoAwesome,
-  VolumeOff,
-  VolumeUp,
-  Fullscreen,
-  FullscreenExit,
 } from '@mui/icons-material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import VideoPlayer from '@/components/VideoPlayer';
 // import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import { stats, values, process as processSteps } from '@/data/About';
 
@@ -38,72 +30,6 @@ const MotionTypography = motion.create(Typography);
 const MotionBox = motion.create(Box);
 
 const AboutPage = () => {
-  // Video state
-  const [isMuted, setIsMuted] = useState(true);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const videoContainerRef = useRef<HTMLDivElement>(null);
-
-  // Video handlers
-  const handleToggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
-  const handleToggleFullscreen = async () => {
-    if (!videoContainerRef.current) return;
-
-    try {
-      if (!isFullscreen) {
-        // Enter fullscreen
-        if (videoContainerRef.current.requestFullscreen) {
-          await videoContainerRef.current.requestFullscreen();
-        } else if ((videoContainerRef.current as any).webkitRequestFullscreen) {
-          await (videoContainerRef.current as any).webkitRequestFullscreen();
-        } else if ((videoContainerRef.current as any).mozRequestFullScreen) {
-          await (videoContainerRef.current as any).mozRequestFullScreen();
-        } else if ((videoContainerRef.current as any).msRequestFullscreen) {
-          await (videoContainerRef.current as any).msRequestFullscreen();
-        }
-        setIsFullscreen(true);
-      } else {
-        // Exit fullscreen
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
-        } else if ((document as any).mozCancelFullScreen) {
-          await (document as any).mozCancelFullScreen();
-        } else if ((document as any).msExitFullscreen) {
-          await (document as any).msExitFullscreen();
-        }
-        setIsFullscreen(false);
-      }
-    } catch (error) {
-      console.error('Error toggling fullscreen:', error);
-    }
-  };
-
-  // Listen for fullscreen changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-    };
-  }, []);
 
   // Icon mapping function
   const getIcon = (iconName: string) => {
@@ -175,9 +101,8 @@ const AboutPage = () => {
           overflow: 'hidden',
         }}
       >
-        {/* Video Background */}
+        {/* Background Image */}
         <Box
-          ref={videoContainerRef}
           sx={{
             position: 'absolute',
             inset: 0,
@@ -190,13 +115,9 @@ const AboutPage = () => {
           }}
         >
           <Box
-            ref={videoRef}
-            component="video"
-            autoPlay
-            muted={isMuted}
-            loop
-            playsInline
-            preload="auto"
+            component="img"
+            src="/Gallery/Truckimages/Americanseat.png"
+            alt="Superior Seating LLC"
             sx={{
               width: '100%',
               height: '100%',
@@ -204,16 +125,7 @@ const AboutPage = () => {
               display: 'block',
               filter: 'brightness(1.2) contrast(1.05)',
             }}
-          >
-            <source
-              src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`}
-              type="video/mp4"
-            />
-            <source
-              src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/videos/SuperiorSeatsINC_banner_video.mov`}
-              type="video/quicktime"
-            />
-          </Box>
+          />
           <Box
             sx={{
               position: 'absolute',
@@ -222,45 +134,6 @@ const AboutPage = () => {
             }}
           />
         </Box>
-
-        {/* Video Controls */}
-        <IconButton
-          onClick={handleToggleMute}
-          sx={{
-            position: 'absolute',
-            bottom: 16,
-            right: 66,
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            color: 'white',
-            backdropFilter: 'blur(8px)',
-            transition: 'all 0.3s ease',
-            zIndex: 3,
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            },
-          }}
-        >
-          {isMuted ? <VolumeOff /> : <VolumeUp />}
-        </IconButton>
-
-        <IconButton
-          onClick={handleToggleFullscreen}
-          sx={{
-            position: 'absolute',
-            bottom: 16,
-            right: 16,
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            color: 'white',
-            backdropFilter: 'blur(8px)',
-            transition: 'all 0.3s ease',
-            zIndex: 3,
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            },
-          }}
-        >
-          {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
-        </IconButton>
 
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <Box sx={{ textAlign: 'center', width: '100%' }}>
@@ -811,6 +684,15 @@ const AboutPage = () => {
     </Box>
   </Container>
 </Box>
+
+      {/* Video Player Section */}
+      <VideoPlayer
+        videoSrc={`${process.env.NEXT_PUBLIC_API_VIDEO_BASE_URL}/videos/SuperiorSeatingLLCSizzleReel5.mov`}
+        videoType="video/quicktime"
+        autoPlay={true}
+        muted={true}
+        loop={true}
+      />
 
              {/* Why Choose Us */}
        <Box sx={{ py: { xs: 3, sm: 4, md: 5, lg: 5, xl: 5 }, backgroundColor: 'white' }}>

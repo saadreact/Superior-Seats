@@ -24,12 +24,43 @@ const CreateSeatStylePage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+    images: [] as File[]
+  });
+  
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value}));
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      setFormData(prev => ({ ...prev, images: [...prev.images, ...fileArray] }));
+      
+      // Create previews for new images
+      fileArray.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreviews(prev => [...prev, e.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    // Reset input to allow selecting same file again
+    event.target.value = '';
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +75,62 @@ const CreateSeatStylePage = () => {
       setLoading(true);
       setError(null);
       
-      await apiService.createSeatStyle(formData);
+      // Step 1: Create seat style first (without images)
+      const submissionData = {
+        name: formData.name.trim(),
+        description: formData.description.trim() || undefined,
+      };
+      
+      const createdSeatStyle = await apiService.createSeatStyle(submissionData);
+      console.log('✅ Seat style created successfully:', createdSeatStyle);
+      
+      // Step 2: Extract seat style ID from response
+      const seatStyleId = createdSeatStyle.id 
+        || createdSeatStyle.data?.id 
+        || createdSeatStyle.data?.seat_style?.id
+        || createdSeatStyle.seat_style?.id;
+      
+      console.log('📋 Extracted seat style ID:', seatStyleId);
+      console.log('📸 Images to upload:', formData.images.length);
+      
+      // Step 3: Upload images using the images API if any were selected
+      if (formData.images.length > 0) {
+        if (!seatStyleId) {
+          setError('Seat style created but could not extract ID to upload images');
+          console.error('❌ No seat style ID found in response:', createdSeatStyle);
+          setTimeout(() => {
+            router.push('/admin/seat-styles');
+          }, 3000);
+          return;
+        }
+        
+        try {
+          console.log('📤 Calling uploadSeatStyleImages API...');
+          console.log('   - Seat Style ID:', seatStyleId);
+          console.log('   - Image count:', formData.images.length);
+          console.log('   - Set primary index: 0');
+          
+          await apiService.uploadSeatStyleImages(seatStyleId, {
+            images: formData.images,
+            set_primary: 0 // Set first image as primary
+          });
+          
+          console.log('✅ Images uploaded successfully');
+        } catch (imageError: any) {
+          console.error('❌ Error uploading images:', imageError);
+          console.error('❌ Error details:', {
+            message: imageError.message,
+            response: imageError.response?.data,
+            status: imageError.response?.status
+          });
+          setError('Seat style created but failed to upload images: ' + (imageError.message || 'Unknown error'));
+          setTimeout(() => {
+            router.push('/admin/seat-styles');
+          }, 3000);
+          return;
+        }
+      }
+      
       setSuccess('Seat Style created successfully!');
       
       // Redirect after a short delay
@@ -122,7 +208,96 @@ const CreateSeatStylePage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{ mb: 3 }}
                 />
+              </Box>
+
+              {/* Image Upload */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Images
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <Box>
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                    type="file"
+                    multiple
+                    onChange={handleImageChange}
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      sx={{ mb: 2 }}
+                    >
+                      Upload Images
+                    </Button>
+                  </label>
+                  
+                  {formData.images.length > 0 && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {formData.images.length} image(s) selected
+                    </Typography>
+                  )}
+
+                  {imagePreviews.length > 0 && (
+                    <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                      {imagePreviews.map((preview, index) => (
+                        <Box key={index} sx={{ position: 'relative' }}>
+                          <img
+                            src={preview}
+                            alt={`Preview ${index + 1}`}
+                            style={{
+                              maxWidth: '200px',
+                              maxHeight: '200px',
+                              objectFit: 'cover',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={() => handleRemoveImage(index)}
+                            sx={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              minWidth: 'auto',
+                              padding: '4px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 1)',
+                              }
+                            }}
+                          >
+                            ×
+                          </Button>
+                          {index === 0 && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                bottom: 8,
+                                left: 8,
+                                backgroundColor: 'primary.main',
+                                color: 'white',
+                                px: 1,
+                                py: 0.5,
+                                borderRadius: 1,
+                                fontSize: '0.75rem'
+                              }}
+                            >
+                              Primary
+                            </Box>
+                          )}
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
               </Box>
 
               {/* Action Buttons */}

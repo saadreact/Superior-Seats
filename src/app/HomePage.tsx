@@ -172,6 +172,17 @@ const HomePage = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const sectionHeights = {
+    xs: 'auto',
+    md: 420,
+    lg: 480,
+    xl: 540,
+  };
+  const leftContentBlockHeights = {
+    logo: { xs: 'auto', md: '110px', lg: '120px', xl: '130px' },
+    title: { xs: 'auto', md: '90px', lg: '100px', xl: '110px' },
+    description: { xs: 'auto', md: '140px', lg: '160px', xl: '180px' },
+  };
 
   // Icon mapping function for values section
   const getIcon = (iconName: string) => {
@@ -278,142 +289,189 @@ const HomePage = () => {
       
       {/* New Superior Seating LLC Section */}
       <Box sx={{ 
-        py: { xs: 6, md: 5, lg: 5 ,xl: 5},
-        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        position: 'relative',
-        minHeight: { xs: 'auto', md: '400px', lg: '400px', xl: '400px' }
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        width: '100%',
+        height: sectionHeights,
+        alignItems: { xs: 'stretch', md: 'stretch' }
       }}>
-        {/* Image at Very Right End of Parent Container with Background */}
-          <MotionBox
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+        {/* Left Side - Content with Gradient Background */}
+        <Box sx={{ 
+          flex: { xs: '1 1 100%', md: '1 1 0%' },
+          width: { xs: '100%', md: 'auto' ,lg: 'auto', xl: 'auto'},
+          height: sectionHeights,
+          px: { xs: 3, md: 4 },
+          py: { xs: 4, md: 0 ,lg: 0, xl: 0},
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          backgroundSize: 'cover',  
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: { xs: 'center', md: 'flex-start' },
+          order: { xs: 2, md: 1 }
+        }}>
+          <Container
+            maxWidth="lg"
+            disableGutters
             sx={{
-              position: 'absolute',
-              top: { xs: '10px', sm: '15px', md: '20px', lg: '25px', xl: '30px' },
-              right: 0,
-              zIndex: 30,
-              display: 'block',
-            }}
-          >
-          <Box
-            component="img"
-            src="/Gallery/Patriotism/fc.png"
-            alt="Superior Seating LLC"
-            sx={{
-              width: { xs: '250px', sm: '400px', md: '450px', lg: '450px', xl: '500px' },
-              height: { xs: '150px', sm: '225px', md: '280px', lg: '300px', xl: '375px' },
-              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-91px', xl: '-114px' },
-              marginRight: { xs: '-30px', sm: '-40px', md: '-50px', lg: '-50px', xl: '-68px' },
-              borderRadius: 2,
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          />
-        </MotionBox>
-
-
-        <Container maxWidth="lg" sx={{ position: 'relative', height: '100%' }}>
-
-          {/* Logo Button - Responsive */}
-          <MotionBox
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            sx={{
-              position: { xs: 'relative', md: 'absolute' },
-              left: { xs: 'auto', md: '40%', lg: '40%', xl: '42%' },
-              top: { xs: 'auto', md: '70px', lg: '90px', xl: '70px' },
-              transform: { xs: 'none', md: 'translate(-50%, -50%)' },
-              marginTop: { xs: 0, md: '-50px', lg: '-50px', xl: '-70px' },
-              marginLeft: { xs: 0, md: '-270px', lg: '-370px', xl: '-530px' },
-              flexShrink: 0,
-              alignSelf: { xs: 'center', md: 'center' },
-              zIndex: 20,
+              width: '100%',
+              height: '100%',
               display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
-              mb: { xs: 4, md: 0 },
             }}
           >
-            <LogoButton onClick={() => {
-              handleSnackbarOpen();
-            }} />
-          </MotionBox>
+            <Box sx={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: { xs: 'center', md: 'flex-start' },
+              width: '100%',
+              height: '100%',
+              py: { xs: 1, md: 0 },
+              gap: { xs: 2, md: 2.5 }
+            }}>
+              {/* Logo Button - Responsive */}
+              <MotionBox
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                  height: leftContentBlockHeights.logo,
+                  mb: { xs: 3, md: 0 },
+                }}
+              >
+                <LogoButton />
+              </MotionBox>
 
-          {/* Text Content - Responsive */}
+              {/* Text Content - Responsive */}
+              <MotionBox
+                sx={{
+                  textAlign: 'center',
+                  minWidth: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: { xs: 'center', md: 'flex-start' },
+                  alignItems: 'center',
+                  width: '100%',
+                  height: '100%',
+                  pt: { xs: 1, md: 4, lg: 5 },
+                  gap: { xs: 2, md: 0 },
+                }}
+              >
+                {/* Company Name - Responsive */}
+                <MotionTypography
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: false, amount: 0.1 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  sx={{
+                    fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "3.5rem", xl: "4.5rem" },
+                    fontWeight: "bold",
+                    lineHeight: { xs: 1.1, sm: 1.15, md: 1, lg: 1, xl: 1.2 },
+                    color: 'white',
+                    textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+                    mt: { xs: '8px', md: '0px', lg: '0px', xl: '24px'},
+                    ml: { xs: '0px', md: '0px', lg: '0px', xl: '0px' },
+                    whiteSpace: { xs: "normal", md: "nowrap" },
+                    overflow: { xs: "visible", md: "hidden" },
+                    textOverflow: { xs: "clip", md: "ellipsis" },
+                    textAlign: 'center',
+                    height: leftContentBlockHeights.title,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  Superior Seating LLC
+                </MotionTypography>
+
+                {/* Description - Responsive */}
+                <MotionTypography
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: false, amount: 0.1 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  sx={{
+                    opacity: 0.95,
+                    fontSize: { xs: "0.85rem", sm: "0.875rem", md: "1rem", lg: "1.8rem", xl: "2rem" },
+                    letterSpacing: "0.5px",
+                    fontWeight: { xs: 600, md: 300 },
+                    lineHeight: { xs: 1.3, sm: 1.4, md: 1, lg: 1.1, xl: 1.1 },
+                    textAlign: 'center',
+                    alignSelf: 'center',
+                    color: 'white',
+                    textShadow: "1px 1px 2px rgba(0, 0, 0, 0.3)",
+                    mt: { xs: '8px', md: '-50px' ,lg: '-20px', xl: '-20px'},
+                    ml: { xs: '0px', md: '0px', lg: '0px', xl: '0px' },
+                    px: { xs: '16px', md: '24px' },
+                    py: { xs: '10px', md: '0px' },
+                    height: leftContentBlockHeights.description,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  Premium Truck, SemiTruck, RV and Van seating with custom
+                  <br />
+                  <span style={{ display: "block", width: "100%" }}>
+                    options and superior craftsmanship
+                  </span>
+                </MotionTypography>
+              </MotionBox>
+            </Box>
+          </Container>
+        </Box>
+
+        {/* Right Side - Truck Image (No Background) */}
+        <Box sx={{ 
+          flex: { xs: '1 1 100%', md: '0 0 auto' },
+          width: { xs: '100%', md: 'auto' },
+          height: sectionHeights,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'transparent',
+          order: { xs: 1, md: 2 },
+          py: { xs: 4, md: 0 }
+        }}>
           <MotionBox
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             sx={{
-              position: { xs: 'relative', md: 'absolute' },
-              left: { xs: 'auto', md: '50%' },
-              top: { xs: 'auto', md: '130px', lg: '140px', xl: '140px' },
-              transform: { xs: 'none', md: 'translate(-50%, -50%)' },
-              textAlign: { xs: "center", md: "left" },
-              minWidth: 0,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: { xs: "center", md: "flex-start" },
-              zIndex: 15,
-              width: { xs: '100%', md: 'auto' },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 'fit-content',
+              height: 'fit-content',
+              maxWidth: { xs: '100%', md: '720px', lg: '760px', xl: '820px' },
             }}
           >
-            {/* Company Name - Responsive */}
-            <MotionTypography
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: false, amount: 0.1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+            <Box
+              component="img"
+              src="/Gallery/Truckimages/mappic.png"
+              alt="Truck"
               sx={{
-                fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "3.5rem", xl: "4.5rem" },
-                fontWeight: "bold",
-                lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2, xl: 1.2 },
-                color: 'white',
-                textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
-                mb: { xs: 0, md: 0.75, lg: 0.75 },
-                mt: { xs: 0, md: 6, lg: 7, xl: 3 },
-                whiteSpace: { xs: "normal", md: "nowrap" },
-                overflow: { xs: "visible", md: "hidden" },
-                textOverflow: { xs: "clip", md: "ellipsis" },
-                textAlign: { xs: "center", md: "left" },
+                maxWidth: { xs: '100%', md: '100%' },
+                maxHeight: { xs: '260px', sm: '320px', md: '420px', lg: '480px', xl: '540px' },
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                display: 'block',
               }}
-            >
-              Superior Seating LLC
-            </MotionTypography>
-
-            {/* Description - Responsive */}
-            <MotionTypography
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: false, amount: 0.1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              sx={{
-                opacity: 0.95,
-                fontSize: { xs: "0.85rem", sm: "0.875rem", md: "1rem", lg: "1.8rem", xl: "2.2rem" },
-                letterSpacing: "0.5px",
-                fontWeight: { xs: 600, md: 300 },
-                lineHeight: { xs: 1.3, sm: 1.4, md: 1.4, lg: 1.4 },
-                textAlign: { xs: "center", md: "center" },
-                alignSelf: { xs: "center", md: "center" },
-                color: { xs: 'white', md: 'white' },
-                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.3)",
-                px: { xs: 2, sm: 0, md: 0 },
-                py: { xs: 0.5, sm: 1, md: 3, lg: 2 },
-               // mb: { xs: 3, sm: 4, md: 1, lg: 1, xl: 1 }
-              }}
-            >
-              Premium Truck, SemiTruck, RV and Van seating with custom
-              <br />
-              <span style={{ textAlign: "center", display: "block", width: "100%" }}>
-                options and superior craftsmanship
-              </span>
-            </MotionTypography>
+            />
           </MotionBox>
-        </Container>
+        </Box>
       </Box>
 
       {/* Stats Section */}
