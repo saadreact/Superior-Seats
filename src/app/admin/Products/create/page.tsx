@@ -74,6 +74,7 @@ interface ProductPage2Form {
   enablePriceTiers: boolean;
   
   isActive: boolean;
+  isCustomize3dProduct: boolean;
 }
 
 const CreateProduct2Page = () => {
@@ -106,6 +107,7 @@ const CreateProduct2Page = () => {
     color: [],
     enablePriceTiers: false,
     isActive: true,
+    isCustomize3dProduct: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -721,6 +723,7 @@ const CreateProduct2Page = () => {
         price: formData.basePrice,
         stock: formData.stock,
         is_active: formData.isActive,
+        is_customize_3d_product: formData.isCustomize3dProduct,
         show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Simple File array like lumbar types
@@ -964,6 +967,25 @@ const CreateProduct2Page = () => {
                         />
                       }
                       label="Active"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.isCustomize3dProduct}
+                          onChange={handleSwitchChange('isCustomize3dProduct')}
+                          color="primary"
+                        />
+                      }
+                      label="Enable 3D Customization"
                       labelPlacement="start"
                       sx={{ 
                         gap: 1,
