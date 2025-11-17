@@ -22,6 +22,7 @@ interface ItemType {
   id: number;
   name: string;
   description: string;
+  image: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -139,6 +140,46 @@ const ItemTypeDetailPage = () => {
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
             <Box sx={{ flex: 1 }}>
               <Stack spacing={3}>
+                {/* Image */}
+                {itemtypes.image && (
+                  <Box>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                      Image
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: '100%',
+                        maxWidth: 300,
+                        height: 300,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        border: '1px solid #e0e0e0'
+                      }}
+                    >
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${itemtypes.image}`}
+                        alt={itemtypes.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div style="padding: 16px; color: #666; text-align: center;">Image failed to load</div>';
+                          }
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                )}
+
                 <Box>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     Name

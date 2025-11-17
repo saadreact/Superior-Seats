@@ -202,7 +202,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
                     }}
                   >
                     <LogoutIcon sx={{ mr: 1.5, fontSize: '1.2rem' }} />
-                    Logout ({user?.username || user?.name || user?.email})
+                    Logout {user?.name && `(${user.name})`}
                   </MenuItem>
                 </Menu>
               </>

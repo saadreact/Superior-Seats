@@ -179,27 +179,33 @@ const Header = () => {
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center', height: '100%' }}>
-      <Box sx={{ 
-        my: 2, 
-        display: 'flex', 
-        justifyContent: 'center',
-        px: 2,
-        outline: 'none',
-        '&:focus': {
-          outline: 'none',
-        },
-        '&:focus-visible': {
-          outline: 'none',
-        }
-      }}>
-        <Image
-          src="/superiorlogo/logored.png"
-          alt="Superior Seating LLC"
-          width={isSmallMobile ? 180 : 200}
-          height={isSmallMobile ? 54 : 60}
-          style={{ objectFit: 'contain', outline: 'none' }}
-        />
-      </Box>
+      <Link href="/customize-your-seat" style={{ textDecoration: 'none', outline: 'none' }}>
+        <Box 
+          onClick={handleHomeClick}
+          sx={{ 
+            my: 2, 
+            display: 'flex', 
+            justifyContent: 'center',
+            px: 2,
+            cursor: 'pointer',
+            outline: 'none',
+            '&:focus': {
+              outline: 'none',
+            },
+            '&:focus-visible': {
+              outline: 'none',
+            }
+          }}
+        >
+          <Image
+            src="/superiorlogo/logored.png"
+            alt="Superior Seating LLC"
+            width={isSmallMobile ? 180 : 200}
+            height={isSmallMobile ? 54 : 60}
+            style={{ objectFit: 'contain', outline: 'none' }}
+          />
+        </Box>
+      </Link>
              <List sx={{ flex: 1 }}>
          {menuItems.map((item) => (
            <React.Fragment key={item.text}>
@@ -397,7 +403,7 @@ const Header = () => {
               
             }}>
               {/* Logo Section */}
-              <Link href="/" style={{ textDecoration: 'none', outline: 'none' }}>
+              <Link href="/customize-your-seat" style={{ textDecoration: 'none', outline: 'none' }}>
                 <Box 
                   onClick={handleHomeClick}
                   sx={{ 

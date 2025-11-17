@@ -2767,6 +2767,119 @@ class ApiService {
     }
   }
 
+  // Seat Type Images Management
+  // Get images for a seat type
+  async getSeatTypeImages(seatTypeId: number) {
+    try {
+      const response = await api.get(`/seat-types/${seatTypeId}/images`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching seat type images:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat type not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat type images');
+    }
+  }
+
+  // Upload images for a seat type
+  async uploadSeatTypeImages(seatTypeId: number, data: {
+    images: File[];
+    alt_texts?: string[];
+    captions?: string[];
+    set_primary?: number;
+  }) {
+    try {
+      const formData = new FormData();
+      
+      // Append images array
+      data.images.forEach((image) => {
+        formData.append('images[]', image);
+      });
+      
+      // Append alt_texts array if provided
+      if (data.alt_texts && data.alt_texts.length > 0) {
+        data.alt_texts.forEach((altText) => {
+          formData.append('alt_texts[]', altText);
+        });
+      }
+      
+      // Append captions array if provided
+      if (data.captions && data.captions.length > 0) {
+        data.captions.forEach((caption) => {
+          formData.append('captions[]', caption);
+        });
+      }
+      
+      // Append set_primary if provided
+      if (data.set_primary !== undefined) {
+        formData.append('set_primary', data.set_primary.toString());
+      }
+      
+      const response = await api.post(`/seat-types/${seatTypeId}/images`, formData, {
+        headers: {
+          'Content-Type': undefined,
+        },
+      });
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error uploading seat type images:', error);
+      throw new Error(error.response?.data?.message || 'Failed to upload images');
+    }
+  }
+
+  // Update a specific image
+  async updateSeatTypeImage(seatTypeId: number, imageId: number, data: {
+    alt_text?: string;
+    caption?: string;
+  }) {
+    try {
+      const formData = new FormData();
+      if (data.alt_text !== undefined) formData.append('alt_text', data.alt_text);
+      if (data.caption !== undefined) formData.append('caption', data.caption);
+      
+      const response = await api.put(`/seat-types/${seatTypeId}/images/${imageId}`, formData, {
+        headers: {
+          'Content-Type': undefined,
+        },
+      });
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating seat type image:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Image not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update image');
+    }
+  }
+
+  // Delete a specific image
+  async deleteSeatTypeImage(seatTypeId: number, imageId: number) {
+    try {
+      const response = await api.delete(`/seat-types/${seatTypeId}/images/${imageId}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting seat type image:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Image not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete image');
+    }
+  }
+
+  // Set primary image
+  async setPrimarySeatTypeImage(seatTypeId: number, imageId: number) {
+    try {
+      const response = await api.post(`/seat-types/${seatTypeId}/images/${imageId}/set-primary`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error setting primary image:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Image not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to set primary image');
+    }
+  }
 
   // ========== SEAT PRICING ==========
   
@@ -2881,9 +2994,31 @@ class ApiService {
   async createSeatStyle(data: {
     name: string;
     description?: string;
+    image?: File | null;
   }) {
     try {
-      const response = await api.post('/seat-styles', data);
+      const shouldUseFormData = typeof File !== 'undefined' && data.image instanceof File;
+      
+      if (shouldUseFormData) {
+        const formData = new FormData();
+        formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        if (data.image) formData.append('image', data.image);
+        
+        const response = await api.post('/seat-styles', formData, {
+          headers: {
+            'Content-Type': undefined,
+          },
+        });
+        return response.data?.data || response.data;
+      }
+
+      const jsonPayload = {
+        name: data.name,
+        description: data.description,
+      };
+
+      const response = await api.post('/seat-styles', jsonPayload);
       return response.data?.data || response.data;
     } catch (error: any) {
       console.error('Error creating seat style:', error);
@@ -2895,9 +3030,35 @@ class ApiService {
   async updateSeatStyle(id: number, data: {
     name?: string;
     description?: string;
+    image?: File | null;
+    current_image?: string | null;
   }) {
     try {
-      const response = await api.put(`/seat-styles/${id}`, data);
+      const shouldUseFormData = typeof File !== 'undefined' && data.image instanceof File;
+      
+      if (shouldUseFormData) {
+        const formData = new FormData();
+        if (data.name) formData.append('name', data.name);
+        if (data.description) formData.append('description', data.description);
+        if (data.image) formData.append('image', data.image);
+        if (data.current_image) formData.append('current_image', data.current_image);
+        formData.append('_method', 'PUT');
+
+        const response = await api.post(`/seat-styles/${id}`, formData, {
+          headers: {
+            'Content-Type': undefined,
+          },
+        });
+        return response.data?.data || response.data;
+      }
+
+      const jsonPayload = {
+        name: data.name,
+        description: data.description,
+        current_image: data.current_image || undefined,
+      };
+
+      const response = await api.put(`/seat-styles/${id}`, jsonPayload);
       return response.data?.data || response.data;
     } catch (error: any) {
       console.error('Error updating seat style:', error);
@@ -2919,6 +3080,120 @@ class ApiService {
         throw new Error('Seat style not found');
       }
       throw new Error(error.response?.data?.message || 'Failed to delete seat style');
+    }
+  }
+
+  // Seat Style Images Management
+  // Get images for a seat style
+  async getSeatStyleImages(seatStyleId: number) {
+    try {
+      const response = await api.get(`/seat-styles/${seatStyleId}/images`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error fetching seat style images:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Seat style not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to fetch seat style images');
+    }
+  }
+
+  // Upload images for a seat style
+  async uploadSeatStyleImages(seatStyleId: number, data: {
+    images: File[];
+    alt_texts?: string[];
+    captions?: string[];
+    set_primary?: number;
+  }) {
+    try {
+      const formData = new FormData();
+      
+      // Append images array
+      data.images.forEach((image) => {
+        formData.append('images[]', image);
+      });
+      
+      // Append alt_texts array if provided
+      if (data.alt_texts && data.alt_texts.length > 0) {
+        data.alt_texts.forEach((altText) => {
+          formData.append('alt_texts[]', altText);
+        });
+      }
+      
+      // Append captions array if provided
+      if (data.captions && data.captions.length > 0) {
+        data.captions.forEach((caption) => {
+          formData.append('captions[]', caption);
+        });
+      }
+      
+      // Append set_primary if provided
+      if (data.set_primary !== undefined) {
+        formData.append('set_primary', data.set_primary.toString());
+      }
+      
+      const response = await api.post(`/seat-styles/${seatStyleId}/images`, formData, {
+        headers: {
+          'Content-Type': undefined,
+        },
+      });
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error uploading seat style images:', error);
+      throw new Error(error.response?.data?.message || 'Failed to upload images');
+    }
+  }
+
+  // Update a specific image
+  async updateSeatStyleImage(seatStyleId: number, imageId: number, data: {
+    alt_text?: string;
+    caption?: string;
+  }) {
+    try {
+      const formData = new FormData();
+      if (data.alt_text !== undefined) formData.append('alt_text', data.alt_text);
+      if (data.caption !== undefined) formData.append('caption', data.caption);
+      
+      const response = await api.put(`/seat-styles/${seatStyleId}/images/${imageId}`, formData, {
+        headers: {
+          'Content-Type': undefined,
+        },
+      });
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error updating seat style image:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Image not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to update image');
+    }
+  }
+
+  // Delete a specific image
+  async deleteSeatStyleImage(seatStyleId: number, imageId: number) {
+    try {
+      const response = await api.delete(`/seat-styles/${seatStyleId}/images/${imageId}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error deleting seat style image:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Image not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to delete image');
+    }
+  }
+
+  // Set primary image
+  async setPrimarySeatStyleImage(seatStyleId: number, imageId: number) {
+    try {
+      const response = await api.post(`/seat-styles/${seatStyleId}/images/${imageId}/set-primary`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      console.error('Error setting primary image:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Image not found');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to set primary image');
     }
   }
 

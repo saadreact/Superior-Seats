@@ -11,10 +11,29 @@ import {
   Alert,
   Stack,
   CircularProgress,
-  Divider} from '@mui/material';
-import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton} from '@mui/material';
+import { ArrowBack as ArrowBackIcon, Save as SaveIcon, Delete as DeleteIcon, Star as StarIcon, StarBorder as StarBorderIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
+
+interface SeatStyleImage {
+  id: number;
+  seat_style_id: number;
+  image_path: string;
+  alt_text: string | null;
+  caption: string | null;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  image_url: string;
+}
 
 const EditSeatStylePage = () => {
   const router = useRouter();
@@ -28,10 +47,19 @@ const EditSeatStylePage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+  });
+  
+  const [existingImages, setExistingImages] = useState<SeatStyleImage[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [deletingImageId, setDeletingImageId] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<SeatStyleImage | null>(null);
 
   useEffect(() => {
     loadSeatStyle();
+    loadImages();
   }, [id]);
 
   const loadSeatStyle = async () => {
@@ -39,10 +67,16 @@ const EditSeatStylePage = () => {
       setInitialLoading(true);
       setError(null);
       
-      const seatStyle = await apiService.getSeatStyle(parseInt(id));
+      const response = await apiService.getSeatStyle(parseInt(id));
+      console.log('📥 Seat style response:', response);
+      
+      // Handle nested response structure: data.seat_style
+      const seatStyle = response.seat_style || response.data?.seat_style || response;
+      
       setFormData({
         name: seatStyle.name || '',
-        description: seatStyle.description || ''});
+        description: seatStyle.description || '',
+      });
     } catch (err: any) {
       setError(err.message || 'Failed to load seat style');
       console.error('Error loading seat style:', err);
@@ -51,10 +85,80 @@ const EditSeatStylePage = () => {
     }
   };
 
+  const loadImages = async () => {
+    try {
+      const images = await apiService.getSeatStyleImages(parseInt(id));
+      console.log('📸 Loaded images:', images);
+      
+      // Handle different response structures
+      const imageArray = Array.isArray(images) ? images : (images.data || images.images || []);
+      setExistingImages(imageArray);
+    } catch (err: any) {
+      console.error('Error loading images:', err);
+      // Don't show error for images, just log it
+    }
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value}));
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      setNewImages(prev => [...prev, ...fileArray]);
+      
+      // Create previews for new images
+      fileArray.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreviews(prev => [...prev, e.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    // Reset input to allow selecting same file again
+    event.target.value = '';
+  };
+
+  const handleRemoveNewImage = (index: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteImage = (image: SeatStyleImage) => {
+    setImageToDelete(image);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteImage = async () => {
+    if (imageToDelete) {
+      try {
+        setDeletingImageId(imageToDelete.id);
+        await apiService.deleteSeatStyleImage(parseInt(id), imageToDelete.id);
+        await loadImages(); // Reload images after deletion
+        setDeleteDialogOpen(false);
+        setImageToDelete(null);
+      } catch (err: any) {
+        setError(err.message || 'Failed to delete image');
+        console.error('Error deleting image:', err);
+      } finally {
+        setDeletingImageId(null);
+      }
+    }
+  };
+
+  const handleSetPrimary = async (imageId: number) => {
+    try {
+      await apiService.setPrimarySeatStyleImage(parseInt(id), imageId);
+      await loadImages(); // Reload images to update primary status
+    } catch (err: any) {
+      setError(err.message || 'Failed to set primary image');
+      console.error('Error setting primary image:', err);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +173,33 @@ const EditSeatStylePage = () => {
       setLoading(true);
       setError(null);
       
-      await apiService.updateSeatStyle(parseInt(id), formData);
+      // Step 1: Update basic seat style info (without images)
+      const submissionData = {
+        name: formData.name.trim(),
+        description: formData.description.trim() || undefined,
+      };
+      
+      await apiService.updateSeatStyle(parseInt(id), submissionData);
+      console.log('✅ Seat style updated successfully');
+      
+      // Step 2: Upload new images if any were selected
+      if (newImages.length > 0) {
+        try {
+          console.log('📤 Uploading new images:', newImages.length);
+          await apiService.uploadSeatStyleImages(parseInt(id), {
+            images: newImages,
+          });
+          console.log('✅ New images uploaded successfully');
+        } catch (imageError: any) {
+          console.error('❌ Error uploading new images:', imageError);
+          setError('Seat style updated but failed to upload new images: ' + (imageError.message || 'Unknown error'));
+          setTimeout(() => {
+            router.push('/admin/seat-styles');
+          }, 3000);
+          return;
+        }
+      }
+      
       setSuccess('Seat Style updated successfully!');
       
       // Redirect after a short delay
@@ -156,7 +286,178 @@ const EditSeatStylePage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{ mb: 3 }}
                 />
+              </Box>
+
+              {/* Images Section */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Images
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                {/* Existing Images */}
+                {existingImages.length > 0 && (
+                  <Box sx={{ mb: 4 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                      Existing Images:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                      {existingImages.map((image) => (
+                        <Box key={image.id} sx={{ position: 'relative' }}>
+                          <Box
+                            sx={{
+                              width: 200,
+                              height: 200,
+                              position: 'relative',
+                              border: image.is_primary ? '3px solid #DA291C' : '1px solid #e0e0e0',
+                              borderRadius: 1,
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <img
+                              src={image.image_url}
+                              alt={image.alt_text || 'Seat style image'}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover'
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                            {image.is_primary && (
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  top: 8,
+                                  left: 8,
+                                  backgroundColor: '#DA291C',
+                                  color: 'white',
+                                  px: 1,
+                                  py: 0.5,
+                                  borderRadius: 1,
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600
+                                }}
+                              >
+                                Primary
+                              </Box>
+                            )}
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                display: 'flex',
+                                gap: 0.5
+                              }}
+                            >
+                              {!image.is_primary && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleSetPrimary(image.id)}
+                                  sx={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 1)' },
+                                    padding: '4px'
+                                  }}
+                                  title="Set as primary"
+                                >
+                                  <StarBorderIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeleteImage(image)}
+                                disabled={deletingImageId === image.id}
+                                sx={{
+                                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                  color: 'error.main',
+                                  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 1)' },
+                                  padding: '4px'
+                                }}
+                                title="Delete image"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Upload New Images */}
+                <Box>
+                  <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                    Upload New Images:
+                  </Typography>
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                    type="file"
+                    multiple
+                    onChange={handleImageChange}
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      sx={{ mb: 2 }}
+                    >
+                      Upload Images
+                    </Button>
+                  </label>
+                  
+                  {newImages.length > 0 && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {newImages.length} new image(s) selected
+                    </Typography>
+                  )}
+
+                  {imagePreviews.length > 0 && (
+                    <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                      {imagePreviews.map((preview, index) => (
+                        <Box key={index} sx={{ position: 'relative' }}>
+                          <img
+                            src={preview}
+                            alt={`Preview ${index + 1}`}
+                            style={{
+                              maxWidth: '200px',
+                              maxHeight: '200px',
+                              objectFit: 'cover',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={() => handleRemoveNewImage(index)}
+                            sx={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              minWidth: 'auto',
+                              padding: '4px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 1)',
+                              }
+                            }}
+                          >
+                            ×
+                          </Button>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
               </Box>
 
               {/* Action Buttons */}
@@ -191,6 +492,41 @@ const EditSeatStylePage = () => {
             </Box>
           </form>
         </Paper>
+
+        {/* Delete Image Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setImageToDelete(null);
+          }}
+        >
+          <DialogTitle>Confirm Delete Image</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this image? This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setImageToDelete(null);
+              }} 
+              disabled={deletingImageId !== null}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmDeleteImage} 
+              color="error" 
+              variant="contained" 
+              disabled={deletingImageId !== null}
+            >
+              {deletingImageId !== null ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </AdminLayout>
   );

@@ -39,10 +39,12 @@ const Footer: React.FC<FooterProps> = () => {
           zIndex: 1000,
         }}
       >
+       
+
         <Container
           maxWidth={false}
           disableGutters
-          sx={{ width: "85%", mx: "auto" }}
+          sx={{ width: "85%", mx: "auto", position: "relative" }}
         >
           {/* Main Footer Content */}
           <Box
@@ -51,8 +53,8 @@ const Footer: React.FC<FooterProps> = () => {
               flexDirection: { xs: "column", md: "row" },
               justifyContent: "space-between",
               alignItems: { xs: "center", md: "flex-start" },
-              gap: { xs: 4, md: 0 },
-              px: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
+              gap: { xs: 4, md: 5 ,lg: 5, xl: 8},
+              px: { xs: 2, sm: 3, md: 5, lg: 5, xl: 6 },
               width: "100%",
             }}
           >
@@ -73,7 +75,7 @@ const Footer: React.FC<FooterProps> = () => {
                     xs: "1.25rem",
                     sm: "1.5rem",
                     md: "1rem",
-                    lg: "1.5rem",
+                    lg: "1.2rem",
                     xl: "2rem",
                   },
                   color: "white",
@@ -255,6 +257,76 @@ const Footer: React.FC<FooterProps> = () => {
                   </Typography>
                 </Link>
               </Box>
+            </Box>
+
+            {/* Logo Section */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: { xs: "center", md: "flex-start" },
+                gap: 2,
+              }}
+            >
+            
+              <MotionBox
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: { xs: "center", md: "flex-start" },
+                  gap: 1.5,
+                  width: "100%",
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/superiorlogo/footerlogo.png"
+                  alt="Superior Seating LLC Logo"
+                  sx={{
+                    height: {
+                      xs: "80px",
+                      sm: "90px",
+                      md: "100px",
+                      lg: "120px",
+                      xl: "140px",
+                    },
+                    width: "auto",
+                    objectFit: "contain",
+                    filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))",
+                    transition: "all 0.3s ease",
+                    alignSelf: { xs: "center", md: "flex-start" },
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                      filter: "drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4))",
+                    },
+                  }}
+                />
+                <Typography
+                  sx={{
+                    color: "white",
+                    fontSize: {
+                      xs: "0.65rem",
+                      sm: "0.75rem",
+                      md: "0.85rem",
+                      lg: "0.8rem",
+                      xl: "0.9rem",
+                    },
+                    fontWeight: 600,
+                    textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+                    textAlign: { xs: "center", md: "left" },
+                    letterSpacing: "0.05em",
+                    alignSelf: { xs: "center", md: "flex-start" },
+                    whiteSpace: "nowrap",
+                    ml: { xs: 0, md: "-20px", lg: "-20px", xl: "-20px" },
+                  }}
+                >
+                  RV CAPITAL OF THE WORLD
+                </Typography>
+              </MotionBox>
             </Box>
 
             {/* Contact */}
