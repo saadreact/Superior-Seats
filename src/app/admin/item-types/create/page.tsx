@@ -29,12 +29,30 @@ const CreateItemTypePage = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    description: ''});
+    description: '',
+    image: null as File | null
+  });
+  
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value}));
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, image: file }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +67,13 @@ const CreateItemTypePage = () => {
       setLoading(true);
       setError(null);
       
-      await apiService.createItemType(formData);
+      // Include image in payload (optional)
+      const submissionData = {
+        ...formData,
+        image: formData.image || undefined
+      };
+      
+      await apiService.createItemType(submissionData);
       setSuccess('Item Type created successfully!');
       
       // Redirect after a short delay
@@ -127,7 +151,49 @@ const CreateItemTypePage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{ mb: 3 }}
                 />
+              </Box>
+
+              {/* Image Upload */}
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
+                  Image
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+
+                <Box>
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                    type="file"
+                    onChange={handleImageChange}
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      sx={{ mb: 2 }}
+                    >
+                      {formData.image ? `Image Selected: ${formData.image.name}` : 'Upload Image'}
+                    </Button>
+                  </label>
+                  {imagePreview && (
+                    <Box sx={{ mt: 2 }}>
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
               </Box>
 
               {/* Action Buttons */}

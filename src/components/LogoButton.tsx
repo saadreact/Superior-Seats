@@ -4,6 +4,7 @@ import React from 'react';
 import { Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const MotionButton = motion.create(Button);
 
@@ -12,11 +13,21 @@ interface LogoButtonProps {
 }
 
 const LogoButton = ({ onClick }: LogoButtonProps) => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      router.push('/customize-your-seat');
+    }
+  };
+
   return (
     <MotionButton
       variant="contained"
       size="large"
-      onClick={onClick}
+      onClick={handleClick}
       initial={{ opacity: 0, rotateY: 0 }}
       animate={{
         rotateY: 360,
@@ -53,7 +64,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
         backgroundColor: 'transparent',
         color: '#DA291C',
         borderRadius: '50%',
-        marginTop: { xs: '-10px', sm: '-10px', md: '45px', lg: '20px', xl: '45px' },  
+        marginTop: { xs: '-10px', sm: '-10px', md: '60px', lg: '60px', xl: '70px' },  
         marginLeft: { xs: '-10px', sm: '-10px', md: '-25px', lg: '-35px', xl: '15px' }, // S logo  size button
         width: { xs: '140px', sm: '140px', md: '150px', lg: '170px', xl: '200px' },
         height: { xs: '120px', sm: '120px', md: '130px', lg: '150px', xl: '180px' },

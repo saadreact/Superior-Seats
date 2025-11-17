@@ -36,10 +36,26 @@ import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/utils/api';
 
+interface SeatTypeImage {
+  id: number;
+  seat_type_id: number;
+  image_path: string;
+  alt_text: string | null;
+  caption: string | null;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  image_url: string;
+}
+
 interface SeatType {
   id: number;
   name: string;
   description: string;
+  image: string | null;
+  images?: SeatTypeImage[];
   created_at: string;
   updated_at: string;
 }
@@ -176,6 +192,30 @@ const SeatTypesPage = () => {
     setPage(0);
   };
 
+  const getSeatTypeImage = (seatType: SeatType) => {
+    // Priority 1: Use images array from backend response
+    if (seatType.images && seatType.images.length > 0) {
+      // Find primary image first
+      const primaryImage = seatType.images.find(img => img.is_primary === true);
+      if (primaryImage && primaryImage.image_url) {
+        return primaryImage.image_url;
+      }
+      // If no primary, use first image
+      const firstImage = seatType.images[0];
+      if (firstImage && firstImage.image_url) {
+        return firstImage.image_url;
+      }
+    }
+    
+    // Priority 2: Fallback to legacy image field (for backward compatibility)
+    if (seatType.image) {
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${seatType.image}`;
+    }
+    
+    // Return null to show "No Image" placeholder
+    return null;
+  };
+
   return (
     <AdminLayout title="Seat Types">
       <Box>
@@ -271,6 +311,7 @@ const SeatTypesPage = () => {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                    <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
@@ -285,6 +326,60 @@ const SeatTypesPage = () => {
                         transition: 'background-color 0.2s ease'
                       }}
                     >
+                      <TableCell>
+                        <Box
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          {getSeatTypeImage(seatType) ? (
+                            <Box
+                              component="img"
+                              src={getSeatTypeImage(seatType)!}
+                              alt={seatType.name}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: 1,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                // Show fallback when image fails to load
+                                const fallback = target.parentElement?.querySelector('.image-fallback');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <Box
+                            className="image-fallback"
+                            sx={{
+                              width: 60,
+                              height: 60,
+                              bgcolor: 'grey.200',
+                              display: getSeatTypeImage(seatType) ? 'none' : 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: 1,
+                              border: '1px solid #e0e0e0'
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary">
+                              No Image
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
                       <TableCell>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {seatType.name}

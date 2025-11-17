@@ -40,6 +40,7 @@ interface ItemType {
   id: number;
   name: string;
   description: string;
+  image: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -176,6 +177,17 @@ const ItemTypesPage = () => {
     setPage(0);
   };
 
+  const getItemTypeImage = (itemType: ItemType) => {
+    // Handle image path from API response
+    if (itemType.image) {
+      // The image path from database is already complete, just prepend the base URL
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${itemType.image}`;
+    }
+    
+    // Return null to show "No Image" placeholder instead of static fallback
+    return null;
+  };
+
 
   return (
     <AdminLayout title="Item Types">
@@ -295,6 +307,59 @@ const ItemTypesPage = () => {
                 {itemtypess.map((itemtypes) => (
                     <Paper key={itemtypes.id} sx={{ p: 2 }}>
                       <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                        {/* Image */}
+                        <Box
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}
+                        >
+                          {getItemTypeImage(itemtypes) ? (
+                            <Box
+                              component="img"
+                              src={getItemTypeImage(itemtypes)!}
+                              alt={itemtypes.name}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: 1,
+                                border: '1px solid #e0e0e0',
+                                maxWidth: 60,
+                                maxHeight: 60
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.parentElement?.querySelector('.image-fallback');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <Box
+                            className="image-fallback"
+                            sx={{
+                              width: 60,
+                              height: 60,
+                              bgcolor: 'grey.200',
+                              display: getItemTypeImage(itemtypes) ? 'none' : 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: 1,
+                              border: '1px solid #e0e0e0'
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
+                              No Image
+                            </Typography>
+                          </Box>
+                        </Box>
                         {/* Content */}
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
@@ -342,6 +407,7 @@ const ItemTypesPage = () => {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ backgroundColor: 'grey.50' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                         <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
@@ -356,6 +422,60 @@ const ItemTypesPage = () => {
                             transition: 'background-color 0.2s ease'
                           }}
                         >
+                          <TableCell>
+                            <Box
+                              sx={{
+                                width: 60,
+                                height: 60,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              {getItemTypeImage(itemtypes) ? (
+                                <Box
+                                  component="img"
+                                  src={getItemTypeImage(itemtypes)!}
+                                  alt={itemtypes.name}
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: 1,
+                                    border: '1px solid #e0e0e0',
+                                    maxWidth: 60,
+                                    maxHeight: 60
+                                  }}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    // Show fallback when image fails to load
+                                    const fallback = target.parentElement?.querySelector('.image-fallback');
+                                    if (fallback) {
+                                      (fallback as HTMLElement).style.display = 'flex';
+                                    }
+                                  }}
+                                />
+                              ) : null}
+                              <Box
+                                className="image-fallback"
+                                sx={{
+                                  width: 60,
+                                  height: 60,
+                                  bgcolor: 'grey.200',
+                                  display: getItemTypeImage(itemtypes) ? 'none' : 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderRadius: 1,
+                                  border: '1px solid #e0e0e0'
+                                }}
+                              >
+                                <Typography variant="caption" color="text.secondary">
+                                  No Image
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
                           <TableCell>
                             <Typography variant="body1" sx={{ fontWeight: 500 }}>
                               {itemtypes.name}
