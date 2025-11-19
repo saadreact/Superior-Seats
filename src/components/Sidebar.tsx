@@ -110,17 +110,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       icon: <MoneyIcon />,
       href: '/admin/payments',
     },
-    {
-      text: 'Email Templates',
-      icon: <EmailIcon />,
-      href: '/admin/email-templates',
-    },
-    {
-      text: 'Update Admin',
-      icon: <PersonIcon />,
-      href: '/admin/admin-profile',
-    },
-  
   ];
 
   const variationSubItems = [

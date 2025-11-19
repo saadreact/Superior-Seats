@@ -22,7 +22,7 @@ const FleetBuilderSolutionsPage = () => {
       {/* Hero Section */}
       <HeroSectionCommon
         title="Fleet & Builder Solutions"
-        description="We partner with RV, limousine, and bus manufacturers and upfitters to provide premium custom seating solutions."
+        description="We partner with RV, limousine, and bus manufacturers."
         height={{
           xs: '75px',
           sm: '70px', 
@@ -60,7 +60,7 @@ const FleetBuilderSolutionsPage = () => {
                 sx={{
                   color: 'primary.main',
                   fontWeight: 600,
-                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' },
+                  fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                   letterSpacing: 2,
                 }}
               >
@@ -198,7 +198,7 @@ const FleetBuilderSolutionsPage = () => {
             transition={{ duration: 0.7 }}
             sx={{ textAlign: 'center', mb: { xs: 3, sm: 4, md: 6 } }}
           >
-            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>
+            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2, fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>
               OUR SERVICES
             </Typography>
             <Typography variant="h2" sx={{ mt: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem', lg: '3rem', xl: '3rem' } }}>
@@ -213,8 +213,8 @@ const FleetBuilderSolutionsPage = () => {
           <Box sx={{ mb: { xs: 4, sm: 6, md: 10 } }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 2, sm: 3, md: 6 }, mb: { xs: 3, sm: 4, md: 5 } }}>
               <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.7 }}>
-                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>FLEET BUSES</Typography>
-                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Large-Scale Solutions</Typography>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 650, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' }}}>FLEET BUSES</Typography>
+                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>Large-Scale Solutions</Typography>
                 <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
                   Large-scale seating solutions for public transit, school buses, and commercial fleet operations. 
                   We deliver high-volume orders with consistent quality and on-time delivery.
@@ -318,23 +318,51 @@ const FleetBuilderSolutionsPage = () => {
                 </Box>
               </MotionBox>
               <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.7 }}>
-                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>LUXURY LIMOUSINES</Typography>
-                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Executive Transportation</Typography>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>LUXURY LIMOUSINES</Typography>
+                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' }}}>Executive Transportation</Typography>
                 <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
                   Luxury seating for executive transportation and special occasions. Premium materials and elegant 
                   designs that match the sophistication of high-end limousines.
                 </Typography>
               </MotionBox>
             </Box>
-        
+            {/* Additional Limo Images */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: { xs: 2, sm: 3, md: 4 } }}>
+              {[
+                { src: '/Gallery/Truckimages/limo.png', alt: 'Luxury limos 2' },
+                { src: '/Gallery/Truckimages/limo2.png', alt: 'Luxury limos 3' },
+              ].map((image, index) => (
+                <MotionBox
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.3 }}
+                  transition={{ duration: 0.7, delay: index * 0.1 }}
+                >
+                  <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
+                    <Box
+                      component="img"
+                      src={image.src}
+                      alt={image.alt}
+                      sx={{
+                        display: 'block',
+                        width: '100%',
+                        height: 'auto',
+                        maxWidth: '100%',
+                      }}
+                    />
+                  </Box>
+                </MotionBox>
+              ))}
+            </Box>
           </Box>
 
           {/* RV & Van Upfitters */}
           <Box sx={{ mb: { xs: 4, sm: 2, md: 2 } }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 2, sm: 3, md: 6 }, mb: { xs: 3, sm: 4, md: 5 } }}>
               <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.7 }}>
-                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' } }}>RV & VAN UPFITTERS</Typography>
-                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem', xl: '2rem' } }}>Custom Solutions</Typography>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>RV & VAN UPFITTERS</Typography>
+                <Typography variant="h3" sx={{ mt: { xs: 0.75, sm: 1 }, mb: { xs: 1.5, sm: 2 }, fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' }}}>Custom Solutions</Typography>
                 <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' } }}>
                   Custom solutions for recreational vehicles and commercial vans. We understand the unique challenges 
                   of RV and van customization, delivering seats that maximize space while providing ultimate comfort.

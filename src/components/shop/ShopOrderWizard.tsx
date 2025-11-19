@@ -30,9 +30,6 @@ import {
   MenuItem,
   Divider,
   InputAdornment,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon, Tune as TuneIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useAppSelector } from '@/store/hooks';
@@ -96,7 +93,6 @@ export default function ShopOrderWizard() {
 
   const [notes, setNotes] = useState('');
   const [shippingMethod, setShippingMethod] = useState('Standard');
-  const [paymentOption, setPaymentOption] = useState<'cash' | 'card'>('cash');
   const squareRef = useRef<SquareCardHandle | null>(null);
   const [cardToken, setCardToken] = useState<string | null>(null);
 
@@ -544,23 +540,16 @@ export default function ShopOrderWizard() {
             <CardContent>
               <Box display="grid" gap={3}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Payment Information</Typography>
-                <Alert severity="info">💳 Choose your payment method</Alert>
-                <RadioGroup value={paymentOption} onChange={(e) => setPaymentOption(e.target.value as 'cash' | 'card')} sx={{ mb: 2 }}>
-                  <FormControlLabel value="cash" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Typography variant="body1" sx={{ fontWeight: 500 }}>💵 Cash on Delivery</Typography><Typography variant="body2" sx={{ color: 'text.secondary' }}>Pay when you receive your order</Typography></Box>} sx={{ mb: 1.5, p: 1.5, border: '1px solid', borderColor: paymentOption === 'cash' ? 'primary.main' : 'grey.300', borderRadius: 2, backgroundColor: paymentOption === 'cash' ? 'primary.50' : 'transparent', '&:hover': { backgroundColor: paymentOption === 'cash' ? 'primary.100' : 'grey.50' } }} />
-                  <FormControlLabel value="card" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Typography variant="body1" sx={{ fontWeight: 500 }}>💳 Credit/Debit Card</Typography><Typography variant="body2" sx={{ color: 'text.secondary' }}>Secure online payment</Typography></Box>} sx={{ p: 1.5, border: '1px solid', borderColor: paymentOption === 'card' ? 'primary.main' : 'grey.300', borderRadius: 2, backgroundColor: paymentOption === 'card' ? 'primary.50' : 'transparent', '&:hover': { backgroundColor: paymentOption === 'card' ? 'primary.100' : 'grey.50' } }} />
-                </RadioGroup>
-                {paymentOption === 'card' && (
-                  <Box>
-                    <Divider sx={{ my: 1.5 }} />
-                    <Typography variant="h6" sx={{ mb: 1.5, fontWeight: 'bold' }}>Card Details</Typography>
-                    <SquareCard
+                <Alert severity="info">💳 Enter your card details to complete payment</Alert>
+                <Box>
+                  <Typography variant="h6" sx={{ mb: 1.5, fontWeight: 'bold' }}>Card Details</Typography>
+                  <SquareCard
                     ref={squareRef}
                     amount={grandTotal}
                     onReady={() => setError(null)}
                     onError={(msg) => setError(msg)}
                   />
-                  </Box>
-                )}
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -623,10 +612,6 @@ export default function ShopOrderWizard() {
     return true;
   };
 
-  // Clear stored token if switching to cash
-  useEffect(() => {
-    if (paymentOption === 'cash') setCardToken(null);
-  }, [paymentOption]);
 
   const handleNext = async () => {
     if (!canProceedFromStep(activeStep)) {
@@ -639,20 +624,16 @@ export default function ShopOrderWizard() {
     }
     // If leaving the Payment step, tokenize and store the card token
     if (activeStep === 3) {
-      if (paymentOption === 'card') {
-        try {
-          if (!squareRef.current) {
-            setError('Payment form not ready. Please wait a second and try again.');
-            return;
-          }
-          const { token } = await squareRef.current.tokenize();
-          setCardToken(token);
-        } catch (e: any) {
-          setError(e?.message || 'Card tokenization failed. Please check your card details and try again.');
+      try {
+        if (!squareRef.current) {
+          setError('Payment form not ready. Please wait a second and try again.');
           return;
         }
-      } else {
-        setCardToken(null);
+        const { token } = await squareRef.current.tokenize();
+        setCardToken(token);
+      } catch (e: any) {
+        setError(e?.message || 'Card tokenization failed. Please check your card details and try again.');
+        return;
       }
     }
     setError(null);
@@ -665,16 +646,13 @@ export default function ShopOrderWizard() {
       setLoading(true);
       setError(null);
 
-      // Use stored token if card payment was selected
-      let usedCardToken: string | null = null;
-      if (paymentOption === 'card') {
-        if (!cardToken) {
-          setError('Card details are not ready. Please go back to Payment step and enter your card.');
-          setLoading(false);
-          return;
-        }
-        usedCardToken = cardToken;
+      // Use stored token for card payment
+      if (!cardToken) {
+        setError('Card details are not ready. Please go back to Payment step and enter your card.');
+        setLoading(false);
+        return;
       }
+      const usedCardToken = cardToken;
 
       const payload = {
         cartItems: cartItems.map(ci => ({
@@ -699,7 +677,7 @@ export default function ShopOrderWizard() {
           billingAddress: { ...billingAddress },
         },
         paymentInfo: {
-          method: 'cash',
+          method: 'card',
           amountPaid: grandTotal,
           currency: 'USD',
         },
@@ -713,7 +691,7 @@ export default function ShopOrderWizard() {
       else if (response?.id) orderId = response.id;
       else if (response?.data?.data?.id) orderId = response.data.data.id;
 
-      // Charge payment for both card and cash (mirror view-order Pay button exactly using the just-created order data)
+      // Charge payment using card (mirror view-order Pay button exactly using the just-created order data)
       if (orderId) {
         // Fetch fresh order to get server-computed totals and customer id
         let freshOrder: any = null;
@@ -730,10 +708,10 @@ export default function ShopOrderWizard() {
         const chargeBody = {
           customer_id: customerId,
           order_id: orderId,
-          payment_method: paymentOption === 'card' ? 'square' : 'cash',
+          payment_method: 'square',
           amount: amountToCharge,
-          ...(paymentOption === 'card' && usedCardToken ? { token: usedCardToken } : {}),
-          ...(paymentOption === 'card' ? { location_id: locationId } : {}),
+          token: usedCardToken,
+          location_id: locationId,
           notes: `Payment for order #${orderNumber}`,
         };
 
