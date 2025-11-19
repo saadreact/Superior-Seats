@@ -63,6 +63,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
     setUserMenuAnchor(null);
   };
 
+  const handleProfile = () => {
+    handleUserMenuClose();
+    router.push('/admin/admin-profile');
+  };
+
   const handleLogout = async () => {
     try {
       handleUserMenuClose();
@@ -191,6 +196,19 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin' }) 
                     }
                   }}
                 >
+                  <MenuItem 
+                    onClick={handleProfile}
+                    sx={{
+                      py: 1.5,
+                      px: 2,
+                      '&:hover': {
+                        backgroundColor: 'rgba(218, 41, 28, 0.05)',
+                      }
+                    }}
+                  >
+                    <PersonIcon sx={{ mr: 1.5, fontSize: '1.2rem' }} />
+                    Profile
+                  </MenuItem>
                   <MenuItem 
                     onClick={handleLogout}
                     sx={{

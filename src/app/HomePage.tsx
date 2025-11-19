@@ -433,15 +433,17 @@ const HomePage = () => {
 
         {/* Right Side - Truck Image (No Background) */}
         <Box sx={{ 
-          flex: { xs: '1 1 100%', md: '0 0 auto' },
+          flex: { xs: '0 0 auto', md: '0 0 auto' },
           width: { xs: '100%', md: 'auto' },
-          height: sectionHeights,
+          height: { xs: 'auto', md: sectionHeights },
+          minHeight: { xs: 'auto', md: sectionHeights },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: 'transparent',
           order: { xs: 1, md: 2 },
-          py: { xs: 4, md: 0 }
+          py: { xs: 2, md: 0 },
+          px: { xs: 2, md: 0 },
         }}>
           <MotionBox
             initial={{ opacity: 0, scale: 0.8 }}
@@ -452,8 +454,8 @@ const HomePage = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 'fit-content',
-              height: 'fit-content',
+              width: { xs: '100%', md: 'fit-content' },
+              height: { xs: 'auto', md: 'fit-content' },
               maxWidth: { xs: '100%', md: '720px', lg: '760px', xl: '820px' },
             }}
           >
@@ -462,11 +464,11 @@ const HomePage = () => {
               src="/Gallery/Truckimages/mappic.png"
               alt="Truck"
               sx={{
+                width: { xs: '100%', md: 'auto' },
+                height: { xs: 'auto', md: 'auto' },
                 maxWidth: { xs: '100%', md: '100%' },
-                maxHeight: { xs: '260px', sm: '320px', md: '420px', lg: '480px', xl: '540px' },
-                width: 'auto',
-                height: 'auto',
-                objectFit: 'contain',
+                maxHeight: { xs: 'none', sm: '320px', md: '420px', lg: '480px', xl: '540px' },
+                objectFit: { xs: 'contain', md: 'contain' },
                 display: 'block',
               }}
             />

@@ -7,7 +7,7 @@ export default function FleetBuilderSolutions() {
   return (
     <LazyComponent
       component={() => import('@/components/FleetBuilderSolutionsPage')}
-      loadingText="Loading Fleet & Builder Solutions Page..."
+      loadingText="Loading fleet & builder solutions Page..."
     />
   );
 }

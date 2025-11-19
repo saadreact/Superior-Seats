@@ -168,7 +168,7 @@ const Gallery = () => {
                 sx={{
                   color: 'primary.main',
                   fontWeight: 600,
-                  fontSize: { xs: '0.9rem', md: '1rem' },
+                  fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                   letterSpacing: 2,
                 }}
               >
@@ -262,7 +262,7 @@ const Gallery = () => {
             transition={{ duration: 0.7 }}
             sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}
           >
-            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2 }}>
+            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>
               BEHIND THE CRAFT
             </Typography>
             <Typography variant="h2" sx={{ mt: 2, fontWeight: 700 }}>
@@ -277,7 +277,7 @@ const Gallery = () => {
           {/* Section A */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 3, md: 6 }, mb: { xs: 6, md: 10 } }}>
             <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
-              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600 }}>MATERIAL SELECTION</Typography>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>MATERIAL SELECTION</Typography>
               <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700 }}>Premium Components, Handpicked</Typography>
               <Typography sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
                 We source leathers, foams, and hardware for longevity and comfort. Each project begins with exacting
@@ -307,7 +307,7 @@ const Gallery = () => {
               <Image src="/Gallery/Truckimages/u04.png" alt="Precision cutting" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
             </Box>
             <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
-              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600 }}>PATTERNING & CUT</Typography>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>PATTERNING & CUT</Typography>
               <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700 }}>Cut With Exactness</Typography>
               <Typography sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
                 Patterns are drafted for fit and durability, then cut to precise tolerances. This ensures consistent
@@ -319,7 +319,7 @@ const Gallery = () => {
           {/* Section C */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, gap: { xs: 3, md: 6 }, mb: { xs: 6, md: 2 } }}>
             <MotionBox initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
-              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600 }}>ASSEMBLY</Typography>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>ASSEMBLY</Typography>
               <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700 }}>Built by Craftspeople</Typography>
               <Typography sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
                 Skilled upholstery technicians assemble every seat by hand, ensuring tight seams, smooth contours,
@@ -398,7 +398,7 @@ const Gallery = () => {
                 sx={{
                   color: 'primary.main',
                   fontWeight: 600,
-                  fontSize: { xs: '0.9rem', md: '1rem' },
+                  fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                   letterSpacing: 2,
                 }}
               >
@@ -460,7 +460,7 @@ const Gallery = () => {
               sx={{
                 color: 'primary.main',
                 fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '1rem' },
+                fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                 letterSpacing: 2,
               }}
             >
@@ -510,7 +510,7 @@ const Gallery = () => {
               sx={{
                 color: 'primary.main',
                 fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '1rem' },
+                fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                 letterSpacing: 2,
               }}
             >

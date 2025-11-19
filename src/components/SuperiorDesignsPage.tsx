@@ -63,7 +63,7 @@ const SuperiorDesignsPage = () => {
                 sx={{
                   color: 'primary.main',
                   fontWeight: 600,
-                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' },
+                  fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                   letterSpacing: 2,
                 }}
               >
