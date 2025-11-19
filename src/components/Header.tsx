@@ -99,6 +99,7 @@ const Header = () => {
 
   const menuItems = [
     { text: 'Home', href: '/' },
+    { text: 'About', href: '/about' },
     { text: 'Fleet & Builder Solutions', href: '/fleet-builder-solutions' },
     { 
       text: 'Shop Now', 
@@ -111,7 +112,7 @@ const Header = () => {
     { text: 'Gallery', href: '/gallery' },
     { text: 'Upholstery Services', href: '/upholstery' },
     { text: 'Upfitting', href: '/upfitting' },
-    { text: 'About', href: '/about' },
+  
     { text: 'Contact', href: '/contact' },
   ];
 

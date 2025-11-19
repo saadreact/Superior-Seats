@@ -146,7 +146,7 @@ const UpholsteryServices = () => {
 
       {/* Introduction Section */}
       <Box sx={{ 
-        py: { xs: 6, md: 8, lg: 10 },
+        py: { xs: 6, md: 7, lg: 7, xl: 7},
         backgroundColor: 'white',
       }}>
         <Container maxWidth="lg">
@@ -162,7 +162,7 @@ const UpholsteryServices = () => {
               sx={{
                 color: 'primary.main',
                 fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '1rem' },
+                fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                 letterSpacing: 2,
               }}
             >
@@ -422,7 +422,7 @@ const UpholsteryServices = () => {
               sx={{
                 color: 'primary.main',
                 fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '1rem' },
+                fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                 letterSpacing: 2,
               }}
             >
@@ -473,7 +473,7 @@ const UpholsteryServices = () => {
                 transition={{ duration: 0.6 }}
                 sx={{ order: { xs: 2, md: index % 2 === 0 ? 1 : 2 } }}
               >
-                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2 }}>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: 2, fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>
                   MARINE UPHOLSTERY
                 </Typography>
                 <Typography variant="h3" sx={{ mt: 1, mb: 2, fontWeight: 700 }}>
