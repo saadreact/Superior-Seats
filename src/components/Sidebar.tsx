@@ -129,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/heat-options',
     },
     {
-      text: 'Item Types',
+      text: 'Seat Base',
       icon: <CategoryIcon />,
       href: '/admin/item-types',
     },
