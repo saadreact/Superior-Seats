@@ -335,7 +335,7 @@ const EditSeatStylePage = () => {
                                   position: 'absolute',
                                   top: 8,
                                   left: 8,
-                                  backgroundColor: '#DA291C',
+                                  backgroundColor: 'primary.main',
                                   color: 'white',
                                   px: 1,
                                   py: 0.5,
@@ -480,9 +480,9 @@ const EditSeatStylePage = () => {
                   startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
                   disabled={loading}
                   sx={{
-                    backgroundColor: '#DA291C',
+                    backgroundColor: 'primary.main',
                     '&:hover': {
-                      backgroundColor: '#B71C1C',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >

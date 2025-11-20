@@ -277,8 +277,10 @@ const ReclineTypesPage = () => {
               minWidth: { xs: '100%', sm: 'auto' },
               height: { xs: 44, sm: 'auto' },
               fontSize: { xs: '0.95rem', sm: '0.875rem' },
+              backgroundColor: 'primary.main',
               boxShadow: 'none',
               '&:hover': {
+                backgroundColor: 'primary.dark',
                 boxShadow: 'none',
               }
             }}

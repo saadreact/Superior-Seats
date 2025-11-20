@@ -18,6 +18,9 @@ const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
 
 const SuperiorDesignsPage = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
@@ -173,7 +176,7 @@ const SuperiorDesignsPage = () => {
               >
                 <Box
                   component="img"
-                  src="/Gallery/Truckimages/u14.png"
+                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u14.png`}
                   alt="Superior Designs custom build"
                   sx={{
                     position: 'absolute',

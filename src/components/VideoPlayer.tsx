@@ -27,7 +27,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [buffering, setBuffering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -49,7 +48,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     // Handle video load and play
     const handleCanPlay = async () => {
       setIsLoading(false);
-      setBuffering(false);
       try {
         if (autoPlay) {
           await video.play();
@@ -63,15 +61,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     const handleCanPlayThrough = () => {
       setIsLoading(false);
-      setBuffering(false);
-    };
-
-    const handleWaiting = () => {
-      setBuffering(true);
     };
 
     const handlePlaying = () => {
-      setBuffering(false);
       setIsLoading(false);
     };
 
@@ -81,7 +73,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     const handlePlay = () => {
       setIsPlaying(true);
-      setBuffering(false);
     };
 
     const handlePause = () => {
@@ -118,13 +109,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       console.error('Video source:', videoSrc);
       setError(errorMessage);
       setIsLoading(false);
-      setBuffering(false);
     };
 
     video.addEventListener('loadstart', handleLoadStart);
     video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('canplaythrough', handleCanPlayThrough);
-    video.addEventListener('waiting', handleWaiting);
     video.addEventListener('playing', handlePlaying);
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
@@ -146,7 +135,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       video.removeEventListener('loadstart', handleLoadStart);
       video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('canplaythrough', handleCanPlayThrough);
-      video.removeEventListener('waiting', handleWaiting);
       video.removeEventListener('playing', handlePlaying);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
@@ -209,7 +197,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             }}
             onCanPlay={() => {
               setIsLoading(false);
-              setBuffering(false);
               // Try to play when video can play
               if (autoPlay && videoRef.current && !isPlaying) {
                 videoRef.current.play().catch((error) => {
@@ -219,14 +206,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             }}
             onCanPlayThrough={() => {
               setIsLoading(false);
-              setBuffering(false);
-            }}
-            onWaiting={() => {
-              setBuffering(true);
             }}
             onPlaying={() => {
               setIsLoading(false);
-              setBuffering(false);
             }}
           >
             <source
@@ -244,8 +226,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             Your browser does not support the video tag.
           </Box>
 
-          {/* Loading/Buffering Indicator */}
-          {(isLoading || buffering) && !error && (
+          {/* Loading Indicator */}
+          {isLoading && !error && (
             <Box
               sx={{
                 position: 'absolute',
@@ -280,7 +262,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     fontWeight: 500,
                   }}
                 >
-                  {isLoading ? 'Loading video...' : 'Buffering...'}
+                  Loading video...
                 </Box>
               </Box>
             </Box>

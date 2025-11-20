@@ -30,6 +30,8 @@ const MotionTypography = motion.create(Typography);
 const MotionBox = motion.create(Box);
 
 const AboutPage = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
 
   // Icon mapping function
   const getIcon = (iconName: string) => {
@@ -50,7 +52,7 @@ const AboutPage = () => {
     "Ongoing Support"
   ];
 
-  const whyChooseItems = [
+  const whyChooseItemsBase = [
     {
       title: "Custom Fit Design",
       description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
@@ -82,6 +84,12 @@ const AboutPage = () => {
       icon: <CheckCircle />
     }
   ];
+
+  // Update whyChooseItems with base URL
+  const whyChooseItems = whyChooseItemsBase.map(item => ({
+    ...item,
+    image: `${IMAGE_BASE_URL}${item.image}`
+  }));
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
@@ -116,8 +124,9 @@ const AboutPage = () => {
         >
           <Box
             component="img"
-            src="/Gallery/Truckimages/Americanseat.png"
+            src={`${IMAGE_BASE_URL}/Gallery/Truckimages/Americanseat.png`}
             alt="Superior Seating LLC"
+            loading="lazy"
             sx={{
               width: '100%',
               height: '100%',
@@ -818,6 +827,7 @@ const AboutPage = () => {
                   component="img"
                   src={item.image}
                   alt={item.title}
+                  loading="lazy"
                   sx={imgStyles}
                  />
               </MotionBox>

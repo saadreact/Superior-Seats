@@ -729,12 +729,12 @@ const CreateMaterialTypePage = () => {
                     startIcon={<SaveIcon />}
                     disabled={loading}
                     sx={{
-                      backgroundColor: '#DA291C',
+                      backgroundColor: 'primary.main',
                       minHeight: { xs: 44, sm: 'auto' },
                       fontSize: { xs: '0.95rem', sm: '0.875rem' },
                       order: { xs: 1, sm: 2 },
                       '&:hover': {
-                        backgroundColor: '#B71C1C',
+                        backgroundColor: 'primary.dark',
                       },
                     }}
                   >

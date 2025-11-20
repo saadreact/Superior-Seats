@@ -15,6 +15,9 @@ const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
 
 const FleetBuilderSolutionsPage = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES;
+  
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
@@ -41,19 +44,23 @@ const FleetBuilderSolutionsPage = () => {
         <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-              gap: { xs: 3, sm: 4, md: 6, lg: 8 },
+              display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
             }}
           >
             {/* Content */}
             <MotionBox
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8 }}
-              sx={{ order: { xs: 2, md: 1 } }}
+              sx={{
+                textAlign: 'center',
+                maxWidth: { xs: '100%', md: '800px', lg: '900px' },
+                width: '100%',
+                mb: { xs: 4, sm: 5, md: 6 },
+              }}
             >
               <Typography
                 variant="overline"
@@ -62,6 +69,8 @@ const FleetBuilderSolutionsPage = () => {
                   fontWeight: 600,
                   fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
                   letterSpacing: 2,
+                  display: 'block',
+                  textAlign: 'center',
                 }}
               >
                 PARTNERSHIP EXCELLENCE
@@ -74,6 +83,8 @@ const FleetBuilderSolutionsPage = () => {
                   fontWeight: 600,
                   color: 'text.primary',
                   fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.5rem', xl: '2.5rem' },
+                  textAlign: 'center',
+                  lineHeight: { xs: 1.2, sm: 1.3, md: 1.4 },
                 }}
               >
                 Premium Custom Seating Solutions
@@ -84,7 +95,10 @@ const FleetBuilderSolutionsPage = () => {
                   color: 'text.secondary',
                   lineHeight: 1.8,
                   mb: { xs: 2, sm: 3 },
-                  fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
+                  fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem', lg: '1.125rem' },
+                  textAlign: 'center',
+                  mx: 'auto',
+                  maxWidth: { xs: '100%', md: '700px' },
                 }}
               >
                We partner with RV, limousine, and bus manufacturers and upfitters to provide premium custom seating solutions. 
@@ -94,92 +108,72 @@ const FleetBuilderSolutionsPage = () => {
                 sx={{
                   color: 'text.secondary',
                   lineHeight: 1.8,
-                  fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
+                  fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem', lg: '1.125rem' },
                   mb: { xs: 3, sm: 4 },
+                  textAlign: 'center',
+                  mx: 'auto',
+                  maxWidth: { xs: '100%', md: '700px' },
                 }}
               >
                 From design and prototyping to full-scale production, our team delivers comfort, durability, and craftsmanship your customers will notice.
               </Typography>
-              
-              {/* Horizontal Image under text */}
-              <MotionBox
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.8 }}
-                sx={{ mt: { xs: 2, sm: 3 } }}
-              >
-                <Box
-                  sx={{
-                    display: 'inline-block',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-                    maxWidth: '100%',
-                    width: '100%',
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src="/Gallery/Truckimages/c11.png"
-                    alt="Custom seating solutions"
-                    sx={{
-                      display: 'block',
-                      width: '100%',
-                      height: 'auto',
-                      maxWidth: '100%',
-                    }}
-                  />
-                </Box>
-              </MotionBox>
             </MotionBox>
-
-            {/* Images Grid */}
+              
+            {/* Two Images side by side */}
             <MotionBox
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8 }}
-              sx={{ order: { xs: 1, md: 2 }, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+              sx={{ 
+                width: '100%',
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                gap: { xs: 2, sm: 3, md: 4 },
+                maxWidth: { xs: '100%', md: '1200px' },
+              }}
             >
               <Box
                 sx={{
                   display: 'inline-block',
-                  borderRadius: 3,
+                  borderRadius: 2,
                   overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-                  cursor: 'pointer',
-                  transition: 'all 0.4s ease',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
-                  },
+                  width: '100%',
                 }}
               >
                 <Box
                   component="img"
-                  src="/Gallery/Truckimages/c1.png"
-                  alt="Fleet and builder solutions"
+                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/c11.png`}
+                  alt="Custom seating solutions"
                   sx={{
                     display: 'block',
                     width: '100%',
-                    height: { 
-                      xs: 'auto', 
-                      sm: 'auto', 
-                      md: 'auto',
-                      lg: '800px', 
-                      xl: '800px' 
-                    },
-                    maxHeight: { 
-                      xs: '400px', 
-                      sm: '500px', 
-                      md: '600px',
-                      lg: '800px', 
-                      xl: '800px' 
-                    },
+                    height: 'auto',
                     maxWidth: '100%',
-                    objectFit: 'contain',
+                  }}
+                />
+              </Box>
+              <Box
+                sx={{
+                  display: 'inline-block',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  maxWidth: '100%',
+                  width: '100%',
+                }}
+              >
+                <Box
+                  component="img"
+                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu4.png`}
+                  alt="Custom seating solutions"
+                  sx={{
+                    display: 'block',
+                    width: '100%',
+                    height: 'auto',
+                    maxWidth: '100%',
                   }}
                 />
               </Box>
@@ -231,7 +225,7 @@ const FleetBuilderSolutionsPage = () => {
                   <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
                     <Box
                       component="img"
-                      src="/Gallery/Truckimages/cu2.png"
+                      src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu2.png`}
                       alt="Fleet buses"
                       sx={{
                         display: 'block',
@@ -265,7 +259,7 @@ const FleetBuilderSolutionsPage = () => {
                   <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
                     <Box
                       component="img"
-                      src="/Gallery/Truckimages/c10.png"
+                      src={`${IMAGE_BASE_URL}/Gallery/Truckimages/c10.png`}
                       alt="Fleet buses 2"
                       sx={{
                         display: 'block',
@@ -306,7 +300,7 @@ const FleetBuilderSolutionsPage = () => {
                 <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
                   <Box
                     component="img"
-                    src="/Gallery/Truckimages/limo.png"
+                    src={`${IMAGE_BASE_URL}/Gallery/Truckimages/limo.png`}
                     alt="Luxury limos"
                     sx={{
                       display: 'block',
@@ -329,8 +323,8 @@ const FleetBuilderSolutionsPage = () => {
             {/* Additional Limo Images */}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: { xs: 2, sm: 3, md: 4 } }}>
               {[
-                { src: '/Gallery/Truckimages/limo.png', alt: 'Luxury limos 2' },
-                { src: '/Gallery/Truckimages/limo2.png', alt: 'Luxury limos 3' },
+                { src: `${IMAGE_BASE_URL}/Gallery/Truckimages/limo.png`, alt: 'Luxury limos 2' },
+                { src: `${IMAGE_BASE_URL}/Gallery/Truckimages/limo2.png`, alt: 'Luxury limos 3' },
               ].map((image, index) => (
                 <MotionBox
                   key={index}
@@ -377,7 +371,7 @@ const FleetBuilderSolutionsPage = () => {
                 <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
                   <Box
                     component="img"
-                    src="/Gallery/Truckimages/c4.png"
+                    src={`${IMAGE_BASE_URL}/Gallery/Truckimages/c4.png`}
                     alt="RV and vans"
                     sx={{
                       display: 'block',
@@ -392,8 +386,8 @@ const FleetBuilderSolutionsPage = () => {
             {/* Additional RV & Van Images */}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: { xs: 2, sm: 3, md: 4 } }}>
               {[
-                { src: '/Gallery/Truckimages/c12.png', alt: 'RV and vans 2' },
-                { src: '/Gallery/Truckimages/13.png', alt: 'RV and vans 3' },
+                { src: `${IMAGE_BASE_URL}/Gallery/Truckimages/c12.png`, alt: 'RV and vans 2' },
+                { src: `${IMAGE_BASE_URL}/Gallery/Truckimages/13.png`, alt: 'RV and vans 3' },
               ].map((image, index) => (
                 <MotionBox
                   key={index}
