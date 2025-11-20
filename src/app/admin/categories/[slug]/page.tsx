@@ -114,6 +114,12 @@ const CategoryDetailPage = () => {
             variant="contained"
             startIcon={<EditIcon />}
             onClick={handleEdit}
+            sx={{
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+              }
+            }}
           >
             Edit Category
           </Button>

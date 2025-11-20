@@ -31,8 +31,8 @@ const MotionBox = motion.create(Box);
 const MotionCard = motion.create(Card);
 const MotionTypography = motion.create(Typography);
 
-// Boat images from the Upholstery folder
-const upholsteryImages = [
+// Boat images from the Upholstery folder - base URL will be added in component
+const upholsteryImagesBase = [
   { id: 1, src: '/Upholstery/boat 1.jpg', alt: 'Luxury Boat Seating' },
   { id: 2, src: '/Upholstery/boat 3.jpg', alt: 'Marine Upholstery' },
   { id: 3, src: '/Upholstery/boat 4.jpg', alt: 'Custom Boat Interior' },
@@ -115,6 +115,16 @@ const features = [
 
 const UpholsteryServices = () => {
   const router = useRouter();
+  
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  
+  // Update upholstery images with base URL
+  const upholsteryImages = upholsteryImagesBase.map(img => ({
+    ...img,
+    src: `${IMAGE_BASE_URL}${img.src}`
+  }));
+  
   const [selectedImage, setSelectedImage] = useState<any>(null);
 
   const handleImageClick = (image: any) => {
@@ -131,7 +141,7 @@ const UpholsteryServices = () => {
       
       {/* Hero Section */}
       <HeroSectionCommon
-        title="Ready to Transform Your Boat,RV,or Home Furniture"
+        title="Ready to Transform Your Boat,RV,Or Home Furniture"
         description="Premium marine and automotive upholstery solutions crafted with precision and passion."
         height={{
           xs: '75px',
@@ -146,89 +156,152 @@ const UpholsteryServices = () => {
 
       {/* Introduction Section */}
       <Box sx={{ 
-        py: { xs: 6, md: 7, lg: 7, xl: 7},
+        py: { xs: 4, sm: 6, md: 8, lg: 10 },
         backgroundColor: 'white',
       }}>
-        <Container maxWidth="lg">
-          <MotionBox
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-            sx={{ textAlign: 'center', mb: 6 }}
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: { xs: 3, sm: 4, md: 6, lg: 8 },
+              alignItems: 'stretch',
+            }}
           >
-            <Typography
-              variant="overline"
-              sx={{
-                color: 'primary.main',
-                fontWeight: 600,
-                fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
-                letterSpacing: 2,
-              }}
-            >
-              BEYOND THE BUILD
-            </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                mt: 2,
-                mb: 3,
-                fontWeight: 600,
-                color: 'text.primary',
-              }}
-            >
-           Excellence in Marine & Furniture Upholstery 
-            </Typography>
+            {/* Content */}
             <MotionBox
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.3 }}
-              transition={{ duration: 0.6 }}
-              sx={{
-                mt: { xs: 4, md: 6 },
-                display: 'flex',
-                flexDirection: { xs: 'column', md: 'row' },
-                alignItems: 'center',
-                gap: { xs: 3, md: 4, lg: 6 },
-                textAlign: 'left',
-              }}
+              transition={{ duration: 0.8 }}
+              sx={{ order: { xs: 2, md: 1 }, display: 'flex', flexDirection: 'column' }}
             >
+              <Typography
+                variant="overline"
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 600,
+                  fontSize: { xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' },
+                  letterSpacing: 2,
+                }}
+              >
+                BEYOND THE BUILD
+              </Typography>
+              <Typography
+                variant="h2"
+                sx={{
+                  mt: { xs: 1.5, sm: 2 },
+                  mb: { xs: 2, sm: 3 },
+                  fontWeight: 600,
+                  color: 'text.primary',
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.5rem', xl: '2.5rem' },
+                }}
+              >
+                Excellence in Marine & Furniture Upholstery
+              </Typography>
               <Typography
                 variant="body1"
                 sx={{
                   color: 'text.secondary',
                   lineHeight: 1.8,
-                  flex: { md: '0 0 50%' },
-                  maxWidth: { xs: '100%', md: 'unset' },
+                  mb: { xs: 2, sm: 3 },
+                  fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
                 }}
               >
-                From elegant home furnishings to custom RV interiors, our upholstery specialists deliver exceptional comfort and craftsmanship. We build and recover RV seating to your exact specifications and restore home furniture with precision and care.
+                From elegant home furnishings to custom RV interiors, our upholstery specialists deliver exceptional comfort and craftsmanship.
               </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                  fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
+                  mb: { xs: 3, sm: 4 },
+                }}
+              >
+                We build and recover RV seating to your exact specifications and restore home furniture with precision and care.
+              </Typography>
+              
+              {/* Horizontal Image under text */}
+              <MotionBox
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8 }}
+                sx={{ mt: { xs: 2, sm: 3 } }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    maxWidth: '100%',
+                    width: '100%',
+                    aspectRatio: { xs: '4 / 3', md: '16 / 10' },
+                    minHeight: { xs: 220, sm: 260, md: 320 },
+                  }}
+                >
+                  <Image
+                    src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu7.jpg`}
+                    alt="Custom upholstery showcased on seating"
+                    fill
+                    priority={false}
+                    sizes="(max-width: 600px) 100vw, (max-width: 960px) 100vw, 50vw"
+                    style={{
+                      objectFit: 'cover',
+                    }}
+                  />
+                </Box>
+              </MotionBox>
+            </MotionBox>
+
+            {/* Vertical Image on Right */}
+            <MotionBox
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+              sx={{ 
+                order: { xs: 1, md: 2 }, 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'stretch',
+                height: '100%',
+              }}
+            >
               <Box
                 sx={{
                   position: 'relative',
-                  flex: { md: '0 0 45%' },
-                  width: { xs: '100%', md: '100%' },
-                  borderRadius: 2,
+                  borderRadius: 3,
                   overflow: 'hidden',
-                  boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
-                  aspectRatio: { xs: '4 / 3', md: '16 / 10' },
-                  minHeight: { xs: 220, sm: 260, md: 320 },
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  cursor: 'pointer',
+                  transition: 'all 0.4s ease',
+                  maxWidth: '100%',
+                  width: '100%',
+                  height: { xs: 'auto', md: '100%' },
+                  aspectRatio: { xs: '3 / 4', md: 'auto' },
+                  minHeight: { xs: 300, sm: 360, md: 'auto' },
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
+                  },
                 }}
               >
                 <Image
-                  src="/Gallery/Truckimages/cu7.jpg"
+                  src="/Gallery/Truckimages/sofaU16.png"
                   alt="Custom upholstery showcased on seating"
                   fill
                   priority={false}
-                  sizes="(max-width: 600px) 100vw, (max-width: 960px) 45vw, 40vw"
+                  sizes="(max-width: 600px) 100vw, (max-width: 960px) 100vw, 50vw"
                   style={{
                     objectFit: 'cover',
                   }}
                 />
               </Box>
             </MotionBox>
-          </MotionBox>
+          </Box>
 
           {/* Services Grid */}
           <Box
@@ -521,7 +594,7 @@ const UpholsteryServices = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: 'url(/Upholstery/boat%201.jpg)',
+          backgroundImage: `url(${IMAGE_BASE_URL}/Upholstery/boat%201.jpg)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           opacity: 0.15,

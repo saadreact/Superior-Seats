@@ -48,6 +48,9 @@ const Gallery = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
   
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  
   const [selectedImage, setSelectedImage] = useState<WorkImage | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [animatedImages, setAnimatedImages] = useState<boolean[]>([]);
@@ -235,7 +238,7 @@ const Gallery = () => {
               >
                 <Box
                   component="img"
-                  src={workPicturesTruck[1]?.image}
+                  src={workPicturesTruck[1]?.image ? (workPicturesTruck[1].image.startsWith('http') ? workPicturesTruck[1].image : `${IMAGE_BASE_URL}${workPicturesTruck[1].image.startsWith('/') ? workPicturesTruck[1].image : '/' + workPicturesTruck[1].image}`) : ''}
                   alt="Professional truck seating"
                   sx={{
                     position: 'absolute',
@@ -288,7 +291,7 @@ const Gallery = () => {
               <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
                 <Box
                   component="img"
-                  src="/Gallery/Truckimages/gallerypic.png"
+                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/gallerypic.png`}
                   alt="Workshop materials"
                   sx={{
                     display: 'block',
@@ -304,7 +307,7 @@ const Gallery = () => {
           {/* Section B */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1.1fr' }, gap: { xs: 3, md: 6 }, alignItems: 'center', mb: { xs: 6, md: 10 } }}>
             <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/u04.png" alt="Precision cutting" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+              <Image src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`} alt="Precision cutting" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
             </Box>
             <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
               <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>PATTERNING & CUT</Typography>
@@ -327,7 +330,7 @@ const Gallery = () => {
               </Typography>
             </MotionBox>
             <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/u05.png" alt="Assembly" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+              <Image src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u05.png`} alt="Assembly" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
             </Box>
           </Box>
         </Container>
@@ -372,7 +375,7 @@ const Gallery = () => {
               >
                 <Box
                   component="img"
-                  src={workPicturesTruck[5]?.image}
+                  src={workPicturesTruck[5]?.image ? (workPicturesTruck[5].image.startsWith('http') ? workPicturesTruck[5].image : `${IMAGE_BASE_URL}${workPicturesTruck[5].image.startsWith('/') ? workPicturesTruck[5].image : '/' + workPicturesTruck[5].image}`) : ''}
                   alt="Interior excellence"
                   sx={{
                     position: 'absolute',
@@ -485,7 +488,7 @@ const Gallery = () => {
 
           {/* Clean 3-up grid of truck images */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 3 } }}>
-            {["/Gallery/Truckimages/u01.png","/Gallery/Truckimages/u07.png","/Gallery/Truckimages/u04.png"].map((src, idx) => (
+            {[`${IMAGE_BASE_URL}/Gallery/Truckimages/u01.png`, `${IMAGE_BASE_URL}/Gallery/Truckimages/u07.png`, `${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`].map((src, idx) => (
               <MotionBox key={src} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6, delay: idx * 0.1 }} sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
                 <Image src={src} alt={`Truck ${idx+1}`} fill sizes="(max-width: 900px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
               </MotionBox>
@@ -606,7 +609,7 @@ const Gallery = () => {
                   {item.image && item.image.trim() !== '' ? (
                     <>
                       <img
-                        src={item.image}
+                        src={item.image.startsWith('http') ? item.image : `${IMAGE_BASE_URL}${item.image.startsWith('/') ? item.image : '/' + item.image}`}
                         alt={`Gallery image ${item.id}`}
                         style={{
                           width: '100%',
@@ -724,7 +727,7 @@ const Gallery = () => {
             <Box sx={{ position: 'relative' }}>
               {selectedImage.image && selectedImage.image.trim() !== '' ? (
                 <Image
-                  src={selectedImage.image}
+                  src={selectedImage.image.startsWith('http') ? selectedImage.image : `${IMAGE_BASE_URL}${selectedImage.image.startsWith('/') ? selectedImage.image : '/' + selectedImage.image}`}
                   alt={`Gallery image ${selectedImage.id}`}
                   width={800}
                   height={600}

@@ -74,7 +74,7 @@ const CreateItemTypePage = () => {
       };
       
       await apiService.createItemType(submissionData);
-      setSuccess('Item Type created successfully!');
+      setSuccess('Seat Base created successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
@@ -82,8 +82,8 @@ const CreateItemTypePage = () => {
       }, 1500);
       
     } catch (err: any) {
-      setError(err.message || 'Failed to create item type');
-      console.error('Error creating item type:', err);
+      setError(err.message || 'Failed to create seat base');
+      console.error('Error creating seat base:', err);
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,7 @@ const CreateItemTypePage = () => {
   };
 
   return (
-    <AdminLayout title="Create New Item Type">
+    <AdminLayout title="Create New Seat Base">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -139,7 +139,7 @@ const CreateItemTypePage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter item type name"
+                  placeholder="Enter Seat Base name"
                   sx={{ mb: 3 }}
                 />
 
@@ -222,15 +222,15 @@ const CreateItemTypePage = () => {
                   disabled={loading}
                   fullWidth={isMobile}
                   sx={{
-                    backgroundColor: '#DA291C',
+                    backgroundColor: 'primary.main',
                     minHeight: { xs: 44, sm: 'auto' },
                     fontSize: { xs: '0.95rem', sm: '0.875rem' },
                     '&:hover': {
-                      backgroundColor: '#B71C1C',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >
-                  {loading ? 'Creating...' : 'Create Item Type'}
+                  {loading ? 'Creating...' : 'Create Seat Base'}
                 </Button>
               </Box>
             </Box>

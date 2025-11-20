@@ -44,6 +44,9 @@ type ContactFormErrors = {
 };
 
 const ContactPage = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
   const [errors, setErrors] = useState<ContactFormErrors>({} as ContactFormErrors);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -344,7 +347,7 @@ const ContactPage = () => {
             >
               <Box
                 component="img"
-                src="/Gallery/Truckimages/cu1.jpg"
+                src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu1.jpg`}
                 alt="Contact illustration"
                 sx={{
                   width: '100%',
