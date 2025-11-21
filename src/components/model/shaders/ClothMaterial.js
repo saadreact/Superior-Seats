@@ -29,6 +29,7 @@ export const createClothMaterial = (fabricColor, stitchColor, textures, ambientS
     uniform sampler2D aoMap;
     uniform sampler2D diamondNormalMap;
     uniform sampler2D stitchMap;
+    uniform sampler2D externalStitchMap; // External stitchings
     uniform sampler2D grainMap; // ✅ New fine-grain bump map
     uniform vec3 fabricColor;
     uniform vec3 stitchColor;
@@ -121,10 +122,11 @@ export const createClothMaterial = (fabricColor, stitchColor, textures, ambientS
       vec3 specular = vec3(specularIntensity) * spec * (0.7 + 0.3 * grain);
       
       vec3 leatherBase = boostedDiffuse + specular;
-      leatherBase *= darkBoost;
       
       // Apply AO with natural leather characteristics
-      vec2 aoUV = vec2(vUv.x, 1.0 - vUv.y);
+      // In single-tone mode, flip Y for correct orientation; in two-tone, use direct UVs
+      float aoY = uIsTwoTone ? ( vUv.y) : ( vUv.y);
+      vec2 aoUV = vec2(vUv.x, aoY);
       vec4 aoSample = texture2D(aoMap, aoUV);
       float aoIntensity = aoSample.r;
       vec3 afterAO = leatherBase * mix(0.5, 1.0, aoIntensity);
@@ -134,7 +136,7 @@ export const createClothMaterial = (fabricColor, stitchColor, textures, ambientS
       
       if (!uNoStitching) {
         // In single-tone mode, flip Y for correct orientation; in two-tone, use direct UVs
-        float diamondY = uIsTwoTone ? vUv.y : (1.0 - vUv.y);
+        float diamondY = uIsTwoTone ? vUv.y : ( vUv.y);
         vec2 diamondUV = vec2(vUv.x, diamondY);
         vec4 diamondSample = texture2D(diamondNormalMap, diamondUV);
         
@@ -161,7 +163,7 @@ export const createClothMaterial = (fabricColor, stitchColor, textures, ambientS
       
       if (!uNoStitching) {
         // In single-tone mode, flip Y for correct orientation; in two-tone, use direct UVs
-        float stitchY = uIsTwoTone ? vUv.y : (1.0 - vUv.y);
+        float stitchY = uIsTwoTone ? vUv.y : ( vUv.y);
         vec2 stitchUV = vec2(vUv.x, stitchY);
         vec4 stitchSample = texture2D(stitchMap, stitchUV);
         
@@ -175,6 +177,21 @@ export const createClothMaterial = (fabricColor, stitchColor, textures, ambientS
         finalResult = mix(afterDiamond, stitchColor, stitchAlpha * 0.85);
       }
       
+      // Apply external stitchings (always shown, independent of pattern stitching)
+      // External stitching uses conditional UV mapping based on seatType
+      float externalStitchY = uIsTwoTone ? vUv.y :  vUv.y ;
+      vec2 externalStitchUV = vec2(vUv.x, externalStitchY);
+      vec4 externalStitchSample = texture2D(externalStitchMap, externalStitchUV);
+      
+      float externalStitchAlpha = externalStitchSample.a;
+      if (externalStitchAlpha < 0.01) {
+        float externalStitchLuminance = dot(externalStitchSample.rgb, vec3(0.299, 0.587, 0.114));
+        externalStitchAlpha = step(0.1, externalStitchLuminance) * (1.0 - step(0.9, externalStitchLuminance));
+      }
+      
+      // Apply external stitching with same stitch color
+      finalResult = mix(finalResult, stitchColor, externalStitchAlpha * 0.85);
+      
       gl_FragColor = vec4(finalResult, 1.0);
     }
   `;
@@ -184,6 +201,7 @@ export const createClothMaterial = (fabricColor, stitchColor, textures, ambientS
       aoMap: { value: textures.ao },
       diamondNormalMap: { value: textures.diamondNormal },
       stitchMap: { value: textures.stitch },
+      externalStitchMap: { value: textures.externalStitch || textures.stitch },
       fabricColor: { value: new THREE.Color(fabricColor) },
       stitchColor: { value: new THREE.Color(stitchColor || '#ffffff') },
       grainMap: { value: leatherGrainTexture }, // ✅ Added uniform for fine-grain bump

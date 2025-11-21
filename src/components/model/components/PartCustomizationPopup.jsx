@@ -75,8 +75,12 @@ function PartCustomizationPopup({
     const nameMap = {
       'seat_bottom_upper': 'Seat Bottom Upper',
       'seat_bottom_lower': 'Seat Bottom Lower',
+      'seat_bottom_lower_Left': 'Seat Bottom Lower Left',
+      'seat_bottom_lower_Right': 'Seat Bottom Lower Right',
       'seat_back_upper': 'Seat Back Upper',
-      'seat_back_lover': 'Seat Back Lower',
+      'seat_back_lower': 'Seat Back Lower',
+      'seat_back_lower_Left': 'Seat Back Lower Left',
+      'seat_back_lower_Right': 'Seat Back Lower Right',
       'headset_front': 'Headrest Front',
       'headset_back': 'Headrest Back',
       'left_arm_upper': 'Left Arm Upper',

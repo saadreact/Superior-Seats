@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AVAILABLE_MODELS, CUSTOMIZATION_OPTIONS } from '../config/assets';
 import { COLOR_PALETTE } from '../config/colorPalette';
 import ColorPalettePicker from './ColorPalettePicker';
 import { getPatternOptionsForModel, patternLoader } from '../utils/PatternLoader';
+import { getColorsForFabric, getCollectionsForFabric, getFabricDisplayName } from '../config/fabricColors';
 
 function CustomizationPanel({ 
   modelId,
@@ -98,19 +99,38 @@ function CustomizationPanel({
   }));
   
   const fabricTypeOptions = [
-    // Original fabric types
+    // Main commercial fabric types with specific color palettes
+    { id: 'carroll-leather', name: 'Carroll Leather', icon: 'CL', description: 'Authentic premium leather collections', image: '/assets/fabrics/CarrollLeather.png' },
+    { id: 'miami-vinyl', name: 'Miami Vinyl\'s', icon: 'MV', description: 'Premium marine-grade vinyl', image: '/assets/fabrics/MiamiVinyl.png' },
+    { id: 'ultrafabrics', name: 'Ultrafabrics', icon: 'UL', description: 'High-performance synthetic leather', image: '/assets/fabrics/UltraLeather.png' },
+    { id: 'brisa', name: 'Brisa Distressed', icon: 'BD', description: 'Weathered distressed leather look', image: '/assets/fabrics/BrisaDistressed.png' },
+    // Original fabric types (no specific color restrictions)
     { id: 'leather', name: 'Premium Leather', icon: 'L', description: 'Luxury leather with natural texture', image: '/assets/fabrics/PremiumLeather.png' },
     { id: 'cloth', name: 'Fabric Cloth', icon: 'F', description: 'Soft woven fabric material', image: '/assets/fabrics/FabricCloth.png' },
     { id: 'suede', name: 'Suede Material', icon: 'S', description: 'Soft brushed suede finish', image: '/assets/fabrics/SuedeMaterial.png' },
     { id: 'vinyl', name: 'Synthetic Vinyl', icon: 'V', description: 'Durable synthetic material', image: '/assets/fabrics/SyntheticVinyl.png' },
     { id: 'mesh', name: 'Breathable Mesh', icon: 'M', description: 'Ventilated mesh fabric', image: '/assets/fabrics/BreathableMesh.png' },
     { id: 'carbon', name: 'Carbon Fiber', icon: 'C', description: 'High-tech carbon fiber weave', image: '/assets/fabrics/CarbonFiber.png' },
-    // New commercial fabric types
-    { id: 'miami-vinyl', name: 'Miami Vinyl\'s', icon: 'MV', description: 'Premium marine-grade vinyl', image: '/assets/fabrics/MiamiVinyl.png' },
-    { id: 'ultraleather', name: 'Ultraleather', icon: 'UL', description: 'High-performance synthetic leather', image: '/assets/fabrics/UltraLeather.png' },
-    { id: 'brisa-distressed', name: 'Brisa Distressed', icon: 'BD', description: 'Weathered distressed leather look', image: '/assets/fabrics/BrisaDistressed.png' },
-    { id: 'carroll-leather', name: 'Carroll Leather', icon: 'CL', description: 'Authentic premium leather collections', image: '/assets/fabrics/CarrollLeather.png' },
   ];
+  
+  // Get available colors based on fabric type
+  const availableFabricColors = useMemo(() => {
+    // Check if this fabric type has specific colors defined
+    const specificColors = getColorsForFabric(fabricType);
+    
+    if (specificColors.length > 0) {
+      // Use fabric-specific colors
+      return specificColors;
+    }
+    
+    // Fall back to general color palette for other fabric types
+    return Object.values(COLOR_PALETTE).flat();
+  }, [fabricType]);
+  
+  // Get collections for organized display (if available)
+  const fabricCollections = useMemo(() => {
+    return getCollectionsForFabric(fabricType);
+  }, [fabricType]);
   
   // Load available patterns based on current model
   useEffect(() => {
@@ -140,7 +160,7 @@ function CustomizationPanel({
     { name: 'seat_bottom_lower', displayName: 'Seat Bottom Lower' },
     { name: 'seat_back', displayName: 'Seat Back' },
     { name: 'seat_back_upper', displayName: 'Seat Back Upper' },
-    { name: 'seat_back_lover', displayName: 'Seat Back Lower' },
+    { name: 'seat_back_lower', displayName: 'Seat Back Lower' },
     { name: 'headset_front', displayName: 'Headrest Front' },
     { name: 'headset_back', displayName: 'Headrest Back' },
     { name: 'left_arm_upper', displayName: 'Left Arm Upper' },
@@ -153,7 +173,7 @@ function CustomizationPanel({
   return (
     <div style={{
       width: '100%',
-      height: '100%',
+      height: '100vh',
       background: '#ffffff',
       padding: '12px',
       boxSizing: 'border-box',
@@ -295,7 +315,7 @@ function CustomizationPanel({
               maxHeight: '120px',
               overflowY: 'auto'
             }}>
-              {Object.values(COLOR_PALETTE).flat().map((color, index) => {
+              {availableFabricColors.map((color, index) => {
                 const colorId = `${color.name}-${color.hex}`;
                 const isSelected = fabricColor === color.hex;
                 

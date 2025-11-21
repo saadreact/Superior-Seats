@@ -3,6 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import Model3D from './Model3D';
+import { useResponsive } from '../../hooks/useResponsive';
 
 function LoadingFallback() {
   const groupRef = useRef();
@@ -105,6 +106,7 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
   const controlsRef = useRef();
   const canvasRef = useRef();
   const [lightingEnv, setLightingEnv] = useState('daylight');
+  const { isMobile } = useResponsive();
   
   const currentEnv = LIGHTING_ENVIRONMENTS[lightingEnv];
 
@@ -288,18 +290,20 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
       {/* Lighting Environment Controls */}
       <div style={{
         position: 'absolute',
-        top: '20px',
-        left: '20px',
+        top: '10px',
+        left: '10px',
         display: 'flex',
-        gap: '8px',
-        zIndex: 10
+        gap: '6px',
+        zIndex: 10,
+        flexWrap: 'wrap',
+        maxWidth: 'calc(100% - 20px)'
       }}>
         {Object.entries(LIGHTING_ENVIRONMENTS).map(([key, env]) => (
           <button
             key={key}
             onClick={() => setLightingEnv(key)}
             style={{
-              padding: '10px 16px',
+              padding: isMobile ? '6px 10px' : '10px 16px',
               backgroundColor: lightingEnv === key 
                 ? 'rgba(0, 123, 255, 0.95)' 
                 : 'rgba(255, 255, 255, 0.85)',
@@ -307,13 +311,14 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
               border: lightingEnv === key ? 'none' : '1px solid #ddd',
               borderRadius: '6px',
               cursor: 'pointer',
-              fontSize: '13px',
+              fontSize: isMobile ? '10px' : '13px',
               fontWeight: lightingEnv === key ? '600' : '500',
               boxShadow: lightingEnv === key 
                 ? '0 2px 8px rgba(0, 123, 255, 0.3)' 
                 : '0 2px 4px rgba(0,0,0,0.1)',
               transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)'
+              backdropFilter: 'blur(10px)',
+              whiteSpace: 'nowrap'
             }}
             onMouseEnter={(e) => {
               if (lightingEnv !== key) {
@@ -339,30 +344,34 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
       {/* Reset Buttons Container */}
       <div style={{
         position: 'absolute',
-        bottom: '20px',
-        left: '20px',
+        bottom: isMobile ? '80px' : '20px',
+        left: '10px',
+        right: '10px',
         display: 'flex',
-        gap: '12px',
-        zIndex: 10
+        gap: isMobile ? '8px' : '12px',
+        zIndex: 10,
+        flexWrap: 'wrap',
+        justifyContent: isMobile ? 'center' : 'flex-start'
       }}>
         {/* Reset View Button */}
         <button
           onClick={resetCamera}
           style={{
-            padding: '12px 20px',
+            padding: isMobile ? '8px 12px' : '12px 20px',
             backgroundColor: 'rgba(0, 123, 255, 0.85)',
             color: 'white',
             border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',
-            fontSize: '14px',
+            fontSize: isMobile ? '11px' : '14px',
             fontWeight: '600',
             boxShadow: '0 2px 8px rgba(0, 123, 255, 0.3)',
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            backdropFilter: 'blur(10px)'
+            gap: isMobile ? '4px' : '8px',
+            backdropFilter: 'blur(10px)',
+            flex: isMobile ? '1' : 'initial'
           }}
           onMouseEnter={(e) => {
             e.target.style.backgroundColor = 'rgba(0, 86, 179, 0.95)';
@@ -377,9 +386,9 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
           title="Reset camera to default position"
         >
           <svg 
-            width="16" 
-            height="16" 
-            viewBox="0 0 24 24" 
+            width={isMobile ? "12" : "16"} 
+            height={isMobile ? "12" : "16"}
+            viewBox="0 0 24 24"
             fill="none" 
             stroke="currentColor" 
             strokeWidth="2" 
@@ -398,20 +407,21 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
         <button
           onClick={onResetModel}
           style={{
-            padding: '12px 20px',
+            padding: isMobile ? '8px 12px' : '12px 20px',
             backgroundColor: 'rgba(220, 53, 69, 0.85)',
             color: 'white',
             border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',
-            fontSize: '14px',
+            fontSize: isMobile ? '11px' : '14px',
             fontWeight: '600',
             boxShadow: '0 2px 8px rgba(220, 53, 69, 0.3)',
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            backdropFilter: 'blur(10px)'
+            gap: isMobile ? '4px' : '8px',
+            backdropFilter: 'blur(10px)',
+            flex: isMobile ? '1' : 'initial'
           }}
           onMouseEnter={(e) => {
             e.target.style.backgroundColor = 'rgba(177, 35, 50, 0.95)';
@@ -426,8 +436,8 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
           title="Reset model to default settings"
         >
           <svg 
-            width="16" 
-            height="16" 
+            width={isMobile ? "12" : "16"} 
+            height={isMobile ? "12" : "16"}
             viewBox="0 0 24 24" 
             fill="none" 
             stroke="currentColor" 
