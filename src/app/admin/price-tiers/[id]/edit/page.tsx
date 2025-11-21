@@ -290,9 +290,9 @@ const EditPriceTierPage = () => {
                     startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
                     disabled={loading}
                     sx={{
-                      backgroundColor: '#DA291C',
+                      backgroundColor: 'primary.main',
                       '&:hover': {
-                        backgroundColor: '#B71C1C',
+                        backgroundColor: 'primary.dark',
                       },
                     }}
                   >

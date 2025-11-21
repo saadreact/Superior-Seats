@@ -227,8 +227,10 @@ const CategoriesPage = () => {
             className="gradient-style"
             sx={{ 
               alignSelf: { xs: 'stretch', sm: 'auto' },
+              backgroundColor: 'primary.main',
               boxShadow: 'none',
               '&:hover': {
+                backgroundColor: 'primary.dark',
                 boxShadow: 'none',
               }
             }}

@@ -1471,9 +1471,9 @@ const CreateProduct2Page = () => {
                   startIcon={<SaveIcon />}
                   disabled={loading}
                   sx={{
-                    backgroundColor: '#DA291C',
+                    backgroundColor: 'primary.main',
                     '&:hover': {
-                      backgroundColor: '#B71C1C',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >

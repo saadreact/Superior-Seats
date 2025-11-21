@@ -76,7 +76,7 @@ const ItemTypeDetailPage = () => {
 
   if (loading) {
     return (
-      <AdminLayout title="Item Type Details">
+      <AdminLayout title="Seat Base Details">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
@@ -86,7 +86,7 @@ const ItemTypeDetailPage = () => {
 
   if (error || !itemtypes) {
     return (
-      <AdminLayout title="Item Type Details">
+      <AdminLayout title="Seat Base Details">
         <Box>
           <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
@@ -99,7 +99,7 @@ const ItemTypeDetailPage = () => {
           </Box>
 
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error || 'Item Type not found'}
+            {error || 'Seat Base not found'}
           </Alert>
         </Box>
       </AdminLayout>
@@ -107,7 +107,7 @@ const ItemTypeDetailPage = () => {
   }
 
   return (
-    <AdminLayout title="Item Type Details">
+    <AdminLayout title="Seat Base Details">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -128,10 +128,14 @@ const ItemTypeDetailPage = () => {
             fullWidth={isMobile}
             sx={{
               minHeight: { xs: 44, sm: 'auto' },
-              fontSize: { xs: '0.95rem', sm: '0.875rem' }
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+              }
             }}
           >
-            Edit Item Type
+            Edit Seat Base
           </Button>
         </Box>
 

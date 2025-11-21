@@ -561,11 +561,11 @@ const CreateLumbarTypePage = () => {
                     disabled={loading}
                     fullWidth={isMobile}
                     sx={{
-                      backgroundColor: '#DA291C',
+                      backgroundColor: 'primary.main',
                       minHeight: { xs: 44, sm: 'auto' },
                       fontSize: { xs: '0.95rem', sm: '0.875rem' },
                       '&:hover': {
-                        backgroundColor: '#B71C1C',
+                        backgroundColor: 'primary.dark',
                       },
                     }}
                   >
