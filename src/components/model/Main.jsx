@@ -1,10 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+// import './index.css'
 import App from './App.jsx'
 
-// Example callback function to handle submission
-const handleSubmit = async ({ images, config }) => {
+const Model = () => {
+
+  // Example callback function to handle submission
+  const handleSubmit = async ({ images, config }) => {
   console.log('📸 Received images:', images.length);
   console.log('⚙️ Configuration:', config);
   
@@ -26,8 +28,12 @@ const handleSubmit = async ({ images, config }) => {
   alert('Design submitted! Check console for details.');
 };
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+return (
+  <>
     <App onSubmit={handleSubmit} />
-  </StrictMode>,
+  </>
 )
+
+}
+
+export default Model;
