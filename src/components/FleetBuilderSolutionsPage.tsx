@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
+import LazyImage from '@/components/common/LazyImage';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -135,46 +136,46 @@ const FleetBuilderSolutionsPage = () => {
             >
               <Box
                 sx={{
-                  display: 'inline-block',
+                  position: 'relative',
                   borderRadius: 2,
                   overflow: 'hidden',
                   boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
                   width: '100%',
+                  aspectRatio: 'auto',
+                  minHeight: 200,
                 }}
               >
-                <Box
-                  component="img"
+                <LazyImage
                   src={`${IMAGE_BASE_URL}/Gallery/Truckimages/c11.png`}
                   alt="Custom seating solutions"
-                  sx={{
-                    display: 'block',
-                    width: '100%',
-                    height: 'auto',
-                    maxWidth: '100%',
+                  fill
+                  style={{
+                    objectFit: 'contain',
                   }}
+                  priority={false}
                 />
               </Box>
               <Box
                 sx={{
-                  display: 'inline-block',
+                  position: 'relative',
                   borderRadius: 2,
                   overflow: 'hidden',
                   boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
                   width: '100%',
+                  aspectRatio: 'auto',
+                  minHeight: 200,
                 }}
               >
-                <Box
-                  component="img"
+                <LazyImage
                   src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu4.png`}
                   alt="Custom seating solutions"
-                  sx={{
-                    display: 'block',
-                    width: '100%',
-                    height: 'auto',
-                    maxWidth: '100%',
+                  fill
+                  style={{
+                    objectFit: 'contain',
                   }}
+                  priority={false}
                 />
               </Box>
             </MotionBox>
@@ -222,31 +223,15 @@ const FleetBuilderSolutionsPage = () => {
                   viewport={{ once: false, amount: 0.3 }}
                   transition={{ duration: 0.7 }}
                 >
-                  <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
-                    <Box
-                      component="img"
+                  <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%', minHeight: { xs: 300, sm: 350, md: 400, lg: 'auto', xl: 'auto' }, maxHeight: { xs: '300px', sm: '350px', md: '400px', lg: 'none', xl: 'none' } }}>
+                    <LazyImage
                       src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu2.png`}
                       alt="Fleet buses"
-                      sx={{
-                        display: 'block',
-                        width: '100%',
-                        height: { 
-                          xs: 'auto', 
-                          sm: 'auto', 
-                          md: 'auto',
-                          lg: 'auto', 
-                          xl: 'auto' 
-                        },
-                        maxHeight: { 
-                          xs: '300px', 
-                          sm: '350px', 
-                          md: '400px',
-                          lg: 'none', 
-                          xl: 'none' 
-                        },
-                        maxWidth: '100%',
+                      fill
+                      style={{
                         objectFit: 'contain',
                       }}
+                      priority={false}
                     />
                   </Box>
                 </MotionBox>
@@ -256,31 +241,15 @@ const FleetBuilderSolutionsPage = () => {
                   viewport={{ once: false, amount: 0.3 }}
                   transition={{ duration: 0.7, delay: 0.1 }}
                 >
-                  <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
-                    <Box
-                      component="img"
+                  <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%', minHeight: { xs: 300, sm: 350, md: 400, lg: 'auto', xl: 'auto' }, maxHeight: { xs: '300px', sm: '350px', md: '400px', lg: 'none', xl: 'none' } }}>
+                    <LazyImage
                       src={`${IMAGE_BASE_URL}/Gallery/Truckimages/c10.png`}
                       alt="Fleet buses 2"
-                      sx={{
-                        display: 'block',
-                        width: '100%',
-                        height: { 
-                          xs: 'auto', 
-                          sm: 'auto', 
-                          md: 'auto',
-                          lg: 'auto', 
-                          xl: 'auto' 
-                        },
-                        maxHeight: { 
-                          xs: '300px', 
-                          sm: '350px', 
-                          md: '400px',
-                          lg: 'none', 
-                          xl: 'none' 
-                        },
-                        maxWidth: '100%',
+                      fill
+                      style={{
                         objectFit: 'contain',
                       }}
+                      priority={false}
                     />
                   </Box>
                 </MotionBox>
@@ -297,17 +266,15 @@ const FleetBuilderSolutionsPage = () => {
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{ duration: 0.7 }}
               >
-                <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
-                  <Box
-                    component="img"
+                <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%', minHeight: 200 }}>
+                  <LazyImage
                     src={`${IMAGE_BASE_URL}/Gallery/Truckimages/limo.png`}
                     alt="Luxury limos"
-                    sx={{
-                      display: 'block',
-                      width: '100%',
-                      height: 'auto',
-                      maxWidth: '100%',
+                    fill
+                    style={{
+                      objectFit: 'contain',
                     }}
+                    priority={false}
                   />
                 </Box>
               </MotionBox>
@@ -333,17 +300,15 @@ const FleetBuilderSolutionsPage = () => {
                   viewport={{ once: false, amount: 0.3 }}
                   transition={{ duration: 0.7, delay: index * 0.1 }}
                 >
-                  <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
-                    <Box
-                      component="img"
+                  <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%', minHeight: 200 }}>
+                    <LazyImage
                       src={image.src}
                       alt={image.alt}
-                      sx={{
-                        display: 'block',
-                        width: '100%',
-                        height: 'auto',
-                        maxWidth: '100%',
+                      fill
+                      style={{
+                        objectFit: 'contain',
                       }}
+                      priority={false}
                     />
                   </Box>
                 </MotionBox>
@@ -368,17 +333,15 @@ const FleetBuilderSolutionsPage = () => {
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{ duration: 0.7 }}
               >
-                <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
-                  <Box
-                    component="img"
+                <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%', minHeight: 200 }}>
+                  <LazyImage
                     src={`${IMAGE_BASE_URL}/Gallery/Truckimages/c4.png`}
                     alt="RV and vans"
-                    sx={{
-                      display: 'block',
-                      width: '100%',
-                      height: 'auto',
-                      maxWidth: '100%',
+                    fill
+                    style={{
+                      objectFit: 'contain',
                     }}
+                    priority={false}
                   />
                 </Box>
               </MotionBox>
@@ -396,17 +359,15 @@ const FleetBuilderSolutionsPage = () => {
                   viewport={{ once: false, amount: 0.3 }}
                   transition={{ duration: 0.7, delay: index * 0.1 }}
                 >
-                  <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
-                    <Box
-                      component="img"
+                  <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%', minHeight: 200 }}>
+                    <LazyImage
                       src={image.src}
                       alt={image.alt}
-                      sx={{
-                        display: 'block',
-                        width: '100%',
-                        height: 'auto',
-                        maxWidth: '100%',
+                      fill
+                      style={{
+                        objectFit: 'contain',
                       }}
+                      priority={false}
                     />
                   </Box>
                 </MotionBox>

@@ -1,9 +1,42 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
- 
   images: {
-   domains: ['superiorseats.ali-khalid.com', '127.0.0.1', 'dev-api.superiorseatingllc.com','api.superiorseatingllc.com'],
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'superiorseats.ali-khalid.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'superiorseats.ali-khalid.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'dev-api.superiorseatingllc.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'dev-api.superiorseatingllc.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.superiorseatingllc.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'api.superiorseatingllc.com',
+        pathname: '/**',
+      },
       {
         protocol: 'http',
         hostname: 'localhost',
@@ -21,4 +54,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig 
+module.exports = nextConfig
