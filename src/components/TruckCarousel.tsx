@@ -7,7 +7,7 @@ import Image from 'next/image';
 
 const MotionBox = motion.create(Box);
 
-const truckBrands = [
+const truckBrandsBase = [
   { name: 'Freightliner', logo: '/Logos/Freightliner.png' },
   { name: 'Peterbilt', logo: '/Logos/peterbilt.jpg' },
   { name: 'Kenworth', logo: '/Logos/Kenworth.png' },
@@ -40,6 +40,14 @@ const truckBrands = [
 ];
 
 const TruckCarousel = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
+  
+  // Update truck brands with base URL
+  const truckBrands = truckBrandsBase.map(brand => ({
+    ...brand,
+    logo: `${IMAGE_BASE_URL}${brand.logo}`
+  }));
   return (
     <Box
       sx={{

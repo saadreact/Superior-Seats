@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -25,6 +24,7 @@ import {
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
+import LazyImage from '@/components/common/LazyImage';
 import { motion } from 'framer-motion';
 
 const MotionBox = motion.create(Box);
@@ -242,12 +242,11 @@ const UpholsteryServices = () => {
                     minHeight: { xs: 220, sm: 260, md: 320 },
                   }}
                 >
-                  <Image
+                  <LazyImage
                     src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu7.jpg`}
                     alt="Custom upholstery showcased on seating"
                     fill
                     priority={false}
-                    sizes="(max-width: 600px) 100vw, (max-width: 960px) 100vw, 50vw"
                     style={{
                       objectFit: 'cover',
                     }}
@@ -289,12 +288,11 @@ const UpholsteryServices = () => {
                   },
                 }}
               >
-                <Image
+                <LazyImage
                   src="/Gallery/Truckimages/sofaU16.png"
                   alt="Custom upholstery showcased on seating"
                   fill
                   priority={false}
-                  sizes="(max-width: 600px) 100vw, (max-width: 960px) 100vw, 50vw"
                   style={{
                     objectFit: 'cover',
                   }}
@@ -566,11 +564,10 @@ const UpholsteryServices = () => {
                 sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', order: { xs: 1, md: index % 2 === 0 ? 2 : 1 } }}
                 onClick={() => handleImageClick(image)}
               >
-                <Image
+                <LazyImage
                   src={image.src}
                   alt={image.alt}
                   fill
-                  sizes="(max-width: 900px) 100vw, 50vw"
                   style={{ objectFit: 'cover' }}
                   priority={index < 2}
                 />
@@ -716,16 +713,26 @@ const UpholsteryServices = () => {
 
           {selectedImage && (
             <Box
-              component="img"
-              src={selectedImage.src}
-              alt={selectedImage.alt}
               sx={{
+                position: 'relative',
                 width: '100%',
-                height: 'auto',
+                minHeight: '400px',
                 maxHeight: '90vh',
-                objectFit: 'contain',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
-            />
+            >
+              <LazyImage
+                src={selectedImage.src}
+                alt={selectedImage.alt}
+                fill
+                style={{
+                  objectFit: 'contain',
+                }}
+                priority={true}
+              />
+            </Box>
           )}
         </DialogContent>
       </Dialog>

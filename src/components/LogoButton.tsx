@@ -14,6 +14,9 @@ interface LogoButtonProps {
 
 const LogoButton = ({ onClick }: LogoButtonProps) => {
   const router = useRouter();
+  
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
 
   const handleClick = () => {
     if (onClick) {
@@ -79,7 +82,7 @@ const LogoButton = ({ onClick }: LogoButtonProps) => {
       }}
     >
       <Image
-        src="/superiorlogo/sp.png"
+        src={`${IMAGE_BASE_URL}/superiorlogo/sp.png`}
         alt="Superior Seating Logo"
         fill
         style={{

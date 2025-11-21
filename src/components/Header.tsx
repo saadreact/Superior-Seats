@@ -45,6 +45,9 @@ import AuthModal from './AuthModal';
 import EditProfileModal from './EditProfileModal';
 
 const Header = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
+
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
@@ -199,7 +202,7 @@ const Header = () => {
           }}
         >
           <Image
-            src="/superiorlogo/logored.png"
+            src={`${IMAGE_BASE_URL}/superiorlogo/logored.png`}
             alt="Superior Seating LLC"
             width={isSmallMobile ? 180 : 200}
             height={isSmallMobile ? 54 : 60}
@@ -427,7 +430,7 @@ const Header = () => {
                   }}
                 >
                   <Image
-                    src="/superiorlogo/logored.png"
+                    src={`${IMAGE_BASE_URL}/superiorlogo/logored.png`}
                     alt="Superior Seating LLC"
                     width={65}
                     height={60}
@@ -591,7 +594,7 @@ const Header = () => {
                      p: { xs: 1, sm: 1.25 }
                    }}>
                                            <Image
-                        src="/Gallery/Flags/flag.png"
+                        src={`${IMAGE_BASE_URL}/Gallery/Flags/flag.png`}
                         alt="US Flag"
                         width={25}
                         height={25}
@@ -639,7 +642,7 @@ const Header = () => {
                       p: { md: 0.5, lg: 0.85, xl: 1.1 }
                     }}>
                       <Image
-                        src="/Gallery/Flags/flag.png"
+                        src={`${IMAGE_BASE_URL}/Gallery/Flags/flag.png`}
                         alt="US Flag"
                         width={28}
                         height={28}

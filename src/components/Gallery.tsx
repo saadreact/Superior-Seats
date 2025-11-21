@@ -236,16 +236,11 @@ const Gallery = () => {
                 }}
                 onClick={() => handleImageClick(workPicturesTruck[0], 0)}
               >
-                <Box
-                  component="img"
+                <LazyImage
                   src={workPicturesTruck[1]?.image ? (workPicturesTruck[1].image.startsWith('http') ? workPicturesTruck[1].image : `${IMAGE_BASE_URL}${workPicturesTruck[1].image.startsWith('/') ? workPicturesTruck[1].image : '/' + workPicturesTruck[1].image}`) : ''}
                   alt="Professional truck seating"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
+                  fill
+                  style={{
                     objectFit: 'cover',
                   }}
                 />
@@ -288,16 +283,18 @@ const Gallery = () => {
               </Typography>
             </MotionBox>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
-                <Box
-                  component="img"
+              <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
+                <LazyImage
                   src={`${IMAGE_BASE_URL}/Gallery/Truckimages/gallerypic.png`}
                   alt="Workshop materials"
-                  sx={{
+                  width={800}
+                  height={600}
+                  style={{
                     display: 'block',
                     width: '100%',
                     height: 'auto',
                     maxWidth: '100%',
+                    objectFit: 'contain',
                   }}
                 />
               </Box>
@@ -307,7 +304,7 @@ const Gallery = () => {
           {/* Section B */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1.1fr' }, gap: { xs: 3, md: 6 }, alignItems: 'center', mb: { xs: 6, md: 10 } }}>
             <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`} alt="Precision cutting" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+              <LazyImage src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`} alt="Precision cutting" fill style={{ objectFit: 'cover' }} />
             </Box>
             <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
               <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>PATTERNING & CUT</Typography>
@@ -330,7 +327,7 @@ const Gallery = () => {
               </Typography>
             </MotionBox>
             <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u05.png`} alt="Assembly" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+              <LazyImage src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u05.png`} alt="Assembly" fill style={{ objectFit: 'cover' }} />
             </Box>
           </Box>
         </Container>
@@ -373,16 +370,11 @@ const Gallery = () => {
                 }}
                 onClick={() => handleImageClick(workPicturesTruck[7], 7)}
               >
-                <Box
-                  component="img"
+                <LazyImage
                   src={workPicturesTruck[5]?.image ? (workPicturesTruck[5].image.startsWith('http') ? workPicturesTruck[5].image : `${IMAGE_BASE_URL}${workPicturesTruck[5].image.startsWith('/') ? workPicturesTruck[5].image : '/' + workPicturesTruck[5].image}`) : ''}
                   alt="Interior excellence"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
+                  fill
+                  style={{
                     objectFit: 'cover',
                   }}
                 />
@@ -490,7 +482,7 @@ const Gallery = () => {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 3 } }}>
             {[`${IMAGE_BASE_URL}/Gallery/Truckimages/u01.png`, `${IMAGE_BASE_URL}/Gallery/Truckimages/u07.png`, `${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`].map((src, idx) => (
               <MotionBox key={src} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6, delay: idx * 0.1 }} sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
-                <Image src={src} alt={`Truck ${idx+1}`} fill sizes="(max-width: 900px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
+                <LazyImage src={src} alt={`Truck ${idx+1}`} fill style={{ objectFit: 'cover' }} />
               </MotionBox>
             ))}
           </Box>
@@ -608,19 +600,18 @@ const Gallery = () => {
                 >
                   {item.image && item.image.trim() !== '' ? (
                     <>
-                      <img
+                      <LazyImage
                         src={item.image.startsWith('http') ? item.image : `${IMAGE_BASE_URL}${item.image.startsWith('/') ? item.image : '/' + item.image}`}
                         alt={`Gallery image ${item.id}`}
+                        fill
                         style={{
-                          width: '100%',
-                          height: '100%',
                           objectFit: 'contain',
                           backgroundColor: '#f5f5f5',
                           transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
                         className="gallery-image"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                        onError={() => {
+                          // Error handling is managed by LazyImage component
                         }}
                       />
                       
@@ -724,21 +715,23 @@ const Gallery = () => {
           </IconButton>
 
           {selectedImage && (
-            <Box sx={{ position: 'relative' }}>
+            <Box sx={{ position: 'relative', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {selectedImage.image && selectedImage.image.trim() !== '' ? (
-                <Image
-                  src={selectedImage.image.startsWith('http') ? selectedImage.image : `${IMAGE_BASE_URL}${selectedImage.image.startsWith('/') ? selectedImage.image : '/' + selectedImage.image}`}
-                  alt={`Gallery image ${selectedImage.id}`}
-                  width={800}
-                  height={600}
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    maxHeight: '80vh',
-                    objectFit: 'contain',
-                  }}
-                  priority
-                />
+                <Box sx={{ position: 'relative', width: '100%', maxHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <LazyImage
+                    src={selectedImage.image.startsWith('http') ? selectedImage.image : `${IMAGE_BASE_URL}${selectedImage.image.startsWith('/') ? selectedImage.image : '/' + selectedImage.image}`}
+                    alt={`Gallery image ${selectedImage.id}`}
+                    width={800}
+                    height={600}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      maxHeight: '80vh',
+                      objectFit: 'contain',
+                    }}
+                    priority
+                  />
+                </Box>
               ) : (
                 <Box
                   sx={{

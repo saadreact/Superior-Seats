@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   Box,
   Container,
@@ -28,6 +27,7 @@ import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import TruckCarousel from '@/components/TruckCarousel';
 import LogoButton from '@/components/LogoButton';
+import LazyImage from '@/components/common/LazyImage';
 import { seatingProducts, stats } from '@/data/homepage';
 import { values, process as processSteps } from '@/data/About';
 import { workPictures } from '@/data/Gallery';
@@ -161,7 +161,7 @@ const HomePage = () => {
   const router = useRouter();
   
   // Base URL for images from server
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
   
   // Modal state
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -300,6 +300,36 @@ const HomePage = () => {
         position: 'relative',
         minHeight: { xs: 'auto', md: '400px', lg: '400px', xl: '400px' }
       }}>
+        {/* Image at Very Left End of Parent Container with Background */}
+        <MotionBox
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: false, amount: 0.1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          sx={{
+            position: 'absolute',
+            top: { xs: '10px', sm: '15px', md: '20px', lg: '0px', xl: '-40px' },
+            left: { xs: -70, sm: -70, md: 50, lg: -15, xl: 40 },
+            zIndex: 30,
+            display: { xs: 'none', sm: 'none', md: 'none', lg: 'block', xl: 'block' },
+            overflow: 'visible',
+          }}
+        >
+          <Box
+            component="img"
+            src={`${IMAGE_BASE_URL}/Logos/homepage2.png`}
+            alt="Superior Seating LLC"
+            sx={{
+              maxWidth: { xs: '250px', sm: '400px', md: '250px', lg: '250px', xl: '350px' },
+              maxHeight: { xs: '150px', sm: '225px', md: '180px', lg: '550px', xl: '520px' },
+              borderRadius: 2,
+              objectFit: 'contain',
+              display: 'block',
+            
+            }}
+          />
+        </MotionBox>
+
         {/* Image at Very Right End of Parent Container with Background */}
           <MotionBox
             initial={{ opacity: 0, scale: 0.8 }}
@@ -341,11 +371,11 @@ const HomePage = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
             sx={{
               position: { xs: 'relative', md: 'absolute' },
-              left: { xs: 'auto', md: '40%', lg: '40%', xl: '42%' },
-              top: { xs: 'auto', md: '70px', lg: '90px', xl: '20px' },
+            //  left: { xs: 'auto', md: '40%', lg: '%', xl: '42%' },
+            //  top: { xs: 'auto', md: '70px', lg: '90px', xl: '20px' },
               transform: { xs: 'none', md: 'translate(-50%, -50%)' },
-              marginTop: { xs: 0, md: '-50px', lg: '-50px', xl: '-70px' },
-              marginLeft: { xs: 0, md: '-270px', lg: '-370px', xl: '-530px' },
+              marginTop: { xs: 0, md: '190px', lg: '150px', xl: '150px' },
+              marginLeft: { xs: 0, md: '100px', lg: '120px', xl: '0px' },
               flexShrink: 0,
               alignSelf: { xs: 'center', md: 'center' },
               zIndex: 20,
@@ -383,7 +413,7 @@ const HomePage = () => {
               viewport={{ once: false, amount: 0.1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
               sx={{
-                fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "3.5rem", xl: "4.5rem" },
+                fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "2.5rem", xl: "4.5rem" },
                 fontWeight: "bold",
                 lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2, xl: 1.2 },
                 color: 'white',
@@ -707,14 +737,12 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Image
+                <LazyImage
                   src={imageSrc}
                   alt={`Project ${picture.id}`}
                   fill
                   priority={index < 2}
                   quality={80}
-                  loading={index < 2 ? 'eager' : 'lazy'}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   style={{
                     objectFit: 'contain',
                     transition: 'transform 0.5s ease',
@@ -828,14 +856,12 @@ const HomePage = () => {
                 },
               }}
             >
-              <Image
+              <LazyImage
                 src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/image0 (12).jpeg`}
                 alt="Custom Seat Installation 1"
                 fill
                 priority={false}
                 quality={80}
-                loading="lazy"
-                sizes="(max-width: 768px) 100vw, 50vw"
                 style={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
@@ -867,14 +893,12 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Image
+                <LazyImage
                   src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/IMG_2797.JPEG`}
                   alt="Custom Seat Installation 2"
                   fill
                   priority={false}
                   quality={75}
-                  loading="lazy"
-                  sizes="(max-width: 768px) 100vw, 25vw"
                   style={{
                     objectFit: 'cover',
                     transition: 'transform 0.5s ease',
@@ -898,14 +922,12 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Image
+                <LazyImage
                   src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_3590.jpg`}
                   alt="Custom Seat Installation 3"
                   fill
                   priority={false}
                   quality={75}
-                  loading="lazy"
-                  sizes="(max-width: 768px) 100vw, 25vw"
                   style={{
                     objectFit: 'cover',
                     transition: 'transform 0.5s ease',
@@ -930,14 +952,12 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Image
+                <LazyImage
                   src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_5557.JPG`}
                   alt="Custom Seat Installation 4"
                   fill
                   priority={false}
                   quality={75}
-                  loading="lazy"
-                  sizes="(max-width: 768px) 100vw, 50vw"
                   style={{
                     objectFit: 'cover',
                     transition: 'transform 0.5s ease',
@@ -971,13 +991,11 @@ const HomePage = () => {
                 },
               }}
             >
-              <Image
+              <LazyImage
                 src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_7077.jpg`}
                 alt="Custom Seat Installation 5"
                 fill
                 quality={75}
-                loading="lazy"
-                sizes="(max-width: 768px) 100vw, 33vw"
                 style={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
@@ -1001,13 +1019,11 @@ const HomePage = () => {
                 },
               }}
             >
-              <Image
+              <LazyImage
                 src={`${IMAGE_BASE_URL}/LandingPage/Fw__FW__/1000001039.jpg`}
                 alt="Custom Seat Installation 6"
                 fill
                 quality={75}
-                loading="lazy"
-                sizes="(max-width: 768px) 100vw, 33vw"
                 style={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
@@ -1031,13 +1047,11 @@ const HomePage = () => {
                 },
               }}
             >
-              <Image
+              <LazyImage
                 src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_8107.jpeg`}
                 alt="Custom Seat Installation 7"
                 fill
                 quality={75}
-                loading="lazy"
-                sizes="(max-width: 768px) 100vw, 33vw"
                 style={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
