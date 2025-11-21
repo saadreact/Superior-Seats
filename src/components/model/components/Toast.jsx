@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useResponsive } from '../hooks/useResponsive';
 
 function Toast({ message, duration = 2500, type = 'info', index = 0 }) {
   const [isVisible, setIsVisible] = useState(true);
+  const { isMobile } = useResponsive();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -45,22 +47,22 @@ function Toast({ message, duration = 2500, type = 'info', index = 0 }) {
         position: 'relative',
         backgroundColor: getBackgroundColor(),
         color: 'white',
-        padding: '16px 24px',
+        padding: isMobile ? '10px 16px' : '16px 24px',
         borderRadius: '8px',
         boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
-        fontSize: '15px',
+        gap: isMobile ? '8px' : '12px',
+        fontSize: isMobile ? '12px' : '15px',
         fontWeight: '500',
         backdropFilter: 'blur(10px)',
         animation: `slideDown 0.3s ease-out, ${isVisible ? '' : 'fadeOut 0.3s ease-out'}`,
-        minWidth: '250px',
-        maxWidth: '500px',
+        minWidth: isMobile ? '200px' : '250px',
+        maxWidth: isMobile ? '90vw' : '500px',
         pointerEvents: 'auto'
       }}
     >
-      <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{getIcon()}</span>
+      <span style={{ fontSize: isMobile ? '14px' : '18px', fontWeight: 'bold' }}>{getIcon()}</span>
       <span>{message}</span>
 
       <style>{`

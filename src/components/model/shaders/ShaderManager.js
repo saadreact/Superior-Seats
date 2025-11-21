@@ -143,8 +143,6 @@ export class ShaderManager {
     const specularPower = finalFabricConfig.specularPower || 20.0;
     const specularIntensity = finalFabricConfig.specularIntensity || 0.4;
     
-    console.log(`🎨 ShaderManager.createMaterial: ${fabricType}, noStitching=${noStitching}`);
-    
     // Create material based on type with material-specific specular properties
     if (finalFabricConfig.hasStitching) {
       return finalFabricConfig.createMaterial(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
@@ -192,7 +190,6 @@ export class ShaderManager {
 
         material.uniforms.diamondNormalMap.value = patternTexture;
         material.needsUpdate = true;
-        console.log(`✅ Updated pattern to ${patternId} for ${fabricType}`);
         
         // Update stitching texture when pattern changes (each pattern has its own stitching)
         if (material.uniforms.stitchMap && fabricConfig.hasStitching) {
@@ -232,7 +229,6 @@ export class ShaderManager {
             
             // Update the stitching texture uniform
             material.uniforms.stitchMap.value = newStitchTexture;
-            console.log(`✅ Updated stitching texture to ${stitchingPath}`);
           } catch (error) {
             console.warn(`Failed to update stitching for pattern ${patternId}:`, error);
           }

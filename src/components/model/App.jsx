@@ -5,10 +5,12 @@ import PartCustomizationPopup from './components/PartCustomizationPopup'
 import SubmitButton from './components/SubmitButton'
 import Toast from './components/Toast'
 import InfoPopup from './components/InfoPopup'
+import { useResponsive } from './hooks/useResponsive'
 import './App.css'
 
 function App({ onSubmit }) {
   const scene3DRef = useRef();
+  const { isMobile } = useResponsive();
   const [modelId, setModelId] = useState('1'); // New state for model selection
   const [stitchColor, setStitchColor] = useState('#ffffff');
   const [fabricColor, setFabricColor] = useState('#dfdfdf'); // Default grey color (6-char hex)
@@ -77,6 +79,19 @@ function App({ onSubmit }) {
     if (seatType !== 'two-tone') return;
 
     if (isValid && partName) {
+      // Define combo parts that sync left-right
+      const comboPairs = {
+        'seat_back_lower_Left': 'seat_back_lower_Right',
+        'seat_back_lower_Right': 'seat_back_lower_Left',
+        'seat_bottom_lower_Left': 'seat_bottom_lower_Right',
+        'seat_bottom_lower_Right': 'seat_bottom_lower_Left',
+        'left_arm_upper': 'right_arm_upper',
+        'right_arm_upper': 'left_arm_upper'
+      };
+      
+      // Get the paired part if this is a combo part
+      const pairedPart = comboPairs[partName];
+      
       // Get current click state for this part (0 = not customized, 1 = color only, 2 = color+pattern, 3 = removed)
       const currentState = partClickStates[partName] || 0;
       let nextState;
@@ -114,21 +129,37 @@ function App({ onSubmit }) {
         toastMessage = `✓ ${formatPartName(partName)} reset to base color`;
       }
       
-      // Update part click state
-      setPartClickStates(prev => ({
-        ...prev,
-        [partName]: nextState
-      }));
+      // Update part click state for both the clicked part and its pair (if combo)
+      setPartClickStates(prev => {
+        const updated = {
+          ...prev,
+          [partName]: nextState
+        };
+        // If this is a combo part, sync the paired part
+        if (pairedPart) {
+          updated[pairedPart] = nextState;
+        }
+        return updated;
+      });
       
       // If customization is null, remove it from meshCustomizations
       if (customization === null) {
         setMeshCustomizations(prev => {
           const updated = { ...prev };
           delete updated[partName];
+          // If this is a combo part, also remove the paired part
+          if (pairedPart) {
+            delete updated[pairedPart];
+          }
           return updated;
         });
       } else {
+        // Apply customization to the clicked part
         handleMeshCustomizationChange(partName, customization);
+        // If this is a combo part, also apply to the paired part
+        if (pairedPart) {
+          handleMeshCustomizationChange(pairedPart, customization);
+        }
       }
       
       // Add toast to queue
@@ -252,8 +283,12 @@ function App({ onSubmit }) {
         editableParts: [
           'seat_bottom_upper',
           'seat_bottom_lower',
+          'seat_bottom_lower_Left',
+          'seat_bottom_lower_Right',
           'seat_back_upper',
-          'seat_back_lover',
+          'seat_back_lower',
+          'seat_back_lower_Left',
+          'seat_back_lower_Right',
           'headset_front',
           'headset_back',
           'left_arm_upper',
@@ -310,15 +345,15 @@ function App({ onSubmit }) {
         onClick={() => setShowInfoPopup(true)}
         style={{
           position: 'fixed',
-          top: '20px',
-          right: '20px',
-          width: '48px',
-          height: '48px',
+          top: isMobile ? '10px' : '20px',
+          right: isMobile ? '10px' : '20px',
+          width: isMobile ? '36px' : '48px',
+          height: isMobile ? '36px' : '48px',
           borderRadius: '50%',
           backgroundColor: '#4A90E2',
           color: 'white',
           border: 'none',
-          fontSize: '24px',
+          fontSize: isMobile ? '18px' : '24px',
           fontWeight: 'bold',
           cursor: 'pointer',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
@@ -402,14 +437,15 @@ function App({ onSubmit }) {
       {/* Toast Notifications - Show up to 3 toasts stacked */}
       <div style={{
         position: 'fixed',
-        top: '20px',
+        bottom: isMobile ? '15px' : '20px',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 10001,
         display: 'flex',
         flexDirection: 'column',
         gap: '10px',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        alignItems: 'center'
       }}>
         {toasts.slice(-3).map((toast, index) => (
           <Toast 

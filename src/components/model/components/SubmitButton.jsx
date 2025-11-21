@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useResponsive } from '../hooks/useResponsive';
 
 function SubmitButton({ onSubmit, disabled = false }) {
   const [showConfirm, setShowConfirm] = useState(false);
+  const { isMobile } = useResponsive();
 
   const handleClick = () => {
     setShowConfirm(true);
@@ -26,14 +28,14 @@ function SubmitButton({ onSubmit, disabled = false }) {
         disabled={disabled}
         style={{
           position: 'fixed',
-          bottom: '30px',
-          right: '30px',
-          padding: '15px 30px',
+          bottom: isMobile ? '15px' : '30px',
+          right: isMobile ? '15px' : '30px',
+          padding: isMobile ? '10px 20px' : '15px 30px',
           backgroundColor: disabled ? '#ccc' : '#28a745',
           color: 'white',
           border: 'none',
           borderRadius: '8px',
-          fontSize: '16px',
+          fontSize: isMobile ? '13px' : '16px',
           fontWeight: 'bold',
           cursor: disabled ? 'not-allowed' : 'pointer',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
@@ -88,17 +90,18 @@ function SubmitButton({ onSubmit, disabled = false }) {
               backgroundColor: 'white',
               border: '2px solid #28a745',
               borderRadius: '12px',
-              padding: '30px',
+              padding: isMobile ? '20px' : '30px',
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
               zIndex: 10001,
-              minWidth: '350px',
+              minWidth: isMobile ? '280px' : '350px',
+              maxWidth: isMobile ? '90vw' : 'none',
               textAlign: 'center'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={{
               margin: '0 0 15px 0',
-              fontSize: '20px',
+              fontSize: isMobile ? '16px' : '20px',
               color: '#333',
               fontWeight: 'bold'
             }}>
@@ -106,7 +109,7 @@ function SubmitButton({ onSubmit, disabled = false }) {
             </h3>
             <p style={{
               margin: '0 0 25px 0',
-              fontSize: '14px',
+              fontSize: isMobile ? '12px' : '14px',
               color: '#666',
               lineHeight: '1.5'
             }}>
