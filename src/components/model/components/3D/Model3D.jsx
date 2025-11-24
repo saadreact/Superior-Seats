@@ -122,10 +122,10 @@ function Model3D({
   
   // Material configurations for different parts (structure only - colors resolved at runtime)
   const materialConfigs = useMemo(() => ({
-    base: { fabricType: 'leather', hasStitching: true, name: 'Seat Base', useFabricColor: true },
-    backrest: { fabricType: 'leather', hasStitching: true, name: 'Backrest', useFabricColor: true },
-    headrest: { fabricType: 'leather', hasStitching: true, name: 'Headrest', useFabricColor: true },
-    armrests: { fabricType: 'leather', hasStitching: true, name: 'Armrests', useFabricColor: true },
+    base: { hasStitching: true, name: 'Seat Base', useFabricColor: true },
+    backrest: { hasStitching: true, name: 'Backrest', useFabricColor: true },
+    headrest: { hasStitching: true, name: 'Headrest', useFabricColor: true },
+    armrests: { hasStitching: true, name: 'Armrests', useFabricColor: true },
     piping: { fabricType: 'piping', hasStitching: false, name: 'Piping', useStitchColor: true },
     frame: { color: '#333333', fabricType: 'metal', hasStitching: false, name: 'Frame' }
   }), []);
