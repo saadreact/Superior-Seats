@@ -301,7 +301,7 @@ const EditItemTypePage = () => {
                     },
                   }}
                 >
-                  {loading ? 'Updating...' : 'Update Seat Base'}
+                  {loading ? 'Updating...' : 'Update Item Type'}
                 </Button>
               </Box>
             </Box>
