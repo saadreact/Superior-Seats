@@ -74,7 +74,7 @@ const CreateItemTypePage = () => {
       };
       
       await apiService.createItemType(submissionData);
-      setSuccess('Seat Base created successfully!');
+      setSuccess('Item Type created successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
@@ -82,8 +82,8 @@ const CreateItemTypePage = () => {
       }, 1500);
       
     } catch (err: any) {
-      setError(err.message || 'Failed to create seat base');
-      console.error('Error creating seat base:', err);
+      setError(err.message || 'Failed to create item type');
+      console.error('Error creating item type:', err);
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,7 @@ const CreateItemTypePage = () => {
   };
 
   return (
-    <AdminLayout title="Create New Seat Base">
+    <AdminLayout title="Create New Item Type">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -139,7 +139,7 @@ const CreateItemTypePage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter Seat Base name"
+                  placeholder="Enter Item Type name"
                   sx={{ mb: 3 }}
                 />
 
@@ -230,7 +230,7 @@ const CreateItemTypePage = () => {
                     },
                   }}
                 >
-                  {loading ? 'Creating...' : 'Create Seat Base'}
+                  {loading ? 'Creating...' : 'Create Item Type'}
                 </Button>
               </Box>
             </Box>

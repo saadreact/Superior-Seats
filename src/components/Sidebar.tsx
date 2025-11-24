@@ -129,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/heat-options',
     },
     {
-      text: 'Seat Base',
+      text: 'Item Types',
       icon: <CategoryIcon />,
       href: '/admin/item-types',
     },
@@ -157,6 +157,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       text: 'Seat Styles',
       icon: <StyleIcon />,
       href: '/admin/seat-styles',
+    },
+    {
+      text: 'Seat Bases',
+      icon: <ChairIcon />,
+      href: '/admin/seat-bases',
     },
     {
       text: 'Seat Types',
@@ -258,7 +263,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
            pathname.startsWith('/admin/seat-stitch-patterns') ||
            pathname.startsWith('/admin/seat-pricing') ||
            pathname.startsWith('/admin/recline-types') ||
-           pathname.startsWith('/admin/seat-styles');
+           pathname.startsWith('/admin/seat-styles') ||
+           pathname.startsWith('/admin/seat-bases');
   };
 
   const isVendorsActive = () => {

@@ -49,13 +49,14 @@ const Gallery = () => {
   const router = useRouter();
   
   // Base URL for images from server
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
   
   const [selectedImage, setSelectedImage] = useState<WorkImage | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [animatedImages, setAnimatedImages] = useState<boolean[]>([]);
   const [sliderIndex, setSliderIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const [truckImageLoaded, setTruckImageLoaded] = useState(false);
 
   // Initialize animation states
   useEffect(() => {
@@ -153,9 +154,10 @@ const Gallery = () => {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gridTemplateColumns: { xs: '1fr', md: '1fr auto' },
               gap: { xs: 4, md: 6, lg: 8 },
               alignItems: 'center',
+              justifyContent: { md: 'space-between' },
             }}
           >
             {/* Content */}
@@ -218,31 +220,56 @@ const Gallery = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8 }}
-              sx={{ order: { xs: 1, md: 2 } }}
+              sx={{ 
+                order: { xs: 1, md: 2 },
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: 'fit-content',
+                maxWidth: '100%',
+                ml: { md: 'auto' },
+              }}
             >
               <Box
                 sx={{
                   position: 'relative',
-                  paddingTop: '75%',
-                  borderRadius: 3,
+                  display: 'inline-block',
+                  borderRadius: 2,
                   overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   cursor: 'pointer',
-                  transition: 'all 0.4s ease',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 280, sm: 320, md: 380, lg: 420 },
                   '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                   },
                 }}
                 onClick={() => handleImageClick(workPicturesTruck[0], 0)}
               >
-                <LazyImage
+                {!truckImageLoaded && (
+                  <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                      <Image src="/assets/logored.png" alt="Loading" width={120} height={120} priority />
+                      <Typography variant="body1">Loading...</Typography>
+                    </Box>
+                  </Box>
+                )}
+                <Box
+                  component="img"
                   src={workPicturesTruck[1]?.image ? (workPicturesTruck[1].image.startsWith('http') ? workPicturesTruck[1].image : `${IMAGE_BASE_URL}${workPicturesTruck[1].image.startsWith('/') ? workPicturesTruck[1].image : '/' + workPicturesTruck[1].image}`) : ''}
                   alt="Professional truck seating"
-                  fill
-                  style={{
-                    objectFit: 'cover',
+                  onLoad={() => setTruckImageLoaded(true)}
+                  sx={{
+                    display: 'block',
+                    height: { xs: '280px', sm: '320px', md: '380px', lg: '420px' },
+                    width: 'auto',
+                    objectFit: 'contain',
+                    transition: 'opacity 0.3s ease, transform 0.3s ease',
+                    opacity: truckImageLoaded ? 1 : 0,
                   }}
+                  loading="lazy"
                 />
               </Box>
             </MotionBox>
@@ -283,19 +310,41 @@ const Gallery = () => {
               </Typography>
             </MotionBox>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%', width: '100%' }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
                 <LazyImage
-                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/gallerypic.png`}
+                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u17.png`}
                   alt="Workshop materials"
-                  width={800}
-                  height={600}
+                  fill
+                  showSkeleton={true}
+                  quality={85}
                   style={{
-                    display: 'block',
                     width: '100%',
-                    height: 'auto',
-                    maxWidth: '100%',
-                    objectFit: 'contain',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                    transition: 'transform 0.3s ease',
+                    position: 'absolute',
                   }}
+                  priority={false}
                 />
               </Box>
             </Box>
@@ -303,8 +352,42 @@ const Gallery = () => {
 
           {/* Section B */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1.1fr' }, gap: { xs: 3, md: 6 }, alignItems: 'center', mb: { xs: 6, md: 10 } }}>
-            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <LazyImage src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`} alt="Precision cutting" fill style={{ objectFit: 'cover' }} />
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backgroundColor: '#ffffff',
+                height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                width: '100%',
+                '&:hover': {
+                  transform: 'translateY(-4px) scale(1.02)',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                },
+              }}
+            >
+              <LazyImage 
+                src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`} 
+                alt="Precision cutting" 
+                fill 
+                showSkeleton={true}
+                quality={85}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  transition: 'transform 0.3s ease',
+                  position: 'absolute',
+                }} 
+                priority={false}
+              />
             </Box>
             <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
               <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>PATTERNING & CUT</Typography>
@@ -326,8 +409,42 @@ const Gallery = () => {
                 and dependable performance.
               </Typography>
             </MotionBox>
-            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <LazyImage src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u05.png`} alt="Assembly" fill style={{ objectFit: 'cover' }} />
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backgroundColor: '#ffffff',
+                height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                width: '100%',
+                '&:hover': {
+                  transform: 'translateY(-4px) scale(1.02)',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                },
+              }}
+            >
+              <LazyImage 
+                src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u05.png`} 
+                alt="Assembly" 
+                fill 
+                showSkeleton={true}
+                quality={85}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  transition: 'transform 0.3s ease',
+                  position: 'absolute',
+                }} 
+                priority={false}
+              />
             </Box>
           </Box>
         </Container>
@@ -357,15 +474,20 @@ const Gallery = () => {
               <Box
                 sx={{
                   position: 'relative',
-                  paddingTop: '75%',
-                  borderRadius: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
                   overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   cursor: 'pointer',
-                  transition: 'all 0.4s ease',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                  width: '100%',
                   '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                   },
                 }}
                 onClick={() => handleImageClick(workPicturesTruck[7], 7)}
@@ -374,9 +496,17 @@ const Gallery = () => {
                   src={workPicturesTruck[5]?.image ? (workPicturesTruck[5].image.startsWith('http') ? workPicturesTruck[5].image : `${IMAGE_BASE_URL}${workPicturesTruck[5].image.startsWith('/') ? workPicturesTruck[5].image : '/' + workPicturesTruck[5].image}`) : ''}
                   alt="Interior excellence"
                   fill
+                  showSkeleton={true}
+                  quality={85}
                   style={{
+                    width: '100%',
+                    height: '100%',
                     objectFit: 'cover',
+                    display: 'block',
+                    transition: 'transform 0.3s ease',
+                    position: 'absolute',
                   }}
+                  priority={false}
                 />
               </Box>
             </MotionBox>
@@ -481,8 +611,47 @@ const Gallery = () => {
           {/* Clean 3-up grid of truck images */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 3 } }}>
             {[`${IMAGE_BASE_URL}/Gallery/Truckimages/u01.png`, `${IMAGE_BASE_URL}/Gallery/Truckimages/u07.png`, `${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`].map((src, idx) => (
-              <MotionBox key={src} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6, delay: idx * 0.1 }} sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
-                <LazyImage src={src} alt={`Truck ${idx+1}`} fill style={{ objectFit: 'cover' }} />
+              <MotionBox
+                key={src}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage 
+                  src={src} 
+                  alt={`Truck ${idx+1}`} 
+                  fill 
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                    transition: 'transform 0.3s ease',
+                    position: 'absolute',
+                  }} 
+                  priority={false}
+                />
               </MotionBox>
             ))}
           </Box>
@@ -604,12 +773,15 @@ const Gallery = () => {
                         src={item.image.startsWith('http') ? item.image : `${IMAGE_BASE_URL}${item.image.startsWith('/') ? item.image : '/' + item.image}`}
                         alt={`Gallery image ${item.id}`}
                         fill
+                        showSkeleton={true}
+                        quality={85}
                         style={{
                           objectFit: 'contain',
                           backgroundColor: '#f5f5f5',
                           transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
                         className="gallery-image"
+                        priority={false}
                         onError={() => {
                           // Error handling is managed by LazyImage component
                         }}
@@ -723,13 +895,15 @@ const Gallery = () => {
                     alt={`Gallery image ${selectedImage.id}`}
                     width={800}
                     height={600}
+                    showSkeleton={true}
+                    quality={85}
                     style={{
                       width: '100%',
                       height: 'auto',
                       maxHeight: '80vh',
                       objectFit: 'contain',
                     }}
-                    priority
+                    priority={true}
                   />
                 </Box>
               ) : (

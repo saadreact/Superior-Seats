@@ -32,7 +32,7 @@ const MotionBox = motion.create(Box);
 
 const AboutPage = () => {
   // Base URL for images from server
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
 
   // Icon mapping function
   const getIcon = (iconName: string) => {
@@ -47,11 +47,6 @@ const AboutPage = () => {
     };
     return iconMap[iconName] || <CheckCircle />;
   };
- 
-  const legacyImages = [
-    "Comprehensive Warranty",
-    "Ongoing Support"
-  ];
 
   const whyChooseItemsBase = [
     {
@@ -86,11 +81,17 @@ const AboutPage = () => {
     }
   ];
 
-  // Update whyChooseItems with base URL
-  const whyChooseItems = whyChooseItemsBase.map(item => ({
-    ...item,
-    image: `${IMAGE_BASE_URL}${item.image}`
-  }));
+  // Update whyChooseItems with base URL - ensure proper URL construction
+  const whyChooseItems = whyChooseItemsBase.map(item => {
+    // Build full image URL
+    const imagePath = item.image.startsWith('/') ? item.image : `/${item.image}`;
+    const fullImageUrl = `${IMAGE_BASE_URL}${imagePath}`;
+    
+    return {
+      ...item,
+      image: fullImageUrl
+    };
+  });
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
@@ -127,6 +128,8 @@ const AboutPage = () => {
             src={`${IMAGE_BASE_URL}/Gallery/Truckimages/Americanseat.png`}
             alt="Superior Seating LLC"
             fill
+            showSkeleton={true}
+            quality={85}
             style={{
               objectFit: 'cover',
               filter: 'brightness(1.2) contrast(1.05)',
@@ -773,25 +776,14 @@ const AboutPage = () => {
           
           {/* Why Choose Us Cards with alternating layout */}
           {whyChooseItems.map((item, index) => {
-            const isLegacyImage = legacyImages.includes(item.title);
-            const imgStyles = isLegacyImage
-              ? {
-                  position: 'absolute' as const,
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover' as const,
-                  display: 'block',
-                }
-              : {
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover' as const,
-                  display: 'block',
-                  transition: 'transform 0.3s ease',
-                  transform: item.title === 'Expert Craftsmanship' ? 'scale(1.06) translateY(4px)' : 'none',
-                };
+            const imgStyles = {
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover' as const,
+              display: 'block',
+              transition: 'transform 0.3s ease',
+              transform: item.title === 'Expert Craftsmanship' ? 'scale(1.06) translateY(4px)' : 'none',
+            };
             return (
             <Box
               key={index}
@@ -864,7 +856,6 @@ const AboutPage = () => {
                   backgroundColor: '#ffffff',
                   height: { xs: 240, sm: 260, md: 320, lg: 360 },
                   width: '100%',
-                  paddingTop: isLegacyImage ? '70%' : 0,
                   '&:hover': {
                     transform: 'translateY(-4px) scale(1.02)',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
@@ -875,6 +866,8 @@ const AboutPage = () => {
                   src={item.image}
                   alt={item.title}
                   fill
+                  showSkeleton={true}
+                  quality={85}
                   style={{
                     ...imgStyles,
                     position: 'absolute',

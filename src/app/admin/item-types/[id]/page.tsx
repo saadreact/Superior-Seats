@@ -76,7 +76,7 @@ const ItemTypeDetailPage = () => {
 
   if (loading) {
     return (
-      <AdminLayout title="Seat Base Details">
+      <AdminLayout title="Item Type Details">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
@@ -86,7 +86,7 @@ const ItemTypeDetailPage = () => {
 
   if (error || !itemtypes) {
     return (
-      <AdminLayout title="Seat Base Details">
+      <AdminLayout title="Item Type Details">
         <Box>
           <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
@@ -99,7 +99,7 @@ const ItemTypeDetailPage = () => {
           </Box>
 
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error || 'Seat Base not found'}
+            {error || 'Item Type not found'}
           </Alert>
         </Box>
       </AdminLayout>
@@ -107,7 +107,7 @@ const ItemTypeDetailPage = () => {
   }
 
   return (
-    <AdminLayout title="Seat Base Details">
+    <AdminLayout title="Item Type Details">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -135,7 +135,7 @@ const ItemTypeDetailPage = () => {
               }
             }}
           >
-            Edit Seat Base
+              Edit Item Type
           </Button>
         </Box>
 

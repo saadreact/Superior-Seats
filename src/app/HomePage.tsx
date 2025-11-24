@@ -155,6 +155,19 @@ const ctaVariants = {
   },
 };
 
+// Direct image URLs - using full URLs from server
+const IMAGE_BASE_URL_STATIC = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
+
+// Featured Projects Gallery Images
+const featuredProjectsImages = [
+  { id: 1, src: `${IMAGE_BASE_URL_STATIC}/Gallery/double.png`, alt: 'Featured Project 1' },
+  { id: 2, src: `${IMAGE_BASE_URL_STATIC}/Gallery/02.png`, alt: 'Featured Project 2' },
+  { id: 3, src: `${IMAGE_BASE_URL_STATIC}/Gallery/03.png`, alt: 'Featured Project 3' },
+  { id: 4, src: `${IMAGE_BASE_URL_STATIC}/Gallery/07.png`, alt: 'Featured Project 4' },
+  { id: 5, src: `${IMAGE_BASE_URL_STATIC}/Gallery/08.png`, alt: 'Featured Project 5' },
+  { id: 6, src: `${IMAGE_BASE_URL_STATIC}/Gallery/09.png`, alt: 'Featured Project 6' },
+];
+
 const HomePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -351,7 +364,7 @@ const HomePage = () => {
             sx={{
               width: { xs: '250px', sm: '400px', md: '450px', lg: '450px', xl: '500px' },
               height: { xs: '150px', sm: '225px', md: '280px', lg: '300px', xl: '375px' },
-              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-83px', xl: '-114px' },
+              marginTop: { xs: '-40px', sm: '-55px', md: '-77px', lg: '-92px', xl: '-114px' },
               marginRight: { xs: '-30px', sm: '-40px', md: '-50px', lg: '-50px', xl: '-68px' },
               borderRadius: 2,
               objectFit: 'cover',
@@ -413,7 +426,7 @@ const HomePage = () => {
               viewport={{ once: false, amount: 0.1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
               sx={{
-                fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "2.5rem", xl: "4.5rem" },
+                fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "3.5rem", xl: "4.5rem" },
                 fontWeight: "bold",
                 lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2, xl: 1.2 },
                 color: 'white',
@@ -501,145 +514,7 @@ const HomePage = () => {
         </Container>
       </Box>
 
-      {/* Brand Carousel Section - Moved before Crafters */}
     
-
-   
-
-      {/* Our Process Section - Inspired by B&G */}
-      {/*
-      <Box sx={{ 
-        py: { xs: 3, md: 3, lg: 3, xl: 3 },
-        backgroundColor: 'white',
-        position: 'relative',
-      }}>
-        <Container maxWidth="lg">
-          <MotionBox
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-            sx={{ textAlign: 'center', mb: 6 }}
-          >
-            <Typography
-              variant="overline"
-              sx={{
-                color: 'primary.main',
-                fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '1rem' },
-                letterSpacing: 2,
-              }}
-            >
-              OUR PROCESS
-            </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                mt: 0,
-                mb: 2,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
-                fontWeight: 600,
-                color: 'text.primary',
-              }}
-            >
-              Crafters from the Beginning
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
-                color: 'text.secondary',
-                maxWidth: '800px',
-                mx: 'auto',
-                lineHeight: 1.8,
-              }}
-            >
-              We&apos;re true craftsmen who bring your vision to life with our hands-on approach for more control over quality, comfort, and style.
-            </Typography>
-          </MotionBox>
-
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: { xs: 3, md: 4 },
-              justifyContent: 'center',
-            }}
-          >
-            {processSteps.map((step, index) => (
-              <MotionPaper
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                elevation={0}
-                sx={{
-                  p: 4,
-                  background: 'transparent',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  transition: 'all 0.3s ease',
-                  flex: {
-                    xs: '1 1 100%',
-                    sm: '1 1 calc(50% - 16px)',
-                    md: '1 1 calc(33.333% - 21.33px)',
-                  },
-                  maxWidth: {
-                    xs: '100%',
-                    sm: 'calc(50% - 16px)',
-                    md: 'calc(33.333% - 21.33px)',
-                  },
-                  minWidth: {
-                    xs: '100%',
-                    sm: 'calc(50% - 16px)',
-                    md: 'calc(33.333% - 21.33px)',
-                  },
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    borderColor: 'primary.main',
-                    boxShadow: '0 12px 40px rgba(211, 47, 47, 0.1)',
-                  },
-                }}
-              >
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontSize: { xs: '3rem', md: '4rem' },
-                    fontWeight: 700,
-                    color: 'primary.main',
-                    opacity: 0.2,
-                    mb: 2,
-                  }}
-                >
-                  {step.step}
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mb: 2,
-                    fontWeight: 600,
-                    fontSize: { xs: '1.125rem', md: '1.25rem' },
-                  }}
-                >
-                  {step.title}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'text.secondary',
-                    lineHeight: 1.7,
-                    fontSize: { xs: '0.9rem', md: '1rem' },
-                  }}
-                >
-                  {step.description}
-                </Typography>
-              </MotionPaper>
-            ))}
-          </Box>
-        </Container>
-      </Box>
-      */}
 
       {/* Portfolio/Gallery Section - Full Width Images */}
       <Box sx={{ 
@@ -699,10 +574,7 @@ const HomePage = () => {
               gap: { xs: 2, md: 3 },
             }}
           >
-            {workPictures.slice(0, 6).map((picture, index) => {
-              const imageSrc = picture.image.startsWith('http') 
-                ? picture.image 
-                : `${IMAGE_BASE_URL}${picture.image}`;
+            {featuredProjectsImages.map((picture, index) => {
               return (
               <MotionBox
                 key={picture.id}
@@ -711,13 +583,12 @@ const HomePage = () => {
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 sx={{
+                  width: '100%',
                   position: 'relative',
-                  paddingTop: '75%',
+                  cursor: 'pointer',
                   overflow: 'hidden',
                   borderRadius: 2,
-                  cursor: 'pointer',
-                  backgroundColor: '#f5f5f5',
-                  '&:hover img': {
+                  '&:hover .gallery-image': {
                     transform: 'scale(1.05)',
                   },
                   '&:hover::after': {
@@ -734,20 +605,65 @@ const HomePage = () => {
                     opacity: 0.2,
                     transition: 'opacity 0.3s ease',
                     pointerEvents: 'none',
+                    zIndex: 1,
                   },
                 }}
               >
-                <LazyImage
-                  src={imageSrc}
-                  alt={`Project ${picture.id}`}
-                  fill
-                  priority={index < 2}
-                  quality={80}
-                  style={{
-                    objectFit: 'contain',
-                    transition: 'transform 0.5s ease',
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 300, sm: 350, md: 400, lg: 450 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
                   }}
-                />
+                >
+                  {picture.src && picture.src.trim() !== '' ? (
+                    <LazyImage
+                      src={picture.src}
+                      alt={picture.alt}
+                      fill
+                      showSkeleton={true}
+                      quality={85}
+                      style={{
+                        objectFit: 'contain',
+                        width: '100%',
+                        height: '100%',
+                        position: 'absolute',
+                        display: 'block',
+                      }}
+                      priority={index < 2}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#f5f5f5',
+                        color: 'text.secondary',
+                      }}
+                    >
+                      <Typography variant="body2">No image</Typography>
+                    </Box>
+                  )}
+                </Box>
               </MotionBox>
             );
             })}
@@ -845,28 +761,43 @@ const HomePage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8 }}
-              sx={{
-                position: 'relative',
-                paddingTop: '66.67%',
-                overflow: 'hidden',
-                borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                '&:hover img': {
-                  transform: 'scale(1.05)',
-                },
-              }}
             >
-              <LazyImage
-                src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/image0 (12).jpeg`}
-                alt="Custom Seat Installation 1"
-                fill
-                priority={false}
-                quality={80}
-                style={{
-                  objectFit: 'cover',
-                  transition: 'transform 0.5s ease',
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 300, sm: 400, md: 500, lg: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
                 }}
-              />
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/image0 (12).jpeg`}
+                  alt="Custom Seat Installation 1"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
             </MotionBox>
             
             {/* Row 1 - Small Images Grid */}
@@ -882,28 +813,43 @@ const HomePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{ duration: 0.8, delay: 0.1 }}
-                sx={{
-                  position: 'relative',
-                  paddingTop: '100%',
-                  overflow: 'hidden',
-                  borderRadius: 2,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  '&:hover img': {
-                    transform: 'scale(1.05)',
-                  },
-                }}
               >
-                <LazyImage
-                  src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/IMG_2797.JPEG`}
-                  alt="Custom Seat Installation 2"
-                  fill
-                  priority={false}
-                  quality={75}
-                  style={{
-                    objectFit: 'cover',
-                    transition: 'transform 0.5s ease',
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 300, sm: 350, md: 400 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
                   }}
-                />
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/IMG_2797.JPEG`}
+                    alt="Custom Seat Installation 2"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
               </MotionBox>
               
               <MotionBox
@@ -911,28 +857,43 @@ const HomePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                sx={{
-                  position: 'relative',
-                  paddingTop: '100%',
-                  overflow: 'hidden',
-                  borderRadius: 2,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  '&:hover img': {
-                    transform: 'scale(1.05)',
-                  },
-                }}
               >
-                <LazyImage
-                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_3590.jpg`}
-                  alt="Custom Seat Installation 3"
-                  fill
-                  priority={false}
-                  quality={75}
-                  style={{
-                    objectFit: 'cover',
-                    transition: 'transform 0.5s ease',
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 300, sm: 350, md: 400 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
                   }}
-                />
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_3590.jpg`}
+                    alt="Custom Seat Installation 3"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
               </MotionBox>
               
               <MotionBox
@@ -941,28 +902,45 @@ const HomePage = () => {
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
                 sx={{
-                  position: 'relative',
-                  paddingTop: '50%',
-                  overflow: 'hidden',
-                  borderRadius: 2,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                   gridColumn: 'span 2',
-                  '&:hover img': {
-                    transform: 'scale(1.05)',
-                  },
                 }}
               >
-                <LazyImage
-                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_5557.JPG`}
-                  alt="Custom Seat Installation 4"
-                  fill
-                  priority={false}
-                  quality={75}
-                  style={{
-                    objectFit: 'cover',
-                    transition: 'transform 0.5s ease',
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 200, sm: 250, md: 300 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
                   }}
-                />
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_5557.JPG`}
+                    alt="Custom Seat Installation 4"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
               </MotionBox>
             </Box>
           </Box>
@@ -980,27 +958,43 @@ const HomePage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8 }}
-              sx={{
-                position: 'relative',
-                paddingTop: '133%',
-                overflow: 'hidden',
-                borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                '&:hover img': {
-                  transform: 'scale(1.05)',
-                },
-              }}
             >
-              <LazyImage
-                src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_7077.jpg`}
-                alt="Custom Seat Installation 5"
-                fill
-                quality={75}
-                style={{
-                  objectFit: 'cover',
-                  transition: 'transform 0.5s ease',
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
                 }}
-              />
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_7077.jpg`}
+                  alt="Custom Seat Installation 5"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
             </MotionBox>
             
             <MotionBox
@@ -1008,27 +1002,43 @@ const HomePage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8, delay: 0.1 }}
-              sx={{
-                position: 'relative',
-                paddingTop: '133%',
-                overflow: 'hidden',
-                borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                '&:hover img': {
-                  transform: 'scale(1.05)',
-                },
-              }}
             >
-              <LazyImage
-                src={`${IMAGE_BASE_URL}/LandingPage/Fw__FW__/1000001039.jpg`}
-                alt="Custom Seat Installation 6"
-                fill
-                quality={75}
-                style={{
-                  objectFit: 'cover',
-                  transition: 'transform 0.5s ease',
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
                 }}
-              />
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__FW__/1000001039.jpg`}
+                  alt="Custom Seat Installation 6"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
             </MotionBox>
             
             <MotionBox
@@ -1036,27 +1046,43 @@ const HomePage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              sx={{
-                position: 'relative',
-                paddingTop: '133%',
-                overflow: 'hidden',
-                borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                '&:hover img': {
-                  transform: 'scale(1.05)',
-                },
-              }}
             >
-              <LazyImage
-                src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_8107.jpeg`}
-                alt="Custom Seat Installation 7"
-                fill
-                quality={75}
-                style={{
-                  objectFit: 'cover',
-                  transition: 'transform 0.5s ease',
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
                 }}
-              />
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_8107.jpeg`}
+                  alt="Custom Seat Installation 7"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
             </MotionBox>
           </Box>
         </Container>
