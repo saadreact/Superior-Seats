@@ -321,10 +321,10 @@ const HomePage = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           sx={{
             position: 'absolute',
-            top: { xs: '10px', sm: '15px', md: '20px', lg: '0px', xl: '-40px' },
-            left: { xs: -70, sm: -70, md: 50, lg: -15, xl: 40 },
+            top: { xs: '10px', sm: '15px', md: '20px', lg: '-10px', xl: '-20px' },
+            left: { xs: -70, sm: -70, md: 'calc(40% - 400px)', lg: 'calc(32% - 450px)', xl: 'calc(35% - 500px)' },
             zIndex: 30,
-            display: { xs: 'none', sm: 'none', md: 'none', lg: 'block', xl: 'block' },
+            display: { xs: 'none', sm: 'none', md: 'block', lg: 'block', xl: 'block' },
             overflow: 'visible',
           }}
         >
@@ -333,12 +333,11 @@ const HomePage = () => {
             src={`${IMAGE_BASE_URL}/Logos/homepage2.png`}
             alt="Superior Seating LLC"
             sx={{
-              maxWidth: { xs: '250px', sm: '400px', md: '250px', lg: '250px', xl: '350px' },
-              maxHeight: { xs: '150px', sm: '225px', md: '180px', lg: '550px', xl: '520px' },
+              maxWidth: { xs: '250px', sm: '400px', md: '280px', lg: '300px', xl: '320px' },
+              maxHeight: { xs: '150px', sm: '225px', md: '380px', lg: '480px', xl: '500px' },
               borderRadius: 2,
               objectFit: 'contain',
               display: 'block',
-            
             }}
           />
         </MotionBox>
@@ -374,7 +373,7 @@ const HomePage = () => {
         </MotionBox>
 
 
-        <Container maxWidth="lg" sx={{ position: 'relative', height: '100%' }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', height: '100%', px: { md: 4, lg: 6, xl: 8 } }}>
 
           {/* Logo Button - Responsive */}
           <MotionBox
@@ -384,11 +383,11 @@ const HomePage = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
             sx={{
               position: { xs: 'relative', md: 'absolute' },
-            //  left: { xs: 'auto', md: '40%', lg: '%', xl: '42%' },
-            //  top: { xs: 'auto', md: '70px', lg: '90px', xl: '20px' },
-              transform: { xs: 'none', md: 'translate(-50%, -50%)' },
-              marginTop: { xs: 0, md: '190px', lg: '150px', xl: '150px' },
-              marginLeft: { xs: 0, md: '100px', lg: '120px', xl: '0px' },
+              left: { xs: 'auto', md: '45%', lg: '45%', xl: '40%' },
+              top: { xs: 'auto', md: '-80px', lg: '-90px', xl: '-120px' },
+              transform: { xs: 'none', md: 'translateX(-50%)', lg: 'translateX(-50%)', xl: 'translateX(-50%)' },
+              marginTop: { xs: 0 },
+              marginLeft: { xs: 0 },
               flexShrink: 0,
               alignSelf: { xs: 'center', md: 'center' },
               zIndex: 20,
@@ -406,15 +405,15 @@ const HomePage = () => {
           <MotionBox
             sx={{
               position: { xs: 'relative', md: 'absolute' },
-              left: { xs: 'auto', md: '50%' },
-              top: { xs: 'auto', md: '130px', lg: '140px', xl: '140px' },
-              transform: { xs: 'none', md: 'translate(-50%, -50%)' },
-              textAlign: { xs: "center", md: "left" },
+              left: { xs: 'auto', md: '50%', lg: '50%', xl: '50%' },
+              top: { xs: 'auto', md: '120px', lg: '120px', xl: '120px' },
+              transform: { xs: 'none', md: 'translateX(-50%)', lg: 'translateX(-50%)', xl: 'translateX(-50%)' },
+              textAlign: { xs: "center", md: "center" },
               minWidth: 0,
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              alignItems: { xs: "center", md: "flex-start" },
+              alignItems: { xs: "center", md: "center" },
               zIndex: 15,
               width: { xs: '100%', md: 'auto' },
             }}
@@ -426,17 +425,17 @@ const HomePage = () => {
               viewport={{ once: false, amount: 0.1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
               sx={{
-                fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "3.5rem", xl: "4.5rem" },
+                fontSize: { xs: "2rem", sm: "2.5rem", md: "2.9rem", lg: "3.5rem", xl: "4.5rem" },
                 fontWeight: "bold",
                 lineHeight: { xs: 1.1, sm: 1.15, md: 1.2, lg: 1.2, xl: 1.2 },
                 color: 'white',
                 textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
-                mb: { xs: 0, md: 0.75, lg: 0.75 },
-                mt: { xs: 0, md: 6, lg: 7, xl: 3 },
+                mb: { xs: 0, md: 1, lg: 1, xl: 1 },
+                mt: { xs: 0, md: 0, lg: 0, xl: 0 },
                 whiteSpace: { xs: "normal", md: "nowrap" },
                 overflow: { xs: "visible", md: "hidden" },
                 textOverflow: { xs: "clip", md: "ellipsis" },
-                textAlign: { xs: "center", md: "left" },
+                textAlign: { xs: "center", md: "center", lg: "center", xl: "center" },
               }}
             >
               Superior Seating LLC
@@ -452,18 +451,26 @@ const HomePage = () => {
                 opacity: 0.95,
                 fontSize: { xs: "0.85rem", sm: "0.875rem", md: "1rem", lg: "1.8rem", xl: "2.2rem" },
                 letterSpacing: "0.5px",
-                fontWeight: { xs: 600, md: 300 },
-                lineHeight: { xs: 1.3, sm: 1.4, md: 1.4, lg: 1.4 },
-                textAlign: { xs: "center", md: "center" },
-                alignSelf: { xs: "center", md: "center" },
-                color: { xs: 'white', md: 'white' },
+                fontWeight: { xs: 600, md: 300, lg: 300, xl: 300 },
+                lineHeight: { xs: 1.3, sm: 1.4, md: 1.4, lg: 1.4, xl: 1.4 },
+                textAlign: { xs: "center", md: "center", lg: "center", xl: "center" },
+                alignSelf: { xs: "center", md: "center", lg: "center", xl: "center" },
+                color: { xs: 'white', md: 'white', lg: 'white', xl: 'white' },
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.3)",
-                px: { xs: 2, sm: 0, md: 0 },
-                py: { xs: 0.5, sm: 1, md: 3, lg: 2 },
-               // mb: { xs: 3, sm: 4, md: 1, lg: 1, xl: 1 }
+                px: { xs: 2, sm: 0, md: 0, lg: 0, xl: 0 },
+                py: { xs: 0.5, sm: 1, md: 2, lg: 2, xl: 2 },
+                mt: { xs: 0, md: 0, lg: 0, xl: 0 },
               }}
             >
-              Premium Truck, SemiTruck,RV, and Van seating with custom
+              <Box
+                component="span"
+                sx={{
+                  whiteSpace: { xs: "normal", sm: "normal", md: "normal", lg: "nowrap", xl: "nowrap" },
+                  display: { xs: "block", sm: "block", md: "block", lg: "inline", xl: "inline" },
+                }}
+              >
+                Premium Truck, SemiTruck,RV, and Van seating with custom
+              </Box>
               <br />
               <span style={{ textAlign: "center", display: "block", width: "100%" }}>
                 options and superior craftsmanship
