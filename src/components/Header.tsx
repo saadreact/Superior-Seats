@@ -114,7 +114,7 @@ const Header = () => {
     },
     { text: 'Gallery', href: '/gallery' },
     { text: 'Upholstery Services', href: '/upholstery' },
-    { text: 'Upfitting', href: '/upfitting' },
+    { text: 'Custom Auto Builds', href: '/upfitting' },
   
     { text: 'Contact', href: '/contact' },
   ];
