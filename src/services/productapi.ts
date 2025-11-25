@@ -91,6 +91,16 @@ export interface Product {
   vehicle_trim?: any | null;
   primary_image?: ProductImage;
   variations?: ProductVariation[];
+  
+  // 3D Customization fields (response)
+  model_file_path?: string; // Path to GLB file
+  customizable_meshes?: string[]; // Array of mesh names
+  material_types?: Array<{ // Material types available for this product
+    id: number;
+    name: string;
+    image?: string;
+    shader_id?: string;
+  }>;
 }
 
 // Products Response Interface
@@ -152,6 +162,10 @@ export interface ProductData {
     price_adjustment: number;
     is_active: boolean;
   }>;
+  
+  // 3D Customization fields
+  model_file?: File; // GLB 3D model file
+  customizable_meshes?: string[]; // Array of mesh names that can be customized
 }
 
 // Product Update Data Interface (extends ProductData with optional fields)
@@ -396,26 +410,37 @@ class ProductApi {
         
       }
 
-      // Debug: Log FormData contents
-      for (let [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          
-        } else {
-          
-        }
+      // Handle 3D customization fields
+      if (data.model_file) {
+        formData.append('model_file', data.model_file);
+        console.log('✅ Added model_file to FormData:', data.model_file.name, data.model_file.size);
       }
       
-      // Debug: Check if images are actually in FormData
-      const imageEntries = Array.from(formData.entries()).filter(([key, value]) => 
-        key.includes('image') && value instanceof File
-      );
-      imageEntries.forEach(([key, value]) => {
+      if (data.customizable_meshes && data.customizable_meshes.length > 0) {
+        data.customizable_meshes.forEach((mesh, index) => {
+          formData.append(`customizable_meshes[${index}]`, mesh);
+        });
+        console.log('✅ Added customizable_meshes to FormData:', data.customizable_meshes);
+      }
+
+      // Debug: Log FormData contents
+      console.log('\n=== FORMDATA CONTENTS ===');
+      for (let [key, value] of formData.entries()) {
         if (value instanceof File) {
-          
+          console.log(`[FILE] ${key}:`, value.name, `(${(value.size / 1024).toFixed(2)} KB)`);
         } else {
-          
+          console.log(`[FIELD] ${key}:`, value);
         }
-      });
+      }
+      console.log('=========================\n');
+      
+      // Debug: Check if 3D files are in FormData
+      const modelFile = Array.from(formData.entries()).find(([key]) => key === 'model_file');
+      if (modelFile) {
+        console.log('3D Model file found in FormData');
+      } else if (data.is_customize_3d_product) {
+        console.warn('3D customization enabled but no model_file in FormData!');
+      }
 
       const response = await api.post("/products", formData, {
         headers: {
@@ -432,6 +457,21 @@ class ProductApi {
         // Add timeout and other options
         timeout: 30000, // 30 seconds timeout for file uploads
       });
+
+      console.log('\n=== API RESPONSE ===');
+      console.log('Response status:', response.status);
+      console.log('Response data:', JSON.stringify(response.data, null, 2));
+      
+      // Check for 3D fields in response
+      const productData = response.data?.data || response.data;
+      if (productData) {
+        console.log('\n3D Fields in response:');
+        console.log('- is_customize_3d_product:', productData.is_customize_3d_product);
+        console.log('- model_file_path:', productData.model_file_path);
+        console.log('- customizable_meshes:', productData.customizable_meshes);
+        console.log('- material_types:', productData.material_types?.length || 0, 'types');
+      }
+      console.log('====================\n');
 
       if (response.data && response.data.data) {
         return response.data.data;

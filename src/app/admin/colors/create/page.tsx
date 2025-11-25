@@ -40,7 +40,9 @@ interface Color {
   name: string;
   hex_code: string;
   description: string;
-  color_vendor_id: number;
+  image?: string;
+  color_vendor_id?: number;
+  material_type_ids?: number[];
   is_active: boolean;
   price_tier_ids: number[];
   price_tiers?: any[];
@@ -48,6 +50,15 @@ interface Color {
   price: number | null;
   created_at: string;
   updated_at: string;
+}
+
+interface MaterialType {
+  id: number;
+  name: string;
+  shader_id?: string;
+  description?: string;
+  image?: string;
+  is_active: boolean;
 }
 
 interface ColorVendor {
@@ -100,6 +111,10 @@ const CreateColorPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
+  const [materialTypes, setMaterialTypes] = useState<MaterialType[]>([]);
+  const [selectedMaterialType, setSelectedMaterialType] = useState<number>(0);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [colorVendors, setColorVendors] = useState<ColorVendor[]>([]);
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
   const [loading, setLoading] = useState(false);
@@ -109,13 +124,24 @@ const CreateColorPage = () => {
     name: '',
     hex_code: '',
     description: '',
-    color_vendor_id: 0,
+    image: '',
+    // color_vendor_id: 0,
     price: 0,
     is_active: true,
   });
   const [enablePriceTiers, setEnablePriceTiers] = useState(false);
   const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
+
+  const loadMaterialTypes = useCallback(async () => {
+    try {
+      const response = await apiService.getMaterialTypes({ is_active: true });
+      setMaterialTypes(response?.data || response || []);
+    } catch (err: any) {
+      console.error('Error loading material types:', err);
+      setMaterialTypes([]);
+    }
+  }, []);
 
   const loadColorVendors = useCallback(async () => {
     try {
@@ -138,9 +164,10 @@ const CreateColorPage = () => {
   }, []);
 
   useEffect(() => {
-    loadColorVendors();
+    loadMaterialTypes();
+    // loadColorVendors();
     loadPriceTiers();
-  }, [loadColorVendors, loadPriceTiers]);
+  }, [loadMaterialTypes, loadPriceTiers]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -196,6 +223,24 @@ const CreateColorPage = () => {
     }
   };
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setFormData(prev => ({ ...prev, image: '' }));
+  };
+
   const handleResetPriceTiers = () => {
     setPriceOverrides({});
     if (formData.price > 0) {
@@ -239,8 +284,8 @@ const CreateColorPage = () => {
       return;
     }
     
-    if (!formData.color_vendor_id) {
-      setError('Color vendor is required');
+    if (selectedMaterialType === 0) {
+      setError('Please select a material type');
       return;
     }
     
@@ -253,24 +298,43 @@ const CreateColorPage = () => {
       setLoading(true);
       setError(null);
       
-      const submitData = {
-        name: formData.name.trim(),
-        hex_code: hexCode,
-        description: formData.description.trim(),
-        color_vendor_id: Number(formData.color_vendor_id),
-        cost: 1, // Fixed cost value as per schema
-        price: formData.price,
-        is_active: formData.is_active,
-        price_tier_ids: enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map(tier => tier.id) : [],
-        price_adjustments: enablePriceTiers && calculatedPriceTiers.length > 0 ? Object.fromEntries(
-          calculatedPriceTiers.map(tier => [
-            tier.id.toString(), 
-            VariantsCalculation.getFinalPrice(tier)
-          ])
-        ) : undefined
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name.trim());
+      formDataToSend.append('hex_code', hexCode);
+      formDataToSend.append('description', formData.description.trim());
+      formDataToSend.append('material_type_ids[]', selectedMaterialType.toString());
+      formDataToSend.append('cost', '1');
+      formDataToSend.append('price', formData.price.toString());
+      formDataToSend.append('is_active', formData.is_active ? '1' : '0');
       
-      await apiService.createColor(submitData);
+      if (imageFile) {
+        formDataToSend.append('image', imageFile);
+      }
+      
+      if (enablePriceTiers && calculatedPriceTiers.length > 0) {
+        calculatedPriceTiers.forEach(tier => {
+          formDataToSend.append('price_tier_ids[]', tier.id.toString());
+        });
+        calculatedPriceTiers.forEach(tier => {
+          formDataToSend.append(
+            `price_adjustments[${tier.id}]`,
+            VariantsCalculation.getFinalPrice(tier).toString()
+          );
+        });
+      }
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/colors`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: formDataToSend,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create color');
+      }
       setSuccess('Color created successfully!');
       
       // Redirect back to colors list after a short delay
@@ -514,7 +578,7 @@ const CreateColorPage = () => {
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
 
-                <FormControl fullWidth required sx={{ mb: 3 }}>
+                {/* <FormControl fullWidth required sx={{ mb: 3 }}>
                   <InputLabel sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>Color Vendor</InputLabel>
                   <Select
                     value={formData.color_vendor_id}
@@ -535,7 +599,79 @@ const CreateColorPage = () => {
                       </MenuItem>
                     ))}
                   </Select>
+                </FormControl> */}
+
+                <FormControl fullWidth required sx={{ mb: 3 }}>
+                  <InputLabel sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>Material / Fabric Type *</InputLabel>
+                  <Select
+                    value={selectedMaterialType}
+                    onChange={(e) => setSelectedMaterialType(Number(e.target.value))}
+                    label="Material / Fabric Type *"
+                    sx={{ 
+                      '& .MuiSelect-select': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }
+                    }}
+                  >
+                    <MenuItem value={0} disabled>
+                      <em>Select Material Type</em>
+                    </MenuItem>
+                    {materialTypes.map((material) => (
+                      <MenuItem key={material.id} value={material.id} sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>
+                        {material.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </FormControl>
+
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Color Texture Image (Optional)
+                  </Typography>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Button
+                      variant="outlined"
+                      component="label"
+                    >
+                      Upload Image
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </Button>
+                    {imagePreview && (
+                      <Box sx={{ position: 'relative' }}>
+                        <Box
+                          component="img"
+                          src={imagePreview}
+                          alt="Preview"
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            objectFit: 'cover',
+                            borderRadius: 1,
+                            border: '1px solid #ddd',
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={handleRemoveImage}
+                          sx={{
+                            position: 'absolute',
+                            top: -8,
+                            right: -8,
+                            bgcolor: 'background.paper',
+                            '&:hover': { bgcolor: 'error.light' },
+                          }}
+                        >
+                          ✕
+                        </IconButton>
+                      </Box>
+                    )}
+                  </Stack>
+                </Box>
 
               </Box>
 
