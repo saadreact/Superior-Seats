@@ -24,6 +24,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 // import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import HeroSectionCommon from './common/HeroSectionaCommon';
+import LazyImage from '@/components/common/LazyImage';
 
 
 // Validation schema
@@ -346,19 +347,31 @@ const ContactPage = () => {
               }}
             >
               <Box
-                component="img"
-                src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu1.jpg`}
-                alt="Contact illustration"
                 sx={{
+                  position: 'relative',
                   width: '100%',
-                  flexGrow: 1,
                   height: { xs: '100%', sm: '100%', md: '100%' },
-                  maxHeight: { xs: 240, sm: 320, md: '100%' },
-                  objectFit: { xs: 'contain', sm: 'contain', md: 'cover' },
+                  minHeight: { xs: 240, sm: 320, md: 400 },
+                  flexGrow: 1,
                   borderRadius: { xs: 2, md: 3 },
-                  display: 'block',
+                  overflow: 'hidden',
                 }}
-              />
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu1.jpg`}
+                  alt="Contact illustration"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                />
+              </Box>
             </Box>
 
             {/* Right form panel */}

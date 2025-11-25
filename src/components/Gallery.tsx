@@ -657,6 +657,398 @@ const Gallery = () => {
           </Box>
         </Container>
       </Box>
+    {/* Latest Work Showcase - Using Landing Page Images */}
+    <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: 'white',
+        position: 'relative',
+      }}>
+        <Container maxWidth="xl">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: 6 }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              LATEST WORK
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              Recent Installations
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
+                color: 'text.secondary',
+                maxWidth: '800px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              See our latest custom seat installations showcasing our craftsmanship and attention to detail.
+            </Typography>
+          </MotionBox>
+
+          {/* Latest Work Grid - Using Landing Page Images */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+              gap: { xs: 2, md: 3 },
+              mb: { xs: 2, md: 3 },
+            }}
+          >
+            {/* Row 1 - Large Image */}
+            <MotionBox
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 300, sm: 400, md: 500, lg: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/image0 (12).jpeg`}
+                  alt="Custom Seat Installation 1"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
+            </MotionBox>
+            
+            {/* Row 1 - Small Images Grid */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: { xs: 2, md: 3 },
+              }}
+            >
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 300, sm: 350, md: 400 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/IMG_2797.JPEG`}
+                    alt="Custom Seat Installation 2"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
+              </MotionBox>
+              
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 300, sm: 350, md: 400 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_3590.jpg`}
+                    alt="Custom Seat Installation 3"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
+              </MotionBox>
+              
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                sx={{
+                  gridColumn: 'span 2',
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 200, sm: 250, md: 300 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_5557.JPG`}
+                    alt="Custom Seat Installation 4"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
+              </MotionBox>
+            </Box>
+          </Box>
+
+          {/* Row 2 */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: { xs: 2, md: 3 },
+            }}
+          >
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_7077.jpg`}
+                  alt="Custom Seat Installation 5"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
+            </MotionBox>
+            
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__FW__/1000001039.jpg`}
+                  alt="Custom Seat Installation 6"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
+            </MotionBox>
+            
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_8107.jpeg`}
+                  alt="Custom Seat Installation 7"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
+            </MotionBox>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Our Work Pictures Section - Redesigned with Masonry-style Layout */}
       <Box sx={{ py: { xs: 6, md: 8, lg: 10 }, backgroundColor: 'white' }}>
