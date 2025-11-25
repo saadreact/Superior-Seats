@@ -658,41 +658,38 @@ const EditMaterialTypePage = () => {
                   {currentImage && !imagePreview && (
                     <Box sx={{ mb: 2 }}>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Current Image:
+                        Current Image: {currentImage}
                       </Typography>
-                      <img
-                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${currentImage}`}
+                      <Box
+                        component="img"
+                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${currentImage}`}
                         alt="Current"
-                        style={{
+                        sx={{
                           maxWidth: '100%',
                           maxHeight: 200,
-                          borderRadius: 8,
-                          border: '1px solid #e0e0e0'
+                          borderRadius: 1,
+                          border: '1px solid #e0e0e0',
+                          display: 'block'
                         }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent) {
-                            const fallback = document.createElement('div');
-                            fallback.textContent = 'Image not available';
-                            fallback.style.cssText = `
-                              max-width: 100%;
-                              max-height: 200px;
-                              border-radius: 8px;
-                              border: 1px solid #e0e0e0;
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                              background-color: #f5f5f5;
-                              color: #666;
-                              font-size: 14px;
-                              padding: 20px;
-                            `;
-                            parent.appendChild(fallback);
-                          }
+                        onError={(e: any) => {
+                          console.error('Failed to load image:', `${process.env.NEXT_PUBLIC_API_BASE_URL}/${currentImage}`);
+                          e.target.style.display = 'none';
+                          if (e.target.nextSibling) e.target.nextSibling.style.display = 'block';
                         }}
                       />
+                      <Box sx={{ 
+                        display: 'none',
+                        maxWidth: '100%',
+                        maxHeight: 200,
+                        borderRadius: 1,
+                        border: '1px solid #e0e0e0',
+                        bgcolor: '#f5f5f5',
+                        color: '#666',
+                        p: 2.5,
+                        textAlign: 'center'
+                      }}>
+                        Image not available
+                      </Box>
                     </Box>
                   )}
 
