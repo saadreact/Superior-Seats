@@ -169,14 +169,49 @@ const FleetBuilderSolutionsPage = () => {
                   },
                 }}
               >
-                We partner with RV, limousine, and bus manufacturers and
-                upfitters to provide premium custom seating solutions.
+                Our process spans the entire journey: early design sketches, rapid prototyping, material selection, and full-scale production
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "text.secondary",
+                  mb: { xs: 2, sm: 15 },
+                  lineHeight: 1.8,
+                  fontSize: {
+                    xs: "0.875rem",
+                    sm: "0.95rem",
+                    md: "1rem",
+                    lg: "1.125rem",
+                  },
+                }}
+              >
+               Every seat that rolls out of our facility carries a quiet promise comfort that lasts, durability that earns trust, and craftsmanship your customers immediately feel when they sit down.
+               Whether it’s luxury travel, commercial transport, or custom fleet builds, we help you deliver interiors that look refined, feel exceptional, and stand the test of miles.
               </Typography>
               <Typography
                 variant="body1"
                 sx={{
                   color: "text.secondary",
                   lineHeight: 1.8,
+                  mb: { xs: 2, sm: 3 },
+                  fontSize: {
+                    xs: "0.875rem",
+                    sm: "0.95rem",
+                    md: "1rem",
+                    lg: "1.125rem",
+                  },
+                }}
+              >
+                  We partner with RV, limousine, and bus manufacturers and
+                upfitters to provide premium custom seating solutions.
+              
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "text.secondary",
+                  lineHeight: 1.8,
+                  
                   fontSize: {
                     xs: "0.875rem",
                     sm: "0.95rem",
@@ -312,6 +347,7 @@ const FleetBuilderSolutionsPage = () => {
               vehicle types and industries.
             </Typography>
           </MotionBox>
+
 
           {/* Fleet Buses Section - Separate handling */}
           <Box sx={{ mb: { xs: 6, md: 10 } }}>
