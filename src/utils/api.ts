@@ -2071,6 +2071,32 @@ class ApiService {
     }
   }
 
+  // ========== MATERIAL TYPE MANAGEMENT APIs ==========
+
+  // Get all material types
+  async getMaterialTypes(params: {
+    search?: string;
+    is_active?: boolean;
+    page?: number;
+    per_page?: number;
+  } = {}) {
+    try {
+      const queryString = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null) as string[][]).toString();
+      const response = await api.get(`/material-types${queryString ? `?${queryString}` : ''}`);
+      
+      // Handle different response structures
+      if (response.data && response.data.data) {
+        return response.data.data;
+      } else if (response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error: any) {
+      console.error('Error fetching material types:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch material types');
+    }
+  }
+
   // ========== COLOR MANAGEMENT APIs ==========
 
   // Get all colors
@@ -2424,6 +2450,7 @@ class ApiService {
       throw new Error(error.response?.data?.message || 'Failed to delete arm type');
     }
   }
+
 
   // ========== COLOR VENDORS ==========
   
