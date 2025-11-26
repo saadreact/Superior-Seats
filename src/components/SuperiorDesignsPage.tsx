@@ -83,7 +83,7 @@ const SuperiorDesignsPage = () => {
                   fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.5rem', xl: '2.5rem' },
                 }}
               >
-                Your Partner for Custom Van, Bus, and Specialty Builds 
+                Your Partner for Custom Van, Bus and Specialty Builds 
               </Typography>
               <Typography
                 variant="body1"

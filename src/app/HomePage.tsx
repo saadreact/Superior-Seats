@@ -22,6 +22,10 @@ import {
   Avatar,
   Paper,
   Divider,
+  Select,
+  MenuItem,
+  FormControl,
+  CircularProgress,
 } from '@mui/material';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
@@ -34,7 +38,7 @@ import { workPictures } from '@/data/Gallery';
 import { testimonials } from '@/data/testimonials';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { 
+import {
   Star,
   ArrowForward,
   Chair,
@@ -51,6 +55,8 @@ import {
   VolumeUp,
   Fullscreen,
   FullscreenExit,
+  ArrowBackIos,
+  ArrowForwardIos,
 } from '@mui/icons-material';
 import Footer from '@/components/Footer';
 import HeroImageSlider from '@/components/HeroImageSlider';
@@ -71,7 +77,7 @@ const useCountUp = (end: number, duration: number = 2000) => {
     const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime;
       const progress = Math.min((currentTime - startTime) / duration, 1);
-      
+
       setCount(Math.floor(progress * end));
 
       if (progress < 1) {
@@ -103,23 +109,23 @@ const statsContainerVariants = {
 
 const statItemVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
       duration: 0.6
-    } 
+    }
   },
 };
 
 const sectionVariants = {
   hidden: { opacity: 0, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
-    transition: { 
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
       duration: 0.8
-    } 
+    }
   },
 };
 
@@ -134,55 +140,48 @@ const productsContainerVariants = {
 
 const productCardVariants = {
   hidden: { opacity: 0, scale: 0.8 },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
-    transition: { 
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
       duration: 0.6
-    } 
+    }
   },
 };
 
 const ctaVariants = {
   hidden: { opacity: 0, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
-    transition: { 
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
       duration: 0.8,
       staggerChildren: 0.2,
-    } 
+    }
   },
 };
 
+import axios from 'axios';
+import { SeatStyle, PaginationMeta, ApiResponse } from '../data/homepage';
+
 // Direct image URLs - using full URLs from server
 const IMAGE_BASE_URL_STATIC = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
-
-// Featured Projects Gallery Images
-const featuredProjectsImages = [
-  { id: 1, src: `${IMAGE_BASE_URL_STATIC}/Gallery/double.png`, alt: 'Featured Project 1' },
-  { id: 2, src: `${IMAGE_BASE_URL_STATIC}/Gallery/02.png`, alt: 'Featured Project 2' },
-  { id: 3, src: `${IMAGE_BASE_URL_STATIC}/Gallery/03.png`, alt: 'Featured Project 3' },
-  { id: 4, src: `${IMAGE_BASE_URL_STATIC}/Gallery/07.png`, alt: 'Featured Project 4' },
-  { id: 5, src: `${IMAGE_BASE_URL_STATIC}/Gallery/08.png`, alt: 'Featured Project 5' },
-  { id: 6, src: `${IMAGE_BASE_URL_STATIC}/Gallery/09.png`, alt: 'Featured Project 6' },
-];
 
 const HomePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
-  
+
   // Base URL for images from server
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
-  
+
   // Modal state
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  
+
   // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  
+
   // Video state
   const [isMuted, setIsMuted] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -199,6 +198,130 @@ const HomePage = () => {
     title: { xs: 'auto', md: '90px', lg: '100px', xl: '110px' },
     description: { xs: 'auto', md: '140px', lg: '160px', xl: '180px' },
   };
+
+  // Gallery State
+  const [galleryData, setGalleryData] = useState<SeatStyle[]>([]);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(5);
+
+  // Lightbox State
+  const [selectedStyle, setSelectedStyle] = useState<SeatStyle | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
+  const imageLoadingRef = useRef(true);
+
+  // Touch/swipe functionality for mobile
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // Fetch Gallery Data
+  const fetchGalleryData = async (pageNum: number, limit: number) => {
+    setLoading(true);
+    try {
+      const response = await axios.get<ApiResponse>(`https://dev-api.superiorseatingllc.com/api/seat-styles?page=${pageNum}&per_page=${limit}&sort_by=name&sort_order=asc`);
+      if (response.data.status === 'success') {
+        setGalleryData(response.data.data);
+        setPagination(response.data.meta.pagination);
+      }
+    } catch (error) {
+      console.error('Error fetching gallery data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGalleryData(page, perPage);
+  }, [page, perPage]);
+
+  const handlePageChange = (newPage: number) => {
+    if (pagination && newPage >= 1 && newPage <= pagination.last_page) {
+      setPage(newPage);
+    }
+  };
+
+  // Helper to get display image for a style
+  const getDisplayImage = (style: SeatStyle) => {
+    if (!style.images || style.images.length === 0) return null;
+    return style.images.find(img => img.is_primary) || style.images[0];
+  };
+
+  // Lightbox Handlers
+  const handleOpenLightbox = (style: SeatStyle) => {
+    if (style.images && style.images.length > 0) {
+      setSelectedStyle(style);
+      setCurrentImageIndex(0);
+      setImageLoading(true);
+      setShowLoader(false);
+      imageLoadingRef.current = true;
+    }
+  };
+
+  const handleCloseLightbox = () => {
+    setSelectedStyle(null);
+    setCurrentImageIndex(0);
+    setImageLoading(false);
+    setShowLoader(false);
+    imageLoadingRef.current = false;
+  };
+
+  const handleNextImage = () => {
+    if (!selectedStyle || !selectedStyle.images) return;
+    setImageLoading(true);
+    setShowLoader(false);
+    imageLoadingRef.current = true;
+    setCurrentImageIndex((prev) => (prev + 1) % selectedStyle.images.length);
+  };
+
+  const handlePrevImage = () => {
+    if (!selectedStyle || !selectedStyle.images) return;
+    setImageLoading(true);
+    setShowLoader(false);
+    imageLoadingRef.current = true;
+    setCurrentImageIndex((prev) => (prev - 1 + selectedStyle.images.length) % selectedStyle.images.length);
+  };
+
+  // Touch handlers for swipe functionality
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleNextImage();
+    }
+    if (isRightSwipe) {
+      handlePrevImage();
+    }
+
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedStyle) return;
+      if (e.key === 'ArrowRight') handleNextImage();
+      if (e.key === 'ArrowLeft') handlePrevImage();
+      if (e.key === 'Escape') handleCloseLightbox();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedStyle, handleNextImage, handlePrevImage, handleCloseLightbox]);
 
   // Icon mapping function for values section
   const getIcon = (iconName: string) => {
@@ -302,10 +425,10 @@ const HomePage = () => {
         <HeroSection />
       </Box>
       <TruckCarousel />
-      
-        {/* New Superior Seating LLC Section */}
-        <Box sx={{ 
-        py: { xs: 6, md: 5, lg: 5 ,xl: 5},
+
+      {/* New Superior Seating LLC Section */}
+      <Box sx={{
+        py: { xs: 6, md: 5, lg: 5, xl: 5 },
         background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -343,19 +466,19 @@ const HomePage = () => {
         </MotionBox>
 
         {/* Image at Very Right End of Parent Container with Background */}
-          <MotionBox
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            sx={{
-              position: 'absolute',
-              top: { xs: '10px', sm: '15px', md: '20px', lg: '25px', xl: '30px' },
-              right: 0,
-              zIndex: 30,
-              display: 'block',
-            }}
-          >
+        <MotionBox
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: false, amount: 0.1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          sx={{
+            position: 'absolute',
+            top: { xs: '10px', sm: '15px', md: '20px', lg: '25px', xl: '30px' },
+            right: 0,
+            zIndex: 30,
+            display: 'block',
+          }}
+        >
           <Box
             component="img"
             src={`${IMAGE_BASE_URL}/Gallery/Patriotism/fc.png`}
@@ -481,7 +604,7 @@ const HomePage = () => {
       </Box>
 
       {/* Stats Section */}
-      <Box sx={{ 
+      <Box sx={{
         py: { xs: 3, md: 3, lg: 3, xl: 3 },
         background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
         position: 'relative',
@@ -521,10 +644,10 @@ const HomePage = () => {
         </Container>
       </Box>
 
-    
+
 
       {/* Portfolio/Gallery Section - Full Width Images */}
-      <Box sx={{ 
+      <Box sx={{
         py: { xs: 3, md: 3, lg: 3, xl: 3 },
         background: 'linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%)',
       }}>
@@ -557,7 +680,7 @@ const HomePage = () => {
                 color: 'text.primary',
               }}
             >
-              Featured Projects
+              Feature Styles
             </Typography>
             <Typography
               variant="body1"
@@ -581,102 +704,236 @@ const HomePage = () => {
               gap: { xs: 2, md: 3 },
             }}
           >
-            {featuredProjectsImages.map((picture, index) => {
-              return (
-              <MotionBox
-                key={picture.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                sx={{
-                  width: '100%',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  overflow: 'hidden',
-                  borderRadius: 2,
-                  '&:hover .gallery-image': {
-                    transform: 'scale(1.05)',
-                  },
-                  '&:hover::after': {
-                    opacity: 0.5,
-                  },
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.2) 100%)',
-                    opacity: 0.2,
-                    transition: 'opacity 0.3s ease',
-                    pointerEvents: 'none',
-                    zIndex: 1,
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    position: 'relative',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-                    backgroundColor: '#ffffff',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    height: { xs: 300, sm: 350, md: 400, lg: 450 },
-                    width: '100%',
-                    '&:hover': {
-                      transform: 'translateY(-4px) scale(1.02)',
-                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-                    },
-                  }}
-                >
-                  {picture.src && picture.src.trim() !== '' ? (
-                    <LazyImage
-                      src={picture.src}
-                      alt={picture.alt}
-                      fill
-                      showSkeleton={true}
-                      quality={85}
-                      style={{
-                        objectFit: 'contain',
-                        width: '100%',
-                        height: '100%',
-                        position: 'absolute',
-                        display: 'block',
-                      }}
-                      priority={index < 2}
-                    />
-                  ) : (
-                    <Box
-                      sx={{
+            {loading ? (
+              // Simple loading skeleton
+              Array.from(new Array(6)).map((_, index) => (
+                <Box key={index} sx={{ height: { xs: 300, sm: 350, md: 400, lg: 450 }, bgcolor: '#f0f0f0', borderRadius: 2 }} />
+              ))
+            ) : (
+              galleryData.map((style, index) => {
+                const displayImage = getDisplayImage(style);
+                return (
+                  <MotionBox
+                    key={style.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: false, amount: 0.3 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    onClick={() => handleOpenLightbox(style)}
+                    sx={{
+                      width: '100%',
+                      position: 'relative',
+                      cursor: displayImage ? 'pointer' : 'default',
+                      overflow: 'hidden',
+                      borderRadius: 2,
+                      '&:hover .gallery-image': {
+                        transform: displayImage ? 'scale(1.05)' : 'none',
+                      },
+                      '&:hover::after': {
+                        opacity: displayImage ? 0.5 : 0,
+                      },
+                      '&::after': {
+                        content: '""',
                         position: 'absolute',
                         top: 0,
                         left: 0,
-                        width: '100%',
-                        height: '100%',
+                        right: 0,
+                        bottom: 0,
+                        background: 'linear-gradient(180deg, transparent 50%, rgba(31, 29, 29, 0.2) 100%)',
+                        opacity: 0.3,
+                        transition: 'opacity 0.3s ease',
+                        pointerEvents: 'none',
+                        zIndex: 1,
+                        display: displayImage ? 'block' : 'none',
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'relative',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: '#f5f5f5',
-                        color: 'text.secondary',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        boxShadow: '0 10px 40px rgba(53, 48, 49, 0.08)',
+                        backgroundColor: '#ffffff',
+                        transition: 'all 0.3s ease',
+                        height: { xs: 300, sm: 350, md: 400, lg: 450 },
+                        width: '100%',
+                        '&:hover': {
+                          transform: displayImage ? 'translateY(-4px) scale(1.02)' : 'none',
+                          boxShadow: displayImage ? '0 20px 60px rgba(54, 54, 54, 0.15)' : '0 10px 40px rgba(227, 24, 55, 0.08)',
+                        },
                       }}
                     >
-                      <Typography variant="body2">No image</Typography>
+                      {displayImage ? (
+                        <LazyImage
+                          src={displayImage.image_url}
+                          alt={displayImage.alt_text || style.name}
+                          fill
+                          showSkeleton={true}
+                          quality={85}
+                          style={{
+                            objectFit: 'contain',
+                            width: '100%',
+                            height: '100%',
+                            position: 'absolute',
+                            display: 'block',
+                          }}
+                          priority={index < 2}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#f5f5f5',
+                            color: 'text.secondary',
+                            p: 2,
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Chair sx={{ fontSize: 48, mb: 1, opacity: 0.5 }} />
+                          <Typography variant="body1" fontWeight={500}>{style.name}</Typography>
+                          <Typography variant="caption">No images available</Typography>
+                        </Box>
+                      )}
+
+                      {/* Overlay with Style Name */}
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          p: 2,
+                          background: 'linear-gradient(to top, rgba(51, 45, 45, 0.9) 0%, transparent 100%)',
+                          color: 'white',
+                          opacity: 0,
+                          transition: 'opacity 0.3s ease',
+                          '.MuiBox-root:hover &': {
+                            opacity: 1,
+                          },
+                        }}
+                      >
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>{style.name}</Typography>
+                        {style.images && style.images.length > 1 && (
+                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                            {style.images.length} images
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
-                  )}
-                </Box>
-              </MotionBox>
-            );
-            })}
+                  </MotionBox>
+                );
+              })
+            )}
           </Box>
 
-          <Box sx={{ textAlign: 'center', mt: 6 }}>
+          {/* Pagination Controls */}
+          {pagination && (
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              p: 2,
+              mt: 4,
+              borderTop: 1,
+              borderColor: 'divider',
+              flexWrap: 'wrap',
+              gap: 2,
+              backgroundColor: 'white',
+              borderRadius: 2,
+            }}>
+              {/* Left side - Items per page select dropdown */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Items per page:
+                </Typography>
+                <FormControl size="small" sx={{ minWidth: 80, maxWidth: 100 }}>
+                  <Select
+                    value={perPage.toString()}
+                    onChange={(event: any) => {
+                      const value = parseInt(event.target.value, 10);
+                      setPerPage(value);
+                      setPage(1); // Reset to first page
+                    }}
+                    sx={{
+                      '& .MuiSelect-select': {
+                        textAlign: 'center',
+                        padding: '8px 12px',
+                      },
+                    }}
+                  >
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={15}>15</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={100}>100</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              {/* Center - Page info */}
+              <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                Showing {pagination.from} to {pagination.to} of {pagination.total} seat styles
+              </Typography>
+
+              {/* Right side - Navigation controls */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={!pagination.links.prev}
+                  onClick={() => handlePageChange(page - 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+
+                <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+                  Page {pagination.current_page} of {pagination.last_page}
+                </Typography>
+
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={!pagination.links.next}
+                  onClick={() => handlePageChange(page + 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
+
+              {/* Mobile Page Info - shown only on mobile */}
+              <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'block', sm: 'none' }, width: '100%', textAlign: 'center', mt: 1 }}>
+                Showing {pagination.from} to {pagination.to} of {pagination.total} seat styles
+              </Typography>
+            </Box>
+          )}
+
+          {/* <Box sx={{ textAlign: 'center', mt: 4 }}>
             <Button
               variant="outlined"
               size="large"
@@ -698,15 +955,15 @@ const HomePage = () => {
             >
               View Full Gallery
             </Button>
-          </Box>
+          </Box> */}
         </Container>
       </Box>
 
-     
 
-      
 
-      
+
+
+
       {/* Product Details Modal */}
       <Dialog
         open={modalOpen}
@@ -745,8 +1002,8 @@ const HomePage = () => {
           </IconButton>
 
           {selectedProduct && (
-            <Box 
-              sx={{ 
+            <Box
+              sx={{
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
                 height: '100%',
@@ -755,8 +1012,8 @@ const HomePage = () => {
               }}
             >
               {/* Image Container */}
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   flex: { xs: 'none', md: '0 0 50%' },
                   position: 'relative',
                   backgroundColor: 'rgba(228, 221, 221, 0.08)',
@@ -780,8 +1037,8 @@ const HomePage = () => {
                   }}
                 >
                   <img
-                    src={selectedProduct.image?.startsWith('http') 
-                      ? selectedProduct.image 
+                    src={selectedProduct.image?.startsWith('http')
+                      ? selectedProduct.image
                       : `${IMAGE_BASE_URL}${selectedProduct.image}`}
                     alt={selectedProduct.title}
                     style={{
@@ -812,8 +1069,8 @@ const HomePage = () => {
                   maxHeight: { xs: '50vh', md: '100%' }
                 }}
               >
-                <Typography variant="h4" sx={{ 
-                  fontWeight: 500, 
+                <Typography variant="h4" sx={{
+                  fontWeight: 500,
                   mb: 2,
                   fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem' },
                   wordBreak: 'break-word',
@@ -823,18 +1080,18 @@ const HomePage = () => {
                 }}>
                   {selectedProduct.title}
                 </Typography>
-                
-                <Typography variant="h5" sx={{ 
-                  mb: 2, 
+
+                <Typography variant="h5" sx={{
+                  mb: 2,
                   fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
                   color: 'primary.main',
                   fontWeight: 500,
                 }}>
                   {selectedProduct.price}
                 </Typography>
-                
-                <Typography variant="body1" sx={{ 
-                  mb: 3, 
+
+                <Typography variant="body1" sx={{
+                  mb: 3,
                   fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
                   lineHeight: 1.6,
                   wordBreak: 'break-word',
@@ -844,11 +1101,11 @@ const HomePage = () => {
                 }}>
                   {selectedProduct.description}
                 </Typography>
-                
+
                 <Box sx={{ mb: 3 }}>
-                                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 500, color: 'black' }}>
-                  Features:
-                </Typography>
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 500, color: 'black' }}>
+                    Features:
+                  </Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     {selectedProduct.features.map((feature: string, index: number) => (
                       <Chip
@@ -905,7 +1162,7 @@ const HomePage = () => {
           )}
         </DialogContent>
       </Dialog>
-      
+
       {/* Snackbar for customize feature coming soon */}
       <Snackbar
         open={snackbarOpen}
@@ -913,17 +1170,321 @@ const HomePage = () => {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleSnackbarClose} 
-          severity="success" 
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
           sx={{ width: '100%' }}
         >
           Customize feature is coming soon!
         </Alert>
       </Snackbar>
-      
-   <Footer/>
-  
+
+
+      <Footer />
+
+      {/* Lightbox Modal */}
+      <Dialog
+        open={!!selectedStyle}
+        onClose={handleCloseLightbox}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: 'rgba(255, 255, 255, 0.99)',
+            color: 'black',
+            margin: { xs: 1, sm: 2, md: 4 },
+            maxWidth: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)', md: 'calc(100% - 64px)' },
+            maxHeight: { xs: 'calc(100vh - 16px)', sm: 'calc(100vh - 32px)', md: 'calc(100vh - 64px)' },
+            height: { xs: 'auto', md: '80vh' },
+          },
+        }}
+      >
+        <DialogContent sx={{ p: 0, position: 'relative', height: '100%' }}>
+          <IconButton
+            onClick={handleCloseLightbox}
+            sx={{
+              position: 'absolute',
+              top: { xs: 8, sm: 12, md: 16 },
+              right: { xs: 8, sm: 12, md: 16 },
+              color: 'white',
+              backgroundColor: theme.palette.primary.main,
+              zIndex: 1,
+              boxShadow: `0 4px 12px ${theme.palette.primary.main}4D`,
+              width: { xs: 28, sm: 32, md: 40 },
+              height: { xs: 28, sm: 32, md: 40 },
+              '&:hover': {
+                backgroundColor: theme.palette.primary.dark,
+                boxShadow: `0 6px 20px ${theme.palette.primary.main}66`,
+                transform: 'translateY(-1px)',
+              },
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <Close />
+          </IconButton>
+
+          {selectedStyle && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                height: '100%',
+                minHeight: { xs: 'auto', md: '100%' },
+                maxHeight: '100%'
+              }}
+            >
+              {/* Image Container - 60% width on desktop */}
+              <Box
+                sx={{
+                  flex: { xs: 'none', md: '0 0 60%' },
+                  position: 'relative',
+                  backgroundColor: '#f8f8f8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: { xs: '60vh', md: '100%' },
+                  overflow: 'hidden',
+                  p: { xs: 1, sm: 2, md: 3 }
+                }}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {/* Main Image */}
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: { xs: '45vh', md: '100%' }
+                  }}
+                >
+                  {/* Loading Spinner */}
+                  {showLoader && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 10,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 2,
+                      }}
+                    >
+                      <CircularProgress
+                        size={60}
+                        thickness={4}
+                        sx={{ color: theme.palette.primary.main }}
+                      />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        }}
+                      >
+                        Loading image...
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {selectedStyle.images && selectedStyle.images[currentImageIndex] && (
+                    <img
+                      src={selectedStyle.images[currentImageIndex].image_url}
+                      alt={selectedStyle.images[currentImageIndex].alt_text || selectedStyle.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                        objectPosition: 'center',
+                        opacity: imageLoading ? 0 : 1,
+                        transition: 'opacity 0.3s ease-in-out',
+                      }}
+                      onLoad={() => {
+                        setImageLoading(false);
+                        setShowLoader(false);
+                        imageLoadingRef.current = false;
+                      }}
+                      onError={() => {
+                        setImageLoading(false);
+                        setShowLoader(false);
+                        imageLoadingRef.current = false;
+                      }}
+                    />
+                  )}
+                </Box>
+
+                {/* Image Navigation Dots */}
+                {selectedStyle.images && selectedStyle.images.length > 1 && (
+                  <Box sx={{
+                    position: 'absolute',
+                    bottom: { xs: 20, sm: 30, md: 40 },
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    gap: { xs: 0.75, sm: 1, md: 1.25 },
+                    zIndex: 2,
+                    padding: { xs: 1, sm: 1.5, md: 2 },
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    borderRadius: '25px',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                  }}>
+                    {selectedStyle.images.map((image, index) => (
+                      <Box
+                        key={image.id}
+                        onClick={() => {
+                          if (index !== currentImageIndex) {
+                            setImageLoading(true);
+                            setShowLoader(false);
+                            imageLoadingRef.current = true;
+                            setCurrentImageIndex(index);
+                          }
+                        }}
+                        sx={{
+                          width: { xs: 12, sm: 14, md: 16 },
+                          height: { xs: 12, sm: 14, md: 16 },
+                          borderRadius: '50%',
+                          backgroundColor: index === currentImageIndex ? '#000000' : 'rgba(255, 255, 255, 0.8)',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          border: index === currentImageIndex ? '2px solid #ffffff' : '2px solid rgba(255, 255, 255, 0.3)',
+                          boxShadow: index === currentImageIndex
+                            ? '0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.2)'
+                            : '0 2px 8px rgba(0, 0, 0, 0.2)',
+                          '&:hover': {
+                            backgroundColor: index === currentImageIndex ? '#000000' : 'rgba(255, 255, 255, 0.95)',
+                            transform: 'scale(1.2)',
+                            boxShadow: index === currentImageIndex
+                              ? '0 6px 16px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.3)'
+                              : '0 4px 12px rgba(0, 0, 0, 0.3)',
+                          },
+                          '&:active': {
+                            transform: 'scale(0.95)',
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+
+                {/* Previous/Next Buttons */}
+                {selectedStyle.images && selectedStyle.images.length > 1 && (
+                  <>
+                    <IconButton
+                      onClick={handlePrevImage}
+                      sx={{
+                        position: 'absolute',
+                        left: { xs: 8, sm: 16, md: 24 },
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: 'white',
+                        backgroundColor: theme.palette.primary.main,
+                        boxShadow: `0 4px 12px ${theme.palette.primary.main}4D`,
+                        width: { xs: 32, sm: 36, md: 40 },
+                        height: { xs: 32, sm: 36, md: 40 },
+                        '&:hover': {
+                          backgroundColor: theme.palette.primary.dark,
+                          boxShadow: `0 6px 20px ${theme.palette.primary.main}66`,
+                          transform: 'translateY(-50%) scale(1.1)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <ArrowBackIos sx={{ pl: 0.5 }} />
+                    </IconButton>
+
+                    <IconButton
+                      onClick={handleNextImage}
+                      sx={{
+                        position: 'absolute',
+                        right: { xs: 8, sm: 16, md: 24 },
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: 'white',
+                        backgroundColor: theme.palette.primary.main,
+                        boxShadow: `0 4px 12px ${theme.palette.primary.main}4D`,
+                        width: { xs: 32, sm: 36, md: 40 },
+                        height: { xs: 32, sm: 36, md: 40 },
+                        '&:hover': {
+                          backgroundColor: theme.palette.primary.dark,
+                          boxShadow: `0 6px 20px ${theme.palette.primary.main}66`,
+                          transform: 'translateY(-50%) scale(1.1)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <ArrowForwardIos />
+                    </IconButton>
+                  </>
+                )}
+              </Box>
+
+              {/* Content Container - 40% width on desktop */}
+              <Box
+                sx={{
+                  flex: { xs: 'none', md: '0 0 40%' },
+                  p: { xs: 1.5, sm: 3, md: 4 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  backgroundColor: 'white',
+                  borderTop: { xs: '1px solid rgba(0,0,0,0.1)', md: 'none' },
+                  borderLeft: { xs: 'none', md: '1px solid rgba(0,0,0,0.1)' },
+                  minHeight: { xs: 'auto', md: '100%' },
+                  overflow: 'auto',
+                  maxHeight: { xs: '40vh', md: '100%' }
+                }}
+              >
+                <Typography variant="h5" sx={{
+                  fontWeight: 'medium',
+                  mb: 2,
+                  fontSize: { xs: '0.9rem', sm: '1.5rem', md: '1.75rem', lg: '2rem' },
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  color: 'text.primary',
+                  lineHeight: 1.3,
+                }}>
+                  {selectedStyle.name}
+                </Typography>
+
+                <Typography variant="body1" sx={{
+                  mb: 3,
+                  fontSize: { xs: '0.75rem', sm: '1rem', md: '1.125rem', lg: '1.25rem' },
+                  lineHeight: 1.6,
+                  fontWeight: 'regular',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  color: 'text.secondary',
+                  flex: 1,
+                }}>
+                  {selectedStyle.description || 'No description available'}
+                </Typography>
+
+                {selectedStyle.images && selectedStyle.images.length > 1 && (
+                  <Typography variant="body2" sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    color: 'text.secondary',
+                    fontStyle: 'italic',
+                    mb: 2,
+                  }}>
+                    {selectedStyle.images.length} images available - swipe or click arrows to view
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </Box>
   );
 };
@@ -942,18 +1503,18 @@ const StatItem = ({ stat }: { stat: { number: number; label: string; suffix: str
       onAnimationStart={() => setIsVisible(true)}
       sx={{ textAlign: 'center', width: '100%' }}
     >
-             <Typography
-         variant="h3"
-         sx={{
-           fontWeight: 500,
-           color: 'black',
-           fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
-         }}
-       >
-         {formattedCount}{stat.suffix}
-       </Typography>
       <Typography
-      
+        variant="h3"
+        sx={{
+          fontWeight: 500,
+          color: 'black',
+          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
+        }}
+      >
+        {formattedCount}{stat.suffix}
+      </Typography>
+      <Typography
+
         sx={{
           color: 'black',
           fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem', lg: '1.375rem', xl: '1.8rem' },
