@@ -70,17 +70,17 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   // Fetch product data when selectedItem ID changes
   useEffect(() => {
     // console.log('🔄 CustomizedSeat - useEffect triggered, selectedItem:', selectedItem);
-    
+
     const fetchProductData = async () => {
       if (selectedItem && selectedItem.id) {
         try {
           setProductLoading(true);
           setProductError(null);
           console.log('🔄 CustomizedSeat - Fetching product data for ID:', selectedItem.id);
-          
+
           const product = await CustomizedSeatApi.getProductById(selectedItem.id);
           setProductData(product);
-          
+
           // Debug: Log the images data from API
           console.log('🖼️ CustomizedSeat - Product images from API:', {
             totalImages: product.product_images?.length || 0,
@@ -89,8 +89,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             currentImageIndex: 0,
             fullProduct: product
           });
-          
-          
+
+
           // Use actual API variation data directly (cast to match context interface)
           const processedVariations = {
             vehicle_trim: product.vehicle_trim ? [{
@@ -110,7 +110,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             seat_styles: (product.seat_styles || []) as any[],
             item_types: (product.item_types || []) as any[]
           };
-          
+
           setVariations(processedVariations);
           console.log('✅ CustomizedSeat - Product data and variations loaded successfully');
         } catch (error) {
@@ -136,16 +136,16 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         try {
           setVehicleTrimLoading(true);
           console.log('🚗 CustomizedSeat - Fetching vehicle trim data for ID:', productData.vehicle_trim_id);
-          
+
           const trimData = await apiService.getVehicleTrimById(productData.vehicle_trim_id);
           setVehicleTrimData(trimData);
-          
+
           // Set the selected values from the API response
           if (trimData) {
             setSelectedMake(trimData.model?.make?.id?.toString() || '');
             setSelectedModel(trimData.model?.id?.toString() || '');
             setSelectedTrim(trimData.id?.toString() || '');
-            
+
             console.log('✅ CustomizedSeat - Vehicle trim data loaded:', {
               make: trimData.model?.make?.name,
               model: trimData.model?.name,
@@ -168,16 +168,16 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     fetchVehicleTrimData();
   }, [productData]);
-  
+
   // State for vehicle information
   const [selectedMake, setSelectedMake] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedTrim, setSelectedTrim] = useState('');
-  
+
   // State for vehicle trim data from API
   const [vehicleTrimData, setVehicleTrimData] = useState<any>(null);
   const [vehicleTrimLoading, setVehicleTrimLoading] = useState(false);
-  
+
   // Original-style dropdown selection state
   const [selectedRecline, setSelectedRecline] = useState<string>('');
   const [selectedLumber, setSelectedLumber] = useState<string>('');
@@ -230,15 +230,15 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     const descriptionSentences =
       typeof productData.description === 'string'
         ? productData.description
-            .split(/[.\n]/)
-            .map((sentence: string) => sentence.trim())
-            .filter((s: string) => s.length > 0)
-            .filter(
-              (s: string) =>
-                !exclusionPhrases.some((p) =>
-                  s.toLowerCase().includes(p)
-                )
-            )
+          .split(/[.\n]/)
+          .map((sentence: string) => sentence.trim())
+          .filter((s: string) => s.length > 0)
+          .filter(
+            (s: string) =>
+              !exclusionPhrases.some((p) =>
+                s.toLowerCase().includes(p)
+              )
+          )
         : [];
 
     const productSku = (productData as any)?.sku;
@@ -385,29 +385,10 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               className="modelScope"
             >
               <ModelViewer />
-              {/* Force the internal fixed submit button to live inside this container */}
-              <style jsx global>{`
-                .modelScope .App {
-                  width: 100% !important;
-                  height: 100% !important;
-                  overflow: hidden !important;
-                }
-                .modelScope .scene-container {
-                  width: 100% !important;
-                  height: 100% !important;
-                  position: relative !important;
-                }
-                /* Constrain Submit Design */
-                .modelScope button[style*='position: fixed'][style*='right: 30px'] {
-                  position: absolute !important;
-                  right: 20px !important;
-                  bottom: 20px !important;
-                }
-              `}</style>
-                     </Box>
-                  </CardContent>
-               </Card>
-               
+            </Box>
+          </CardContent>
+        </Card>
+
         <Card sx={{ borderRadius: 3, boxShadow: '0 8px 20px rgba(15, 23, 42, 0.06)' }}>
           <CardContent>
             <Stack spacing={3}>
@@ -416,10 +397,10 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   Customize Options
                 </Typography>
                 {renderVariations()}
-                  </Box>
+              </Box>
             </Stack>
-                </CardContent>
-              </Card>
+          </CardContent>
+        </Card>
       </Container>
 
       <Footer />
