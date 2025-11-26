@@ -1568,7 +1568,7 @@ const EditProduct2Page = () => {
                       </Box>
 
                       {/* Customizable Meshes */}
-                      <Box>
+                      {/* <Box>
                         <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                           Customizable Mesh Names (Optional)
                         </Typography>
@@ -1582,7 +1582,7 @@ const EditProduct2Page = () => {
                           helperText="Enter comma-separated mesh names from your 3D model that customers can customize. Leave empty to allow all meshes to be customizable."
                           sx={{ bgcolor: 'white' }}
                         />
-                      </Box>
+                      </Box> */}
                     </Box>
                   </Box>
                 )}
