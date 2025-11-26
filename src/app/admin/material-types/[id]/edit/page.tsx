@@ -67,10 +67,15 @@ const EditMaterialTypePage = () => {
     name: '',
     description: '',
     image: null as File | null,
+    cost: 0,
     price: 0,
     price_tier_ids: [] as number[],
     price_adjustments: {} as Record<string, number>,
-    color_ids: [] as number[]
+    color_ids: [] as number[],
+    vendor_name: '',
+    vendor_email: '',
+    vendor_website: '',
+    vendor_description: ''
   });
   
   const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
@@ -195,10 +200,15 @@ const EditMaterialTypePage = () => {
         name: materialType.name || '',
         description: materialType.description || '',
         image: null,
+        cost: typeof materialType.cost === 'string' ? parseFloat(materialType.cost) : materialType.cost || 0,
         price: typeof materialType.price === 'string' ? parseFloat(materialType.price) : materialType.price || 0,
         price_tier_ids: priceTierIds,
         price_adjustments: finalPriceAdjustments,
-        color_ids: colorIds
+        color_ids: colorIds,
+        vendor_name: materialType.vendor_name || '',
+        vendor_email: materialType.vendor_email || '',
+        vendor_website: materialType.vendor_website || '',
+        vendor_description: materialType.vendor_description || ''
       });
       setCurrentImage(materialType.image || null);
     } catch (err: any) {
@@ -367,6 +377,11 @@ const EditMaterialTypePage = () => {
       return;
     }
 
+    if (formData.cost <= 0) {
+      setError('Cost must be greater than 0');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -375,7 +390,7 @@ const EditMaterialTypePage = () => {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         image: formData.image,
-        cost: 0, // Fixed cost value
+        cost: formData.cost,
         price: formData.price,
         price_tier_ids: enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map(tier => tier.id) : [],
         price_adjustments: enablePriceTiers && calculatedPriceTiers.length > 0 ? Object.fromEntries(
@@ -385,6 +400,10 @@ const EditMaterialTypePage = () => {
           ])
         ) : undefined,
         color_ids: formData.color_ids,
+        vendor_name: formData.vendor_name.trim() || undefined,
+        vendor_email: formData.vendor_email.trim() || undefined,
+        vendor_website: formData.vendor_website.trim() || undefined,
+        vendor_description: formData.vendor_description.trim() || undefined,
         // Include current image path if no new image is selected
         current_image: !formData.image && currentImage ? currentImage : undefined
       };
@@ -606,7 +625,39 @@ const EditMaterialTypePage = () => {
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Cost"
+                    type="number"
+                    value={formData.cost === 0 ? '0' : formData.cost.toString()}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      if (inputValue === '0') {
+                        handleInputChange('cost', 0);
+                      } else {
+                        const numericValue = parseFloat(inputValue) || 0;
+                        handleInputChange('cost', numericValue);
+                      }
+                    }}
+                    required
+                    fullWidth
+                    placeholder="Enter cost price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                    onFocus={(e) => {
+                      if (e.target.value === '0') {
+                        e.target.select();
+                      }
+                    }}
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }
+                    }}
+                  />
+                  
                   <TextField
                     label="In Store Price"
                     type="number"
@@ -735,6 +786,91 @@ const EditMaterialTypePage = () => {
                     </Box>
                   )}
                 </Box>
+                </Box>
+
+                {/* Vendor Information */}
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
+                    Vendor Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                <TextField
+                  label="Vendor Name"
+                  value={formData.vendor_name}
+                  onChange={(e) => handleInputChange('vendor_name', e.target.value)}
+                  fullWidth
+                  placeholder="Enter vendor name (optional)"
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
+
+                <TextField
+                  label="Vendor Email"
+                  type="email"
+                  value={formData.vendor_email}
+                  onChange={(e) => handleInputChange('vendor_email', e.target.value)}
+                  fullWidth
+                  placeholder="Enter vendor email (optional)"
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
+
+                <TextField
+                  label="Vendor Website"
+                  type="url"
+                  value={formData.vendor_website}
+                  onChange={(e) => handleInputChange('vendor_website', e.target.value)}
+                  fullWidth
+                  placeholder="Enter vendor website (optional)"
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
+
+                <TextField
+                  label="Vendor Description"
+                  value={formData.vendor_description}
+                  onChange={(e) => handleInputChange('vendor_description', e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  placeholder="Enter vendor description (optional)"
+                  sx={{
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
                 </Box>
 
                 {/* Price Tiers */}

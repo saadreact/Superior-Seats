@@ -43,6 +43,10 @@ class MaterialTypesService {
     price_tier_ids: number[];
     price_adjustments?: Record<string, number>;
     color_ids?: number[];
+    vendor_name?: string;
+    vendor_email?: string;
+    vendor_website?: string;
+    vendor_description?: string;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -78,6 +82,12 @@ class MaterialTypesService {
           });
         }
 
+        // Append vendor information
+        if (data.vendor_name) formData.append('vendor_name', data.vendor_name);
+        if (data.vendor_email) formData.append('vendor_email', data.vendor_email);
+        if (data.vendor_website) formData.append('vendor_website', data.vendor_website);
+        if (data.vendor_description) formData.append('vendor_description', data.vendor_description);
+
         const response = await api.post('/material-types', formData, {
           headers: {
             // Don't set Content-Type for FormData - let browser set it with boundary
@@ -101,7 +111,11 @@ class MaterialTypesService {
           is_active: data.is_active,
           price_tier_ids: data.price_tier_ids,
           price_adjustments: data.price_adjustments,
-          color_ids: data.color_ids
+          color_ids: data.color_ids,
+          vendor_name: data.vendor_name,
+          vendor_email: data.vendor_email,
+          vendor_website: data.vendor_website,
+          vendor_description: data.vendor_description
         };
         const response = await api.post('/material-types', jsonData);
         return response.data?.data || response.data;
@@ -122,6 +136,10 @@ class MaterialTypesService {
     price_tier_ids?: number[];
     price_adjustments?: Record<string, number>;
     color_ids?: number[];
+    vendor_name?: string;
+    vendor_email?: string;
+    vendor_website?: string;
+    vendor_description?: string;
   }) {
     try {
       // Check if we have an image file to determine if we need FormData
@@ -156,6 +174,12 @@ class MaterialTypesService {
             formData.append('color_ids[]', id.toString());
           });
         }
+
+        // Append vendor information
+        if (data.vendor_name) formData.append('vendor_name', data.vendor_name);
+        if (data.vendor_email) formData.append('vendor_email', data.vendor_email);
+        if (data.vendor_website) formData.append('vendor_website', data.vendor_website);
+        if (data.vendor_description) formData.append('vendor_description', data.vendor_description);
 
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
@@ -202,6 +226,12 @@ class MaterialTypesService {
             formData.append('color_ids[]', id.toString());
           });
         }
+
+        // Append vendor information
+        if (data.vendor_name) formData.append('vendor_name', data.vendor_name);
+        if (data.vendor_email) formData.append('vendor_email', data.vendor_email);
+        if (data.vendor_website) formData.append('vendor_website', data.vendor_website);
+        if (data.vendor_description) formData.append('vendor_description', data.vendor_description);
 
         // Use POST with _method: PUT for FormData (Laravel convention)
         formData.append('_method', 'PUT');
