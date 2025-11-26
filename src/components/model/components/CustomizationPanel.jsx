@@ -124,7 +124,7 @@ function CustomizationPanel({
 
         <Grid container spacing={1}>
           {fabricTypeOptions.map((option) => (
-            <Grid item xs={2.4} key={option.id}>
+            <Grid item xs={6} sm={4} md={2.4} key={option.id}>
               <Tooltip title={option.description} arrow placement="top">
                 <ButtonBase
                   onClick={() => onFabricTypeChange(option.id)}
@@ -207,7 +207,7 @@ function CustomizationPanel({
         </Typography>
 
         <Paper variant="outlined" sx={{ p: 1, bgcolor: 'background.paper' }}>
-          <Grid container spacing={0.5} sx={{ maxHeight: 120, overflowY: 'auto' }}>
+          <Grid container spacing={{ xs: 1, sm: 0.5 }} sx={{ maxHeight: { xs: 200, md: 120 }, overflowY: 'auto' }}>
             {availableFabricColors.map((color) => {
               const colorId = `${color.name}-${color.hex}`;
               const isSelected = fabricColor === color.hex;
@@ -333,7 +333,7 @@ function CustomizationPanel({
               const isDefault = pattern.id === 'default';
 
               return (
-                <Grid item xs={1.7} key={pattern.id}>
+                <Grid item xs={4} sm={3} md={2} lg={1.7} key={pattern.id}>
                   <Tooltip title={pattern.name} arrow placement="top">
                     <ButtonBase
                       onClick={() => onPatternChange(pattern.id)}
@@ -457,7 +457,7 @@ function CustomizationPanel({
         </Typography>
 
         <Paper variant="outlined" sx={{ p: 1, bgcolor: 'background.paper' }}>
-          <Grid container spacing={0.5} sx={{ maxHeight: 120, overflowY: 'auto' }}>
+          <Grid container spacing={0.5} sx={{ maxHeight: { xs: 200, md: 120 }, overflowY: 'auto' }}>
             {Object.values(COLOR_PALETTE).flat().map((color) => {
               const colorId = `${color.name}-${color.hex}`;
               const isSelected = stitchColor === color.hex;
@@ -519,7 +519,7 @@ function CustomizationPanel({
                     bgcolor: modelId === model.id ? 'action.selected' : 'background.paper',
                     color: modelId === model.id ? 'primary.main' : 'text.primary',
                     fontWeight: modelId === model.id ? 'bold' : 'regular',
-                    fontSize: '0.8rem',
+                    ffontSize: { xs: '0.75rem', sm: '0.8rem' },
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {
                       transform: 'scale(1.02)',

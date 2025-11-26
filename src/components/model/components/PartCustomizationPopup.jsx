@@ -191,7 +191,7 @@ function PartCustomizationPopup({
               const isDefault = pattern.id === 'default';
 
               return (
-                <Grid item xs={3} key={pattern.id}>
+                <Grid item xs={4} sm={3} md={2.4} key={pattern.id}>
                   <ButtonBase
                     onClick={() => handlePatternChange(pattern.id)}
                     sx={{
