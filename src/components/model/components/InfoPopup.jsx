@@ -96,7 +96,7 @@ function InfoPopup({ onClose }) {
           <Typography variant="body2">
             Click the <strong>Reset Model</strong> button (bottom-left corner) to clear all
             customizations and return to default settings. If you are in two-tone mode, the
-            color/pattern popup will reappear automatically.
+            color/pattern popup will reappear automatically. 
           </Typography>
         </Box>
 
