@@ -2,7 +2,7 @@ import React, { Suspense, useRef, useState, useEffect, useImperativeHandle, forw
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { Box, Button, Stack, Tooltip, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Button, Stack, Tooltip, useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CameraswitchIcon from '@mui/icons-material/Cameraswitch';
 import Model3D from './Model3D';
@@ -110,6 +110,7 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
   const [lightingEnv, setLightingEnv] = useState('daylight');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const currentEnv = LIGHTING_ENVIRONMENTS[lightingEnv];
 
@@ -380,7 +381,7 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
         {/* Reset Model Button */}
         <Tooltip title="Reset model to default settings">
           <Button
-            onClick={onResetModel}
+            onClick={() => setShowResetConfirm(true)}
             startIcon={<RestartAltIcon />}
             sx={{
               bgcolor: 'error.main',
@@ -405,6 +406,38 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
           </Button>
         </Tooltip>
       </Stack>
+      {/* Reset Confirmation Dialog */}
+      <Dialog
+        open={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        PaperProps={{
+          sx: { borderRadius: 3, p: 1 }
+        }}
+      >
+        <DialogTitle>Reset All Customizations?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This will clear all your customizations and return the seat to default settings. 
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowResetConfirm(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => {
+              setShowResetConfirm(false);
+              onResetModel();
+            }} 
+            color="error" 
+            variant="contained"
+            autoFocus
+          >
+            Reset All
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 });

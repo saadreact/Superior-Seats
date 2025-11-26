@@ -6,7 +6,13 @@ import {
   Paper,
   Grid,
   ButtonBase,
-  Backdrop
+  Backdrop,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
@@ -23,7 +29,8 @@ function PartCustomizationPopup({
   seatType,
   fabricColor,
   globalPatternId,
-  isTwoToneSelector = false
+  isTwoToneSelector = false,
+  onApplyToAll
 }) {
   // Use the actual color - if customized, use that; otherwise use global fabricColor
   const getInitialColor = () => {
@@ -43,6 +50,7 @@ function PartCustomizationPopup({
     return globalPatternId || 'default';
   };
 
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedColor, setSelectedColor] = useState(getInitialColor());
   const [selectedPattern, setSelectedPattern] = useState(getInitialPattern());
   const [availablePatterns, setAvailablePatterns] = useState([]);
@@ -117,14 +125,15 @@ function PartCustomizationPopup({
         elevation={8}
         sx={{
           position: 'fixed',
-          left: 'calc(30% + 20px)',
-          top: '80px',
-          width: '320px',
-          maxHeight: 'calc(100vh - 100px)',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: { xs: '90%', sm: '500px', md: '600px' },
+          maxHeight: '90vh',
           overflowY: 'auto',
           zIndex: 10000,
           borderRadius: 3,
-          p: 2.5
+          p: 3
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -224,12 +233,33 @@ function PartCustomizationPopup({
                       <Box sx={{
                         width: '100%',
                         height: 50,
-                        backgroundImage: pattern.thumbnail ? `url(${pattern.thumbnail})` : 'none',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
                         borderRadius: 0.5,
-                        bgcolor: 'action.hover'
-                      }} />
+                        overflow: 'hidden',
+                        bgcolor: 'action.hover',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {pattern.thumbnail ? (
+                          <img 
+                            src={pattern.thumbnail} 
+                            alt={pattern.name}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                            onError={(e) => {
+                              console.error('Failed to load pattern thumbnail:', pattern.thumbnail);
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <Typography variant="caption" sx={{ fontSize: '0.5rem', color: 'text.disabled' }}>
+                            No preview
+                          </Typography>
+                        )}
+                      </Box>
                     )}
 
                     <Typography variant="caption" sx={{
@@ -266,9 +296,81 @@ function PartCustomizationPopup({
             })}
           </Grid>
         </Box>
+        {/* Apply to All Parts Button - NEW FEATURE */}
+        {isTwoToneSelector && (
+          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={() => setShowConfirmDialog(true)}
+              sx={{
+                borderStyle: 'dashed',
+                borderWidth: 2,
+                '&:hover': {
+                  borderStyle: 'solid',
+                  bgcolor: 'action.hover',
+                  borderWidth: 2
+                }
+              }}
+            >
+              Apply to All Parts
+            </Button>
+          </Box>
+        )}
+        {/* Custom Confirmation Dialog */}
+        <Dialog
+          open={showConfirmDialog}
+          onClose={() => setShowConfirmDialog(false)}
+          sx={{ zIndex: 10001 }}
+          PaperProps={{
+            sx: { 
+              borderRadius: 3, 
+              p: 2,
+              maxWidth: 400
+            }
+          }}
+        >
+
+          <DialogTitle sx={{ pb: 1 }}>
+            <Typography variant="h6" component="div" fontWeight="bold">
+              Apply to All Parts?
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              This will apply the selected color and pattern to all <strong>12 customizable parts</strong>.
+              <br /><br />
+              Any existing customizations will be overridden.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button 
+              onClick={() => setShowConfirmDialog(false)} 
+              color="inherit"
+              variant="outlined"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowConfirmDialog(false);
+                if (onApplyToAll) {
+                  onApplyToAll(selectedColor, selectedPattern);
+                }
+                onClose();
+              }} 
+              color="primary" 
+              variant="contained"
+              autoFocus
+            >
+              Apply to All
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Paper>
     </>
   );
 }
+
 
 export default PartCustomizationPopup;

@@ -8,7 +8,9 @@ import {
   Switch,
   FormControlLabel,
   Tooltip,
-  useTheme
+  useTheme,
+  Button,
+  Divider
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { AVAILABLE_MODELS, CUSTOMIZATION_OPTIONS } from '../config/assets';
@@ -30,7 +32,8 @@ function CustomizationPanel({
   patternId,
   onPatternChange,
   seatType,
-  onSeatTypeChange
+  onSeatTypeChange,
+  onOpenTwoToneSelector
 }) {
   const theme = useTheme();
 
@@ -40,6 +43,7 @@ function CustomizationPanel({
   const [hoveredFabric, setHoveredFabric] = useState(null);
   const [hoveredPattern, setHoveredPattern] = useState(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const [patternImagesLoaded, setPatternImagesLoaded] = useState({});
 
   // Get text color based on background
   const getTextColor = (hexColor) => {
@@ -135,13 +139,15 @@ function CustomizationPanel({
                     borderColor: fabricType === option.id ? 'primary.main' : 'divider',
                     borderRadius: 1,
                     bgcolor: 'background.paper',
-                    transition: 'all 0.2s',
+                    transition: 'all 0.2s ease-in-out',
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow: fabricType === option.id ? 2 : 0,
                     '&:hover': {
                       borderColor: 'primary.light',
-                      bgcolor: 'action.hover'
+                      bgcolor: 'action.hover',
+                      transform: 'scale(1.05)',
+                      boxShadow: 2
                     }
                   }}
                 >
@@ -193,6 +199,7 @@ function CustomizationPanel({
         </Grid>
       </Box>
 
+      <Divider sx={{ my: 2 }} />
       {/* FABRIC COLOR SECTION */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
@@ -217,9 +224,11 @@ function CustomizationPanel({
                         border: isSelected ? 2 : 1,
                         borderColor: isSelected ? 'primary.main' : 'divider',
                         borderRadius: 0.5,
-                        transition: 'all 0.2s',
+                        transition: 'all 0.2s ease-in-out',
                         '&:hover': {
-                          boxShadow: `0 0 0 2px ${theme.palette.primary.main}`
+                          boxShadow: `0 0 0 2px ${theme.palette.primary.main}`,
+                          transform: 'scale(1.15)',
+                          zIndex: 1
                         }
                       }}
                     >
@@ -238,6 +247,7 @@ function CustomizationPanel({
         </Paper>
       </Box>
 
+      <Divider sx={{ my: 2 }} />
       {/* TWO TONE TOGGLE */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
@@ -283,8 +293,34 @@ function CustomizationPanel({
           />
         </Paper>
       </Box>
-
+      {/* Two-Tone Color/Pattern Editor Button */}
+      {seatType === 'two-tone' && (
+        <Box sx={{ mb: 3, mt: -1 }}>
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={() => {
+              // Trigger the two-tone selector popup
+              // You'll need to pass this handler from App.jsx
+              if (onOpenTwoToneSelector) {
+                onOpenTwoToneSelector();
+              }
+            }}
+            sx={{
+              borderStyle: 'dashed',
+              py: 1.5,
+              '&:hover': {
+                borderStyle: 'solid',
+                bgcolor: 'action.hover'
+              }
+            }}
+          >
+            Edit Two-Tone Color & Pattern
+          </Button>
+        </Box>
+      )}
       {/* PATTERN SELECTION SECTION - Only shown for Single Tone */}
+
       {seatType === 'single' && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
@@ -314,9 +350,14 @@ function CustomizationPanel({
                         borderColor: isSelected ? 'primary.main' : 'divider',
                         borderRadius: 1,
                         bgcolor: 'background.paper',
-                        transition: 'all 0.2s',
+                        transition: 'all 0.2s ease-in-out',
                         position: 'relative',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        '&:hover': {
+                          transform: 'scale(1.05)',
+                          boxShadow: 2,
+                          borderColor: 'primary.light'
+                        }
                       }}
                     >
                       {/* Pattern Preview */}
@@ -408,6 +449,7 @@ function CustomizationPanel({
         </Box>
       )}
 
+      <Divider sx={{ my: 2 }} />
       {/* STITCHING SECTION */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
@@ -434,7 +476,9 @@ function CustomizationPanel({
                         borderRadius: 0.5,
                         transition: 'all 0.2s',
                         '&:hover': {
-                          boxShadow: `0 0 0 2px ${theme.palette.primary.main}`
+                          boxShadow: `0 0 0 2px ${theme.palette.primary.main}`,
+                          transform: 'scale(1.15)',
+                          zIndex: 1
                         }
                       }}
                     >
@@ -453,6 +497,7 @@ function CustomizationPanel({
         </Paper>
       </Box>
 
+      <Divider sx={{ my: 2 }} />
       {/* MODEL SELECTION */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
@@ -475,7 +520,12 @@ function CustomizationPanel({
                     color: modelId === model.id ? 'primary.main' : 'text.primary',
                     fontWeight: modelId === model.id ? 'bold' : 'regular',
                     fontSize: '0.8rem',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                      boxShadow: 1,
+                      borderColor: 'primary.light'
+                    }
                   }}
                 >
                   {model.name}

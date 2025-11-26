@@ -29,7 +29,21 @@ function App({ onSubmit }) {
   const [twoTonePattern, setTwoTonePattern] = useState('default');
   const [partClickStates, setPartClickStates] = useState({});
   const [showInfoPopup, setShowInfoPopup] = useState(false);
-
+  // List of all customizable parts for two-tone mode
+  const CUSTOMIZABLE_PARTS = [
+    'seat_bottom_upper',
+    'seat_bottom_lower',
+    'seat_bottom_lower_Left',
+    'seat_bottom_lower_Right',
+    'seat_back_upper',
+    'seat_back_lower',
+    'seat_back_lower_Left',
+    'seat_back_lower_Right',
+    'headset_front',
+    'headset_back',
+    'left_arm_upper',
+    'right_arm_upper'
+  ];
   const handleMeshCustomizationChange = (meshName, customization) => {
     setMeshCustomizations(prev => ({
       ...prev,
@@ -151,6 +165,31 @@ function App({ onSubmit }) {
       }, 3000);
       setTimeout(() => setGlowEditableParts(false), 2000);
     }
+  };
+
+  const handleApplyToAll = (color, pattern) => {
+    // Apply the color and pattern to all customizable parts
+    const newCustomizations = {};
+    
+    CUSTOMIZABLE_PARTS.forEach(partName => {
+      newCustomizations[partName] = {
+        fabricColor: color,
+        patternId: pattern
+      };
+    });
+    
+    // Update all customizations at once
+    setMeshCustomizations(newCustomizations);
+    
+    // Update part click states to mark all as customized (state 2 = color + pattern)
+    const newClickStates = {};
+    CUSTOMIZABLE_PARTS.forEach(partName => {
+      newClickStates[partName] = 2;
+    });
+    setPartClickStates(newClickStates);
+    
+    // Show success toast
+    addToast(`✓ Applied to all ${CUSTOMIZABLE_PARTS.length} parts!`, 'success');
   };
 
   const handlePopupClose = () => {
@@ -326,6 +365,12 @@ function App({ onSubmit }) {
           onSeatTypeChange={handleSeatTypeChange}
           meshCustomizations={meshCustomizations}
           onMeshCustomizationChange={handleMeshCustomizationChange}
+          onOpenTwoToneSelector={() => {
+            setPopupState({
+              partName: 'two-tone-selector',
+              position: { x: window.innerWidth * 0.4, y: 150 }
+            });
+          }}
         />
       </Box>
 
@@ -361,6 +406,7 @@ function App({ onSubmit }) {
             setTwoToneColor(customization.fabricColor);
             setTwoTonePattern(customization.patternId);
           } : handlePopupApply}
+          onApplyToAll={handleApplyToAll}
           modelId={modelId}
           seatType={seatType}
           fabricColor={fabricColor}
