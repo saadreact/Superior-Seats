@@ -354,7 +354,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     setGlbFile(file);
-    setGlbError(null);
+    setGlbError('');
   };
 
   const handleSubmit = () => {
@@ -791,7 +791,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                       color="error"
                       onClick={() => {
                         setGlbFile(null);
-                        setGlbError(null);
+                        setGlbError('');
                       }}
                     >
                       <CloseIcon fontSize="small" />
