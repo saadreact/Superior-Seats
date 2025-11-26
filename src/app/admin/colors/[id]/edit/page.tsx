@@ -40,7 +40,10 @@ interface Color {
   name: string;
   hex_code: string;
   description: string;
-  color_vendor_id: number;
+  image?: string;
+  color_vendor_id?: number;
+  material_type_ids?: number[];
+  material_types?: MaterialType[];
   is_active: boolean;
   price_tier_ids: number[];
   price_tiers?: any[];
@@ -48,6 +51,15 @@ interface Color {
   price: number | null;
   created_at: string;
   updated_at: string;
+}
+
+interface MaterialType {
+  id: number;
+  name: string;
+  shader_id?: string;
+  description?: string;
+  image?: string;
+  is_active: boolean;
 }
 
 interface ColorVendor {
@@ -103,6 +115,10 @@ const EditColorPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [color, setColor] = useState<Color | null>(null);
+  const [materialTypes, setMaterialTypes] = useState<MaterialType[]>([]);
+  const [selectedMaterialType, setSelectedMaterialType] = useState<number>(0);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [colorVendors, setColorVendors] = useState<ColorVendor[]>([]);
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
   const [loading, setLoading] = useState(false);
@@ -113,7 +129,8 @@ const EditColorPage = () => {
     name: '',
     hex_code: '',
     description: '',
-    color_vendor_id: 0,
+    image: '',
+    // color_vendor_id: 0,
     price: 0,
     is_active: true,
   });
@@ -168,12 +185,29 @@ const EditColorPage = () => {
         setPriceOverrides(overriddenPrices);
       }
       
+      // Load material type if present
+      if (response.material_types && response.material_types.length > 0) {
+        setSelectedMaterialType(response.material_types[0].id);
+      }
+      
+      // Load existing image
+      if (response.image_url || response.image) {
+        // Use image_url from API if available, otherwise fallback to constructing URL
+        const imageUrl = response.image_url || 
+          (response.image.startsWith('colors/') 
+            ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${response.image}`
+            : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${response.image}`);
+        setImagePreview(imageUrl);
+        setFormData(prev => ({ ...prev, image: response.image }));
+      }
+      
       // Set form data
       setFormData({
         name: response.name,
         hex_code: response.hex_code,
         description: response.description,
-        color_vendor_id: response.color_vendor_id,
+        image: response.image || '',
+        // color_vendor_id: response.color_vendor_id,
         price: priceValue,
         is_active: response.is_active,
       });
@@ -188,6 +222,16 @@ const EditColorPage = () => {
       setInitialLoading(false);
     }
   }, [colorId, priceTiers]);
+
+  const loadMaterialTypes = useCallback(async () => {
+    try {
+      const response = await apiService.getMaterialTypes({ is_active: true });
+      setMaterialTypes(response?.data || response || []);
+    } catch (err: any) {
+      console.error('Error loading material types:', err);
+      setMaterialTypes([]);
+    }
+  }, []);
 
   const loadColorVendors = useCallback(async () => {
     try {
@@ -211,10 +255,11 @@ const EditColorPage = () => {
 
   useEffect(() => {
     if (colorId) {
-      loadColorVendors();
+      loadMaterialTypes();
+      // loadColorVendors();
       loadPriceTiers();
     }
-  }, [colorId, loadColorVendors, loadPriceTiers]);
+  }, [colorId, loadMaterialTypes, loadPriceTiers]);
 
   useEffect(() => {
     if (colorId && priceTiers.length > 0) {
@@ -275,6 +320,24 @@ const EditColorPage = () => {
     }
   };
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setFormData(prev => ({ ...prev, image: '' }));
+  };
+
   const handleResetPriceTiers = () => {
     setPriceOverrides({});
     if (formData.price > 0) {
@@ -318,8 +381,8 @@ const EditColorPage = () => {
       return;
     }
     
-    if (!formData.color_vendor_id) {
-      setError('Color vendor is required');
+    if (selectedMaterialType === 0) {
+      setError('Please select a material type');
       return;
     }
     
@@ -332,24 +395,44 @@ const EditColorPage = () => {
       setLoading(true);
       setError(null);
       
-      const submitData = {
-        name: formData.name.trim(),
-        hex_code: hexCode,
-        description: formData.description.trim(),
-        color_vendor_id: Number(formData.color_vendor_id),
-        cost: 1, // Fixed cost value as per schema
-        price: formData.price,
-        is_active: formData.is_active,
-        price_tier_ids: enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map((tier: CalculatedPriceTier) => tier.id) : [],
-        price_adjustments: enablePriceTiers && calculatedPriceTiers.length > 0 ? Object.fromEntries(
-          calculatedPriceTiers.map(tier => [
-            tier.id.toString(), 
-            VariantsCalculation.getFinalPrice(tier)
-          ])
-        ) : undefined
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name.trim());
+      formDataToSend.append('hex_code', hexCode);
+      formDataToSend.append('description', formData.description.trim());
+      formDataToSend.append('material_type_ids[]', selectedMaterialType.toString());
+      formDataToSend.append('cost', '1');
+      formDataToSend.append('price', formData.price.toString());
+      formDataToSend.append('is_active', formData.is_active ? '1' : '0');
+      formDataToSend.append('_method', 'PUT');
       
-      await apiService.updateColor(colorId, submitData);
+      if (imageFile) {
+        formDataToSend.append('image', imageFile);
+      }
+      
+      if (enablePriceTiers && calculatedPriceTiers.length > 0) {
+        calculatedPriceTiers.forEach((tier: CalculatedPriceTier) => {
+          formDataToSend.append('price_tier_ids[]', tier.id.toString());
+        });
+        calculatedPriceTiers.forEach(tier => {
+          formDataToSend.append(
+            `price_adjustments[${tier.id}]`,
+            VariantsCalculation.getFinalPrice(tier).toString()
+          );
+        });
+      }
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/colors/${colorId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: formDataToSend,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update color');
+      }
       setSuccess('Color updated successfully!');
       
       // Redirect back to colors list after a short delay
@@ -603,10 +686,10 @@ const EditColorPage = () => {
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
 
-                <FormControl fullWidth required sx={{ mb: 3 }}>
+                {/* <FormControl fullWidth required sx={{ mb: 3 }}>
                   <InputLabel sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>Color Vendor</InputLabel>
                   <Select
-                    value={formData.color_vendor_id}
+                    value={formData.color_vendor_id || ''}
                     onChange={(e) => handleInputChange('color_vendor_id', e.target.value)}
                     label="Color Vendor"
                     sx={{ 
@@ -618,13 +701,108 @@ const EditColorPage = () => {
                     <MenuItem value={0} disabled>
                       <em>Select a vendor</em>
                     </MenuItem>
-                    {colorVendors.map((vendor) => (
-                      <MenuItem key={vendor.id} value={vendor.id} sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>
-                        {vendor.name}
+                    {Array.isArray(colorVendors) && colorVendors.length > 0 ? (
+                      colorVendors.map((vendor) => (
+                        <MenuItem
+                          key={vendor.id}
+                          value={vendor.id}
+                          sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}
+                        >
+                          {vendor.name}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem value={0} disabled>
+                        <em>No vendors available</em>
+                      </MenuItem>
+                    )}
+                  </Select>
+                </FormControl> */}
+
+                <FormControl fullWidth required sx={{ mb: 3 }}>
+                  <InputLabel sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>Material / Fabric Type *</InputLabel>
+                  <Select
+                    value={selectedMaterialType}
+                    onChange={(e) => setSelectedMaterialType(Number(e.target.value))}
+                    label="Material / Fabric Type *"
+                    sx={{ 
+                      '& .MuiSelect-select': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }
+                    }}
+                  >
+                    <MenuItem value={0} disabled>
+                      <em>Select Material Type</em>
+                    </MenuItem>
+                    {materialTypes.map((material) => (
+                      <MenuItem key={material.id} value={material.id} sx={{ fontSize: { xs: '1rem', sm: '0.875rem' } }}>
+                        {material.name}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
+
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Color Texture Image (Optional)
+                  </Typography>
+                  {imagePreview ? (
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Box sx={{ position: 'relative' }}>
+                        <Box
+                          component="img"
+                          src={imagePreview}
+                          alt="Preview"
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            objectFit: 'cover',
+                            borderRadius: 1,
+                            border: '1px solid #ddd',
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={handleRemoveImage}
+                          sx={{
+                            position: 'absolute',
+                            top: -8,
+                            right: -8,
+                            bgcolor: 'background.paper',
+                            '&:hover': { bgcolor: 'error.light' },
+                          }}
+                        >
+                          ✕
+                        </IconButton>
+                      </Box>
+                      <Button
+                        variant="outlined"
+                        component="label"
+                      >
+                        Change Image
+                        <input
+                          type="file"
+                          hidden
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </Button>
+                    </Stack>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      component="label"
+                    >
+                      Upload Image
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </Button>
+                  )}
+                </Box>
 
               </Box>
 
@@ -839,12 +1017,12 @@ const EditColorPage = () => {
                   startIcon={<SaveIcon />}
                   disabled={loading}
                   sx={{
-                    backgroundColor: '#DA291C',
+                    backgroundColor: 'primary.main',
                     minHeight: { xs: 44, sm: 'auto' },
                     fontSize: { xs: '0.95rem', sm: '0.875rem' },
                     order: { xs: 1, sm: 2 },
                     '&:hover': {
-                      backgroundColor: '#B71C1C',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >

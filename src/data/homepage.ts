@@ -55,3 +55,55 @@ export const stats: Stat[] = [
   { number: 20000, label: 'Custom Seats Built', suffix: '+' },
   { number: 50, label: 'Seat Models', suffix: '+' },
 ];
+
+export interface SeatStyleImage {
+  id: number;
+  seat_style_id: number;
+  image_path: string;
+  alt_text: string | null;
+  caption: string | null;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  image_url: string;
+}
+
+export interface SeatStyle {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  images: SeatStyleImage[];
+}
+
+export interface PaginationMeta {
+  current_page: number;
+  from: number;
+  last_page: number;
+  per_page: number;
+  to: number;
+  total: number;
+  has_more_pages: boolean;
+  links: {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+  };
+}
+
+export interface ApiResponse {
+  status: string;
+  message: string;
+  data: SeatStyle[];
+  errors: any;
+  meta: {
+    timestamp: string;
+    request_id: string;
+    pagination: PaginationMeta;
+  };
+}

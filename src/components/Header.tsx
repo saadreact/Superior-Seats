@@ -45,6 +45,9 @@ import AuthModal from './AuthModal';
 import EditProfileModal from './EditProfileModal';
 
 const Header = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
+
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
@@ -111,7 +114,7 @@ const Header = () => {
     },
     { text: 'Gallery', href: '/gallery' },
     { text: 'Upholstery Services', href: '/upholstery' },
-    { text: 'Upfitting', href: '/upfitting' },
+    { text: 'Custom Auto Builds', href: '/upfitting' },
   
     { text: 'Contact', href: '/contact' },
   ];
@@ -199,7 +202,7 @@ const Header = () => {
           }}
         >
           <Image
-            src="/superiorlogo/logored.png"
+            src={`${IMAGE_BASE_URL}/superiorlogo/logored.png`}
             alt="Superior Seating LLC"
             width={isSmallMobile ? 180 : 200}
             height={isSmallMobile ? 54 : 60}
@@ -379,45 +382,45 @@ const Header = () => {
         }}
       >
         <Box sx={{ width: '100%' }}>
-                     <Toolbar 
-             sx={{ 
-               display: 'grid',
-               gridTemplateColumns: '1fr auto',
-               gap: 0,
-               // Further reduced header height while keeping logo size
-               maxHeight: { xs: '30px', sm: '30px', md: '30px', lg: '20px', xl: '10px' },
-             //  minHeight: { xs: '30px', sm: '30px', md: '30px', lg: '10px', xl: '30px' },
-               px: { xs: 1, sm: 2, md: 0 },
-               py: { xs: 0.25, sm: 0.5, md: 0 },
-               width: '100%'
-             }}
-           >
+          <Toolbar 
+            sx={{ 
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              gap: 0,
+              minHeight: { xs: '56px', sm: '58px', md: '60px', lg: '62px', xl: '64px' },
+              maxHeight: { xs: '56px', sm: '58px', md: '60px', lg: '62px', xl: '64px' },
+              px: { xs: 1, sm: 1.5, md: 2, lg: 2.5, xl: 3 },
+              py: { xs: 0.25, sm: 0.5, md: 0.5, lg: 0.5, xl: 0.5 },
+              width: '100%'
+            }}
+          >
             {/* Left Section - Logo and Menu Items */}
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center',
-              maxHeight: { xs: '30px', sm: '30px', md: '30px', lg: '20px', xl: '10px' },
-              gap: 0,
+              gap: { xs: 0, sm: 0.5, md: 1, lg: 1.5, xl: 2 },
               mx: 0,
-              pl: 0,
-              ml: 0
-              
+              flex: 1,
+              minWidth: 0, // Allow shrinking if needed
+              overflow: 'hidden', // Prevent overflow
             }}>
               {/* Logo Section */}
-              <Link href="/customize-your-seat" style={{ textDecoration: 'none', outline: 'none' }}>
+              <Link href="/customize-your-seat" style={{ textDecoration: 'none', outline: 'none', flexShrink: 0 }}>
                 <Box 
                   onClick={handleHomeClick}
                   sx={{ 
                     display: 'flex', 
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: '60px',
-                    height: '60px',
+                    width: { xs: '45px', sm: '48px', md: '52px', lg: '55px', xl: '58px' },
+                    height: { xs: '45px', sm: '48px', md: '52px', lg: '55px', xl: '58px' },
                     flexShrink: 0,
                     cursor: 'pointer',
-                    pl: 0,
-                    ml: 3,
                     outline: 'none',
+                    transition: 'transform 0.2s ease',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    },
                     '&:focus': {
                       outline: 'none',
                     },
@@ -427,14 +430,14 @@ const Header = () => {
                   }}
                 >
                   <Image
-                    src="/superiorlogo/logored.png"
+                    src={`${IMAGE_BASE_URL}/superiorlogo/logored.png`}
                     alt="Superior Seating LLC"
-                    width={65}
-                    height={60}
+                    width={70}
+                    height={65}
                     style={{ 
                       objectFit: 'contain',
-                      maxWidth: '100%',
-                      maxHeight: '100%',
+                      width: '100%',
+                      height: '100%',
                       outline: 'none'
                     }}
                     priority
@@ -446,12 +449,13 @@ const Header = () => {
               {!isMobile && (
                 <Box sx={{ 
                   display: 'flex', 
-                  gap: 1, 
+                  gap: { md: 0.5, lg: 0.75, xl: 1 }, 
                   alignItems: 'center',
                   flexWrap: 'nowrap',
-                  mx: { md: -2, lg: -1 },
-                  ml: { md: 2, lg: 3 },
-                  py: { xs: 0.25, sm: 0.5, md: 0 ,lg: 0, xl: 0},
+                  ml: { md: 1, lg: 1.5, xl: 2 },
+                  overflow: 'hidden',
+                  flex: 1,
+                  minWidth: 0,
                 }}>
                   {menuItems.map((item) => {
                     const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
@@ -466,16 +470,16 @@ const Header = () => {
                             sx={{
                               color: 'black',
                               fontWeight: 500,
-                              fontSize: { md: '0.9rem', lg: '1rem', xl: '1.1rem' },
-                              px: { md: 0.5, lg: 1, xl: 1.25, sm: 0.5, xs: 0.5},
-                              py: { md: 0.5, lg: 0.55, xl: 1, sm: 0.5, xs: 0.5},
+                              fontSize: { md: '0.95rem', lg: '1.05rem', xl: '1.1rem' },
+                              px: { md: 0.75, lg: 1, xl: 1.25 },
+                              py: { md: 0.5, lg: 0.6, xl: 0.7 },
                               whiteSpace: 'nowrap',
                               minWidth: 'auto',
                               backgroundColor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
+                              borderRadius: 1,
                               '&:hover': {
                                 backgroundColor: 'rgba(0, 0, 0, 0.08)',
                                 color: 'black',
-                                transform: 'translateY(-0.25px)',
                               },
                               transition: 'all 0.2s ease',
                             }}
@@ -534,16 +538,16 @@ const Header = () => {
                           sx={{
                             color: 'black',
                             fontWeight: 500,
-                            fontSize: { md: '0.9rem', lg: '1rem', xl: '1.1rem' },
-                            px: { md: 0.5, lg: 1, xl: 1.25, sm: 0.5, xs: 0.5},
-                            py: { md: 0.5, lg: 0.55, xl: 1, sm: 0.5, xs: 0.5},
+                            fontSize: { md: '0.95rem', lg: '1.05rem', xl: '1.1rem' },
+                            px: { md: 0.75, lg: 1, xl: 1.25 },
+                            py: { md: 0.5, lg: 0.6, xl: 0.7 },
                             whiteSpace: 'nowrap',
                             minWidth: 'auto',
                             backgroundColor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
+                            borderRadius: 1,
                             '&:hover': {
                               backgroundColor: 'rgba(0, 0, 0, 0.08)',
                               color: 'black',
-                              transform: 'translateY(-0.25px)',
                             },
                             transition: 'all 0.2s ease',
                           }}
@@ -562,8 +566,9 @@ const Header = () => {
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'flex-end',
-              gap: { xs: 1, sm: 1.5, md: 1, lg: 1.5 },
-              pr: { xs: 1, sm: 1.5, md: 2, lg: 3 }
+              gap: { xs: 0.75, sm: 1, md: 1, lg: 1.25, xl: 1.5 },
+              pr: { xs: 0.5, sm: 1, md: 1.5, lg: 2, xl: 2.5 },
+              flexShrink: 0
             }}>
               {isMobile ? (
                 <>
@@ -575,42 +580,44 @@ const Header = () => {
                       onClick={handleDrawerToggle}
                       sx={{ 
                         color: 'black',
-                        p: { xs: 1, sm: 1.25 },
+                        p: { xs: 0.75, sm: 1 },
                         '&:hover': {
-                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                        }
+                          backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                        },
+                        transition: 'all 0.2s ease',
                       }}
                     >
-                      <MenuIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
+                      <MenuIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem', md: '1.75rem' } }} />
                     </IconButton>
                   </Tooltip>
-                   <Box sx={{ 
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     p: { xs: 1, sm: 1.25 }
-                   }}>
-                                           <Image
-                        src="/Gallery/Flags/flag.png"
-                        alt="US Flag"
-                        width={25}
-                        height={25}
-                        style={{ 
-                          objectFit: 'contain',
-                          borderRadius: '2px'
-                        }}
-                      />
-                   </Box>
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    p: { xs: 0.5, sm: 0.75 }
+                  }}>
+                    <Image
+                      src={`${IMAGE_BASE_URL}/Gallery/Flags/flag.png`}
+                      alt="US Flag"
+                      width={22}
+                      height={22}
+                      style={{ 
+                        objectFit: 'contain',
+                        borderRadius: '2px'
+                      }}
+                    />
+                  </Box>
                   <Tooltip title="Shopping Cart" arrow>
                     <IconButton
                       color="inherit"
                       onClick={handleCartToggle}
                       sx={{ 
                         color: 'black',
-                        p: { xs: 1, sm: 1.25 },
+                        p: { xs: 0.75, sm: 1 },
                         '&:hover': {
-                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                        }
+                          backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                        },
+                        transition: 'all 0.2s ease',
                       }}
                     >
                                              <Badge 
@@ -618,66 +625,63 @@ const Header = () => {
                          sx={{
                            '& .MuiBadge-badge': {
                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                             minWidth: { xs: '16px', sm: '18px',md: '18px', lg: '18px', xl: '18px' },
-                             height: { xs: '16px', sm: '18px',md: '18px', lg: '18px', xl: '18px' },
+                             minWidth: { xs: '16px', sm: '18px' },
+                             height: { xs: '16px', sm: '18px' },
                              backgroundColor: 'black',
                              color: 'white',
                            }
                          }}
                        >
-                        <ShoppingCartIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem', md: '1.5rem', lg: '1.5rem', xl: '1.5rem' } }} />
+                        <ShoppingCartIcon sx={{ fontSize: { xs: '1.4rem', sm: '1.5rem', md: '1.5rem' } }} />
                       </Badge>
                     </IconButton>
                   </Tooltip>
                 </>
               ) : (
                 <>
-                    <Box sx={{ 
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      p: { md: 0.5, lg: 0.85, xl: 1.1 }
-                    }}>
-                      <Image
-                        src="/Gallery/Flags/flag.png"
-                        alt="US Flag"
-                        width={28}
-                        height={28}
-                        style={{ 
-                          objectFit: 'contain',
-                          borderRadius: '2px'
-                        }}
-                      />
-                    </Box>
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    p: { md: 0.5, lg: 0.75, xl: 0.85 }
+                  }}>
+                    <Image
+                      src={`${IMAGE_BASE_URL}/Gallery/Flags/flag.png`}
+                      alt="US Flag"
+                      width={24}
+                      height={24}
+                      style={{ 
+                        objectFit: 'contain',
+                        borderRadius: '2px'
+                      }}
+                    />
+                  </Box>
                   <Tooltip title="Shopping Cart" arrow>
-                                         <IconButton
-                       color="inherit"
-                       onClick={handleCartToggle}
-                       sx={{ 
-                         color: 'black',
-                         // Reduced padding for smaller hover area
-                         p: { md: 0.75, lg: 1.25 },
-                                                   '&:hover': {
-                            backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                            // Reduced scale for subtler hover effect
-                            transform: 'scale(1.03)',
-                          },
-                         transition: 'all 0.2s ease',
-                       }}
-                     >
+                    <IconButton
+                      color="inherit"
+                      onClick={handleCartToggle}
+                      sx={{ 
+                        color: 'black',
+                        p: { md: 0.5, lg: 0.65, xl: 0.75 },
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
                      <Badge 
                          badgeContent={totalItems} 
                          sx={{
                            '& .MuiBadge-badge': {
-                             fontSize: { md: '0.7rem', lg: '0.75rem' },
-                             minWidth: { md: '16px', lg: '18px' },
-                             height: { md: '16px', lg: '18px' },
+                             fontSize: { md: '0.7rem', lg: '0.75rem', xl: '0.75rem' },
+                             minWidth: { md: '16px', lg: '18px', xl: '18px' },
+                             height: { md: '16px', lg: '18px', xl: '18px' },
                              backgroundColor: 'black',
                              color: 'white',
                            }
                          }}
                        >
-                        <ShoppingCartIcon sx={{ fontSize: { md: '1.4rem', lg: '1.6rem', xl: '1.6rem' ,sm: '1.5rem',xs: '1.5rem'} }} />
+                        <ShoppingCartIcon sx={{ fontSize: { md: '1.5rem', lg: '1.65rem', xl: '1.75rem' } }} />
                       </Badge>
                     </IconButton>
                   </Tooltip>
@@ -688,16 +692,15 @@ const Header = () => {
                           color="inherit"
                           sx={{
                             color: 'black',
-                            p: { md: 0.6, lg: 0.8 },
-                                                       '&:hover': {
-                             backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                             color: 'black',
-                             transform: 'scale(1.03)',
-                           },
+                            p: { md: 0.5, lg: 0.6, xl: 0.7 },
+                            '&:hover': {
+                              backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                              color: 'black',
+                            },
                             transition: 'all 0.2s ease',
                           }}
                         >
-                          <SupervisorAccountIcon sx={{ fontSize: { md: '1.8rem', lg: '2rem' } }} />
+                          <SupervisorAccountIcon sx={{ fontSize: { md: '1.6rem', lg: '1.75rem', xl: '1.9rem' } }} />
                         </IconButton>
                       </Link>
                     </Tooltip>
@@ -705,24 +708,21 @@ const Header = () => {
                   {isAuthenticated ? (
                     <>
                  <Tooltip title={`${user?.username || user?.name || user?.email || 'User'} (Click to logout)`} arrow>
-                                                   <IconButton
-                            color="inherit"
-                            onClick={handleUserMenuClick}
-                            sx={{
-                              color: 'black',
-                              // Reduced padding for smaller hover area
-                              p: { md: 0.6, lg: 0.8 },
-                                                           '&:hover': {
-                               backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                               color: 'black',
-                               // Reduced scale for subtler hover effect
-                               transform: 'scale(1.03)',
-                             },
-                              transition: 'all 0.2s ease',
-                            }}
-                          >
-                           <AccountCircleIcon sx={{ fontSize: { md: '1.5rem', lg: '1.75rem', xl: '1.75rem', sm: '1.75rem', xs: '1.75rem' } }} />
-                         </IconButton>
+                      <IconButton
+                        color="inherit"
+                        onClick={handleUserMenuClick}
+                        sx={{
+                          color: 'black',
+                          p: { md: 0.5, lg: 0.6, xl: 0.7 },
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                            color: 'black',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <AccountCircleIcon sx={{ fontSize: { md: '1.5rem', lg: '1.65rem', xl: '1.75rem' } }} />
+                      </IconButton>
                        </Tooltip>
                       <Menu
                         anchorEl={userMenuAnchor}
@@ -799,24 +799,21 @@ const Header = () => {
                     </>
                                      ) : (
                                           <Tooltip title="Login / Sign Up" arrow>
-                                                                          <IconButton
-                            color="inherit"
-                            onClick={handleAuthClick}
-                            sx={{
-                              color: 'black',
-                              // Reduced padding to match cart icon
-                              p: { md: 0.75, lg: 1.25 },
-                              '&:hover': {
-                                backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                                color: 'black',
-                                // Reduced scale to match cart icon hover
-                                transform: 'scale(1.03)',
-                              },
-                              transition: 'all 0.2s ease',
-                            }}
-                          >
-                          <PersonIcon sx={{ fontSize: { md: '1.4rem', lg: '1.6rem', xl: '1.6rem' } }} />
-                        </IconButton>
+                      <IconButton
+                        color="inherit"
+                        onClick={handleAuthClick}
+                        sx={{
+                          color: 'black',
+                          p: { md: 0.5, lg: 0.65, xl: 0.75 },
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                            color: 'black',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <PersonIcon sx={{ fontSize: { md: '1.5rem', lg: '1.65rem', xl: '1.75rem' } }} />
+                      </IconButton>
                       </Tooltip>
                    )}
                 </>

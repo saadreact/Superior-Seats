@@ -43,7 +43,10 @@ interface Color {
   name: string;
   hex_code: string;
   description: string;
-  color_vendor_id: number;
+  image?: string;
+  color_vendor_id?: number;
+  material_type_ids?: number[];
+  material_types?: MaterialType[];
   price_tier_ids: number[];
   price_tiers?: any[];
   cost: number | null;
@@ -51,6 +54,15 @@ interface Color {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+interface MaterialType {
+  id: number;
+  name: string;
+  shader_id?: string;
+  description?: string;
+  image?: string;
+  is_active: boolean;
 }
 
 interface ColorVendor {
@@ -76,6 +88,7 @@ const ColorsPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [colors, setColors] = useState<Color[]>([]);
+  const [materialTypes, setMaterialTypes] = useState<MaterialType[]>([]);
   const [colorVendors, setColorVendors] = useState<ColorVendor[]>([]);
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,10 +130,15 @@ const ColorsPage = () => {
       }
     });
 
-    return VariantsCalculation.calculatePriceTiers(priceValue, color.price_tiers, overriddenPrices);
+  return VariantsCalculation.calculatePriceTiers(priceValue, color.price_tiers, overriddenPrices);
   };
 
-
+  const getMaterialTypeName = (color: Color): string => {
+    if (!color.material_types || color.material_types.length === 0) {
+      return 'Not assigned';
+    }
+    return color.material_types.map(mt => mt.name).join(', ');
+  };
 
   const loadColors = useCallback(async () => {
     try {
@@ -175,6 +193,16 @@ const ColorsPage = () => {
     }
   }, [page, rowsPerPage, searchTerm]);
 
+  const loadMaterialTypes = useCallback(async () => {
+    try {
+      const response = await apiService.getMaterialTypes({ is_active: true });
+      setMaterialTypes(response?.data || response || []);
+    } catch (err: any) {
+      console.error('Error loading material types:', err);
+      setMaterialTypes([]);
+    }
+  }, []);
+
   const loadColorVendors = useCallback(async () => {
     try {
       const response = await apiService.getColorVendors();
@@ -197,9 +225,10 @@ const ColorsPage = () => {
 
   useEffect(() => {
     loadColors();
-    loadColorVendors();
+    loadMaterialTypes();
+    // loadColorVendors();
     loadPriceTiers();
-  }, [loadColors, loadColorVendors, loadPriceTiers]);
+  }, [loadColors, loadMaterialTypes, loadPriceTiers]);
 
 
   const handleAdd = () => {
@@ -513,7 +542,8 @@ const ColorsPage = () => {
                         <TableCell sx={{ fontWeight: 600 }}>Color</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Vendor</TableCell>
+                        {/* <TableCell sx={{ fontWeight: 600 }}>Vendor</TableCell> */}
+                        <TableCell sx={{ fontWeight: 600 }}>Material Type</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                         <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
@@ -564,9 +594,14 @@ const ColorsPage = () => {
                               {color.description || 'No description available'}
                             </Typography>
                           </TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <Typography variant="body2" color="text.secondary">
                               {Array.isArray(colorVendors) ? colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown' : 'Unknown'}
+                            </Typography>
+                          </TableCell> */}
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {getMaterialTypeName(color)}
                             </Typography>
                           </TableCell>
                           <TableCell>

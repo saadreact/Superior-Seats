@@ -128,10 +128,14 @@ const ItemTypeDetailPage = () => {
             fullWidth={isMobile}
             sx={{
               minHeight: { xs: 44, sm: 'auto' },
-              fontSize: { xs: '0.95rem', sm: '0.875rem' }
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+              }
             }}
           >
-            Edit Item Type
+              Edit Item Type
           </Button>
         </Box>
 

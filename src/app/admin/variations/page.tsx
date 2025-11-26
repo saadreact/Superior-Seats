@@ -295,10 +295,10 @@ const VariationsPage = () => {
             onClick={handleAddVariation}
             className="gradient-style"
             sx={{
-              backgroundColor: '#DA291C',
+              backgroundColor: 'primary.main',
               boxShadow: 'none',
               '&:hover': {
-                backgroundColor: '#B71C1C',
+                backgroundColor: 'primary.dark',
                 boxShadow: 'none',
               },
             }}

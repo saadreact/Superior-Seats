@@ -108,7 +108,7 @@ const EditItemTypePage = () => {
       };
       
       await apiService.updateItemType(parseInt(id), submissionData);
-      setSuccess('Item Type updated successfully!');
+      setSuccess('Seat Base updated successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
@@ -116,8 +116,8 @@ const EditItemTypePage = () => {
       }, 1500);
       
     } catch (err: any) {
-      setError(err.message || 'Failed to update item type');
-      console.error('Error updating item type:', err);
+      setError(err.message || 'Failed to update seat base');
+      console.error('Error updating seat base:', err);
     } finally {
       setLoading(false);
     }
@@ -129,7 +129,7 @@ const EditItemTypePage = () => {
 
   if (initialLoading) {
     return (
-      <AdminLayout title="Edit Item Type">
+      <AdminLayout title="Edit Seat Base">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
@@ -138,7 +138,7 @@ const EditItemTypePage = () => {
   }
 
   return (
-    <AdminLayout title="Edit Item Type">
+    <AdminLayout title="Edit Seat Base">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -183,7 +183,7 @@ const EditItemTypePage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter item type name"
+                  placeholder="Enter Seat Base name"
                   sx={{ mb: 3 }}
                 />
 
@@ -293,11 +293,11 @@ const EditItemTypePage = () => {
                   disabled={loading}
                   fullWidth={isMobile}
                   sx={{
-                    backgroundColor: '#DA291C',
+                    backgroundColor: 'primary.main',
                     minHeight: { xs: 44, sm: 'auto' },
                     fontSize: { xs: '0.95rem', sm: '0.875rem' },
                     '&:hover': {
-                      backgroundColor: '#B71C1C',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >

@@ -140,6 +140,10 @@ const CreateProduct2Page = () => {
   const [vehicleModels, setVehicleModels] = useState<{ id: number; name: string; vehicle_make_id: number }[]>([]);
   const [vehicleTrims, setVehicleTrims] = useState<{ id: number; name: string; vehicle_model_id: number }[]>([]);
   
+  // 3D Customization state
+  const [glbFile, setGlbFile] = useState<File | null>(null);
+  const [glbError, setGlbError] = useState<string>('');
+  const [customizableMeshes, setCustomizableMeshes] = useState<string>('');
 
   useEffect(() => {
     loadInitialData();
@@ -616,6 +620,29 @@ const CreateProduct2Page = () => {
     }));
   };
 
+  const handleGlbFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validExtension = file.name.toLowerCase().endsWith('.glb');
+    const maxSize = 20 * 1024 * 1024; // 20MB
+
+    if (!validExtension) {
+      setGlbError('Please select a valid GLB file (.glb)');
+      setGlbFile(null);
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setGlbError('GLB file size must be less than 20MB');
+      setGlbFile(null);
+      return;
+    }
+
+    setGlbFile(file);
+    setGlbError('');
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -685,6 +712,13 @@ const CreateProduct2Page = () => {
       }
     }
 
+    // Validate 3D customization fields
+    if (formData.isCustomize3dProduct) {
+      if (!glbFile) {
+        newErrors.glbFile = 'GLB file is required when 3D customization is enabled';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -716,6 +750,12 @@ const CreateProduct2Page = () => {
       const selectedCategory = categories.find(cat => cat.name === formData.category);
       const categoryId = selectedCategory?.id;
 
+      // Prepare customizable meshes array
+      const meshesArray = customizableMeshes
+        .split(',')
+        .map(m => m.trim())
+        .filter(m => m.length > 0);
+
       // Create product data object using simple File array (like lumbar types)
       const productData = {
         name: formData.name,
@@ -727,6 +767,10 @@ const CreateProduct2Page = () => {
         show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Simple File array like lumbar types
+        
+        // 3D customization fields
+        model_file: formData.isCustomize3dProduct && glbFile ? glbFile : undefined,
+        customizable_meshes: formData.isCustomize3dProduct && meshesArray.length > 0 ? meshesArray : undefined,
         
         // Vehicle information - only pass trim ID if variations are enabled
         vehicle_trim_id: formData.enableVariations && formData.vehicleTrim ? Number(formData.vehicleTrim) : undefined,
@@ -1205,6 +1249,92 @@ const CreateProduct2Page = () => {
                     </Typography>
                   </Box>
                 </Box>
+
+                {/* 3D Customization Fields - Show when 3D is enabled */}
+                {formData.isCustomize3dProduct && (
+                  <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}>
+                      3D Model Configuration
+                    </Typography>
+                    <Box sx={{ p: 3, border: '2px dashed #e0e0e0', borderRadius: 2, bgcolor: '#fafafa' }}>
+                      {/* GLB File Upload */}
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                          3D Model File (GLB) *
+                        </Typography>
+                        <input
+                          accept=".glb"
+                          style={{ display: 'none' }}
+                          id="glb-file-input"
+                          type="file"
+                          onChange={handleGlbFileChange}
+                        />
+                        <label htmlFor="glb-file-input">
+                          <Button
+                            variant="outlined"
+                            component="span"
+                            startIcon={<CloudUploadIcon />}
+                            sx={{ mb: 1 }}
+                          >
+                            Upload GLB File
+                          </Button>
+                        </label>
+                        
+                        {glbFile && (
+                          <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'white', borderRadius: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Selected: {glbFile.name} ({(glbFile.size / 1024 / 1024).toFixed(2)} MB)
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                setGlbFile(null);
+                                setGlbError('');
+                              }}
+                              sx={{ ml: 'auto' }}
+                            >
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        )}
+                        
+                        {glbError && (
+                          <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
+                            {glbError}
+                          </Typography>
+                        )}
+                        
+                        {errors.glbFile && (
+                          <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
+                            {errors.glbFile}
+                          </Typography>
+                        )}
+                        
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                          Upload a GLB 3D model file (max 20MB). This file will be used for customer 3D customization.
+                        </Typography>
+                      </Box>
+
+                      {/* Customizable Meshes */}
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                          Customizable Mesh Names (Optional)
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={3}
+                          value={customizableMeshes}
+                          onChange={(e) => setCustomizableMeshes(e.target.value)}
+                          placeholder="seat_cushion, backrest, armrest_left, armrest_right"
+                          helperText="Enter comma-separated mesh names from your 3D model that customers can customize. Leave empty to allow all meshes to be customizable."
+                          sx={{ bgcolor: 'white' }}
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
               </Box>
 
               {/* 🔵 Second Half - Variation Fields */}
@@ -1471,9 +1601,9 @@ const CreateProduct2Page = () => {
                   startIcon={<SaveIcon />}
                   disabled={loading}
                   sx={{
-                    backgroundColor: '#DA291C',
+                    backgroundColor: 'primary.main',
                     '&:hover': {
-                      backgroundColor: '#B71C1C',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >

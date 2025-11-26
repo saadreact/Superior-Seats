@@ -48,11 +48,15 @@ const Gallery = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
   
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
+  
   const [selectedImage, setSelectedImage] = useState<WorkImage | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [animatedImages, setAnimatedImages] = useState<boolean[]>([]);
   const [sliderIndex, setSliderIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const [truckImageLoaded, setTruckImageLoaded] = useState(false);
 
   // Initialize animation states
   useEffect(() => {
@@ -150,9 +154,10 @@ const Gallery = () => {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gridTemplateColumns: { xs: '1fr', md: '1fr auto' },
               gap: { xs: 4, md: 6, lg: 8 },
               alignItems: 'center',
+              justifyContent: { md: 'space-between' },
             }}
           >
             {/* Content */}
@@ -215,36 +220,56 @@ const Gallery = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 0.8 }}
-              sx={{ order: { xs: 1, md: 2 } }}
+              sx={{ 
+                order: { xs: 1, md: 2 },
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: 'fit-content',
+                maxWidth: '100%',
+                ml: { md: 'auto' },
+              }}
             >
               <Box
                 sx={{
                   position: 'relative',
-                  paddingTop: '75%',
-                  borderRadius: 3,
+                  display: 'inline-block',
+                  borderRadius: 2,
                   overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   cursor: 'pointer',
-                  transition: 'all 0.4s ease',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 280, sm: 320, md: 380, lg: 420 },
                   '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                   },
                 }}
                 onClick={() => handleImageClick(workPicturesTruck[0], 0)}
               >
+                {!truckImageLoaded && (
+                  <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                      <Image src="/assets/logored.png" alt="Loading" width={120} height={120} priority />
+                      <Typography variant="body1">Loading...</Typography>
+                    </Box>
+                  </Box>
+                )}
                 <Box
                   component="img"
-                  src={workPicturesTruck[1]?.image}
+                  src={workPicturesTruck[1]?.image ? (workPicturesTruck[1].image.startsWith('http') ? workPicturesTruck[1].image : `${IMAGE_BASE_URL}${workPicturesTruck[1].image.startsWith('/') ? workPicturesTruck[1].image : '/' + workPicturesTruck[1].image}`) : ''}
                   alt="Professional truck seating"
+                  onLoad={() => setTruckImageLoaded(true)}
                   sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
+                    display: 'block',
+                    height: { xs: '280px', sm: '320px', md: '380px', lg: '420px' },
+                    width: 'auto',
+                    objectFit: 'contain',
+                    transition: 'opacity 0.3s ease, transform 0.3s ease',
+                    opacity: truckImageLoaded ? 1 : 0,
                   }}
+                  loading="lazy"
                 />
               </Box>
             </MotionBox>
@@ -285,17 +310,41 @@ const Gallery = () => {
               </Typography>
             </MotionBox>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Box sx={{ display: 'inline-block', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', maxWidth: '100%' }}>
-                <Box
-                  component="img"
-                  src="/Gallery/Truckimages/gallerypic.png"
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u17.png`}
                   alt="Workshop materials"
-                  sx={{
-                    display: 'block',
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
                     width: '100%',
-                    height: 'auto',
-                    maxWidth: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                    transition: 'transform 0.3s ease',
+                    position: 'absolute',
                   }}
+                  priority={false}
                 />
               </Box>
             </Box>
@@ -303,8 +352,42 @@ const Gallery = () => {
 
           {/* Section B */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1.1fr' }, gap: { xs: 3, md: 6 }, alignItems: 'center', mb: { xs: 6, md: 10 } }}>
-            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/u04.png" alt="Precision cutting" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backgroundColor: '#ffffff',
+                height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                width: '100%',
+                '&:hover': {
+                  transform: 'translateY(-4px) scale(1.02)',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                },
+              }}
+            >
+              <LazyImage 
+                src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`} 
+                alt="Precision cutting" 
+                fill 
+                showSkeleton={true}
+                quality={85}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  transition: 'transform 0.3s ease',
+                  position: 'absolute',
+                }} 
+                priority={false}
+              />
             </Box>
             <MotionBox initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
               <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 600, fontSize:{ xs: '1.25rem', sm: '1.7rem', md: '1.9rem', lg: '2.2rem', xl: '2.2rem' } }}>PATTERNING & CUT</Typography>
@@ -326,8 +409,42 @@ const Gallery = () => {
                 and dependable performance.
               </Typography>
             </MotionBox>
-            <Box sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-              <Image src="/Gallery/Truckimages/u05.png" alt="Assembly" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 50vw" />
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backgroundColor: '#ffffff',
+                height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                width: '100%',
+                '&:hover': {
+                  transform: 'translateY(-4px) scale(1.02)',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                },
+              }}
+            >
+              <LazyImage 
+                src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u05.png`} 
+                alt="Assembly" 
+                fill 
+                showSkeleton={true}
+                quality={85}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  transition: 'transform 0.3s ease',
+                  position: 'absolute',
+                }} 
+                priority={false}
+              />
             </Box>
           </Box>
         </Container>
@@ -357,31 +474,39 @@ const Gallery = () => {
               <Box
                 sx={{
                   position: 'relative',
-                  paddingTop: '75%',
-                  borderRadius: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
                   overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   cursor: 'pointer',
-                  transition: 'all 0.4s ease',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                  width: '100%',
                   '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 30px 80px rgba(211, 47, 47, 0.25)',
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                   },
                 }}
                 onClick={() => handleImageClick(workPicturesTruck[7], 7)}
               >
-                <Box
-                  component="img"
-                  src={workPicturesTruck[5]?.image}
+                <LazyImage
+                  src={workPicturesTruck[5]?.image ? (workPicturesTruck[5].image.startsWith('http') ? workPicturesTruck[5].image : `${IMAGE_BASE_URL}${workPicturesTruck[5].image.startsWith('/') ? workPicturesTruck[5].image : '/' + workPicturesTruck[5].image}`) : ''}
                   alt="Interior excellence"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
+                    display: 'block',
+                    transition: 'transform 0.3s ease',
+                    position: 'absolute',
                   }}
+                  priority={false}
                 />
               </Box>
             </MotionBox>
@@ -485,11 +610,442 @@ const Gallery = () => {
 
           {/* Clean 3-up grid of truck images */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 3 } }}>
-            {["/Gallery/Truckimages/u01.png","/Gallery/Truckimages/u07.png","/Gallery/Truckimages/u04.png"].map((src, idx) => (
-              <MotionBox key={src} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6, delay: idx * 0.1 }} sx={{ position: 'relative', paddingTop: '70%', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
-                <Image src={src} alt={`Truck ${idx+1}`} fill sizes="(max-width: 900px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
+            {[`${IMAGE_BASE_URL}/Gallery/Truckimages/u01.png`, `${IMAGE_BASE_URL}/Gallery/Truckimages/u07.png`, `${IMAGE_BASE_URL}/Gallery/Truckimages/u04.png`].map((src, idx) => (
+              <MotionBox
+                key={src}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: '#ffffff',
+                  height: { xs: 280, sm: 320, md: 380, lg: 420 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage 
+                  src={src} 
+                  alt={`Truck ${idx+1}`} 
+                  fill 
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                    transition: 'transform 0.3s ease',
+                    position: 'absolute',
+                  }} 
+                  priority={false}
+                />
               </MotionBox>
             ))}
+          </Box>
+        </Container>
+      </Box>
+    {/* Latest Work Showcase - Using Landing Page Images */}
+    <Box sx={{ 
+        py: { xs: 6, md: 8, lg: 10 },
+        backgroundColor: 'white',
+        position: 'relative',
+      }}>
+        <Container maxWidth="xl">
+          <MotionBox
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            sx={{ textAlign: 'center', mb: 6 }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                letterSpacing: 2,
+              }}
+            >
+              LATEST WORK
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 2,
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 600,
+                color: 'text.primary',
+              }}
+            >
+              Recent Installations
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem', lg: '1.25rem' },
+                color: 'text.secondary',
+                maxWidth: '800px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              See our latest custom seat installations showcasing our craftsmanship and attention to detail.
+            </Typography>
+          </MotionBox>
+
+          {/* Latest Work Grid - Using Landing Page Images */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+              gap: { xs: 2, md: 3 },
+              mb: { xs: 2, md: 3 },
+            }}
+          >
+            {/* Row 1 - Large Image */}
+            <MotionBox
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 300, sm: 400, md: 500, lg: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/image0 (12).jpeg`}
+                  alt="Custom Seat Installation 1"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
+            </MotionBox>
+            
+            {/* Row 1 - Small Images Grid */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: { xs: 2, md: 3 },
+              }}
+            >
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 300, sm: 350, md: 400 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw_ Seats/IMG_2797.JPEG`}
+                    alt="Custom Seat Installation 2"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
+              </MotionBox>
+              
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 300, sm: 350, md: 400 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_3590.jpg`}
+                    alt="Custom Seat Installation 3"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
+              </MotionBox>
+              
+              <MotionBox
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                sx={{
+                  gridColumn: 'span 2',
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    height: { xs: 200, sm: 250, md: 300 },
+                    width: '100%',
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_5557.JPG`}
+                    alt="Custom Seat Installation 4"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      display: 'block',
+                    }}
+                    priority={false}
+                  />
+                </Box>
+              </MotionBox>
+            </Box>
+          </Box>
+
+          {/* Row 2 */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: { xs: 2, md: 3 },
+            }}
+          >
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_7077.jpg`}
+                  alt="Custom Seat Installation 5"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
+            </MotionBox>
+            
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__FW__/1000001039.jpg`}
+                  alt="Custom Seat Installation 6"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
+            </MotionBox>
+            
+            <MotionBox
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  height: { xs: 400, sm: 500, md: 600 },
+                  width: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  },
+                }}
+              >
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/LandingPage/Fw__Seats%20(1)/IMG_8107.jpeg`}
+                  alt="Custom Seat Installation 7"
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'block',
+                  }}
+                  priority={false}
+                />
+              </Box>
+            </MotionBox>
           </Box>
         </Container>
       </Box>
@@ -605,19 +1161,21 @@ const Gallery = () => {
                 >
                   {item.image && item.image.trim() !== '' ? (
                     <>
-                      <img
-                        src={item.image}
+                      <LazyImage
+                        src={item.image.startsWith('http') ? item.image : `${IMAGE_BASE_URL}${item.image.startsWith('/') ? item.image : '/' + item.image}`}
                         alt={`Gallery image ${item.id}`}
+                        fill
+                        showSkeleton={true}
+                        quality={85}
                         style={{
-                          width: '100%',
-                          height: '100%',
                           objectFit: 'contain',
                           backgroundColor: '#f5f5f5',
                           transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
                         className="gallery-image"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                        priority={false}
+                        onError={() => {
+                          // Error handling is managed by LazyImage component
                         }}
                       />
                       
@@ -721,21 +1279,25 @@ const Gallery = () => {
           </IconButton>
 
           {selectedImage && (
-            <Box sx={{ position: 'relative' }}>
+            <Box sx={{ position: 'relative', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {selectedImage.image && selectedImage.image.trim() !== '' ? (
-                <Image
-                  src={selectedImage.image}
-                  alt={`Gallery image ${selectedImage.id}`}
-                  width={800}
-                  height={600}
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    maxHeight: '80vh',
-                    objectFit: 'contain',
-                  }}
-                  priority
-                />
+                <Box sx={{ position: 'relative', width: '100%', maxHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <LazyImage
+                    src={selectedImage.image.startsWith('http') ? selectedImage.image : `${IMAGE_BASE_URL}${selectedImage.image.startsWith('/') ? selectedImage.image : '/' + selectedImage.image}`}
+                    alt={`Gallery image ${selectedImage.id}`}
+                    width={800}
+                    height={600}
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      maxHeight: '80vh',
+                      objectFit: 'contain',
+                    }}
+                    priority={true}
+                  />
+                </Box>
               ) : (
                 <Box
                   sx={{

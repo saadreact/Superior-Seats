@@ -227,9 +227,9 @@ const EditCategoryPage = () => {
                   variant="contained" 
                   disabled={saving || !formData.name.trim()}
                   sx={{
-                    backgroundColor: '#DA291C',
+                    backgroundColor: 'primary.main',
                     '&:hover': {
-                      backgroundColor: '#B71C1C',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >

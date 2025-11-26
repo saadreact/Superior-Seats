@@ -23,6 +23,7 @@ import {
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import VideoPlayer from '@/components/VideoPlayer';
+import LazyImage from '@/components/common/LazyImage';
 // import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import { stats, values, process as processSteps } from '@/data/About';
 
@@ -30,6 +31,8 @@ const MotionTypography = motion.create(Typography);
 const MotionBox = motion.create(Box);
 
 const AboutPage = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
 
   // Icon mapping function
   const getIcon = (iconName: string) => {
@@ -44,13 +47,8 @@ const AboutPage = () => {
     };
     return iconMap[iconName] || <CheckCircle />;
   };
- 
-  const legacyImages = [
-    "Comprehensive Warranty",
-    "Ongoing Support"
-  ];
 
-  const whyChooseItems = [
+  const whyChooseItemsBase = [
     {
       title: "Custom Fit Design",
       description: "Designed specifically for your vehicle and body type. Our seats are tailored to provide optimal comfort and support for your unique driving needs.",
@@ -83,6 +81,18 @@ const AboutPage = () => {
     }
   ];
 
+  // Update whyChooseItems with base URL - ensure proper URL construction
+  const whyChooseItems = whyChooseItemsBase.map(item => {
+    // Build full image URL
+    const imagePath = item.image.startsWith('/') ? item.image : `/${item.image}`;
+    const fullImageUrl = `${IMAGE_BASE_URL}${imagePath}`;
+    
+    return {
+      ...item,
+      image: fullImageUrl
+    };
+  });
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
@@ -114,17 +124,17 @@ const AboutPage = () => {
             backgroundColor: 'black',
           }}
         >
-          <Box
-            component="img"
-            src="/Gallery/Truckimages/Americanseat.png"
+          <LazyImage
+            src={`${IMAGE_BASE_URL}/Gallery/Truckimages/Americanseat.png`}
             alt="Superior Seating LLC"
-            sx={{
-              width: '100%',
-              height: '100%',
+            fill
+            showSkeleton={true}
+            quality={85}
+            style={{
               objectFit: 'cover',
-              display: 'block',
               filter: 'brightness(1.2) contrast(1.05)',
             }}
+            priority={true}
           />
           <Box
             sx={{
@@ -714,27 +724,66 @@ const AboutPage = () => {
              Why Choose Superior Seats?
            </MotionTypography>
           
+          {/* Vertical Video Player */}
+          <MotionBox
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            sx={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: { xs: '100%', sm: '400px', md: '450px', lg: '500px', xl: '550px' },
+              margin: { xs: '0 auto 4rem', sm: '0 auto 5rem', md: '0 auto 6rem' },
+              borderRadius: { xs: 2, sm: 3, md: 4 },
+              overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              backgroundColor: 'black',
+              aspectRatio: '9/16', // Vertical video aspect ratio
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Box
+              component="video"
+              src={`${process.env.NEXT_PUBLIC_API_VIDEO_BASE_URL}/videos/SuperiorSeatingSocialReel_Semi_RV_Seat3.mov`}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              controls
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                outline: 'none',
+              }}
+            >
+              <source
+                src={`${process.env.NEXT_PUBLIC_API_VIDEO_BASE_URL}/videos/SuperiorSeatingSocialReel_Semi_RV_Seat3.mov`}
+                type="video/quicktime"
+              />
+              <source
+                src={`${process.env.NEXT_PUBLIC_API_VIDEO_BASE_URL}/videos/SuperiorSeatingSocialReel_Semi_RV_Seat3.mov`}
+                type="video/mp4"
+              />
+              Your browser does not support the video tag.
+            </Box>
+          </MotionBox>
+          
           {/* Why Choose Us Cards with alternating layout */}
           {whyChooseItems.map((item, index) => {
-            const isLegacyImage = legacyImages.includes(item.title);
-            const imgStyles = isLegacyImage
-              ? {
-                  position: 'absolute' as const,
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover' as const,
-                  display: 'block',
-                }
-              : {
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover' as const,
-                  display: 'block',
-                  transition: 'transform 0.3s ease',
-                  transform: item.title === 'Expert Craftsmanship' ? 'scale(1.06) translateY(4px)' : 'none',
-                };
+            const imgStyles = {
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover' as const,
+              display: 'block',
+              transition: 'transform 0.3s ease',
+              transform: item.title === 'Expert Craftsmanship' ? 'scale(1.06) translateY(4px)' : 'none',
+            };
             return (
             <Box
               key={index}
@@ -807,19 +856,24 @@ const AboutPage = () => {
                   backgroundColor: '#ffffff',
                   height: { xs: 240, sm: 260, md: 320, lg: 360 },
                   width: '100%',
-                  paddingTop: isLegacyImage ? '70%' : 0,
                   '&:hover': {
                     transform: 'translateY(-4px) scale(1.02)',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                   }
                 }}
               >
-                <Box
-                  component="img"
+                <LazyImage
                   src={item.image}
                   alt={item.title}
-                  sx={imgStyles}
-                 />
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    ...imgStyles,
+                    position: 'absolute',
+                  }}
+                  priority={false}
+                />
               </MotionBox>
                  </Box>
           );})}

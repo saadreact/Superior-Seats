@@ -1,8 +1,9 @@
-import React, { useRef, useEffect, useMemo } from 'react';
-import { useGLTF, useTexture } from '@react-three/drei';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { getModelConfig, getStitchingPath } from '../../config/assets';
 import { ShaderManager } from '../../shaders/ShaderManager';
+import { TextureManager } from '../../utils/TextureManager';
 
 function Model3D({ 
   modelId = '1', // New prop for model selection
@@ -21,6 +22,8 @@ function Model3D({
   const materialsRef = useRef(new Map()); // Track materials for updates
   const originalTexturesRef = useRef(null); // Store original textures for default pattern
   const originalMaterialsRef = useRef(new Map()); // Store original materials for glow effect
+  const texturesRef = useRef(null); // Store loaded textures
+  const [texturesLoaded, setTexturesLoaded] = useState(false); // Track texture loading state
   
   // Get model configuration dynamically based on modelId
   const modelConfig = useMemo(() => getModelConfig(modelId), [modelId]);
@@ -28,11 +31,15 @@ function Model3D({
   // Load GLTF model and base textures dynamically based on modelId
   const { scene } = useGLTF(modelConfig.model);
   
-  // Determine diamond normal texture path based on pattern selection
-  const getDiamondNormalPath = () => {
-    if (patternId && patternId !== 'default') {
+  // Memoize texture paths to prevent unnecessary reloads
+  // In two-tone mode, always use default textures (no global pattern)
+  const diamondNormalPath = useMemo(() => {
+    // In two-tone mode, don't use global pattern for base textures
+    const effectivePatternId = seatType === 'two-tone' ? null : patternId;
+    
+    if (effectivePatternId && effectivePatternId !== 'default') {
       // Extract pattern info to determine correct path
-      const [modelNum, patternNum] = patternId.split('-');
+      const [modelNum, patternNum] = effectivePatternId.split('-');
       if (patternNum === '1') {
         return `/assets/patterns/${modelNum}/1.jpg`;
       } else {
@@ -40,63 +47,88 @@ function Model3D({
       }
     }
     return modelConfig.textures.diamondNormal; // Default diamond normal
-  };
+  }, [patternId, modelConfig.textures.diamondNormal, seatType]);
   
-  // Determine stitching texture path based on pattern selection
-  const getStitchingTexturePath = () => {
-    return getStitchingPath(modelId, patternId || 'default');
-  };
+  const stitchingTexturePath = useMemo(() => {
+    // In two-tone mode, don't use global pattern for base textures
+    const effectivePatternId = seatType === 'two-tone' ? 'default' : (patternId || 'default');
+    return getStitchingPath(modelId, effectivePatternId);
+  }, [modelId, patternId, seatType]);
   
-  // External stitchings - one per model (always 1.png)
-  const getExternalStitchingPath = () => {
+  const externalStitchingPath = useMemo(() => {
     return `/assets/externalStitchings/${modelId}/1.png`;
-  };
+  }, [modelId]);
   
-  const textures = useTexture({
-    //baseColor: modelConfig.textures.baseColor,
-    //normal: modelConfig.textures.normal,
-    diamondNormal: getDiamondNormalPath(),
-    //roughness: modelConfig.textures.roughness,
-    //metallic: modelConfig.textures.metallic,
-    ao: modelConfig.textures.ao,
-    stitch: getStitchingTexturePath(), // Load stitching based on pattern
-    externalStitch: getExternalStitchingPath(), // Load external stitchings (one per model)
-    //stitch1: modelConfig.textures.stitch1,
-    //stitch2: modelConfig.textures.stitch2,
-    //brick: modelConfig.textures.brick
-  });
+  // Load textures using TextureManager (no re-renders)
+  useEffect(() => {
+    const loadTextures = async () => {
+      try {
+        const loaded = await TextureManager.loadTextures({
+          diamondNormal: diamondNormalPath,
+          ao: modelConfig.textures.ao,
+          stitch: stitchingTexturePath,
+          externalStitch: externalStitchingPath
+        }, {
+          diamondNormal: { colorSpace: THREE.NoColorSpace, flipY: false },
+          ao: { colorSpace: THREE.NoColorSpace, flipY: false },
+          stitch: { colorSpace: THREE.SRGBColorSpace, flipY: false },
+          externalStitch: { colorSpace: THREE.SRGBColorSpace, flipY: false }
+        });
+        
+        // In two-tone mode, replace stitch with dummy texture
+        if (seatType === 'two-tone') {
+          const dummyCanvas = document.createElement('canvas');
+          dummyCanvas.width = 1;
+          dummyCanvas.height = 1;
+          loaded.stitch = new THREE.CanvasTexture(dummyCanvas);
+        }
+        
+        texturesRef.current = loaded;
+        originalTexturesRef.current = { ...loaded };
+        setTexturesLoaded(true);
+      } catch (error) {
+        console.error('Failed to load textures:', error);
+      }
+    };
+    
+    loadTextures();
+  }, [modelId, diamondNormalPath, stitchingTexturePath, externalStitchingPath, seatType, modelConfig.textures.ao]);
   
-  // Define which parts can be customized in two-tone mode
-  const customizableParts = [
+  // Define which parts can be customized in two-tone mode (memoized to prevent re-renders)
+  const customizableParts = useMemo(() => [
     'seat_bottom_upper',
     'seat_bottom_lower',
+    'seat_bottom_lower_Left',
+    'seat_bottom_lower_Right',
     'seat_back_upper',
-    'seat_back_lover', // Note: typo in original mesh name
+    'seat_back_lower', // Note: typo in original mesh name
+    'seat_back_lower_Left',
+    'seat_back_lower_Right',
     'headset_front',
     'headset_back',
     'left_arm_upper',
     'right_arm_upper'
-  ];
+  ], []);
   
-  // Define seat part categories for material assignment
-  const seatParts = {
-    base: ['base', 'seat_bottom', 'seat_bottom_upper', 'seat_bottom_lower'],
-    backrest: ['seat_back', 'seat_back_upper', 'seat_back_lover'],
+  // Define seat part categories for material assignment (memoized to prevent re-renders)
+  const seatParts = useMemo(() => ({
+    base: ['base', 'seat_bottom', 'seat_bottom_upper', 'seat_bottom_lower', 'seat_bottom_lower_Left', 'seat_bottom_lower_Right'],
+    backrest: ['seat_back', 'seat_back_upper', 'seat_back_lower', 'seat_back_lower_Left', 'seat_back_lower_Right'],
     headrest: ['headset_front', 'headset_back'],
     armrests: ['left_arm_upper', 'left_arm_lover', 'right_arm_upper', 'right_arm_lower'],
     piping: ['left_arm_piping', 'right_arm_piping', 'piping_lower', 'Shape001'],
     frame: ['bottom_cover']
-  };
+  }), []);
   
-  // Material configurations for different parts
-  const materialConfigs = {
-    base: { color: fabricColor, fabricType: fabricType, hasStitching: true, name: 'Seat Base' },
-    backrest: { color: fabricColor, fabricType: fabricType, hasStitching: true, name: 'Backrest' },
-    headrest: { color: fabricColor, fabricType: fabricType, hasStitching: true, name: 'Headrest' },
-    armrests: { color: fabricColor, fabricType: fabricType, hasStitching: true, name: 'Armrests' },
-    piping: { color: stitchColor, fabricType: 'piping', hasStitching: false, name: 'Piping' },
+  // Material configurations for different parts (structure only - colors resolved at runtime)
+  const materialConfigs = useMemo(() => ({
+    base: { hasStitching: true, name: 'Seat Base', useFabricColor: true },
+    backrest: { hasStitching: true, name: 'Backrest', useFabricColor: true },
+    headrest: { hasStitching: true, name: 'Headrest', useFabricColor: true },
+    armrests: { hasStitching: true, name: 'Armrests', useFabricColor: true },
+    piping: { fabricType: 'piping', hasStitching: false, name: 'Piping', useStitchColor: true },
     frame: { color: '#333333', fabricType: 'metal', hasStitching: false, name: 'Frame' }
-  };
+  }), []);
   
   // Helper function to determine part category
   const getPartCategory = (meshName) => {
@@ -108,28 +140,11 @@ function Model3D({
     return 'frame'; // Default fallback
   };
   
-  // Configure textures on load and store original textures
+  // Setup material system using ShaderManager (only runs once when textures are loaded)
   useEffect(() => {
-    if (textures) {
-      // Store original textures for default pattern restoration
-      originalTexturesRef.current = { ...textures };
-      
-      Object.entries(textures).forEach(([key, texture]) => {
-        if (texture && texture.colorSpace !== undefined) {
-          texture.colorSpace = (key.includes('baseColor') || key.includes('stitch') || key.includes('brick')) 
-            ? THREE.SRGBColorSpace 
-            : THREE.NoColorSpace;
-          texture.flipY = false;
-        }
-      });
-    }
-  }, [textures]);
-  
-  // Setup material system using ShaderManager
-  useEffect(() => {
-    if (!scene || !textures.ao) return;
+    if (!scene || !texturesLoaded || !texturesRef.current) return;
     
-    console.log(`🔧 Setting up materials for model ${modelId} with ${fabricType}`);
+    console.log('🚨 MATERIAL CREATION EFFECT - All materials being recreated');
     let partCounts = {};
     const patternUpdatePromises = [];
     const allMeshNames = [];
@@ -143,15 +158,15 @@ function Model3D({
         
         // Get customizations for this specific mesh
         const meshCustomization = meshCustomizations[child.name] || {};
-        let finalFabricColor = meshCustomization.fabricColor || config.color;
-        const finalStitchColor = meshCustomization.stitchColor || stitchColor;
-        const finalFabricType = meshCustomization.fabricType || config.fabricType;
-        const finalPatternId = meshCustomization.patternId || patternId;
         
-        // Debug logging
-        if (child.name === 'seat_back_upper') {
-          console.log(`🔍 ${child.name}: meshCustomization.patternId=${meshCustomization.patternId}, global patternId=${patternId}, finalPatternId=${finalPatternId}`);
-        }
+        // Resolve color at runtime
+        let configColor = config.color || (config.useFabricColor ? fabricColor : (config.useStitchColor ? stitchColor : '#ffffff'));
+        let finalFabricColor = meshCustomization.fabricColor || configColor;
+        const finalStitchColor = meshCustomization.stitchColor || stitchColor;
+        const finalFabricType = meshCustomization.fabricType || (config.fabricType || fabricType);
+        
+        // In two-tone mode, only use custom patterns, not the global pattern
+        const finalPatternId = meshCustomization.patternId || (seatType === 'two-tone' ? null : patternId);
         
         // Keep original color in two-tone mode
         
@@ -187,26 +202,20 @@ function Model3D({
           });
         } else {
           // Use ShaderManager for fabric materials (synchronous)
-          // Pass isTwoTone flag for correct UV mapping
-          // Only set isTwoTone=true if this specific part has a custom pattern
-          const hasCustomPattern = !!meshCustomization.patternId;
-          // If pattern is 'default' or not set, don't show stitching
-          const noStitching = finalPatternId === 'default' || !finalPatternId;
+          // Pass isTwoTone flag based on global seatType, not individual part pattern
+          const isTwoTone = seatType === 'two-tone';
           
-          console.log(`🎨 Creating material for ${child.name}:`, {
-            finalPatternId,
-            noStitching,
-            finalFabricType,
-            hasCustomPattern
-          });
+          // In two-tone mode, disable stitching for all parts that don't have custom patterns
+          const hasCustomPattern = !!meshCustomization.patternId;
+          const noStitching = (finalPatternId === 'default' || !finalPatternId) || (isTwoTone && !hasCustomPattern);
           
           child.material = ShaderManager.createMaterial(
             finalFabricType, 
             finalFabricColor, 
             finalStitchColor, 
-            textures,
+            texturesRef.current,
             ambientStrength,
-            hasCustomPattern,
+            isTwoTone,
             noStitching
           );
           
@@ -230,9 +239,7 @@ function Model3D({
               originalTexturesRef.current,
               null,
               modelId
-            ).then(() => {
-              console.log(`✅ Initial pattern ${finalPatternId} applied to ${child.name}`);
-            }).catch(err => console.warn(`Failed to apply pattern ${finalPatternId} to ${child.name}:`, err));
+            ).catch(err => console.warn(`Failed to apply pattern ${finalPatternId} to ${child.name}:`, err));
             
             patternUpdatePromises.push(patternPromise);
           }
@@ -240,33 +247,21 @@ function Model3D({
         
         child.castShadow = true;
         child.receiveShadow = true;
-        
-        console.log(`✅ Applied ${config.name} (${finalFabricType}) to: ${child.name}`);
       }
     });
-    
-    console.log('📋 Parts Summary:', partCounts);
-    console.log('💫 All mesh names in scene:', allMeshNames);
-    console.log('🔍 Customizable parts:', customizableParts);
-    console.log('✅ Match check:', allMeshNames.filter(name => customizableParts.includes(name)));
-    
-    // Wait for all pattern updates to complete
-    if (patternUpdatePromises.length > 0) {
-      Promise.all(patternUpdatePromises).then(() => {
-        console.log('✅ All initial pattern updates completed');
-      });
-    }
-  }, [scene, textures, fabricColor, stitchColor, fabricType, modelId, ambientStrength]);
-  // Note: meshCustomizations, seatType, and patternId removed from deps to prevent full material rebuild
+  }, [scene, texturesLoaded, fabricColor, stitchColor, fabricType, modelId, ambientStrength, materialConfigs, seatParts, seatType]);
+  // Note: meshCustomizations and patternId removed from deps to prevent full material rebuild
   // Pattern changes are handled via updateMaterial in the dynamic update effect below
-  // seatType is handled via uniform updates in separate useEffect
+  // seatType changes trigger material recreation to update UV mapping
 
   // Update uIsTwoTone uniform based on mesh customizations
   // This is handled AFTER pattern updates in the dynamic update effect below
   // to avoid flickering during texture loading
 
-// Handle dynamic material updates using ShaderManager
+// Handle dynamic material updates (uniforms only - no material recreation)
   useEffect(() => {
+    if (!texturesLoaded || !materialsRef.current.size) return;
+    
     const updateMaterials = async () => {
       const updatePromises = [];
       
@@ -274,7 +269,8 @@ function Model3D({
         const meshCustomization = meshCustomizations[meshName] || {};
         let newFabricColor = meshCustomization.fabricColor || fabricColor;
         const newStitchColor = meshCustomization.stitchColor || stitchColor;
-        const newPatternId = meshCustomization.patternId || patternId;
+        // In two-tone mode, don't apply global pattern to uncustomized parts
+        const newPatternId = meshCustomization.patternId || (seatType === 'two-tone' ? null : patternId);
         
         // For piping parts, use stitch color instead of fabric color
         if (materialData.type === 'piping') {
@@ -301,15 +297,6 @@ function Model3D({
         const noStitchingChanged = materialData.material?.uniforms?.uNoStitching?.value !== shouldDisableStitching;
         
         if (fabricChanged || stitchChanged || patternChanged || ambientChanged || noStitchingChanged) {
-          if (fabricChanged || stitchChanged || patternChanged) {
-            console.log(`🔄 Updating ${meshName}:`, {
-              fabricChanged: fabricChanged ? `${materialData.fabricColor} → ${newFabricColor}` : false,
-              stitchChanged: stitchChanged ? `${materialData.stitchColor} → ${newStitchColor}` : false,
-              patternChanged: patternChanged ? `${materialData.patternId} → ${newPatternId}` : false,
-              noStitchingChanged: noStitchingChanged ? `→ ${shouldDisableStitching}` : false
-            });
-          }
-        
           if (materialData.type === 'standard') {
             // Update standard PBR material
             if (fabricChanged) {
@@ -339,10 +326,7 @@ function Model3D({
               // Update tracked values AFTER successful update
               if (fabricChanged) materialData.fabricColor = newFabricColor;
               if (stitchChanged) materialData.stitchColor = newStitchColor;
-              if (patternChanged) {
-                materialData.patternId = newPatternId;
-                console.log(`✅ Stored patternId ${newPatternId} for ${meshName}`);
-              }
+              if (patternChanged) materialData.patternId = newPatternId;
               if (ambientChanged) materialData.ambientStrength = ambientStrength;
               
               // Update uNoStitching uniform if needed (when switching to two-tone or pattern changes)
@@ -351,16 +335,14 @@ function Model3D({
                 if (materialData.material.uniforms && materialData.material.uniforms.uNoStitching) {
                   materialData.material.uniforms.uNoStitching.value = newNoStitching;
                   materialData.material.uniformsNeedUpdate = true;
-                  console.log(`🔄 Updated uNoStitching to ${newNoStitching} for ${meshName}`);
                 }
               }
               
-              // Update uIsTwoTone uniform based on whether this part has a custom pattern
-              const hasCustomPattern = !!meshCustomization.patternId;
+              // Update uIsTwoTone uniform based on global seatType
+              const isTwoTone = seatType === 'two-tone';
               if (materialData.material.uniforms && materialData.material.uniforms.uIsTwoTone) {
-                materialData.material.uniforms.uIsTwoTone.value = hasCustomPattern;
+                materialData.material.uniforms.uIsTwoTone.value = isTwoTone;
                 materialData.material.uniformsNeedUpdate = true;
-                console.log(`🔄 Updated uIsTwoTone to ${hasCustomPattern} for ${meshName}`);
               }
             }).catch((err) => {
               console.error(`❌ Failed to update ${meshName}:`, err);
@@ -376,7 +358,7 @@ function Model3D({
     };
     
     updateMaterials();
-  }, [fabricColor, stitchColor, meshCustomizations, patternId, ambientStrength, seatType, customizableParts]);
+  }, [texturesLoaded, fabricColor, stitchColor, meshCustomizations, patternId, ambientStrength, seatType, customizableParts, modelId]);
 
 // Handle mesh highlighting
   useEffect(() => {

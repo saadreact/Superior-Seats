@@ -420,7 +420,13 @@ export const FormActions: React.FC<FormActionsProps> = ({
       variant="contained"
       onClick={onSave}
       disabled={loading}
-      sx={{ borderRadius: 2 }}
+      sx={{ 
+        borderRadius: 2,
+        backgroundColor: 'primary.main',
+        '&:hover': {
+          backgroundColor: 'primary.dark',
+        },
+      }}
     >
       {loading ? 'Saving...' : saveText}
     </Button>

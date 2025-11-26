@@ -13,18 +13,22 @@ import { OpenInNew } from '@mui/icons-material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSectionCommon from '@/components/common/HeroSectionaCommon';
+import LazyImage from '@/components/common/LazyImage';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
 
 const SuperiorDesignsPage = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header />
       
       {/* Hero Section */}
       <HeroSectionCommon
-        title="Upfitting"
+        title="Custom Auto Builds"
         description="Partnering with experts in luxury vehicle upfitting for complete custom van and bus builds."
         height={{
           xs: '75px',
@@ -79,7 +83,7 @@ const SuperiorDesignsPage = () => {
                   fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.5rem', xl: '2.5rem' },
                 }}
               >
-                Your Partner for Custom Van, Bus, and Specialty Builds 
+                Your Partner for Custom Van, Bus and Specialty Builds 
               </Typography>
               <Typography
                 variant="body1"
@@ -159,7 +163,8 @@ const SuperiorDesignsPage = () => {
               <Box
                 sx={{
                   position: 'relative',
-                  paddingTop: '75%',
+                  width: '100%',
+                  height: { xs: 300, sm: 400, md: 450, lg: 500, xl: 550 },
                   borderRadius: 3,
                   overflow: 'hidden',
                   boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
@@ -171,17 +176,18 @@ const SuperiorDesignsPage = () => {
                   },
                 }}
               >
-                <Box
-                  component="img"
-                  src="/Gallery/Truckimages/u14.png"
+                <LazyImage
+                  src={`${IMAGE_BASE_URL}/Gallery/Truckimages/u14.png`}
                   alt="Superior Designs custom build"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
+                  fill
+                  showSkeleton={true}
+                  quality={85}
+                  style={{
+                    objectFit: 'cover',
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
+                    position: 'absolute',
+                    display: 'block',
                   }}
                 />
               </Box>

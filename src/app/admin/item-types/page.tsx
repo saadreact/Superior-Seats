@@ -115,13 +115,13 @@ const ItemTypesPage = () => {
           router.push('/');
         }, 3000);
       } else if (err.response?.status === 403) {
-        setError('Access denied. You do not have permission to view item types.');
+        setError('Access denied. You do not have permission to view seat base.');
       } else if (err.response?.status === 404) {
-        setError('Item types endpoint not found. Please contact support.');
+        setError('Seat base endpoint not found. Please contact support.');
       } else if (err.response?.status >= 500) {
         setError('Server error. Please try again later.');
       } else {
-        setError(err.message || 'Failed to load item types. Please try again later.');
+        setError(err.message || 'Failed to load seat base. Please try again later.');
       }
     } finally {
       setLoading(false);
@@ -151,10 +151,10 @@ const ItemTypesPage = () => {
         setDeleting(true);
         await apiService.deleteItemType(itemtypesToDelete.id);
         setItemTypes(prev => prev.filter(item => item.id !== itemtypesToDelete.id));
-        setAlert({ type: 'success', message: 'Item Type deleted successfully' });
+        setAlert({ type: 'success', message: 'Seat Base deleted successfully' });
       } catch (err: any) {
         setError(err.message || 'Failed to delete item type');
-        console.error('Error deleting item type:', err);
+        console.error('Error deleting seat base:', err);
       } finally {
         setDeleting(false);
       }
@@ -190,7 +190,7 @@ const ItemTypesPage = () => {
 
 
   return (
-    <AdminLayout title="Item Types">
+    <AdminLayout title="Item Type">
       <Box>
         <Box sx={{ 
           mb: 3, 
@@ -209,7 +209,7 @@ const ItemTypesPage = () => {
           }}>
             {/* Search Bar */}
             <TextField
-              placeholder="Search item types..."
+              placeholder="Search seat base..."
               value={searchTerm}
               onChange={handleSearch}
               InputProps={{
@@ -244,8 +244,10 @@ const ItemTypesPage = () => {
               minWidth: { xs: '100%', sm: 'auto' },
               height: { xs: 44, sm: 'auto' },
               fontSize: { xs: '0.95rem', sm: '0.875rem' },
+              backgroundColor: 'primary.main',
               boxShadow: 'none',
               '&:hover': {
+                backgroundColor: 'primary.dark',
                 boxShadow: 'none',
               }
             }}
@@ -293,7 +295,7 @@ const ItemTypesPage = () => {
         ) : totalCount === 0 ? (
           <Paper sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No item types found
+              No item type found
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Item Type" to create your first item type.'}
@@ -327,7 +329,7 @@ const ItemTypesPage = () => {
                                 width: '100%',
                                 height: '100%',
                                 objectFit: 'cover',
-                                borderRadius: 1,
+                                borderRadius: 1,      
                                 border: '1px solid #e0e0e0',
                                 maxWidth: 60,
                                 maxHeight: 60

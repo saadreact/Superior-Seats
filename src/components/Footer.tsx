@@ -20,6 +20,9 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = () => {
   const theme = useTheme();
+  
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
 
   return (
     <>
@@ -284,7 +287,7 @@ const Footer: React.FC<FooterProps> = () => {
               >
                 <Box
                   component="img"
-                  src="/superiorlogo/footerlogo.png"
+                  src={`${IMAGE_BASE_URL}/superiorlogo/footerlogo.png`}
                   alt="Superior Seating LLC Logo"
                   sx={{
                     height: {

@@ -22,7 +22,7 @@ const BrandedLoader: React.FC<BrandedLoaderProps> = ({ text = 'Loading...', minH
       }}
     >
       <Image
-        src="/superiorlogo/logored.png"
+        src="/assets/logored.png"
         alt="Superior Seats"
         width={120}
         height={120}

@@ -51,6 +51,17 @@ interface Product {
   images?: string[];
   is_active: boolean;
   variation_ids?: number[];
+  is_customize_3d_product?: boolean;
+  model_file_path?: string;
+  customizable_meshes?: string[];
+  material_types?: MaterialType[];
+}
+
+interface MaterialType {
+  id: number;
+  name: string;
+  image?: string;
+  shader_id?: string;
 }
 
 interface ProductFormProps {
@@ -68,6 +79,11 @@ interface ProductFormProps {
     newImages?: File[];
     primaryImageIndex?: number;
     removedImages?: string[];
+    // 3D customization fields
+    is_customize_3d_product?: boolean;
+    glbFile?: File;
+    customizable_meshes?: string[];
+    material_type_ids?: number[];
   }) => void;
   onCancel: () => void;
   loading?: boolean;
@@ -89,6 +105,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     images: product?.images || [],
     is_active: product?.is_active ?? true,
     variation_ids: product?.variation_ids || [],
+    is_customize_3d_product: product?.is_customize_3d_product || false,
+    model_file_path: product?.model_file_path || '',
+    customizable_meshes: product?.customizable_meshes || [],
   });
 
   const [newImages, setNewImages] = useState<File[]>([]);
@@ -102,11 +121,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [loadingVehicleTrims, setLoadingVehicleTrims] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // 3D Customization state
+  const [glbFile, setGlbFile] = useState<File | null>(null);
+  const [glbError, setGlbError] = useState<string>('');
+  const [customizableMeshes, setCustomizableMeshes] = useState<string>('');
+  const [selectedMaterials, setSelectedMaterials] = useState<number[]>([]);
+  const [allMaterials, setAllMaterials] = useState<MaterialType[]>([]);
+  const [loadingMaterials, setLoadingMaterials] = useState(false);
 
   useEffect(() => {
     loadVariations();
     loadCategories();
     loadVehicleTrims();
+    loadMaterialTypes();
   }, []);
 
   // Update formData when product prop changes (for edit mode)
@@ -122,10 +150,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
         images: product.images || [],
         is_active: product.is_active ?? true,
         variation_ids: product.variation_ids || [],
+        is_customize_3d_product: product.is_customize_3d_product || false,
+        model_file_path: product.model_file_path || '',
+        customizable_meshes: product.customizable_meshes || [],
       });
       // Clear new images when switching to edit mode
       setNewImages([]);
       setImageErrors([]);
+      
+      // Load 3D customization data
+      if (product.customizable_meshes && Array.isArray(product.customizable_meshes)) {
+        setCustomizableMeshes(product.customizable_meshes.join(', '));
+      } else {
+        setCustomizableMeshes('');
+      }
+      
+      // Load selected materials
+      if (product.material_types && product.material_types.length > 0) {
+        setSelectedMaterials(product.material_types.map((m) => m.id));
+      }
     }
   }, [product]);
 
@@ -174,6 +217,26 @@ const ProductForm: React.FC<ProductFormProps> = ({
       setVehicleTrims([]);
     } finally {
       setLoadingVehicleTrims(false);
+    }
+  };
+
+  const loadMaterialTypes = async () => {
+    try {
+      setLoadingMaterials(true);
+      setError(null);
+      const response = await apiService.getMaterialTypes({ is_active: true });
+      const materialsArray = Array.isArray(response) ? response : [];
+      setAllMaterials(materialsArray);
+      
+      // Select all materials by default (only on initial load, not when editing)
+      if (!product && materialsArray.length > 0 && selectedMaterials.length === 0) {
+        setSelectedMaterials(materialsArray.map((m) => m.id));
+      }
+    } catch (err: any) {
+      console.error('Error loading material types:', err);
+      setAllMaterials([]);
+    } finally {
+      setLoadingMaterials(false);
     }
   };
 
@@ -270,12 +333,46 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setPrimaryImageIndex(index);
   };
 
+  const handleGlbFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validType = 'model/gltf-binary';
+    const validExtension = file.name.toLowerCase().endsWith('.glb');
+    const maxSize = 20 * 1024 * 1024; // 20MB
+
+    if (!validExtension) {
+      setGlbError('Please select a valid GLB file (.glb)');
+      setGlbFile(null);
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setGlbError('GLB file size must be less than 20MB');
+      setGlbFile(null);
+      return;
+    }
+
+    setGlbFile(file);
+    setGlbError('');
+  };
+
   const handleSubmit = () => {
+    // Prepare customizable meshes array from comma-separated string
+    const meshesArray = customizableMeshes
+      .split(',')
+      .map(m => m.trim())
+      .filter(m => m.length > 0);
+
     onSubmit({
       ...formData,
       newImages: newImages.length > 0 ? newImages : undefined,
       primaryImageIndex: primaryImageIndex,
       removedImages: removedImages.length > 0 ? removedImages : undefined,
+      // 3D customization data
+      glbFile: glbFile || undefined,
+      customizable_meshes: formData.is_customize_3d_product && meshesArray.length > 0 ? meshesArray : undefined,
+      material_type_ids: formData.is_customize_3d_product && selectedMaterials.length > 0 ? selectedMaterials : undefined,
     });
   };
 
@@ -644,6 +741,147 @@ const ProductForm: React.FC<ProductFormProps> = ({
             label="Active"
           />
         </Box>
+
+        {/* 3D Customization Section */}
+        <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={formData.is_customize_3d_product}
+                onChange={(e) => setFormData({...formData, is_customize_3d_product: e.target.checked})}
+              />
+            }
+            label="Enable 3D Customization"
+          />
+        </Box>
+
+        {/* 3D Fields - Show only when 3D customization is enabled */}
+        {formData.is_customize_3d_product && (
+          <>
+            {/* GLB File Upload */}
+            <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                3D Model Configuration
+              </Typography>
+              
+              <Box sx={{ mb: 2 }}>
+                <input
+                  accept=".glb"
+                  style={{ display: 'none' }}
+                  id="glb-file-input"
+                  type="file"
+                  onChange={handleGlbFileChange}
+                />
+                <label htmlFor="glb-file-input">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                  >
+                    Upload GLB Model File
+                  </Button>
+                </label>
+                
+                {glbFile && (
+                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Selected: {glbFile.name} ({(glbFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => {
+                        setGlbFile(null);
+                        setGlbError('');
+                      }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
+                
+                {formData.model_file_path && !glbFile && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Current file: {formData.model_file_path}
+                  </Typography>
+                )}
+                
+                {glbError && (
+                  <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
+                    {glbError}
+                  </Typography>
+                )}
+                
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  Upload a GLB file (max 20MB)
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Customizable Meshes */}
+            <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
+              <TextField
+                fullWidth
+                label="Customizable Meshes"
+                multiline
+                rows={3}
+                value={customizableMeshes}
+                onChange={(e) => setCustomizableMeshes(e.target.value)}
+                placeholder="Enter mesh names separated by commas (e.g., seat_cushion, backrest, armrest)"
+                helperText="Specify which mesh parts of the 3D model can be customized. Leave empty to allow all meshes."
+              />
+            </Box>
+
+            {/* Material Types Selection */}
+            <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Material Types
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                Select which material types are available for this 3D product
+              </Typography>
+              
+              {loadingMaterials ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : (
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                  {allMaterials.map((material) => (
+                    <FormControlLabel
+                      key={material.id}
+                      control={
+                        <Switch
+                          checked={selectedMaterials.includes(material.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedMaterials([...selectedMaterials, material.id]);
+                            } else {
+                              setSelectedMaterials(selectedMaterials.filter(id => id !== material.id));
+                            }
+                          }}
+                        />
+                      }
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {material.image && (
+                            <Image
+                              src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}${material.image}`}
+                              alt={material.name}
+                              width={30}
+                              height={30}
+                              style={{ objectFit: 'cover', borderRadius: 4 }}
+                            />
+                          )}
+                          <Typography variant="body2">{material.name}</Typography>
+                        </Box>
+                      }
+                    />
+                  ))}
+                </Box>
+              )}
+            </Box>
+          </>
+        )}
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>

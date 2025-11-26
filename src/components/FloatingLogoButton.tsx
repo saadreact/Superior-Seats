@@ -9,6 +9,9 @@ import { usePathname, useRouter } from 'next/navigation';
 const MotionButton = motion.create(Button);
 
 const FloatingLogoButton = () => {
+  // Base URL for images from server
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
+
   const pathname = usePathname();
   const router = useRouter();
 
@@ -90,7 +93,7 @@ const FloatingLogoButton = () => {
         }}
       >
         <Image
-          src="/superiorlogo/sp.png"
+          src={`${IMAGE_BASE_URL}/superiorlogo/sp.png`}
           alt="Superior Seating Logo"
           fill
           style={{

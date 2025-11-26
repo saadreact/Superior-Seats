@@ -139,7 +139,7 @@ const CreateItemTypePage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter item type name"
+                  placeholder="Enter Item Type name"
                   sx={{ mb: 3 }}
                 />
 
@@ -222,11 +222,11 @@ const CreateItemTypePage = () => {
                   disabled={loading}
                   fullWidth={isMobile}
                   sx={{
-                    backgroundColor: '#DA291C',
+                    backgroundColor: 'primary.main',
                     minHeight: { xs: 44, sm: 'auto' },
                     fontSize: { xs: '0.95rem', sm: '0.875rem' },
                     '&:hover': {
-                      backgroundColor: '#B71C1C',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >
