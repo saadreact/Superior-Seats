@@ -1,19 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import * as THREE from 'three';
+import {
+  Box,
+  Typography,
+  IconButton,
+  Paper,
+  Grid,
+  ButtonBase,
+  Backdrop,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import CheckIcon from '@mui/icons-material/Check';
 import { COLOR_PALETTE } from '../config/colorPalette';
 import { getPatternOptionsForModel } from '../utils/PatternLoader';
 
-function PartCustomizationPopup({ 
-  partName, 
-  position, 
-  onClose, 
+function PartCustomizationPopup({
+  partName,
+  position,
+  onClose,
   currentCustomization,
   onApply,
   modelId,
   seatType,
   fabricColor,
   globalPatternId,
-  isTwoToneSelector = false
+  isTwoToneSelector = false,
+  onApplyToAll
 }) {
   // Use the actual color - if customized, use that; otherwise use global fabricColor
   const getInitialColor = () => {
@@ -23,7 +40,7 @@ function PartCustomizationPopup({
     // Use the global fabric color (the darkening is just a visual indicator in the 3D view)
     return fabricColor;
   };
-  
+
   // Use the actual pattern - if customized, use that; otherwise use global pattern
   const getInitialPattern = () => {
     if (currentCustomization?.patternId) {
@@ -32,7 +49,8 @@ function PartCustomizationPopup({
     // Use the global pattern (uncustomized parts inherit the global pattern)
     return globalPatternId || 'default';
   };
-  
+
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedColor, setSelectedColor] = useState(getInitialColor());
   const [selectedPattern, setSelectedPattern] = useState(getInitialPattern());
   const [availablePatterns, setAvailablePatterns] = useState([]);
@@ -91,246 +109,268 @@ function PartCustomizationPopup({
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.3)',
-          zIndex: 9999
-        }}
+      <Backdrop
+        open={true}
         onClick={() => {
-          // Defer close to next frame to allow texture loading to complete
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               onClose();
             });
           });
         }}
+        sx={{ zIndex: 9999, bgcolor: 'rgba(0, 0, 0, 0.3)' }}
       />
-      
-      {/* Popup */}
-      <div
-        style={{
+
+      <Paper
+        elevation={8}
+        sx={{
           position: 'fixed',
-          left: 'calc(30% + 20px)', // Account for 30% customization panel width + 20px margin
-          top: '80px', // Below the environment buttons
-          backgroundColor: 'white',
-          border: '2px solid #007bff',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: { xs: '90%', sm: '500px', md: '600px' },
+          maxHeight: '90vh',
+          overflowY: 'auto',
           zIndex: 10000,
-          minWidth: '320px',
-          maxWidth: '380px',
-          maxHeight: 'calc(100vh - 100px)',
-          overflowY: 'auto'
+          borderRadius: 3,
+          p: 3
         }}
         onClick={(e) => e.stopPropagation()}
       >
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '15px',
-        paddingBottom: '10px',
-        borderBottom: '2px solid #eee'
-      }}>
-        <h3 style={{
-          margin: 0,
-          fontSize: '16px',
-          color: '#333',
-          fontWeight: 'bold'
-        }}>
-          {isTwoToneSelector ? 'Select Color & Pattern' : `Customize ${getDisplayName(partName)}`}
-        </h3>
-        <button
-          onClick={onClose}
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '20px',
-            cursor: 'pointer',
-            color: '#999',
-            padding: '0',
-            width: '24px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="subtitle1" fontWeight="bold">
+            {isTwoToneSelector ? 'Select Color & Pattern' : `Customize ${getDisplayName(partName)}`}
+          </Typography>
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        {/* Color Selection */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+            Color:
+          </Typography>
+          <Grid container spacing={0.5} sx={{ maxHeight: 150, overflowY: 'auto' }}>
+            {Object.values(COLOR_PALETTE).flat().map((color) => {
+              const isSelected = selectedColor === color.hex;
+              return (
+                <Grid item key={`${color.name}-${color.hex}`}>
+                  <ButtonBase
+                    onClick={() => handleColorChange(color.hex)}
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      bgcolor: color.hex,
+                      border: isSelected ? 3 : 1,
+                      borderColor: isSelected ? 'primary.main' : 'divider',
+                      borderRadius: 1,
+                      transition: 'all 0.2s'
+                    }}
+                    title={color.name}
+                  >
+                    {isSelected && (
+                      <CheckIcon sx={{ color: getTextColor(color.hex), fontSize: 20 }} />
+                    )}
+                  </ButtonBase>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
+
+        {/* Pattern Selection */}
+        <Box>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+            Pattern:
+          </Typography>
+          <Grid container spacing={1}>
+            {availablePatterns.map((pattern) => {
+              const isSelected = selectedPattern === pattern.id;
+              const isDefault = pattern.id === 'default';
+
+              return (
+                <Grid item xs={4} sm={3} md={2.4} key={pattern.id}>
+                  <ButtonBase
+                    onClick={() => handlePatternChange(pattern.id)}
+                    sx={{
+                      width: '100%',
+                      aspectRatio: '1',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 0.5,
+                      p: 0.5,
+                      border: isSelected ? 3 : 1,
+                      borderColor: isSelected ? 'primary.main' : 'divider',
+                      borderRadius: 1,
+                      bgcolor: 'background.paper',
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                    title={pattern.name}
+                  >
+                    {isDefault ? (
+                      <Box sx={{
+                        width: '100%',
+                        height: 50,
+                        background: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%), linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%)',
+                        backgroundSize: '8px 8px',
+                        backgroundPosition: '0 0, 4px 4px',
+                        borderRadius: 0.5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.6rem',
+                        color: 'text.secondary'
+                      }}>
+                        None
+                      </Box>
+                    ) : (
+                      <Box sx={{
+                        width: '100%',
+                        height: 50,
+                        borderRadius: 0.5,
+                        overflow: 'hidden',
+                        bgcolor: 'action.hover',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {pattern.thumbnail ? (
+                          <img 
+                            src={pattern.thumbnail} 
+                            alt={pattern.name}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                            onError={(e) => {
+                              console.error('Failed to load pattern thumbnail:', pattern.thumbnail);
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <Typography variant="caption" sx={{ fontSize: '0.5rem', color: 'text.disabled' }}>
+                            No preview
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+
+                    <Typography variant="caption" sx={{
+                      fontSize: '0.6rem',
+                      lineHeight: 1.1,
+                      textAlign: 'center',
+                      color: isSelected ? 'primary.main' : 'text.secondary',
+                      fontWeight: isSelected ? 'bold' : 'regular',
+                      wordBreak: 'break-word'
+                    }}>
+                      {pattern.name.replace(' Pattern', '').replace('Pattern ', '')}
+                    </Typography>
+
+                    {isSelected && (
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4,
+                        width: 16,
+                        height: 16,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.main',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <CheckIcon sx={{ fontSize: 10 }} />
+                      </Box>
+                    )}
+                  </ButtonBase>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
+        {/* Apply to All Parts Button - NEW FEATURE */}
+        {isTwoToneSelector && (
+          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={() => setShowConfirmDialog(true)}
+              sx={{
+                borderStyle: 'dashed',
+                borderWidth: 2,
+                '&:hover': {
+                  borderStyle: 'solid',
+                  bgcolor: 'action.hover',
+                  borderWidth: 2
+                }
+              }}
+            >
+              Apply to All Parts
+            </Button>
+          </Box>
+        )}
+        {/* Custom Confirmation Dialog */}
+        <Dialog
+          open={showConfirmDialog}
+          onClose={() => setShowConfirmDialog(false)}
+          sx={{ zIndex: 10001 }}
+          PaperProps={{
+            sx: { 
+              borderRadius: 3, 
+              p: 2,
+              maxWidth: 400
+            }
           }}
         >
-          ×
-        </button>
-      </div>
 
-      {/* Color Selection */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{
-          display: 'block',
-          fontSize: '13px',
-          fontWeight: 'bold',
-          color: '#555',
-          marginBottom: '10px'
-        }}>
-          Color:
-        </label>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
-          gap: '6px',
-          maxHeight: '150px',
-          overflowY: 'auto',
-          padding: '5px'
-        }}>
-          {Object.values(COLOR_PALETTE).flat().map((color) => {
-            const isSelected = selectedColor === color.hex;
-            return (
-              <button
-                key={`${color.name}-${color.hex}`}
-                onClick={() => handleColorChange(color.hex)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  backgroundColor: color.hex,
-                  border: isSelected ? '3px solid #007bff' : '1px solid #ddd',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                title={color.name}
-              >
-                {isSelected && (
-                  <span style={{
-                    color: getTextColor(color.hex),
-                    fontSize: '16px',
-                    fontWeight: 'bold'
-                  }}>
-                    ✓
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Pattern Selection */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{
-          display: 'block',
-          fontSize: '13px',
-          fontWeight: 'bold',
-          color: '#555',
-          marginBottom: '10px'
-        }}>
-          Pattern:
-        </label>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '8px'
-        }}>
-          {availablePatterns.map((pattern) => {
-            const isSelected = selectedPattern === pattern.id;
-            const isDefault = pattern.id === 'default';
-            
-            return (
-              <button
-                key={pattern.id}
-                onClick={() => handlePatternChange(pattern.id)}
-                style={{
-                  padding: '8px',
-                  border: isSelected ? '3px solid #007bff' : '1px solid #ddd',
-                  borderRadius: '6px',
-                  background: '#ffffff',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.2s',
-                  aspectRatio: '1',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                  position: 'relative'
-                }}
-                title={pattern.name}
-              >
-                {isDefault ? (
-                  <div style={{
-                    width: '100%',
-                    height: '50px',
-                    background: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%), linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%)',
-                    backgroundSize: '8px 8px',
-                    backgroundPosition: '0 0, 4px 4px',
-                    borderRadius: '3px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '10px',
-                    color: '#666'
-                  }}>
-                    None
-                  </div>
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    height: '50px',
-                    backgroundImage: pattern.thumbnail ? `url(${pattern.thumbnail})` : 'none',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    borderRadius: '3px',
-                    backgroundColor: '#f5f5f5'
-                  }} />
-                )}
-                
-                <div style={{
-                  fontSize: '9px',
-                  color: isSelected ? '#007bff' : '#666',
-                  fontWeight: isSelected ? 'bold' : 'normal',
-                  lineHeight: '1.2',
-                  textAlign: 'center',
-                  wordBreak: 'break-word'
-                }}>
-                  {pattern.name.replace(' Pattern', '').replace('Pattern ', '')}
-                </div>
-                
-                {isSelected && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '4px',
-                    right: '4px',
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    fontSize: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    ✓
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      </div>
+          <DialogTitle sx={{ pb: 1 }}>
+            <Typography variant="h6" component="div" fontWeight="bold">
+              Apply to All Parts?
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              This will apply the selected color and pattern to all <strong>12 customizable parts</strong>.
+              <br /><br />
+              Any existing customizations will be overridden.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button 
+              onClick={() => setShowConfirmDialog(false)} 
+              color="inherit"
+              variant="outlined"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowConfirmDialog(false);
+                if (onApplyToAll) {
+                  onApplyToAll(selectedColor, selectedPattern);
+                }
+                onClose();
+              }} 
+              color="primary" 
+              variant="contained"
+              autoFocus
+            >
+              Apply to All
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Paper>
     </>
   );
 }
+
 
 export default PartCustomizationPopup;

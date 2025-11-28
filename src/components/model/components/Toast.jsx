@@ -1,91 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { useResponsive } from '../hooks/useResponsive';
+import { Alert, Slide, Box, IconButton, Collapse } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
-function Toast({ message, duration = 2500, type = 'info', index = 0 }) {
-  const [isVisible, setIsVisible] = useState(true);
-  const { isMobile } = useResponsive();
+function Toast({ message, type = 'info', onClose, duration = 3000 }) {
+  const [open, setOpen] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, duration);
-
-    return () => clearTimeout(timer);
+    if (duration) {
+      const timer = setTimeout(() => {
+        setOpen(false);
+      }, duration);
+      return () => clearTimeout(timer);
+    }
   }, [duration]);
 
-  if (!isVisible) return null;
-
-  const getBackgroundColor = () => {
-    switch (type) {
-      case 'success':
-        return 'rgba(40, 167, 69, 0.95)';
-      case 'error':
-        return 'rgba(220, 53, 69, 0.95)';
-      case 'warning':
-        return 'rgba(255, 193, 7, 0.95)';
-      default:
-        return 'rgba(0, 123, 255, 0.95)';
-    }
-  };
-
-  const getIcon = () => {
-    switch (type) {
-      case 'success':
-        return '✓';
-      case 'error':
-        return '✕';
-      case 'warning':
-        return '⚠';
-      default:
-        return 'ℹ';
-    }
+  // Handle animation complete to trigger actual removal
+  const handleExited = () => {
+    onClose();
   };
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        backgroundColor: getBackgroundColor(),
-        color: 'white',
-        padding: isMobile ? '10px 16px' : '16px 24px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: isMobile ? '8px' : '12px',
-        fontSize: isMobile ? '12px' : '15px',
-        fontWeight: '500',
-        backdropFilter: 'blur(10px)',
-        animation: `slideDown 0.3s ease-out, ${isVisible ? '' : 'fadeOut 0.3s ease-out'}`,
-        minWidth: isMobile ? '200px' : '250px',
-        maxWidth: isMobile ? '90vw' : '500px',
-        pointerEvents: 'auto'
-      }}
-    >
-      <span style={{ fontSize: isMobile ? '14px' : '18px', fontWeight: 'bold' }}>{getIcon()}</span>
-      <span>{message}</span>
-
-      <style>{`
-        @keyframes slideDown {
-          from {
-            transform: translateY(-20px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
+    <Collapse in={open} onExited={handleExited}>
+      <Alert
+        severity={type}
+        variant="filled"
+        elevation={6}
+        sx={{
+          width: '100%',
+          mb: 1, // Margin bottom for spacing between stacked toasts
+          minWidth: '300px'
+        }}
+        action={
+          <IconButton
+            aria-label="close"
+            color="inherit"
+            size="small"
+            onClick={() => setOpen(false)}
+          >
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
         }
-        @keyframes fadeOut {
-          from {
-            opacity: 1;
-          }
-          to {
-            opacity: 0;
-          }
-        }
-      `}</style>
-    </div>
+      >
+        {message}
+      </Alert>
+    </Collapse>
   );
 }
 

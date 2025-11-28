@@ -176,6 +176,7 @@ export interface ProductUpdateData extends Partial<ProductData> {
     caption: string;
     set_primary: boolean;
   }>;
+  current_model_file_path?: string; // Current GLB file path when no new file is selected
 }
 
 // ============================================================================
@@ -673,6 +674,23 @@ class ProductApi {
         });
       } else {
         
+      }
+
+      // Handle 3D customization fields - SAME AS CREATE
+      if (data.model_file) {
+        formData.append('model_file', data.model_file);
+        console.log('✅ Added model_file to FormData (UPDATE):', data.model_file.name, data.model_file.size);
+      } else if (data.current_model_file_path) {
+        // Send current model file path when no new file is selected (similar to current_image for images)
+        formData.append('current_model_file_path', data.current_model_file_path);
+        console.log('✅ Added current_model_file_path to FormData (UPDATE):', data.current_model_file_path);
+      }
+      
+      if (data.customizable_meshes && data.customizable_meshes.length > 0) {
+        data.customizable_meshes.forEach((mesh, index) => {
+          formData.append(`customizable_meshes[${index}]`, mesh);
+        });
+        console.log('✅ Added customizable_meshes to FormData (UPDATE):', data.customizable_meshes);
       }
 
       // Use POST with _method: PUT for FormData (Laravel convention)

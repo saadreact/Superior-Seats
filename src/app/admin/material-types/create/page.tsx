@@ -58,15 +58,21 @@ const CreateMaterialTypePage = () => {
   const [colors, setColors] = useState<Color[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     image: null as File | null,
+    cost: 0,
     price: 0,
     price_tier_ids: [] as number[],
     price_adjustments: {} as Record<string, number>,
-    color_ids: [] as number[]
+    color_ids: [] as number[],
+    vendor_name: '',
+    vendor_email: '',
+    vendor_website: '',
+    vendor_description: ''
   });
   
   const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
@@ -134,26 +140,95 @@ const CreateMaterialTypePage = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      console.log('Image file selected:', file);
-      console.log('File type:', typeof file);
-      console.log('File instanceof File:', file instanceof File);
-      console.log('File name:', file.name);
-      console.log('File size:', file.size);
-      
-      setFormData(prev => ({ ...prev, image: file }));
-      
-      // Verify the state was updated correctly
-      setTimeout(() => {
-        console.log('FormData after image update:', formData);
-      }, 0);
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      processImageFile(file);
     }
   };
+
+  const processImageFile = (file: File) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    console.log('Image file selected:', file);
+    console.log('File type:', typeof file);
+    console.log('File instanceof File:', file instanceof File);
+    console.log('File name:', file.name);
+    console.log('File size:', file.size);
+    
+    setFormData(prev => ({ ...prev, image: file }));
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      processImageFile(file);
+    }
+  };
+
+  // Paste handler
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          if (blob) {
+            // Convert blob to File
+            const file = new File([blob], `pasted-image-${Date.now()}.png`, { type: blob.type });
+            processImageFile(file);
+          }
+          e.preventDefault();
+          break;
+        }
+      }
+    };
+
+    // Add paste event listener when component mounts
+    window.addEventListener('paste', handlePaste);
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, []);
 
   // Removed handlePriceTierChange function as we're using simplified pricing
 
@@ -269,6 +344,11 @@ const CreateMaterialTypePage = () => {
       return;
     }
 
+    if (formData.cost <= 0) {
+      setError('Cost must be greater than 0');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -278,7 +358,7 @@ const CreateMaterialTypePage = () => {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         image: formData.image,
-        cost: 0, // Fixed cost value
+        cost: formData.cost,
         price: formData.price,
         price_tier_ids: enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map(tier => tier.id) : [],
         price_adjustments: enablePriceTiers && calculatedPriceTiers.length > 0 ? Object.fromEntries(
@@ -287,7 +367,11 @@ const CreateMaterialTypePage = () => {
             VariantsCalculation.getFinalPrice(tier)
           ])
         ) : undefined,
-        color_ids: formData.color_ids
+        color_ids: formData.color_ids,
+        vendor_name: formData.vendor_name.trim() || undefined,
+        vendor_email: formData.vendor_email.trim() || undefined,
+        vendor_website: formData.vendor_website.trim() || undefined,
+        vendor_description: formData.vendor_description.trim() || undefined
       };
 
       // Additional debugging for submission data
@@ -495,7 +579,39 @@ const CreateMaterialTypePage = () => {
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Cost"
+                    type="number"
+                    value={formData.cost === 0 ? '0' : formData.cost.toString()}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      if (inputValue === '0') {
+                        handleInputChange('cost', 0);
+                      } else {
+                        const numericValue = parseFloat(inputValue) || 0;
+                        handleInputChange('cost', numericValue);
+                      }
+                    }}
+                    required
+                    fullWidth
+                    placeholder="Enter cost price"
+                    inputProps={{ min: 0, step: 0.01 }}
+                    onFocus={(e) => {
+                      if (e.target.value === '0') {
+                        e.target.select();
+                      }
+                    }}
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontSize: { xs: '1rem', sm: '0.875rem' }
+                      }
+                    }}
+                  />
+                  
                   <TextField
                     label="In Store Price"
                     type="number"
@@ -543,27 +659,53 @@ const CreateMaterialTypePage = () => {
                   <Divider sx={{ mb: 3 }} />
                 
                 <Box>
-                  <input
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="image-upload"
-                    type="file"
-                    onChange={handleImageChange}
-                  />
-                  <label htmlFor="image-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      sx={{ 
-                        mb: 2,
-                        minHeight: { xs: 44, sm: 'auto' },
-                        fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                        width: { xs: '100%', sm: 'auto' }
-                      }}
-                    >
-                      {formData.image ? `Image Selected: ${formData.image.name}` : 'Upload Image'}
-                    </Button>
-                  </label>
+                  {/* Image Upload Area with Drag & Drop, Paste, and Browse */}
+                  <Box
+                    onDragEnter={handleDragEnter}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    sx={{
+                      border: 2,
+                      borderColor: isDragging ? 'primary.main' : 'divider',
+                      borderStyle: isDragging ? 'solid' : 'dashed',
+                      borderRadius: 2,
+                      p: 3,
+                      textAlign: 'center',
+                      bgcolor: isDragging ? 'action.hover' : 'background.paper',
+                      transition: 'all 0.2s ease-in-out',
+                      mb: 2,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        borderColor: 'primary.light',
+                        bgcolor: 'action.hover'
+                      }
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Drag & drop an image here, paste from clipboard (Ctrl+V), or click to browse
+                    </Typography>
+                    
+                    <input
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      id="image-upload"
+                      type="file"
+                      onChange={handleImageChange}
+                    />
+                    <label htmlFor="image-upload">
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        sx={{ 
+                          minHeight: { xs: 44, sm: 'auto' },
+                          fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                        }}
+                      >
+                        {formData.image ? `Change Image: ${formData.image.name}` : 'Browse Files'}
+                      </Button>
+                    </label>
+                  </Box>
                   
                   {imagePreview && (
                     <Box sx={{ mt: 2 }}>
@@ -580,6 +722,91 @@ const CreateMaterialTypePage = () => {
                     </Box>
                   )}
                 </Box>
+                </Box>
+
+                {/* Vendor Information */}
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: 'text.primary', 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}>
+                    Vendor Information
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                <TextField
+                  label="Vendor Name"
+                  value={formData.vendor_name}
+                  onChange={(e) => handleInputChange('vendor_name', e.target.value)}
+                  fullWidth
+                  placeholder="Enter vendor name (optional)"
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
+
+                <TextField
+                  label="Vendor Email"
+                  type="email"
+                  value={formData.vendor_email}
+                  onChange={(e) => handleInputChange('vendor_email', e.target.value)}
+                  fullWidth
+                  placeholder="Enter vendor email (optional)"
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
+
+                <TextField
+                  label="Vendor Website"
+                  type="url"
+                  value={formData.vendor_website}
+                  onChange={(e) => handleInputChange('vendor_website', e.target.value)}
+                  fullWidth
+                  placeholder="Enter vendor website (optional)"
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
+
+                <TextField
+                  label="Vendor Description"
+                  value={formData.vendor_description}
+                  onChange={(e) => handleInputChange('vendor_description', e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  placeholder="Enter vendor description (optional)"
+                  sx={{
+                    mb: 3,
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
                 </Box>
 
                 {/* Price Tiers */}

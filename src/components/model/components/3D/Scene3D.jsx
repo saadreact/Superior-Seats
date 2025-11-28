@@ -2,54 +2,56 @@ import React, { Suspense, useRef, useState, useEffect, useImperativeHandle, forw
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { Box, Button, Stack, Tooltip, useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import CameraswitchIcon from '@mui/icons-material/Cameraswitch';
 import Model3D from './Model3D';
-import { useResponsive } from '../../hooks/useResponsive';
 
 function LoadingFallback() {
   const groupRef = useRef();
   const ringRef = useRef();
   const sphereRef = useRef();
-  
+
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
-    
+
     // Rotate the ring
     if (ringRef.current) {
       ringRef.current.rotation.x += 0.03;
       ringRef.current.rotation.y += 0.02;
     }
-    
+
     // Pulse the sphere
     if (sphereRef.current) {
       const scale = 1 + Math.sin(time * 2) * 0.2;
       sphereRef.current.scale.set(scale, scale, scale);
     }
-    
+
     // Gentle rotation of the whole group
     if (groupRef.current) {
       groupRef.current.rotation.y += 0.01;
     }
   });
-  
+
   return (
     <group ref={groupRef}>
       {/* Rotating ring loader */}
       <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.5, 0.08, 16, 32]} />
-        <meshStandardMaterial 
-          color="#007bff" 
+        <meshStandardMaterial
+          color="#007bff"
           emissive="#0056b3"
           emissiveIntensity={0.5}
           metalness={0.8}
           roughness={0.2}
         />
       </mesh>
-      
+
       {/* Inner pulsing sphere */}
       <mesh ref={sphereRef}>
         <sphereGeometry args={[0.3, 32, 32]} />
-        <meshStandardMaterial 
-          color="#ffffff" 
+        <meshStandardMaterial
+          color="#ffffff"
           emissive="#007bff"
           emissiveIntensity={0.3}
           metalness={0.5}
@@ -58,7 +60,7 @@ function LoadingFallback() {
           opacity={0.8}
         />
       </mesh>
-      
+
       {/* Ambient light for the loader */}
       <pointLight position={[0, 0, 0]} intensity={0.5} color="#007bff" />
     </group>
@@ -67,17 +69,17 @@ function LoadingFallback() {
 
 // Lighting environment presets
 const LIGHTING_ENVIRONMENTS = {
-  bright: {
-    name: 'Bright Studio',
-    ambientIntensity: 0.6,
-    ambientColor: '#ffffff',
-    keyLightIntensity: 2.5,
-    fillLightIntensity: 1.5,
-    rimLightIntensity: 1.0,
-    spotLightIntensity: 2.0,
-    backgroundColor: '#f5f5f5',
-    ambientStrength: 1.0
-  },
+  // bright: {
+  //   name: 'Bright Studio',
+  //   ambientIntensity: 0.6,
+  //   ambientColor: '#ffffff',
+  //   keyLightIntensity: 2.5,
+  //   fillLightIntensity: 1.5,
+  //   rimLightIntensity: 1.0,
+  //   spotLightIntensity: 2.0,
+  //   backgroundColor: '#f5f5f5',
+  //   ambientStrength: 1.0
+  // },
   daylight: {
     name: 'Daylight Neutral',
     ambientIntensity: 0.4,
@@ -88,26 +90,49 @@ const LIGHTING_ENVIRONMENTS = {
     spotLightIntensity: 1.5,
     backgroundColor: '#f5f5f5',
     ambientStrength: 0.5
-  },
-  dark: {
-    name: 'Dark Moody',
-    ambientIntensity: 0.2,
-    ambientColor: '#6699cc',
-    keyLightIntensity: 1.8,
-    fillLightIntensity: 0.8,
-    rimLightIntensity: 0.5,
-    spotLightIntensity: 1.0,
-    backgroundColor: '#2a2a3a',
-    ambientStrength: 0.3
   }
+  // dark: {
+  //   name: 'Dark Moody',
+  //   ambientIntensity: 0.2,
+  //   ambientColor: '#6699cc',
+  //   keyLightIntensity: 1.8,
+  //   fillLightIntensity: 0.8,
+  //   rimLightIntensity: 0.5,
+  //   spotLightIntensity: 1.0,
+  //   backgroundColor: '#2a2a3a',
+  //   ambientStrength: 0.3
+  // }
 };
 
-const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, patternId, meshCustomizations, highlightedMesh, onPartRightClick, seatType, onResetModel, glowEditableParts }, ref) => {
+const Scene3D = forwardRef(({
+  modelFileUrl, // NEW prop
+  modelId,
+  stitchColor,
+  fabricColor,
+  fabricType,
+  patternId,
+  meshCustomizations,
+  highlightedMesh,
+  onPartRightClick,
+  seatType,
+  onResetModel,
+  glowEditableParts
+}, ref) => {
   const controlsRef = useRef();
   const canvasRef = useRef();
   const [lightingEnv, setLightingEnv] = useState('daylight');
-  const { isMobile } = useResponsive();
-  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // Log model source for debugging
+  useEffect(() => {
+    console.log('🎨 Scene3D loading model:', {
+      source: modelFileUrl ? 'API' : 'Default',
+      url: modelFileUrl || '/models/chair.glb'
+    });
+  }, [modelFileUrl]);
+
   const currentEnv = LIGHTING_ENVIRONMENTS[lightingEnv];
 
   // Expose capture function to parent
@@ -154,21 +179,21 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
       return images;
     }
   }));
-  
+
   // Prevent browser context menu globally
   useEffect(() => {
     const preventContextMenu = (e) => {
       e.preventDefault();
       return false;
     };
-    
+
     document.addEventListener('contextmenu', preventContextMenu);
-    
+
     return () => {
       document.removeEventListener('contextmenu', preventContextMenu);
     };
   }, []);
-  
+
   const resetCamera = () => {
     if (controlsRef.current) {
       // Reset camera position
@@ -179,24 +204,24 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
       controlsRef.current.update();
     }
   };
-  
+
   return (
-    <div ref={canvasRef} style={{ 
-      width: '100%', 
-      height: '100%', 
-      background: currentEnv.backgroundColor,
+    <Box ref={canvasRef} sx={{
+      width: '100%',
+      height: '100%',
+      bgcolor: currentEnv.backgroundColor,
       position: 'relative',
-      margin: 0,
-      padding: 0
+      m: 0,
+      p: 0
     }}>
       <Canvas
         camera={{
-          position: [3, 2, 3], 
+          position: [3, 2, 3],
           fov: 60,
           near: 0.1,
           far: 1000
         }}
-        gl={{ 
+        gl={{
           antialias: true,
           alpha: false,
           powerPreference: "high-performance",
@@ -212,10 +237,10 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
         <color attach="background" args={[currentEnv.backgroundColor]} />
         {/* Dynamic lighting setup based on environment */}
         <ambientLight intensity={currentEnv.ambientIntensity} color={currentEnv.ambientColor} />
-        
+
         {/* Main key light */}
-        <directionalLight 
-          position={[5, 8, 5]} 
+        <directionalLight
+          position={[5, 8, 5]}
           intensity={currentEnv.keyLightIntensity}
           color="#ffffff"
           castShadow
@@ -228,21 +253,21 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
           shadow-camera-bottom={-10}
           shadow-bias={-0.0001}
         />
-        
+
         {/* Fill light from opposite side */}
-        <directionalLight 
-          position={[0, 6, -3]} 
+        <directionalLight
+          position={[0, 6, -3]}
           intensity={currentEnv.fillLightIntensity}
           color="#fff8e1"
         />
-        
+
         {/* Top rim light for definition */}
-        <directionalLight 
-          position={[0, 10, -6]} 
+        <directionalLight
+          position={[0, 10, -6]}
           intensity={currentEnv.rimLightIntensity}
           color="#ffffff"
         />
-        
+
         {/* Additional spot for material highlights */}
         <spotLight
           position={[0, 6, 8]}
@@ -251,10 +276,11 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
           intensity={currentEnv.spotLightIntensity}
           color="#ffffff"
         />
-        
+
         {/* Chair Model with Suspense for loading */}
         <Suspense fallback={<LoadingFallback />}>
-          <Model3D 
+          <Model3D
+            modelFileUrl={modelFileUrl} // Pass dynamic URL
             modelId={modelId}
             stitchColor={stitchColor}
             fabricColor={fabricColor}
@@ -268,9 +294,9 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
             glowEditableParts={glowEditableParts}
           />
         </Suspense>
-        
+
         {/* Ground shadow removed for maximum brightness */}
-        
+
         {/* Controls - Rotation and zoom around model origin */}
         <OrbitControls
           ref={controlsRef}
@@ -279,181 +305,162 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
           enableRotate={true}
           enableDamping={true}
           dampingFactor={0.05}
-          target={[0,0,0]}
+          target={[0, 0, 0]}
           zoomSpeed={0.5}
           minDistance={0.8}
           maxDistance={3}
           autoRotate={false}
         />
       </Canvas>
-      
+
       {/* Lighting Environment Controls */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        display: 'flex',
-        gap: '6px',
-        zIndex: 10,
-        flexWrap: 'wrap',
-        maxWidth: 'calc(100% - 20px)'
-      }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          zIndex: 10,
+          flexWrap: 'wrap',
+          maxWidth: 'calc(100% - 20px)'
+        }}
+      >
         {Object.entries(LIGHTING_ENVIRONMENTS).map(([key, env]) => (
-          <button
-            key={key}
-            onClick={() => setLightingEnv(key)}
-            style={{
-              padding: isMobile ? '6px 10px' : '10px 16px',
-              backgroundColor: lightingEnv === key 
-                ? 'rgba(0, 123, 255, 0.95)' 
-                : 'rgba(255, 255, 255, 0.85)',
-              color: lightingEnv === key ? 'white' : '#333',
-              border: lightingEnv === key ? 'none' : '1px solid #ddd',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: isMobile ? '10px' : '13px',
-              fontWeight: lightingEnv === key ? '600' : '500',
-              boxShadow: lightingEnv === key 
-                ? '0 2px 8px rgba(0, 123, 255, 0.3)' 
-                : '0 2px 4px rgba(0,0,0,0.1)',
-              transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={(e) => {
-              if (lightingEnv !== key) {
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-                e.target.style.transform = 'translateY(-1px)';
-                e.target.style.boxShadow = '0 3px 6px rgba(0,0,0,0.15)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (lightingEnv !== key) {
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-              }
-            }}
-            title={`Switch to ${env.name} lighting`}
-          >
-            {env.name}
-          </button>
+          <Tooltip key={key} title={`Switch to ${env.name} lighting`}>
+            <Button
+              onClick={() => setLightingEnv(key)}
+              size="small"
+              sx={{
+                minWidth: 'auto',
+                px: isMobile ? 1 : 2,
+                py: isMobile ? 0.5 : 1,
+                bgcolor: lightingEnv === key ? 'primary.main' : 'rgba(255, 255, 255, 0.85)',
+                color: lightingEnv === key ? 'white' : 'text.primary',
+                border: lightingEnv === key ? 'none' : 1,
+                borderColor: 'divider',
+                borderRadius: 1,
+                fontSize: isMobile ? '0.65rem' : '0.8rem',
+                fontWeight: lightingEnv === key ? 600 : 500,
+                boxShadow: lightingEnv === key ? 2 : 1,
+                backdropFilter: 'blur(10px)',
+                textTransform: 'none',
+                '&:hover': {
+                  bgcolor: lightingEnv === key ? 'primary.dark' : 'rgba(255, 255, 255, 0.95)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: 3
+                },
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {env.name}
+            </Button>
+          </Tooltip>
         ))}
-      </div>
-      
+      </Stack>
+
       {/* Reset Buttons Container */}
-      <div style={{
-        position: 'absolute',
-        bottom: isMobile ? '80px' : '20px',
-        left: '10px',
-        right: '10px',
-        display: 'flex',
-        gap: isMobile ? '8px' : '12px',
-        zIndex: 10,
-        flexWrap: 'wrap',
-        justifyContent: isMobile ? 'center' : 'flex-start'
-      }}>
+      <Stack
+        direction="row"
+        spacing={isMobile ? 1 : 1.5}
+        sx={{
+          position: 'absolute',
+          bottom: isMobile ? 80 : 20,
+          left: 10,
+          right: 10,
+          zIndex: 10,
+          justifyContent: isMobile ? 'center' : 'flex-start'
+        }}
+      >
         {/* Reset View Button */}
-        <button
-          onClick={resetCamera}
-          style={{
-            padding: isMobile ? '8px 12px' : '12px 20px',
-            backgroundColor: 'rgba(0, 123, 255, 0.85)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: isMobile ? '11px' : '14px',
-            fontWeight: '600',
-            boxShadow: '0 2px 8px rgba(0, 123, 255, 0.3)',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: isMobile ? '4px' : '8px',
-            backdropFilter: 'blur(10px)',
-            flex: isMobile ? '1' : 'initial'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = 'rgba(0, 86, 179, 0.95)';
-            e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = '0 4px 12px rgba(0, 123, 255, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'rgba(0, 123, 255, 0.85)';
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 2px 8px rgba(0, 123, 255, 0.3)';
-          }}
-          title="Reset camera to default position"
-        >
-          <svg 
-            width={isMobile ? "12" : "16"} 
-            height={isMobile ? "12" : "16"}
-            viewBox="0 0 24 24"
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
+        <Tooltip title="Reset camera to default position">
+          <Button
+            onClick={resetCamera}
+            startIcon={<CameraswitchIcon />}
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'white',
+              borderRadius: 2,
+              px: isMobile ? 1.5 : 2.5,
+              py: isMobile ? 1 : 1.5,
+              fontSize: isMobile ? '0.7rem' : '0.875rem',
+              fontWeight: 600,
+              boxShadow: 3,
+              backdropFilter: 'blur(10px)',
+              textTransform: 'none',
+              '&:hover': {
+                bgcolor: 'primary.dark',
+                transform: 'translateY(-2px)',
+                boxShadow: 4
+              },
+              transition: 'all 0.2s ease'
+            }}
           >
-            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-            <path d="M21 3v5h-5" />
-            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-            <path d="M3 21v-5h5" />
-          </svg>
-          Reset View
-        </button>
-        
+            Reset View
+          </Button>
+        </Tooltip>
+
         {/* Reset Model Button */}
-        <button
-          onClick={onResetModel}
-          style={{
-            padding: isMobile ? '8px 12px' : '12px 20px',
-            backgroundColor: 'rgba(220, 53, 69, 0.85)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: isMobile ? '11px' : '14px',
-            fontWeight: '600',
-            boxShadow: '0 2px 8px rgba(220, 53, 69, 0.3)',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: isMobile ? '4px' : '8px',
-            backdropFilter: 'blur(10px)',
-            flex: isMobile ? '1' : 'initial'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = 'rgba(177, 35, 50, 0.95)';
-            e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'rgba(220, 53, 69, 0.85)';
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 2px 8px rgba(220, 53, 69, 0.3)';
-          }}
-          title="Reset model to default settings"
-        >
-          <svg 
-            width={isMobile ? "12" : "16"} 
-            height={isMobile ? "12" : "16"}
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
+        <Tooltip title="Reset model to default settings">
+          <Button
+            onClick={() => setShowResetConfirm(true)}
+            startIcon={<RestartAltIcon />}
+            sx={{
+              bgcolor: 'error.main',
+              color: 'white',
+              borderRadius: 2,
+              px: isMobile ? 1.5 : 2.5,
+              py: isMobile ? 1 : 1.5,
+              fontSize: isMobile ? '0.7rem' : '0.875rem',
+              fontWeight: 600,
+              boxShadow: 3,
+              backdropFilter: 'blur(10px)',
+              textTransform: 'none',
+              '&:hover': {
+                bgcolor: 'error.dark',
+                transform: 'translateY(-2px)',
+                boxShadow: 4
+              },
+              transition: 'all 0.2s ease'
+            }}
           >
-            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-            <path d="M21 3v5h-5" />
-            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-            <path d="M3 21v-5h5" />
-          </svg>
-          Reset Model
-        </button>
-      </div>
-    </div>
+            Reset Model
+          </Button>
+        </Tooltip>
+      </Stack>
+      {/* Reset Confirmation Dialog */}
+      <Dialog
+        open={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        PaperProps={{
+          sx: { borderRadius: 3, p: 1 }
+        }}
+      >
+        <DialogTitle>Reset All Customizations?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This will clear all your customizations and return the seat to default settings.
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowResetConfirm(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setShowResetConfirm(false);
+              onResetModel();
+            }}
+            color="error"
+            variant="contained"
+            autoFocus
+          >
+            Reset All
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 });
 

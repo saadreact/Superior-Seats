@@ -950,6 +950,7 @@ const EditProduct2Page = () => {
         
         // 3D customization fields
         model_file: formData.isCustomize3dProduct && glbFile ? glbFile : undefined,
+        current_model_file_path: formData.isCustomize3dProduct && !glbFile && currentGlbPath ? currentGlbPath : undefined,
         customizable_meshes: formData.isCustomize3dProduct && meshesArray.length > 0 ? meshesArray : undefined,
         
         // Combine existing and new images into single image_data array (like backend expects)
@@ -1568,7 +1569,7 @@ const EditProduct2Page = () => {
                       </Box>
 
                       {/* Customizable Meshes */}
-                      <Box>
+                      {/* <Box>
                         <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                           Customizable Mesh Names (Optional)
                         </Typography>
@@ -1582,7 +1583,7 @@ const EditProduct2Page = () => {
                           helperText="Enter comma-separated mesh names from your 3D model that customers can customize. Leave empty to allow all meshes to be customizable."
                           sx={{ bgcolor: 'white' }}
                         />
-                      </Box>
+                      </Box> */}
                     </Box>
                   </Box>
                 )}
