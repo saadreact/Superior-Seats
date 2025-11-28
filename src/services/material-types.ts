@@ -130,6 +130,7 @@ class MaterialTypesService {
     name?: string;
     description?: string;
     image?: File | null;
+    current_image?: string; // Current image path when no new image is selected
     cost?: number;
     price?: number;
     is_active?: boolean;
@@ -205,6 +206,11 @@ class MaterialTypesService {
         if (data.cost !== undefined) formData.append('cost', data.cost.toString());
         if (data.price !== undefined) formData.append('price', data.price.toString());
         if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
+        
+        // Append current image path if provided (when no new image is selected)
+        if (data.current_image) {
+          formData.append('current_image', data.current_image);
+        }
         
         // Append price tier IDs as array
         if (data.price_tier_ids && Array.isArray(data.price_tier_ids)) {

@@ -7,7 +7,7 @@ export default function CustomizeYourSeatPage() {
   return (
     <LazyComponent
       component={() => import('@/components/CustomizeYourSeat')}
-      loadingText="Loading Customize Your Seat..."
+      loadingText="Loading 3D Customizable Products..."
     />
   );
 }

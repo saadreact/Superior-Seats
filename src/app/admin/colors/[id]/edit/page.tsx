@@ -119,6 +119,7 @@ const EditColorPage = () => {
   const [selectedMaterialType, setSelectedMaterialType] = useState<number>(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [isDragging, setIsDragging] = useState(false);
   const [colorVendors, setColorVendors] = useState<ColorVendor[]>([]);
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
   const [loading, setLoading] = useState(false);
@@ -323,14 +324,88 @@ const EditColorPage = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      processImageFile(file);
     }
   };
+
+  const processImageFile = (file: File) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      processImageFile(file);
+    }
+  };
+
+  // Paste handler
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          if (blob) {
+            // Convert blob to File
+            const file = new File([blob], `pasted-image-${Date.now()}.png`, { type: blob.type });
+            processImageFile(file);
+          }
+          e.preventDefault();
+          break;
+        }
+      }
+    };
+
+    // Add paste event listener when component mounts
+    window.addEventListener('paste', handlePaste);
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, []);
 
   const handleRemoveImage = () => {
     setImageFile(null);
@@ -746,54 +821,38 @@ const EditColorPage = () => {
                   <Typography variant="subtitle2" gutterBottom>
                     Color Texture Image (Optional)
                   </Typography>
-                  {imagePreview ? (
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Box sx={{ position: 'relative' }}>
-                        <Box
-                          component="img"
-                          src={imagePreview}
-                          alt="Preview"
-                          sx={{
-                            width: 100,
-                            height: 100,
-                            objectFit: 'cover',
-                            borderRadius: 1,
-                            border: '1px solid #ddd',
-                          }}
-                        />
-                        <IconButton
-                          size="small"
-                          onClick={handleRemoveImage}
-                          sx={{
-                            position: 'absolute',
-                            top: -8,
-                            right: -8,
-                            bgcolor: 'background.paper',
-                            '&:hover': { bgcolor: 'error.light' },
-                          }}
-                        >
-                          ✕
-                        </IconButton>
-                      </Box>
-                      <Button
-                        variant="outlined"
-                        component="label"
-                      >
-                        Change Image
-                        <input
-                          type="file"
-                          hidden
-                          accept="image/*"
-                          onChange={handleImageChange}
-                        />
-                      </Button>
-                    </Stack>
-                  ) : (
+                  {/* Image Upload Area with Drag & Drop, Paste, and Browse */}
+                  <Box
+                    onDragEnter={handleDragEnter}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    sx={{
+                      border: 2,
+                      borderColor: isDragging ? 'primary.main' : 'divider',
+                      borderStyle: isDragging ? 'solid' : 'dashed',
+                      borderRadius: 2,
+                      p: 3,
+                      textAlign: 'center',
+                      bgcolor: isDragging ? 'action.hover' : 'background.paper',
+                      transition: 'all 0.2s ease-in-out',
+                      mb: 2,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        borderColor: 'primary.light',
+                        bgcolor: 'action.hover'
+                      }
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Drag & drop an image here, paste from clipboard (Ctrl+V), or click to browse
+                    </Typography>
+                    
                     <Button
                       variant="outlined"
                       component="label"
                     >
-                      Upload Image
+                      {imagePreview ? 'Change Image' : 'Browse Files'}
                       <input
                         type="file"
                         hidden
@@ -801,6 +860,36 @@ const EditColorPage = () => {
                         onChange={handleImageChange}
                       />
                     </Button>
+                  </Box>
+
+                  {imagePreview && (
+                    <Box sx={{ mt: 2, position: 'relative', display: 'inline-block' }}>
+                      <Box
+                        component="img"
+                        src={imagePreview}
+                        alt="Preview"
+                        sx={{
+                          width: 100,
+                          height: 100,
+                          objectFit: 'cover',
+                          borderRadius: 1,
+                          border: '1px solid #ddd',
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={handleRemoveImage}
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          bgcolor: 'background.paper',
+                          '&:hover': { bgcolor: 'error.light' },
+                        }}
+                      >
+                        ✕
+                      </IconButton>
+                    </Box>
                   )}
                 </Box>
 

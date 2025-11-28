@@ -8,10 +8,24 @@ import SubmitButton from './components/SubmitButton';
 import Toast from './components/Toast';
 import InfoPopup from './components/InfoPopup';
 
-function App({ onSubmit }) {
+function App({
+  onSubmit,
+  modelFileUrl,
+  availableMaterials,
+  customizeOptions
+}) {
   const scene3DRef = useRef();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Log received props for debugging
+  if (modelFileUrl || availableMaterials?.length > 0) {
+    console.log('📦 App.jsx received props:', {
+      modelUrl: modelFileUrl,
+      materialsCount: availableMaterials?.length || 0,
+      hasOptions: !!customizeOptions
+    });
+  }
 
   const [modelId, setModelId] = useState('1');
   const [stitchColor, setStitchColor] = useState('#ffffff');
@@ -170,24 +184,24 @@ function App({ onSubmit }) {
   const handleApplyToAll = (color, pattern) => {
     // Apply the color and pattern to all customizable parts
     const newCustomizations = {};
-    
+
     CUSTOMIZABLE_PARTS.forEach(partName => {
       newCustomizations[partName] = {
         fabricColor: color,
         patternId: pattern
       };
     });
-    
+
     // Update all customizations at once
     setMeshCustomizations(newCustomizations);
-    
+
     // Update part click states to mark all as customized (state 2 = color + pattern)
     const newClickStates = {};
     CUSTOMIZABLE_PARTS.forEach(partName => {
       newClickStates[partName] = 2;
     });
     setPartClickStates(newClickStates);
-    
+
     // Show success toast
     addToast(`✓ Applied to all ${CUSTOMIZABLE_PARTS.length} parts!`, 'success');
   };
@@ -351,6 +365,7 @@ function App({ onSubmit }) {
         flexShrink: 0
       }}>
         <CustomizationPanel
+          availableMaterials={availableMaterials} // Pass API materials
           modelId={modelId}
           onModelIdChange={setModelId}
           stitchColor={stitchColor}
@@ -382,6 +397,7 @@ function App({ onSubmit }) {
       }}>
         <Scene3D
           ref={scene3DRef}
+          modelFileUrl={modelFileUrl} // Pass API model URL
           modelId={modelId}
           stitchColor={stitchColor}
           fabricColor={fabricColor}
