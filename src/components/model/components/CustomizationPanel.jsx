@@ -10,7 +10,11 @@ import {
   Tooltip,
   useTheme,
   Button,
-  Divider
+  Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { AVAILABLE_MODELS, CUSTOMIZATION_OPTIONS } from '../config/assets';
@@ -19,6 +23,7 @@ import { getPatternOptionsForModel } from '../utils/PatternLoader';
 import { getColorsForFabric } from '../config/fabricColors';
 
 function CustomizationPanel({
+  availableMaterials, // NEW: API materials
   modelId,
   onModelIdChange,
   stitchColor,
@@ -54,23 +59,62 @@ function CustomizationPanel({
     return brightness > 128 ? '#000000' : '#FFFFFF';
   };
 
-  const fabricTypeOptions = [
-    // Main commercial fabric types with specific color palettes
-    { id: 'carroll-leather', name: 'Carroll Leather', icon: 'CL', description: 'Authentic premium leather collections', image: '/assets/fabrics/CarrollLeather.png' },
-    { id: 'miami-vinyl', name: 'Miami Vinyl\'s', icon: 'MV', description: 'Premium marine-grade vinyl', image: '/assets/fabrics/MiamiVinyl.png' },
-    { id: 'ultrafabrics', name: 'Ultrafabrics', icon: 'UL', description: 'High-performance synthetic leather', image: '/assets/fabrics/UltraLeather.png' },
-    { id: 'brisa', name: 'Brisa Distressed', icon: 'BD', description: 'Weathered distressed leather look', image: '/assets/fabrics/BrisaDistressed.png' },
-    // Original fabric types (no specific color restrictions)
-    { id: 'leather', name: 'Premium Leather', icon: 'L', description: 'Luxury leather with natural texture', image: '/assets/fabrics/PremiumLeather.png' },
-    { id: 'cloth', name: 'Fabric Cloth', icon: 'F', description: 'Soft woven fabric material', image: '/assets/fabrics/FabricCloth.png' },
-    { id: 'suede', name: 'Suede Material', icon: 'S', description: 'Soft brushed suede finish', image: '/assets/fabrics/SuedeMaterial.png' },
-    { id: 'vinyl', name: 'Synthetic Vinyl', icon: 'V', description: 'Durable synthetic material', image: '/assets/fabrics/SyntheticVinyl.png' },
-    { id: 'mesh', name: 'Breathable Mesh', icon: 'M', description: 'Ventilated mesh fabric', image: '/assets/fabrics/BreathableMesh.png' },
-    { id: 'carbon', name: 'Carbon Fiber', icon: 'C', description: 'High-tech carbon fiber weave', image: '/assets/fabrics/CarbonFiber.png' },
-  ];
+  // Transform API materials into fabric type options
+  const fabricTypeOptions = useMemo(() => {
+    if (availableMaterials && availableMaterials.length > 0) {
+      console.log('🎨 Using API materials for fabric types');
+      return availableMaterials.map(mat => {
+        // Build image URL from API
+        let imageUrl = '/assets/fabrics/PremiumLeather.png'; // Default fallback
+        if (mat.image) {
+          imageUrl = mat.image.startsWith('http')
+            ? mat.image
+            : `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL}${mat.image}`;
+        }
+        
+        return {
+          id: mat.id.toString(), // Ensure ID is string
+          name: mat.name,
+          icon: mat.name.charAt(0).toUpperCase(), // Simple icon fallback
+          description: mat.description || mat.name,
+          image: imageUrl
+        };
+      });
+    }
+
+    // Fallback to hardcoded options
+    console.log('⚠️ Using fallback fabric types');
+    return [
+      // Main commercial fabric types with specific color palettes
+      { id: 'carroll-leather', name: 'Carroll Leather', icon: 'CL', description: 'Authentic premium leather collections', image: '/assets/fabrics/CarrollLeather.png' },
+      { id: 'miami-vinyl', name: 'Miami Vinyl\'s', icon: 'MV', description: 'Premium marine-grade vinyl', image: '/assets/fabrics/MiamiVinyl.png' },
+      { id: 'ultrafabrics', name: 'Ultrafabrics', icon: 'UL', description: 'High-performance synthetic leather', image: '/assets/fabrics/UltraLeather.png' },
+      { id: 'brisa', name: 'Brisa Distressed', icon: 'BD', description: 'Weathered distressed leather look', image: '/assets/fabrics/BrisaDistressed.png' },
+      // Original fabric types (no specific color restrictions)
+      { id: 'leather', name: 'Premium Leather', icon: 'L', description: 'Luxury leather with natural texture', image: '/assets/fabrics/PremiumLeather.png' },
+      { id: 'cloth', name: 'Fabric Cloth', icon: 'F', description: 'Soft woven fabric material', image: '/assets/fabrics/FabricCloth.png' },
+      { id: 'suede', name: 'Suede Material', icon: 'S', description: 'Soft brushed suede finish', image: '/assets/fabrics/SuedeMaterial.png' },
+      { id: 'vinyl', name: 'Synthetic Vinyl', icon: 'V', description: 'Durable synthetic material', image: '/assets/fabrics/SyntheticVinyl.png' },
+      { id: 'mesh', name: 'Breathable Mesh', icon: 'M', description: 'Ventilated mesh fabric', image: '/assets/fabrics/BreathableMesh.png' },
+      { id: 'carbon', name: 'Carbon Fiber', icon: 'C', description: 'High-tech carbon fiber weave', image: '/assets/fabrics/CarbonFiber.png' },
+    ];
+  }, [availableMaterials]);
 
   // Get available colors based on fabric type
   const availableFabricColors = useMemo(() => {
+    // 1. Try to find colors from API data first
+    if (availableMaterials && availableMaterials.length > 0) {
+      const selectedMaterial = availableMaterials.find(m => m.id.toString() === fabricType);
+      if (selectedMaterial && selectedMaterial.colors) {
+        console.log(`🎨 Found ${selectedMaterial.colors.length} API colors for ${fabricType}`);
+        return selectedMaterial.colors.map(c => ({
+          name: c.name,
+          hex: c.hex_code
+        }));
+      }
+    }
+
+    // 2. Fallback to existing logic
     // Check if this fabric type has specific colors defined
     const specificColors = getColorsForFabric(fabricType);
 
@@ -81,7 +125,7 @@ function CustomizationPanel({
 
     // Fall back to general color palette for other fabric types
     return Object.values(COLOR_PALETTE).flat();
-  }, [fabricType]);
+  }, [fabricType, availableMaterials]);
 
   // Load available patterns based on current model
   useEffect(() => {
@@ -122,81 +166,89 @@ function CustomizationPanel({
           Fabric Type
         </Typography>
 
-        <Grid container spacing={1}>
-          {fabricTypeOptions.map((option) => (
-            <Grid item xs={6} sm={4} md={2.4} key={option.id}>
-              <Tooltip title={option.description} arrow placement="top">
-                <ButtonBase
-                  onClick={() => onFabricTypeChange(option.id)}
-                  sx={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    p: 0.5,
-                    border: 1,
-                    borderColor: fabricType === option.id ? 'primary.main' : 'divider',
-                    borderRadius: 1,
-                    bgcolor: 'background.paper',
-                    transition: 'all 0.2s ease-in-out',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    boxShadow: fabricType === option.id ? 2 : 0,
-                    '&:hover': {
-                      borderColor: 'primary.light',
-                      bgcolor: 'action.hover',
-                      transform: 'scale(1.05)',
-                      boxShadow: 2
-                    }
-                  }}
-                >
-                  {/* Fabric Image */}
-                  <Box sx={{
-                    width: '100%',
-                    height: 24,
-                    backgroundImage: `url(${option.image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    borderRadius: 0.5,
-                    border: 1,
-                    borderColor: 'divider'
-                  }} />
+        {/* Material Type Dropdown */}
+        <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+          <InputLabel>Select Material Type</InputLabel>
+          <Select
+            value={fabricType || ''}
+            label="Select Material Type"
+            onChange={(e) => onFabricTypeChange(e.target.value)}
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            {fabricTypeOptions.map((option) => (
+              <MenuItem key={option.id} value={option.id}>
+                {option.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-                  {/* Fabric Name */}
-                  <Typography variant="caption" sx={{
-                    fontSize: '0.65rem',
-                    lineHeight: 1.1,
-                    textAlign: 'center',
-                    color: fabricType === option.id ? 'primary.main' : 'text.secondary',
-                    fontWeight: fabricType === option.id ? 'bold' : 'regular'
-                  }}>
-                    {option.name}
-                  </Typography>
+        {/* Selected Material Image Tile */}
+        {fabricType && (() => {
+          const selectedMaterial = availableMaterials?.find(m => m.id.toString() === fabricType);
+          const selectedColor = availableFabricColors.find(c => c.hex === fabricColor);
+          const selectedColorData = selectedMaterial?.colors?.find(c => c.hex_code === fabricColor);
+          
+          // Determine which image to show: color-specific image if available, otherwise base material image
+          let displayImage = null;
+          if (selectedColorData?.image) {
+            // Use color-specific image from API
+            displayImage = selectedColorData.image.startsWith('http') 
+              ? selectedColorData.image 
+              : `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL}${selectedColorData.image}`;
+          } else if (selectedMaterial?.image) {
+            // Use base material image from API
+            displayImage = selectedMaterial.image.startsWith('http')
+              ? selectedMaterial.image
+              : `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL}${selectedMaterial.image}`;
+          } else {
+            // Fallback to fabricTypeOptions image
+            const option = fabricTypeOptions.find(opt => opt.id === fabricType);
+            displayImage = option?.image || '/assets/fabrics/PremiumLeather.png';
+          }
 
-                  {/* Selection Indicator */}
-                  {fabricType === option.id && (
-                    <Box sx={{
-                      position: 'absolute',
-                      top: 2,
-                      right: 2,
-                      width: 12,
-                      height: 12,
-                      borderRadius: '50%',
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <CheckIcon sx={{ fontSize: 10 }} />
-                    </Box>
-                  )}
-                </ButtonBase>
-              </Tooltip>
-            </Grid>
-          ))}
-        </Grid>
+          return (
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 1,
+                borderColor: 'primary.main',
+                borderWidth: 2,
+                bgcolor: 'background.paper'
+              }}
+            >
+              <Typography variant="body2" fontWeight={600} color="primary.main">
+                {selectedMaterial?.name || fabricTypeOptions.find(opt => opt.id === fabricType)?.name}
+              </Typography>
+              <Box
+                sx={{
+                  width: '100%',
+                  maxWidth: 200,
+                  height: 120,
+                  backgroundImage: `url(${displayImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  borderRadius: 1,
+                  border: 1,
+                  borderColor: 'divider',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              />
+              {selectedColor && (
+                <Typography variant="caption" color="text.secondary">
+                  Color: {selectedColor.name}
+                </Typography>
+              )}
+            </Paper>
+          );
+        })()}
       </Box>
 
       <Divider sx={{ my: 2 }} />

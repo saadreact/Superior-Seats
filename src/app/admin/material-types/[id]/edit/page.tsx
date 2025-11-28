@@ -62,6 +62,7 @@ const EditMaterialTypePage = () => {
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -247,26 +248,95 @@ const EditMaterialTypePage = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      console.log('Image file selected:', file);
-      console.log('File type:', typeof file);
-      console.log('File instanceof File:', file instanceof File);
-      console.log('File name:', file.name);
-      console.log('File size:', file.size);
-      
-      setFormData(prev => ({ ...prev, image: file }));
-      
-      // Verify the state was updated correctly
-      setTimeout(() => {
-        console.log('FormData after image update:', formData);
-      }, 0);
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      processImageFile(file);
     }
   };
+
+  const processImageFile = (file: File) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    console.log('Image file selected:', file);
+    console.log('File type:', typeof file);
+    console.log('File instanceof File:', file instanceof File);
+    console.log('File name:', file.name);
+    console.log('File size:', file.size);
+    
+    setFormData(prev => ({ ...prev, image: file }));
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      processImageFile(file);
+    }
+  };
+
+  // Paste handler
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          if (blob) {
+            // Convert blob to File
+            const file = new File([blob], `pasted-image-${Date.now()}.png`, { type: blob.type });
+            processImageFile(file);
+          }
+          e.preventDefault();
+          break;
+        }
+      }
+    };
+
+    // Add paste event listener when component mounts
+    window.addEventListener('paste', handlePaste);
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, []);
 
   // Removed handlePriceTierChange function as we're using simplified pricing
 
@@ -713,7 +783,7 @@ const EditMaterialTypePage = () => {
                       </Typography>
                       <Box
                         component="img"
-                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${currentImage}`}
+                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${currentImage}`}
                         alt="Current"
                         sx={{
                           maxWidth: '100%',
@@ -744,28 +814,53 @@ const EditMaterialTypePage = () => {
                     </Box>
                   )}
 
-                  {/* New Image Upload */}
-                  <input
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="image-upload"
-                    type="file"
-                    onChange={handleImageChange}
-                  />
-                  <label htmlFor="image-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      sx={{ 
-                        mb: 2,
-                        minHeight: { xs: 44, sm: 'auto' },
-                        fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                        width: { xs: '100%', sm: 'auto' }
-                      }}
-                    >
-                      {formData.image ? `Change Image: ${formData.image.name}` : 'Upload New Image'}
-                    </Button>
-                  </label>
+                  {/* Image Upload Area with Drag & Drop, Paste, and Browse */}
+                  <Box
+                    onDragEnter={handleDragEnter}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    sx={{
+                      border: 2,
+                      borderColor: isDragging ? 'primary.main' : 'divider',
+                      borderStyle: isDragging ? 'solid' : 'dashed',
+                      borderRadius: 2,
+                      p: 3,
+                      textAlign: 'center',
+                      bgcolor: isDragging ? 'action.hover' : 'background.paper',
+                      transition: 'all 0.2s ease-in-out',
+                      mb: 2,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        borderColor: 'primary.light',
+                        bgcolor: 'action.hover'
+                      }
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Drag & drop an image here, paste from clipboard (Ctrl+V), or click to browse
+                    </Typography>
+                    
+                    <input
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      id="image-upload"
+                      type="file"
+                      onChange={handleImageChange}
+                    />
+                    <label htmlFor="image-upload">
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        sx={{ 
+                          minHeight: { xs: 44, sm: 'auto' },
+                          fontSize: { xs: '0.95rem', sm: '0.875rem' }
+                        }}
+                      >
+                        {formData.image ? `Change Image: ${formData.image.name}` : 'Browse Files'}
+                      </Button>
+                    </label>
+                  </Box>
                   
                   {/* New Image Preview */}
                   {imagePreview && (

@@ -69,17 +69,17 @@ function LoadingFallback() {
 
 // Lighting environment presets
 const LIGHTING_ENVIRONMENTS = {
-  bright: {
-    name: 'Bright Studio',
-    ambientIntensity: 0.6,
-    ambientColor: '#ffffff',
-    keyLightIntensity: 2.5,
-    fillLightIntensity: 1.5,
-    rimLightIntensity: 1.0,
-    spotLightIntensity: 2.0,
-    backgroundColor: '#f5f5f5',
-    ambientStrength: 1.0
-  },
+  // bright: {
+  //   name: 'Bright Studio',
+  //   ambientIntensity: 0.6,
+  //   ambientColor: '#ffffff',
+  //   keyLightIntensity: 2.5,
+  //   fillLightIntensity: 1.5,
+  //   rimLightIntensity: 1.0,
+  //   spotLightIntensity: 2.0,
+  //   backgroundColor: '#f5f5f5',
+  //   ambientStrength: 1.0
+  // },
   daylight: {
     name: 'Daylight Neutral',
     ambientIntensity: 0.4,
@@ -90,27 +90,48 @@ const LIGHTING_ENVIRONMENTS = {
     spotLightIntensity: 1.5,
     backgroundColor: '#f5f5f5',
     ambientStrength: 0.5
-  },
-  dark: {
-    name: 'Dark Moody',
-    ambientIntensity: 0.2,
-    ambientColor: '#6699cc',
-    keyLightIntensity: 1.8,
-    fillLightIntensity: 0.8,
-    rimLightIntensity: 0.5,
-    spotLightIntensity: 1.0,
-    backgroundColor: '#2a2a3a',
-    ambientStrength: 0.3
   }
+  // dark: {
+  //   name: 'Dark Moody',
+  //   ambientIntensity: 0.2,
+  //   ambientColor: '#6699cc',
+  //   keyLightIntensity: 1.8,
+  //   fillLightIntensity: 0.8,
+  //   rimLightIntensity: 0.5,
+  //   spotLightIntensity: 1.0,
+  //   backgroundColor: '#2a2a3a',
+  //   ambientStrength: 0.3
+  // }
 };
 
-const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, patternId, meshCustomizations, highlightedMesh, onPartRightClick, seatType, onResetModel, glowEditableParts }, ref) => {
+const Scene3D = forwardRef(({
+  modelFileUrl, // NEW prop
+  modelId,
+  stitchColor,
+  fabricColor,
+  fabricType,
+  patternId,
+  meshCustomizations,
+  highlightedMesh,
+  onPartRightClick,
+  seatType,
+  onResetModel,
+  glowEditableParts
+}, ref) => {
   const controlsRef = useRef();
   const canvasRef = useRef();
   const [lightingEnv, setLightingEnv] = useState('daylight');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // Log model source for debugging
+  useEffect(() => {
+    console.log('🎨 Scene3D loading model:', {
+      source: modelFileUrl ? 'API' : 'Default',
+      url: modelFileUrl || '/models/chair.glb'
+    });
+  }, [modelFileUrl]);
 
   const currentEnv = LIGHTING_ENVIRONMENTS[lightingEnv];
 
@@ -259,6 +280,7 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
         {/* Chair Model with Suspense for loading */}
         <Suspense fallback={<LoadingFallback />}>
           <Model3D
+            modelFileUrl={modelFileUrl} // Pass dynamic URL
             modelId={modelId}
             stitchColor={stitchColor}
             fabricColor={fabricColor}
@@ -417,7 +439,7 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
         <DialogTitle>Reset All Customizations?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            This will clear all your customizations and return the seat to default settings. 
+            This will clear all your customizations and return the seat to default settings.
             This action cannot be undone.
           </DialogContentText>
         </DialogContent>
@@ -425,12 +447,12 @@ const Scene3D = forwardRef(({ modelId, stitchColor, fabricColor, fabricType, pat
           <Button onClick={() => setShowResetConfirm(false)} color="inherit">
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={() => {
               setShowResetConfirm(false);
               onResetModel();
-            }} 
-            color="error" 
+            }}
+            color="error"
             variant="contained"
             autoFocus
           >

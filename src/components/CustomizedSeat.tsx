@@ -21,6 +21,7 @@ import Footer from './Footer';
 import styles from './CustomizedSeat.module.css';
 import { useSelectedItem, ProductVariations, VariationOption } from '@/contexts/SelectedItemContext';
 import { CustomizedSeatApi, Product } from '@/services/CustomizedSeatApi';
+import { materialApi, Product3DConfig } from '@/services/materialApi';
 import { apiService } from '@/utils/api';
 
 const ModelViewer = dynamic(() => import('@/components/model/Main'), {
@@ -46,6 +47,7 @@ interface CustomizeYourSeatProps {
   showPricing?: boolean;
   showAbout?: boolean;
   showTestimonials?: boolean;
+  productId?: string; // NEW: Accept productId from URL parameter
 }
 
 const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
@@ -53,32 +55,48 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   showHero = true,
   showPricing = false,
   showAbout = true,
-  showTestimonials = true
+  showTestimonials = true,
+  productId // NEW: Accept productId prop
 }) => {
   const { selectedItem } = useSelectedItem();
 
-  // State for product data fetched from API
-  const [productData, setProductData] = useState<Product | null>(null);
+  // NEW: State for 3D config from new API
+  const [product3DConfig, setProduct3DConfig] = useState<Product3DConfig | null>(null);
   const [productLoading, setProductLoading] = useState(false);
   const [productError, setProductError] = useState<string | null>(null);
 
-  // Variation data state
+  // LEGACY: Keep old states for backward compatibility during transition
+  const [productData, setProductData] = useState<Product | null>(null);
   const [variations, setVariations] = useState<ProductVariations | null>(null);
 
   // Removed localStorage functionality - product ID is now only managed through context
 
-  // Fetch product data when selectedItem ID changes
+  // Fetch product data when productId prop or selectedItem changes
   useEffect(() => {
-    // console.log('🔄 CustomizedSeat - useEffect triggered, selectedItem:', selectedItem);
-
     const fetchProductData = async () => {
-      if (selectedItem && selectedItem.id) {
+      // Priority 1: Use productId prop if provided (from URL)
+      // Priority 2: Fall back to selectedItem from context
+      const idToFetch = productId || selectedItem?.id;
+
+      if (idToFetch) {
         try {
           setProductLoading(true);
           setProductError(null);
-          console.log('🔄 CustomizedSeat - Fetching product data for ID:', selectedItem.id);
+          console.log('🔄 CustomizedSeat - Fetching 3D config for product ID:', idToFetch);
 
-          const product = await CustomizedSeatApi.getProductById(selectedItem.id);
+          // NEW: Fetch complete 3D configuration from new API
+          const config = await materialApi.getProduct3DConfig(idToFetch);
+          setProduct3DConfig(config);
+
+          console.log('✅ CustomizedSeat - 3D config loaded:', {
+            productId: config.product.id,
+            productName: config.product.name,
+            materialsCount: config.materials.length,
+            modelUrl: config.model_config.model_file_url,
+          });
+
+          // LEGACY: Also fetch old format for backward compatibility
+          const product = await CustomizedSeatApi.getProductById(Number(idToFetch));
           setProductData(product);
 
           // Debug: Log the images data from API
@@ -112,22 +130,23 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           };
 
           setVariations(processedVariations);
-          console.log('✅ CustomizedSeat - Product data and variations loaded successfully');
-        } catch (error) {
-          console.error('❌ CustomizedSeat - Error fetching product data:', error);
-          setProductError('Failed to load product details');
+          console.log('✅ CustomizedSeat - Legacy product data also loaded for compatibility');
+        } catch (error: any) {
+          console.error('❌ CustomizedSeat - Error fetching 3D config:', error);
+          setProductError(error.message || 'Failed to load 3D customization data');
         } finally {
           setProductLoading(false);
         }
       } else {
-        console.log('🔄 CustomizedSeat - No selected item ID available');
+        console.log('⚠️ CustomizedSeat - No product ID available (neither from prop nor context)');
+        setProduct3DConfig(null);
         setProductData(null);
         setVariations(null);
       }
     };
 
     fetchProductData();
-  }, [selectedItem]);
+  }, [productId, selectedItem]); // NEW: Now depends on both productId and selectedItem
 
   // Fetch vehicle trim data when product loads
   useEffect(() => {
@@ -384,7 +403,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               }}
               className="modelScope"
             >
-              <ModelViewer />
+              <ModelViewer product3DConfig={product3DConfig} />
             </Box>
           </CardContent>
         </Card>
