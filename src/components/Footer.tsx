@@ -11,6 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { Instagram } from "@mui/icons-material";
 import Link from "next/link";
+import LazyImage from "@/components/common/LazyImage";
 
 const MotionBox = motion.create(Box);
 
@@ -22,7 +23,7 @@ const Footer: React.FC<FooterProps> = () => {
   const theme = useTheme();
   
   // Base URL for images from server
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES ;
 
   return (
     <>
@@ -286,10 +287,8 @@ const Footer: React.FC<FooterProps> = () => {
                 }}
               >
                 <Box
-                  component="img"
-                  src={`${IMAGE_BASE_URL}/superiorlogo/footerlogo.png`}
-                  alt="Superior Seating LLC Logo"
                   sx={{
+                    position: "relative",
                     height: {
                       xs: "80px",
                       sm: "90px",
@@ -297,8 +296,20 @@ const Footer: React.FC<FooterProps> = () => {
                       lg: "120px",
                       xl: "140px",
                     },
-                    width: "auto",
-                    objectFit: "contain",
+                    width: {
+                      xs: "auto",
+                      sm: "auto",
+                      md: "auto",
+                      lg: "auto",
+                      xl: "auto",
+                    },
+                    minWidth: {
+                      xs: "120px",
+                      sm: "135px",
+                      md: "150px",
+                      lg: "180px",
+                      xl: "210px",
+                    },
                     filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))",
                     transition: "all 0.3s ease",
                     alignSelf: { xs: "center", md: "flex-start" },
@@ -307,7 +318,22 @@ const Footer: React.FC<FooterProps> = () => {
                       filter: "drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4))",
                     },
                   }}
-                />
+                >
+                  <LazyImage
+                    src={`${IMAGE_BASE_URL}/superiorlogo/footerlogo.png`}
+                    alt="Superior Seating LLC Logo"
+                    fill
+                    showSkeleton={true}
+                    quality={85}
+                    style={{
+                      objectFit: "contain",
+                      width: "100%",
+                      height: "100%",
+                      position: "absolute",
+                      display: "block",
+                    }}
+                  />
+                </Box>
                 <Typography
                   sx={{
                     color: "white",

@@ -3022,6 +3022,7 @@ class ApiService {
     name: string;
     description?: string;
     image?: File | null;
+    is_active?: boolean;
   }) {
     try {
       const shouldUseFormData = typeof File !== 'undefined' && data.image instanceof File;
@@ -3031,6 +3032,7 @@ class ApiService {
         formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
         if (data.image) formData.append('image', data.image);
+        if (data.is_active !== undefined) formData.append('is_active', data.is_active ? '1' : '0');
         
         const response = await api.post('/seat-styles', formData, {
           headers: {
@@ -3040,10 +3042,13 @@ class ApiService {
         return response.data?.data || response.data;
       }
 
-      const jsonPayload = {
+      const jsonPayload: any = {
         name: data.name,
         description: data.description,
       };
+      if (data.is_active !== undefined) {
+        jsonPayload.is_active = data.is_active;
+      }
 
       const response = await api.post('/seat-styles', jsonPayload);
       return response.data?.data || response.data;
@@ -3059,6 +3064,7 @@ class ApiService {
     description?: string;
     image?: File | null;
     current_image?: string | null;
+    is_active?: boolean;
   }) {
     try {
       const shouldUseFormData = typeof File !== 'undefined' && data.image instanceof File;
@@ -3069,6 +3075,7 @@ class ApiService {
         if (data.description) formData.append('description', data.description);
         if (data.image) formData.append('image', data.image);
         if (data.current_image) formData.append('current_image', data.current_image);
+        if (data.is_active !== undefined) formData.append('is_active', data.is_active ? '1' : '0');
         formData.append('_method', 'PUT');
 
         const response = await api.post(`/seat-styles/${id}`, formData, {
@@ -3079,11 +3086,14 @@ class ApiService {
         return response.data?.data || response.data;
       }
 
-      const jsonPayload = {
+      const jsonPayload: any = {
         name: data.name,
         description: data.description,
         current_image: data.current_image || undefined,
       };
+      if (data.is_active !== undefined) {
+        jsonPayload.is_active = data.is_active;
+      }
 
       const response = await api.put(`/seat-styles/${id}`, jsonPayload);
       return response.data?.data || response.data;
