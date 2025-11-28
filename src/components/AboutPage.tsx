@@ -23,6 +23,7 @@ import {
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import VideoPlayer from '@/components/VideoPlayer';
+import YouTubePlayer from '@/components/YouTubePlayer';
 import LazyImage from '@/components/common/LazyImage';
 // import Breadcrumbs from '@/components/Breadcrumbs'; // Temporarily disabled
 import { stats, values, process as processSteps } from '@/data/About';
@@ -695,15 +696,22 @@ const AboutPage = () => {
   </Container>
 </Box>
 
-      {/* Video Player Section */}
-      <VideoPlayer
+<YouTubePlayer
+        videoUrl="https://youtu.be/DWuBFo8J8AQ"
+        autoPlay={true}
+        muted={true}
+        loop={true}
+        controls={true}
+      />
+      {/* <VideoPlayer
         videoSrc={`${process.env.NEXT_PUBLIC_API_VIDEO_BASE_URL}/videos/SuperiorSeatingLLCSizzleReel5.mov`}
         videoType="video/quicktime"
         autoPlay={true}
         muted={true}
         loop={true}
-      />
+      /> */}
 
+  
              {/* Why Choose Us */}
        <Box sx={{ py: { xs: 3, sm: 4, md: 5, lg: 5, xl: 5 }, backgroundColor: 'white' }}>
          <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4, lg: 0, xl: 0 } }}>
@@ -723,9 +731,17 @@ const AboutPage = () => {
            >
              Why Choose Superior Seats?
            </MotionTypography>
-          
+              {/* YouTube Video Player Section */}
+      <YouTubePlayer
+        videoUrl="https://youtu.be/Jp3MP4SzWdc"
+        autoPlay={true}
+        muted={true}
+        loop={true}
+        controls={true}
+      />
+
           {/* Vertical Video Player */}
-          <MotionBox
+          {/* <MotionBox
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: false, amount: 0.2 }}
@@ -772,7 +788,7 @@ const AboutPage = () => {
               />
               Your browser does not support the video tag.
             </Box>
-          </MotionBox>
+          </MotionBox> */}
           
           {/* Why Choose Us Cards with alternating layout */}
           {whyChooseItems.map((item, index) => {

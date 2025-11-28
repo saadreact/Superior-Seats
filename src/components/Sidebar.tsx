@@ -293,13 +293,13 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
         {!collapsed && (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Image
-              src="/superiorlogo/logored.png"
+              src="/assets/logored.png"
               alt="Superior Seats Logo"
               width={180}
               height={60}
               style={{
                 width: 'auto',
-                height: '36px',
+                height: '45px',
                 objectFit: 'contain',
               }}
               priority

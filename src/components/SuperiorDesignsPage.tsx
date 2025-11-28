@@ -20,7 +20,7 @@ const MotionTypography = motion.create(Typography);
 
 const SuperiorDesignsPage = () => {
   // Base URL for images from server
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com';
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES;
   
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
