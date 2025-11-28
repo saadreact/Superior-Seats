@@ -161,7 +161,11 @@ const UpholsteryServices = () => {
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
               gap: { xs: 3, md: 6 },
-              alignItems: 'center',
+              alignItems: { xs: 'stretch', md: 'flex-start' },
+              overflow: 'visible',
+              '& > *': {
+                minWidth: 0,
+              },
             }}
           >
             {/* Content - Left Side */}
@@ -221,7 +225,92 @@ const UpholsteryServices = () => {
               </Typography>
             </MotionBox>
 
-            {/* Image - Right Side */}
+            {/* Vertical Images - Right Side */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: { xs: 2, sm: 1.5, md: 2 },
+                justifyContent: { xs: 'center', md: 'flex-start' },    
+                alignItems: { xs: 'stretch', md: 'flex-start' },
+                order: { xs: 1, md: 2 },
+                width: { xs: '100%', md: '100%' },
+                minWidth: 0,
+                overflow: 'visible',
+              }}
+            >
+              {[
+                { src: `${IMAGE_BASE_URL}/Gallery/Truckimages/SofaU16.png`, alt: "Custom upholstery showcase 1" },
+             //   { src: `${IMAGE_BASE_URL}/Gallery/Truckimages/u16.jpg`, alt: "Custom upholstery showcase 2" },
+              ].map((image, imgIndex) => (
+                <MotionBox
+                  key={imgIndex}
+                  initial={{ opacity: 0, x: 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: false, amount: 0.3 }}
+                  transition={{ duration: 0.7, delay: imgIndex * 0.1 }}
+                  sx={{
+                    width: { xs: '100%', md: 'auto' },
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      display: { xs: 'flex', md: 'inline-flex' },
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                      backgroundColor: '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      height: { xs: 280, sm: 320, md: 400, lg: 450, xl: 500 },
+                      width: { xs: '100%', md: 'auto' },
+                      maxWidth: { xs: '100%', md: 'fit-content' },
+                      minWidth: { md: 'auto' },
+                      '&:hover': {
+                        transform: 'translateY(-4px) scale(1.02)',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                      },
+                    }}
+                  >
+                    <LazyImage
+                      src={image.src}
+                      alt={image.alt}
+                      width={400}
+                      height={600}
+                      showSkeleton={true}
+                      quality={85}
+                      style={{
+                        objectFit: 'contain',
+                        width: '100%',
+                        height: '100%',
+                        maxHeight: '100%',
+                        display: 'block',
+                      }}
+                      priority={imgIndex === 0}
+                    />
+                  </Box>
+                </MotionBox>
+              ))}
+            </Box>
+          </Box>
+
+          {/* Image - Right Side Container (moved from top) */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              mt: { xs: 4, sm: 5, md: 6 },
+              ml: { xs: 0, sm: 0, md: 0 ,lg: 0, xl: -7},
+            }}
+          >
             <MotionBox
               initial={{ opacity: 0, x: 50, y: 20, scale: 0.9 }}
               whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
@@ -239,104 +328,32 @@ const UpholsteryServices = () => {
                 borderRadius: 2,
                 overflow: 'hidden',
                 boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-                order: { xs: 1, md: 2 },
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 backgroundColor: '#ffffff',
                 height: { xs: 280, sm: 320, md: 380, lg: 420 },
-                width: '100%',
+                width: 'auto',
+                maxWidth: { xs: '100%', sm: '90%', md: '80%', lg: '75%', xl: '70%' },
+                margin: '0 auto',
                 '&:hover': {
                   transform: 'translateY(-4px) scale(1.02)',
                   boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                 },
               }}
             >
-              <LazyImage
+              <Box
+                component="img"
                 src={`${IMAGE_BASE_URL}/Gallery/Truckimages/cu7.jpg`}
                 alt="Custom upholstery showcased on seating"
-                fill
-                priority={false}
-                quality={85}
-                showSkeleton={true}
-                style={{
-                  width: '100%',
+                sx={{
+                  width: 'auto',
                   height: '100%',
-                  objectFit: 'cover',
+                  maxWidth: '100%',
+                  objectFit: 'contain',
                   display: 'block',
-                  transition: 'transform 0.3s ease',
-                  position: 'absolute',
                 }}
               />
             </MotionBox>
-          </Box>
-
-          {/* Two Vertical Images - Similar to FLEET BUSES Section */}
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              gap: { xs: 1, sm: 1.5, md: 2 },
-              justifyContent: 'center',
-              alignItems: 'center',
-              mt: { xs: 4, sm: 5, md: 6 },
-            }}
-          >
-            {[
-              { src: `${IMAGE_BASE_URL}/Gallery/Truckimages/SofaU16.png`, alt: "Custom upholstery showcase 1" },
-              { src: `${IMAGE_BASE_URL}/Gallery/Truckimages/u16.jpg`, alt: "Custom upholstery showcase 2" },
-            ].map((image, imgIndex) => (
-              <MotionBox
-                key={imgIndex}
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.7, delay: imgIndex * 0.1 }}
-                sx={{
-                  width: 'auto',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Box
-                  sx={{
-                    position: 'relative',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-                    backgroundColor: '#ffffff',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    height: { xs: 350, sm: 400, md: 450, lg: 500 },
-                    width: 'auto',
-                    '&:hover': {
-                      transform: 'translateY(-4px) scale(1.02)',
-                      boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-                    },
-                  }}
-                >
-                  <LazyImage
-                    src={image.src}
-                    alt={image.alt}
-                    width={400}
-                    height={600}
-                    showSkeleton={true}
-                    quality={85}
-                    style={{
-                      objectFit: 'contain',
-                      width: 'auto',
-                      height: '100%',
-                      maxHeight: '100%',
-                      display: 'block',
-                    }}
-                    priority={imgIndex === 0}
-                  />
-                </Box>
-              </MotionBox>
-            ))}
           </Box>
 
           {/* Services Grid */}
