@@ -16,7 +16,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton} from '@mui/material';
+  IconButton,
+  Switch,
+  FormControlLabel} from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon, Delete as DeleteIcon, Star as StarIcon, StarBorder as StarBorderIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { apiService } from '@/utils/api';
@@ -48,6 +50,7 @@ const EditSeatStylePage = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    isActive: true,
   });
   
   const [existingImages, setExistingImages] = useState<SeatStyleImage[]>([]);
@@ -76,6 +79,7 @@ const EditSeatStylePage = () => {
       setFormData({
         name: seatStyle.name || '',
         description: seatStyle.description || '',
+        isActive: seatStyle.is_active !== undefined ? seatStyle.is_active : true,
       });
     } catch (err: any) {
       setError(err.message || 'Failed to load seat style');
@@ -103,6 +107,13 @@ const EditSeatStylePage = () => {
     setFormData(prev => ({
       ...prev,
       [field]: value}));
+  };
+
+  const handleSwitchChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: event.target.checked
+    }));
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,6 +188,7 @@ const EditSeatStylePage = () => {
       const submissionData = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
+        is_active: formData.isActive,
       };
       
       await apiService.updateSeatStyle(parseInt(id), submissionData);
@@ -263,9 +275,48 @@ const EditSeatStylePage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Basic Information */}
               <Box>
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
-                  Basic Information
-                </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  mb: 2,
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: { xs: 2, sm: 0 }
+                }}>
+                  <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
+                    Basic Information
+                  </Typography>
+                  
+                  {/* Right Side - Active Switch */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: 3, 
+                    alignItems: 'center',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    '& .MuiFormControlLabel-root': {
+                      margin: 0
+                    }
+                  }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.isActive}
+                          onChange={handleSwitchChange('isActive')}
+                          color="error"
+                        />
+                      }
+                      label="Active"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
                 <Divider sx={{ mb: 3 }} />
               
                 <TextField
