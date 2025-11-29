@@ -7,7 +7,7 @@ import OrderWizard from '@/components/admin/OrderWizard';
 
 const CreateOrderPage = () => {
   return (
-    <AdminLayout>
+    <AdminLayout title="Create Order">
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         <OrderWizard />
       </Box>

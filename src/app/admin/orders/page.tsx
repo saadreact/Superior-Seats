@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -145,6 +145,13 @@ const OrdersPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Ref to track debounce timer
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref to track if page reset is due to search change
+  const isSearchResettingPage = useRef(false);
+  // Ref to track if component has mounted
+  const isMounted = useRef(false);
+
   // Filter states - Updated to match customer list structure
   const [filters, setFilters] = useState({
     search: '',
@@ -185,10 +192,9 @@ const OrdersPage = () => {
     }, 0);
   };
 
-  // Search handler similar to customer list
+  // Search handler - removed manual trigger, handled by debounce effect
   const handleSearch = () => {
-    setPage(0);
-    fetchOrders();
+    // No-op, search is debounced automatically
   };
 
   // Reset filters similar to customer list
@@ -311,15 +317,70 @@ const OrdersPage = () => {
     }
   }, [page, rowsPerPage, filters]);
 
+  // Debounced search effect - triggers search after user stops typing
+  useEffect(() => {
+    // On initial mount, skip debounce (let pagination effect handle initial fetch)
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    
+    // Clear any existing debounce timer
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+    
+    // Mark that we're resetting page due to search
+    isSearchResettingPage.current = true;
+    
+    // Reset to page 0 when search changes
+    setPage(0);
+    
+    // Set up new debounce timer - fetch after 300ms delay
+    searchDebounceRef.current = setTimeout(() => {
+      // Fetch with current filters and page 0
+      fetchOrders();
+      searchDebounceRef.current = null;
+      isSearchResettingPage.current = false;
+    }, 300); // 300ms delay after user stops typing
+
+    // Cleanup function to clear timer if user types again before delay completes
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.search]);
+
   useEffect(() => {
     // Initialize filters from URL params on first load
     const cid = searchParams?.get('customer_id') || '';
     if (cid) {
       setFilters((prev) => ({ ...prev, customer_id: cid }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch data on mount and when pagination or filters (other than search) change
+  useEffect(() => {
+    // Skip if page change is due to search reset (debounce effect will handle the fetch)
+    if (isSearchResettingPage.current) {
+      isSearchResettingPage.current = false; // Reset the flag
+      return;
+    }
+    
+    // Skip if there's an active search debounce timer
+    if (searchDebounceRef.current) {
+      return;
+    }
+    
+    // Fetch immediately when pagination or non-search filters change
     fetchOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchOrders]);
+  }, [page, rowsPerPage, filters.status, filters.payment_status, filters.customer_id, filters.date_from, filters.date_to, filters.min_amount, filters.max_amount, filters.sort_by, filters.sort_order]);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -619,11 +680,6 @@ const OrdersPage = () => {
                 label="Search"
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch();
-                  }
-                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -711,7 +767,10 @@ const OrdersPage = () => {
               <Button 
                 variant="contained" 
                 startIcon={<SearchIcon />}
-                onClick={handleSearch}
+                onClick={() => {
+                  setPage(0);
+                  fetchOrders();
+                }}
               >
                 Apply Filters
               </Button>

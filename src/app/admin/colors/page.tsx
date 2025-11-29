@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -104,6 +104,13 @@ const ColorsPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMorePages, setHasMorePages] = useState(false);
+
+  // Ref to track debounce timer
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref to track if page reset is due to search change
+  const isSearchResettingPage = useRef(false);
+  // Ref to track if component has mounted
+  const isMounted = useRef(false);
 
   // Helper function to get calculated price tiers for display
   const getCalculatedPriceTiers = (color: Color): CalculatedPriceTier[] => {
@@ -223,12 +230,114 @@ const ColorsPage = () => {
     }
   }, []);
 
+  // Debounced search effect - triggers search after user stops typing
   useEffect(() => {
+    // On initial mount, skip debounce (let pagination effect handle initial fetch)
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    
+    // Clear any existing debounce timer
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+    
+    // Mark that we're resetting page due to search
+    isSearchResettingPage.current = true;
+    
+    // Reset to page 0 when search changes
+    setPage(0);
+    
+    // Set up new debounce timer - fetch after 300ms delay
+    searchDebounceRef.current = setTimeout(async () => {
+      // Fetch with current search term and page 0
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params: Record<string, any> = {
+          page: 1, // Page 1 for API (0-based converted to 1-based)
+          per_page: rowsPerPage
+        };
+        
+        if (searchTerm.trim()) {
+          params.search = searchTerm.trim();
+        }
+        
+        const response = await apiService.getColors(params);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          setColors(response.data);
+          const total = response.meta?.total || 
+                       response.meta?.pagination?.total || 
+                       response.meta?.last_page * rowsPerPage || 
+                       response.data.length;
+          setTotalCount(total);
+          const morePages = response.meta?.pagination?.has_more_pages === true;
+          setHasMorePages(morePages);
+        } else if (Array.isArray(response)) {
+          setColors(response);
+          setTotalCount(response.length);
+          setHasMorePages(false);
+        } else {
+          setColors([]);
+          setTotalCount(0);
+          setHasMorePages(false);
+        }
+      } catch (err: any) {
+        setColors([]);
+        setTotalCount(0);
+        setHasMorePages(false);
+        if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+          setError('Please log in to access this page');
+        } else {
+          setError(err.message || 'Failed to load colors. Please try again later.');
+        }
+        console.error('❌ Error loading colors:', err);
+      } finally {
+        setLoading(false);
+      }
+      
+      searchDebounceRef.current = null;
+      isSearchResettingPage.current = false;
+    }, 300); // 300ms delay after user stops typing
+
+    // Cleanup function to clear timer if user types again before delay completes
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Fetch data on mount and when pagination changes
+  useEffect(() => {
+    // Skip if page change is due to search reset (debounce effect will handle the fetch)
+    if (isSearchResettingPage.current) {
+      isSearchResettingPage.current = false; // Reset the flag
+      return;
+    }
+    
+    // Skip if there's an active search debounce timer
+    if (searchDebounceRef.current) {
+      return;
+    }
+    
+    // Fetch immediately when pagination changes
     loadColors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage]);
+
+  // Load material types and price tiers on mount
+  useEffect(() => {
     loadMaterialTypes();
     // loadColorVendors();
     loadPriceTiers();
-  }, [loadColors, loadMaterialTypes, loadPriceTiers]);
+  }, [loadMaterialTypes, loadPriceTiers]);
 
 
   const handleAdd = () => {
@@ -250,7 +359,7 @@ const ColorsPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0); // Reset to first page when searching
+    // Page reset is handled by the debounce effect
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
