@@ -6,24 +6,45 @@ import cartReducer from './cartSlice';
 import { CartItem } from './cartSlice';
 import squareReducer from './squareSlice';
 
+// Create a noop storage for SSR (server-side rendering)
+// This prevents the "failed to create sync storage" warning
+const createNoopStorage = () => {
+  return {
+    getItem(_key: string) {
+      return Promise.resolve(null);
+    },
+    setItem(_key: string, value: any) {
+      return Promise.resolve(value);
+    },
+    removeItem(_key: string) {
+      return Promise.resolve();
+    },
+  };
+};
+
+// Use real storage on client, noop storage on server
+const persistStorage = typeof window !== 'undefined' 
+  ? storage 
+  : createNoopStorage();
+
 // Persist configuration for auth
 const authPersistConfig = {
   key: 'auth',
-  storage,
+  storage: persistStorage,
   whitelist: ['user', 'token', 'isAuthenticated'], // Only persist these fields
 };
 
 // Persist configuration for cart
 const cartPersistConfig = {
   key: 'cart',
-  storage,
+  storage: persistStorage,
   whitelist: ['items', 'totalItems', 'totalPrice'], // Persist all cart fields
 };
 
 // Persist configuration for square
 const squarePersistConfig = {
   key: 'square',
-  storage,
+  storage: persistStorage,
   whitelist: ['connected', 'merchantId', 'locationId', 'environment'],
 };
 

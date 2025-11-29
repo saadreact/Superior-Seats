@@ -38,7 +38,9 @@ export interface MaterialColor {
   id: number;
   name: string;
   hex_code: string;
-  image: string | null;
+  image: string | null; // Full URL from Laravel (Storage::url)
+  price?: number; // Direct price from API
+  description?: string;
   collection_name: string | null;
   price_tiers: PriceTier[];
 }
@@ -108,6 +110,7 @@ export interface StitchColor {
 }
 
 export interface StitchPattern extends VariationOption {
+  static_pattern_id?: string | null; // Maps to static file path (e.g., "1-2" for /assets/patterns/1/02.jpg)
   stitch_colors: StitchColor[];
 }
 

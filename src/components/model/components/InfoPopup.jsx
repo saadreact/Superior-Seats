@@ -45,46 +45,46 @@ function InfoPopup({ onClose }) {
               <ListItemText primary={<span>A popup will appear - select your desired <strong>color</strong> and <strong>pattern</strong></span>} />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Click on chair parts in the 3D view to apply customizations" />
+              <ListItemText primary="Click (left-click) on chair parts in the 3D view to cycle through customization states" />
             </ListItem>
           </List>
         </Box>
 
-        {/* 4-State Click Cycle */}
+        {/* Customizing Individual Parts */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-            🔄 4-State Click Cycle
+            🎯 Customizing Individual Parts
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Each part goes through 4 states when you click it repeatedly:
+            Click on any customizable part in the 3D view to cycle through customization states:
           </Typography>
           <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
             <Box sx={{ mb: 1 }}>
-              <Typography variant="body2"><strong style={{ color: '#2e7d32' }}>1st Click:</strong> Apply custom color only (no pattern/stitching)</Typography>
+              <Typography variant="body2"><strong style={{ color: '#2e7d32' }}>Click 1:</strong> Apply color only (uses the selected two-tone color)</Typography>
             </Box>
             <Box sx={{ mb: 1 }}>
-              <Typography variant="body2"><strong style={{ color: '#2e7d32' }}>2nd Click:</strong> Add pattern and stitching</Typography>
+              <Typography variant="body2"><strong style={{ color: '#2e7d32' }}>Click 2:</strong> Apply color + pattern (uses the selected two-tone color and pattern)</Typography>
             </Box>
             <Box sx={{ mb: 1 }}>
-              <Typography variant="body2"><strong style={{ color: '#2e7d32' }}>3rd Click:</strong> Remove pattern/stitching (keep custom color)</Typography>
+              <Typography variant="body2"><strong style={{ color: '#2e7d32' }}>Click 3:</strong> Remove pattern (back to color only)</Typography>
             </Box>
             <Box>
-              <Typography variant="body2"><strong style={{ color: '#2e7d32' }}>4th Click:</strong> Reset to base color from single-tone mode</Typography>
+              <Typography variant="body2"><strong style={{ color: '#2e7d32' }}>Click 4:</strong> Reset part (remove all customization, back to default)</Typography>
             </Box>
           </Paper>
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            💡 After the 4th click, the cycle starts over from the 1st click state.
+            💡 Each part cycles independently. You can customize different parts with different colors and patterns by clicking them multiple times.
           </Typography>
         </Box>
 
-        {/* Changing Colors & Patterns */}
+        {/* Apply to All Feature */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-            🎯 Changing Color & Pattern
+            🎨 Apply to All Feature
           </Typography>
           <Typography variant="body2">
-            Keep the color/pattern popup open while working. You can change the selected color
-            or pattern at any time - the next part you click will use the newly selected options.
+            When the two-tone selector popup is open, you can use the <strong>Apply to All Parts</strong> button
+            to quickly apply the same color and pattern to all customizable parts at once.
           </Typography>
         </Box>
 

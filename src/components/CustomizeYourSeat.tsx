@@ -492,13 +492,13 @@ const CustomizeYourSeat = () => {
   // NEW FUNCTION: Handles item selection and navigation to 3D customization page
   const handleCustomize = (item: Product) => {
     
-    // Set only the product ID in the context
+    // Set only the product ID in the context (for immediate use)
     setSelectedItem({ 
       id: item.id
     });
     
-    // Navigate to build-your-seat page (3D model)
-    router.push('/build-your-seat');
+    // Navigate to build-your-seat page with product ID in URL (for persistence on reload)
+    router.push(`/build-your-seat?productId=${item.id}`);
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
