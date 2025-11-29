@@ -117,6 +117,23 @@ export class ShaderManager {
       updateUniforms: updateCarrollLeatherUniforms,
       specularPower: 18.0,
       specularIntensity: 0.35
+    },
+    // Aliases for new seeder shader_ids
+    'ultrafabrics': {
+      name: 'Ultrafabrics',
+      hasStitching: true,
+      createMaterial: createUltraleatherMaterial,
+      updateUniforms: updateUltraleatherUniforms,
+      specularPower: 22.0,
+      specularIntensity: 0.45
+    },
+    'miami-corp-cloths': {
+      name: 'Miami Corp Cloths',
+      hasStitching: true,
+      createMaterial: createClothMaterial,
+      updateUniforms: updateClothUniforms,
+      specularPower: 6.0,
+      specularIntensity: 0.1
     }
   };
 

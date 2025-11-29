@@ -1,69 +1,96 @@
 import React, { Suspense, useRef, useState, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { Box, Button, Stack, Tooltip, useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Box, Button, Stack, Tooltip, useTheme, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress, Typography, Fade } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CameraswitchIcon from '@mui/icons-material/Cameraswitch';
 import Model3D from './Model3D';
 
-function LoadingFallback() {
-  const groupRef = useRef();
-  const ringRef = useRef();
-  const sphereRef = useRef();
+// Simple 3D loading fallback for inside Canvas
+function LoadingFallback3D() {
+  return (
+    <mesh>
+      <boxGeometry args={[0.1, 0.1, 0.1]} />
+      <meshStandardMaterial color="#1976d2" transparent opacity={0.5} />
+    </mesh>
+  );
+}
 
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime();
+// 2D Loading overlay component (rendered outside Canvas)
+function LoadingOverlay({ isLoading }) {
+  const theme = useTheme();
+  const [dots, setDots] = useState('');
 
-    // Rotate the ring
-    if (ringRef.current) {
-      ringRef.current.rotation.x += 0.03;
-      ringRef.current.rotation.y += 0.02;
-    }
+  useEffect(() => {
+    if (!isLoading) return;
+    
+    const interval = setInterval(() => {
+      setDots(prev => {
+        if (prev === '...') return '';
+        return prev + '.';
+      });
+    }, 500);
 
-    // Pulse the sphere
-    if (sphereRef.current) {
-      const scale = 1 + Math.sin(time * 2) * 0.2;
-      sphereRef.current.scale.set(scale, scale, scale);
-    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
-    // Gentle rotation of the whole group
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.01;
-    }
-  });
+  if (!isLoading) return null;
 
   return (
-    <group ref={groupRef}>
-      {/* Rotating ring loader */}
-      <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.5, 0.08, 16, 32]} />
-        <meshStandardMaterial
-          color="#007bff"
-          emissive="#0056b3"
-          emissiveIntensity={0.5}
-          metalness={0.8}
-          roughness={0.2}
-        />
-      </mesh>
-
-      {/* Inner pulsing sphere */}
-      <mesh ref={sphereRef}>
-        <sphereGeometry args={[0.3, 32, 32]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#007bff"
-          emissiveIntensity={0.3}
-          metalness={0.5}
-          roughness={0.3}
-          transparent
-          opacity={0.8}
-        />
-      </mesh>
-
-      {/* Ambient light for the loader */}
-      <pointLight position={[0, 0, 0]} intensity={0.5} color="#007bff" />
-    </group>
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(8px)',
+        zIndex: 1000,
+        gap: 3
+      }}
+    >
+      <Fade in={isLoading} timeout={500}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <CircularProgress 
+            size={60} 
+            thickness={4}
+            sx={{
+              color: theme.palette.primary.main,
+              '& .MuiCircularProgress-circle': {
+                strokeLinecap: 'round',
+              }
+            }}
+          />
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: theme.palette.text.primary,
+                fontWeight: 500,
+                mb: 0.5
+              }}
+            >
+              Loading 3D Model
+            </Typography>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: theme.palette.text.secondary,
+                fontStyle: 'italic'
+              }}
+            >
+              Preparing your customization{dots}
+            </Typography>
+          </Box>
+        </Box>
+      </Fade>
+    </Box>
   );
 }
 
@@ -124,13 +151,16 @@ const Scene3D = forwardRef(({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Log model source for debugging
+  // Log model source for debugging and reset loading state when model changes
   useEffect(() => {
     console.log('🎨 Scene3D loading model:', {
       source: modelFileUrl ? 'API' : 'Default',
       url: modelFileUrl || '/models/chair.glb'
     });
+    // Reset loading state when model changes
+    setIsLoading(true);
   }, [modelFileUrl]);
 
   const currentEnv = LIGHTING_ENVIRONMENTS[lightingEnv];
@@ -212,7 +242,9 @@ const Scene3D = forwardRef(({
       bgcolor: currentEnv.backgroundColor,
       position: 'relative',
       m: 0,
-      p: 0
+      p: 0,
+      overflow: 'hidden', // Prevent horizontal overflow
+      maxWidth: '100%' // Ensure it doesn't exceed container width
     }}>
       <Canvas
         camera={{
@@ -278,7 +310,7 @@ const Scene3D = forwardRef(({
         />
 
         {/* Chair Model with Suspense for loading */}
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={<LoadingFallback3D />}>
           <Model3D
             modelFileUrl={modelFileUrl} // Pass dynamic URL
             modelId={modelId}
@@ -292,6 +324,7 @@ const Scene3D = forwardRef(({
             onPartRightClick={onPartRightClick}
             seatType={seatType}
             glowEditableParts={glowEditableParts}
+            onLoadComplete={() => setIsLoading(false)}
           />
         </Suspense>
 
@@ -313,8 +346,11 @@ const Scene3D = forwardRef(({
         />
       </Canvas>
 
+      {/* Loading Overlay */}
+      <LoadingOverlay isLoading={isLoading} />
+
       {/* Lighting Environment Controls */}
-      <Stack
+      {/* <Stack
         direction="row"
         spacing={1}
         sx={{
@@ -357,7 +393,7 @@ const Scene3D = forwardRef(({
             </Button>
           </Tooltip>
         ))}
-      </Stack>
+      </Stack> */}
 
       {/* Reset Buttons Container */}
       <Stack

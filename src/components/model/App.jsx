@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Box, IconButton, Tooltip, Stack, useTheme, useMediaQuery } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Scene3D from './components/3D/Scene3D';
@@ -29,8 +29,8 @@ function App({
 
   const [modelId, setModelId] = useState('1');
   const [stitchColor, setStitchColor] = useState('#ffffff');
-  const [fabricColor, setFabricColor] = useState('#dfdfdf');
-  const [fabricType, setFabricType] = useState('leather');
+  const [fabricColor, setFabricColor] = useState(null); // Will be set when materials load
+  const [fabricType, setFabricType] = useState(null); // Will be set when materials load
   const [patternId, setPatternId] = useState('default');
   const [seatType, setSeatType] = useState('single');
   const [meshCustomizations, setMeshCustomizations] = useState({});
@@ -43,6 +43,43 @@ function App({
   const [twoTonePattern, setTwoTonePattern] = useState('default');
   const [partClickStates, setPartClickStates] = useState({});
   const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const [defaultsApplied, setDefaultsApplied] = useState(false);
+
+  // Set default fabric type and color when materials are loaded (only once)
+  useEffect(() => {
+    // Only apply defaults once when materials first load
+    if (availableMaterials && availableMaterials.length > 0 && !defaultsApplied) {
+      const firstMaterial = availableMaterials[0];
+      const defaultMaterialId = firstMaterial.id.toString();
+      
+      console.log('🎨 Applying defaults from API materials:');
+      console.log('   Material:', firstMaterial.name, `(ID: ${defaultMaterialId}, shader: ${firstMaterial.shader_id})`);
+      
+      // Set default fabric type
+      setFabricType(defaultMaterialId);
+      
+      // Set default color from first material's first color
+      if (firstMaterial.colors && firstMaterial.colors.length > 0) {
+        const firstColor = firstMaterial.colors[0];
+        console.log('   Color:', firstColor.name, `(Hex: ${firstColor.hex_code})`);
+        setFabricColor(firstColor.hex_code);
+        setTwoToneColor(firstColor.hex_code);
+      } else {
+        // Fallback color if no colors in first material
+        console.log('   ⚠️ No colors in first material, using fallback #dfdfdf');
+        setFabricColor('#dfdfdf');
+      }
+      
+      setDefaultsApplied(true);
+    } else if ((!availableMaterials || availableMaterials.length === 0) && !defaultsApplied) {
+      // Fallback to hardcoded defaults if no API materials
+      console.log('⚠️ No API materials available, using fallback defaults');
+      setFabricType('leather');
+      setFabricColor('#dfdfdf');
+      setDefaultsApplied(true);
+    }
+  }, [availableMaterials, defaultsApplied]);
+
   // List of all customizable parts for two-tone mode
   const CUSTOMIZABLE_PARTS = [
     'seat_bottom_upper',
@@ -94,82 +131,69 @@ function App({
     if (seatType !== 'two-tone') return;
 
     if (isValid && partName) {
-      const comboPairs = {
-        'seat_back_lower_Left': 'seat_back_lower_Right',
-        'seat_back_lower_Right': 'seat_back_lower_Left',
-        'seat_bottom_lower_Left': 'seat_bottom_lower_Right',
-        'seat_bottom_lower_Right': 'seat_bottom_lower_Left',
-        'left_arm_upper': 'right_arm_upper',
-        'right_arm_upper': 'left_arm_upper'
-      };
-
-      const pairedPart = comboPairs[partName];
+      // Original behavior: Cycle through states on click
+      // State 0: No customization (default)
+      // State 1: Apply color only
+      // State 2: Apply color + pattern
+      // State 3: Remove pattern (back to color only)
+      // Then cycle back to 0 (reset)
+      
       const currentState = partClickStates[partName] || 0;
-      let nextState;
-      let customization;
-      let toastMessage;
+      let nextState = 0;
+      let newCustomization = {};
 
-      if (currentState === 0) {
-        nextState = 1;
-        customization = {
-          fabricColor: twoToneColor,
-          patternId: 'default'
-        };
-        toastMessage = `✓ Custom color applied to ${formatPartName(partName)}`;
-      } else if (currentState === 1) {
-        nextState = 2;
-        customization = {
-          fabricColor: twoToneColor,
-          patternId: twoTonePattern
-        };
-        toastMessage = `✓ Pattern & stitching applied to ${formatPartName(partName)}`;
-      } else if (currentState === 2) {
-        nextState = 3;
-        customization = {
-          fabricColor: twoToneColor,
-          patternId: 'default'
-        };
-        toastMessage = `✓ Pattern removed from ${formatPartName(partName)}`;
-      } else {
-        nextState = 0;
-        customization = null;
-        toastMessage = `✓ ${formatPartName(partName)} reset to base color`;
+      switch (currentState) {
+        case 0:
+          // State 0 -> State 1: Apply color only
+          nextState = 1;
+          newCustomization = {
+            fabricColor: twoToneColor,
+            patternId: 'default'
+          };
+          break;
+        case 1:
+          // State 1 -> State 2: Apply color + pattern
+          nextState = 2;
+          newCustomization = {
+            fabricColor: twoToneColor,
+            patternId: twoTonePattern
+          };
+          break;
+        case 2:
+          // State 2 -> State 3: Remove pattern (back to color only)
+          nextState = 3;
+          newCustomization = {
+            fabricColor: twoToneColor,
+            patternId: 'default'
+          };
+          break;
+        case 3:
+        default:
+          // State 3 -> State 0: Reset (remove customization)
+          nextState = 0;
+          newCustomization = {};
+          break;
       }
 
-      setPartClickStates(prev => {
-        const updated = {
-          ...prev,
-          [partName]: nextState
-        };
-        if (pairedPart) {
-          updated[pairedPart] = nextState;
-        }
-        return updated;
-      });
+      // Update the customization for this part
+      handleMeshCustomizationChange(partName, newCustomization);
 
-      if (customization === null) {
-        setMeshCustomizations(prev => {
-          const updated = { ...prev };
-          delete updated[partName];
-          if (pairedPart) {
-            delete updated[pairedPart];
-          }
-          return updated;
-        });
-      } else {
-        handleMeshCustomizationChange(partName, customization);
-        if (pairedPart) {
-          handleMeshCustomizationChange(pairedPart, customization);
-        }
-      }
+      // Update the click state
+      setPartClickStates(prev => ({
+        ...prev,
+        [partName]: nextState
+      }));
 
-      const toastId = Date.now() + Math.random();
-      setToasts(prev => [...prev, { id: toastId, message: toastMessage, type: 'success' }]);
-
-      setTimeout(() => {
-        setToasts(prev => prev.filter(t => t.id !== toastId));
-      }, 3000);
+      // Show feedback toast
+      const stateMessages = {
+        0: 'Reset',
+        1: 'Color applied',
+        2: 'Color + Pattern applied',
+        3: 'Pattern removed'
+      };
+      addToast(`${formatPartName(partName)}: ${stateMessages[nextState]}`, 'info');
     } else {
+      // Invalid part clicked - show warning and highlight valid parts
       const toastId = Date.now() + Math.random();
       setToasts(prev => [...prev, { id: toastId, message: 'Please select a valid area', type: 'error' }]);
       setGlowEditableParts(true);
@@ -217,17 +241,47 @@ function App({
     }
   };
 
+  // Helper function to add toast notifications
+  const addToast = (message, type = 'info') => {
+    const toastId = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id: toastId, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== toastId));
+    }, 2000);
+  };
+
   const handleResetModel = () => {
     console.log('🔄 Resetting model to default settings');
     setModelId('1');
-    setFabricType('leather');
-    setFabricColor('#dfdfdf');
+    
+    // Reset to first API material if available, otherwise use 'leather'
+    if (availableMaterials && availableMaterials.length > 0) {
+      const firstMaterial = availableMaterials[0];
+      const defaultMaterialId = firstMaterial.id.toString();
+      console.log('   Resetting to first API material:', firstMaterial.name);
+      setFabricType(defaultMaterialId);
+      
+      // Reset to first color of first material
+      if (firstMaterial.colors && firstMaterial.colors.length > 0) {
+        const firstColor = firstMaterial.colors[0];
+        console.log('   Resetting to first color:', firstColor.name, firstColor.hex_code);
+        setFabricColor(firstColor.hex_code);
+        setTwoToneColor(firstColor.hex_code);
+      } else {
+        setFabricColor('#dfdfdf');
+        setTwoToneColor('#dfdfdf');
+      }
+    } else {
+      setFabricType('leather');
+      setFabricColor('#dfdfdf');
+      setTwoToneColor('#dfdfdf');
+    }
+    
     setStitchColor('#ffffff');
     setPatternId('default');
     setMeshCustomizations({});
     setSavedTwoToneCustomizations({});
     setPartClickStates({});
-    setTwoToneColor('#dfdfdf');
     setTwoTonePattern('default');
 
     if (seatType === 'two-tone') {
@@ -327,6 +381,7 @@ function App({
       flexDirection: { xs: 'column', md: 'row' },
       width: '100%',
       height: '100%',
+      minHeight: { xs: '100vh', md: 'auto' },
       overflow: 'hidden',
       bgcolor: 'background.default',
       position: 'relative'
@@ -337,12 +392,14 @@ function App({
           onClick={() => setShowInfoPopup(true)}
           sx={{
             position: 'absolute',
-            top: { xs: 10, md: 20 },
-            right: { xs: 10, md: 20 },
+            top: { xs: 8, md: 20 },
+            right: { xs: 8, md: 20 },
             bgcolor: 'primary.main',
             color: 'white',
             boxShadow: 3,
             zIndex: 1000,
+            width: { xs: 36, md: 40 },
+            height: { xs: 36, md: 40 },
             '&:hover': {
               bgcolor: 'primary.dark',
               transform: 'scale(1.1)',
@@ -350,22 +407,27 @@ function App({
             transition: 'all 0.2s ease',
           }}
         >
-          <HelpOutlineIcon />
+          <HelpOutlineIcon sx={{ fontSize: { xs: 20, md: 24 } }} />
         </IconButton>
       </Tooltip>
 
       <Box sx={{
         width: { xs: '100%', md: '30%' },
-        height: { xs: '40vh', md: '100%' },
+        maxWidth: { md: 400 },
+        height: { xs: 'auto', md: '100%' },
+        maxHeight: { xs: '45vh', sm: '40vh', md: '100%' },
         overflowY: 'auto',
+        overflowX: 'hidden',
         borderRight: { md: 1 },
         borderBottom: { xs: 1, md: 0 },
         borderColor: 'divider',
         bgcolor: 'background.paper',
-        flexShrink: 0
+        flexShrink: 0,
+        WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
       }}>
         <CustomizationPanel
           availableMaterials={availableMaterials} // Pass API materials
+          customizeOptions={customizeOptions} // Pass API customize options (stitch_patterns, etc.)
           modelId={modelId}
           onModelIdChange={setModelId}
           stitchColor={stitchColor}
@@ -391,17 +453,42 @@ function App({
 
       <Box sx={{
         width: { xs: '100%', md: '70%' },
-        height: { xs: '60vh', md: '100%' },
+        height: { xs: '55vh', sm: '60vh', md: '100%' },
+        minHeight: { xs: 500, sm: 600, md: 'auto' },
         position: 'relative',
-        flexGrow: 1
+        flexGrow: 1,
+        flexShrink: 0,
+        overflow: 'hidden', // Prevent horizontal overflow
+        maxWidth: '100%' // Ensure it doesn't exceed container width
       }}>
         <Scene3D
           ref={scene3DRef}
           modelFileUrl={modelFileUrl} // Pass API model URL
           modelId={modelId}
           stitchColor={stitchColor}
-          fabricColor={fabricColor}
-          fabricType={fabricType}
+          fabricColor={fabricColor || '#dfdfdf'} // Fallback to default gray
+          fabricType={(() => {
+            // Convert material ID to shader_id for 3D rendering
+            if (availableMaterials && availableMaterials.length > 0 && fabricType) {
+              const material = availableMaterials.find(m => m.id.toString() === fabricType);
+              if (material && material.shader_id) {
+                // Map shader_id to ShaderManager format if needed
+                // Some shader_ids need mapping for backwards compatibility
+                const shaderIdMap = {
+                  'brisa': 'brisa-distressed', // Legacy alias
+                  // Direct mappings (no change needed)
+                  'carroll-leather': 'carroll-leather',
+                  'miami-corp-cloths': 'miami-corp-cloths',
+                  'miami-vinyl': 'miami-vinyl',
+                  'ultrafabrics': 'ultrafabrics',
+                  'brisa-distressed': 'brisa-distressed'
+                };
+                return shaderIdMap[material.shader_id] || material.shader_id;
+              }
+            }
+            // Fallback to fabricType as-is (for legacy 'leather', etc.)
+            return fabricType || 'leather';
+          })()}
           patternId={patternId}
           meshCustomizations={meshCustomizations}
           onPartRightClick={handlePartRightClick}
@@ -428,6 +515,9 @@ function App({
           fabricColor={fabricColor}
           globalPatternId={patternId}
           isTwoToneSelector={popupState.partName === 'two-tone-selector'}
+          availableMaterials={availableMaterials}
+          fabricType={fabricType}
+          customizeOptions={customizeOptions}
         />
       )}
 

@@ -28,18 +28,18 @@ export const getModelConfig = (modelId) => {
  * Get stitching texture path based on model and pattern
  * Each pattern has its own stitching texture
  * @param {string} modelId - Model ID (e.g., '1', '2')
- * @param {string} patternId - Pattern ID (e.g., '1-1', '1-2', etc.)
+ * @param {string} patternId - Pattern ID in format 'modelId-patternNum' (e.g., '1-2' from static_pattern_id)
  * @returns {string} Path to stitching texture
  */
 export const getStitchingPath = (modelId, patternId) => {
   // Extract pattern number from patternId
-  // patternId format: '{modelId}-{patternNum}' or '{modelId}-{patternNum}-twotone'
+  // patternId format: '{modelId}-{patternNum}' (from static_pattern_id)
   let patternNum = '1'; // Default to pattern 1
   
   if (patternId && patternId !== 'default') {
     const parts = patternId.split('-');
     if (parts.length >= 2) {
-      patternNum = parts[1]; // Extract pattern number
+      patternNum = parts[1]; // Extract pattern number (e.g., "2" from "1-2")
     }
   }
   
