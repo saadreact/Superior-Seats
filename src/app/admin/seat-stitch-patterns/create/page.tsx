@@ -56,6 +56,7 @@ const CreateSeatStitchPatternPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    static_pattern_id: '', // Format: "modelId-patternNum" (e.g., "1-2" for /assets/patterns/1/02.jpg)
     image: null as File | null,
     price: 0,
     price_tier_ids: [] as number[],
@@ -251,10 +252,24 @@ const CreateSeatStitchPatternPage = () => {
       setLoading(true);
       setError(null);
       
+      // Validate static_pattern_id format
+      if (!formData.static_pattern_id.trim()) {
+        setError('Static Pattern ID is required (e.g., "1-2" for pattern 2 of model 1)');
+        return;
+      }
+
+      // Validate format: should be "modelId-patternNum"
+      const patternIdRegex = /^\d+-\d+$/;
+      if (!patternIdRegex.test(formData.static_pattern_id.trim())) {
+        setError('Static Pattern ID must be in format "modelId-patternNum" (e.g., "1-2", "2-3")');
+        return;
+      }
+
       // Create the data object that matches the backend schema
       const submissionData = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
+        static_pattern_id: formData.static_pattern_id.trim(), // Maps to static file path
         image: formData.image,
         cost: 0, // Fixed cost value
         price: formData.price,
@@ -352,6 +367,17 @@ const CreateSeatStitchPatternPage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
+                  sx={{ mb: 3 }}
+                />
+
+                <TextField
+                  label="Static Pattern ID *"
+                  value={formData.static_pattern_id}
+                  onChange={(e) => handleInputChange('static_pattern_id', e.target.value)}
+                  required
+                  fullWidth
+                  placeholder="e.g., 1-2 (for /assets/patterns/1/02.jpg)"
+                  helperText="Format: modelId-patternNum (e.g., '1-2' maps to /assets/patterns/1/02.jpg and /assets/stitchings/1/2/1.png)"
                   sx={{ mb: 3 }}
                 />
 

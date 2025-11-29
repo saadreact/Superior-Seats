@@ -10,6 +10,7 @@ interface LazyComponentProps {
   showSpinner?: boolean;
   spinnerSize?: number;
   loadingText?: string;
+  props?: Record<string, any>; // Props to pass to the lazy-loaded component
 }
 
 const LazyComponent: React.FC<LazyComponentProps> = ({
@@ -18,6 +19,7 @@ const LazyComponent: React.FC<LazyComponentProps> = ({
   showSpinner = true,
   spinnerSize = 40,
   loadingText = 'Loading...',
+  props = {},
 }) => {
   const LazyLoadedComponent = lazy(component);
 
@@ -27,7 +29,7 @@ const LazyComponent: React.FC<LazyComponentProps> = ({
 
   return (
     <Suspense fallback={fallback || defaultFallback}>
-      <LazyLoadedComponent />
+      <LazyLoadedComponent {...props} />
     </Suspense>
   );
 };

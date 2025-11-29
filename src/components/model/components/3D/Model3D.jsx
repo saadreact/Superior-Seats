@@ -17,7 +17,8 @@ function Model3D({
   ambientStrength = 0.5, // Ambient lighting strength from environment
   onPartRightClick = null, // Left-click handler for parts in two-tone mode
   seatType = 'single', // Seat type (single or two-tone)
-  glowEditableParts = false // Trigger glow effect on editable parts
+  glowEditableParts = false, // Trigger glow effect on editable parts
+  onLoadComplete = null // Callback when model finishes loading
 }) {
   const meshRef = useRef();
   const materialsRef = useRef(new Map()); // Track materials for updates
@@ -29,25 +30,66 @@ function Model3D({
   // Get model configuration dynamically based on modelId
   const modelConfig = useMemo(() => getModelConfig(modelId), [modelId]);
 
-  // Determine model path: use API URL if provided, otherwise fallback to config
-  const modelPath = modelFileUrl || modelConfig.model;
+  // State to track the actual model path to use (with fallback support)
+  // Initialize with static asset (fallback), will switch to API URL if it exists
+  const [actualModelPath, setActualModelPath] = useState(modelConfig.model);
+
+  // Determine model path: try API URL first, fallback to static asset if it fails
+  useEffect(() => {
+    const determineModelPath = async () => {
+      // If no API URL provided, use static asset directly
+      if (!modelFileUrl) {
+        setActualModelPath(modelConfig.model);
+        return;
+      }
+
+      // Try to verify API URL exists by fetching it
+      try {
+        const response = await fetch(modelFileUrl, { method: 'HEAD' });
+        if (response.ok) {
+          // API file exists, use it
+          console.log(`✅ API model file found: ${modelFileUrl}`);
+          setActualModelPath(modelFileUrl);
+        } else {
+          // API file doesn't exist (404), use static asset fallback
+          console.warn(`⚠️ API model file not found (${response.status}): ${modelFileUrl}. Using fallback: ${modelConfig.model}`);
+          setActualModelPath(modelConfig.model);
+        }
+      } catch (error) {
+        // Network error or CORS issue, use static asset fallback
+        console.warn(`⚠️ Failed to verify API model file: ${modelFileUrl}. Error: ${error.message}. Using fallback: ${modelConfig.model}`);
+        setActualModelPath(modelConfig.model);
+      }
+    };
+
+    determineModelPath();
+  }, [modelFileUrl, modelConfig.model]);
+
+  // Use the determined model path (starts with fallback, switches to API if available)
+  const modelPath = actualModelPath;
 
   // Load GLTF model and base textures dynamically
+  // Always call useGLTF (hooks must be called unconditionally)
+  // If actualModelPath is null initially, use the fallback path
   const { scene } = useGLTF(modelPath);
 
   // Memoize texture paths to prevent unnecessary reloads
   // In two-tone mode, always use default textures (no global pattern)
+  // patternId format: "modelId-patternNum" (e.g., "1-2" from static_pattern_id)
   const diamondNormalPath = useMemo(() => {
     // In two-tone mode, don't use global pattern for base textures
     const effectivePatternId = seatType === 'two-tone' ? null : patternId;
 
     if (effectivePatternId && effectivePatternId !== 'default') {
-      // Extract pattern info to determine correct path
+      // Extract pattern info from static_pattern_id format: "modelId-patternNum"
+      // e.g., "1-2" → modelNum="1", patternNum="2" → /assets/patterns/1/02.jpg
       const [modelNum, patternNum] = effectivePatternId.split('-');
-      if (patternNum === '1') {
-        return `/assets/patterns/${modelNum}/1.jpg`;
-      } else {
-        return `/assets/patterns/${modelNum}/0${patternNum}.jpg`;
+      if (patternNum && modelNum) {
+        if (patternNum === '1') {
+          return `/assets/patterns/${modelNum}/1.jpg`;
+        } else {
+          return `/assets/patterns/${modelNum}/0${patternNum}.jpg`;
+        }
       }
     }
     return modelConfig.textures.diamondNormal; // Default diamond normal
@@ -97,6 +139,17 @@ function Model3D({
 
     loadTextures();
   }, [modelId, diamondNormalPath, stitchingTexturePath, externalStitchingPath, seatType, modelConfig.textures.ao]);
+
+  // Notify parent when model and textures are fully loaded
+  useEffect(() => {
+    if (scene && texturesLoaded && onLoadComplete) {
+      // Small delay to ensure everything is rendered
+      const timer = setTimeout(() => {
+        onLoadComplete();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [scene, texturesLoaded, onLoadComplete]);
 
   // Define which parts can be customized in two-tone mode (memoized to prevent re-renders)
   const customizableParts = useMemo(() => [
@@ -559,9 +612,14 @@ function Model3D({
       console.log('🔍 Is in list?', clickedObject ? customizableParts.includes(clickedObject.name) : false);
 
       if (clickedObject && customizableParts.includes(clickedObject.name)) {
-        // Valid part clicked - trigger application
-        console.log('✅ APPLYING - Valid part clicked:', clickedObject.name);
-        onPartRightClick(clickedObject.name, null, true);
+        // Valid part clicked - open popup for customization
+        console.log('✅ OPENING POPUP - Valid part clicked:', clickedObject.name);
+        // Get click position for popup placement
+        const clickPosition = {
+          x: event.clientX,
+          y: event.clientY
+        };
+        onPartRightClick(clickedObject.name, clickPosition, true);
       } else {
         // Invalid part clicked - show warning and highlight valid parts
         console.log('❌ INVALID - Invalid part clicked:', clickedObject?.name || 'unknown', 'Object exists?', !!clickedObject);
@@ -575,19 +633,22 @@ function Model3D({
     clickStartRef.current = null;
   };
 
+  // Only render if scene is loaded
+  if (!scene) {
+    return null;
+  }
+
   return (
-    scene && (
-      <primitive
-        ref={meshRef}
-        object={scene}
-        scale={modelConfig?.scale || [1, 1, 1]}
-        position={modelConfig?.position || [0.5, 0, 0]}
-        rotation={modelConfig?.rotation || [0, 0, 0]}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-      />
-    )
+    <primitive
+      ref={meshRef}
+      object={scene}
+      scale={modelConfig?.scale || [1, 1, 1]}
+      position={modelConfig?.position || [0.5, 0, 0]}
+      rotation={modelConfig?.rotation || [0, 0, 0]}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+    />
   );
 }
 

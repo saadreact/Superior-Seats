@@ -36,6 +36,7 @@ class SeatStitchPatternService {
   async createSeatStitchPattern(data: {
     name: string;
     description?: string;
+    static_pattern_id: string; // Format: "modelId-patternNum" (e.g., "1-2")
     image: File;
     cost: number;
     price: number;
@@ -49,6 +50,7 @@ class SeatStitchPatternService {
         const formData = new FormData();
         formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        formData.append('static_pattern_id', data.static_pattern_id);
         formData.append('cost', data.cost.toString());
         formData.append('price', data.price.toString());
         
@@ -112,6 +114,7 @@ class SeatStitchPatternService {
   async updateSeatStitchPattern(id: number, data: {
     name?: string;
     description?: string;
+    static_pattern_id?: string; // Format: "modelId-patternNum" (e.g., "1-2")
     image?: File | null;
     cost?: number;
     price?: number;
@@ -125,6 +128,7 @@ class SeatStitchPatternService {
         const formData = new FormData();
         if (data.name) formData.append('name', data.name);
         if (data.description) formData.append('description', data.description);
+        if (data.static_pattern_id) formData.append('static_pattern_id', data.static_pattern_id);
         if (data.cost !== undefined) formData.append('cost', data.cost.toString());
         if (data.price !== undefined) formData.append('price', data.price.toString());
         
@@ -170,7 +174,7 @@ class SeatStitchPatternService {
         return response.data;
       } else {
         // Fallback to JSON if no image
-        const jsonData = {
+        const jsonData: any = {
           name: data.name,
           description: data.description,
           cost: data.cost,
@@ -179,6 +183,9 @@ class SeatStitchPatternService {
           price_adjustments: data.price_adjustments,
           color_ids: data.color_ids
         };
+        if (data.static_pattern_id) {
+          jsonData.static_pattern_id = data.static_pattern_id;
+        }
         const response = await api.put(`/seat-stitch-patterns/${id}`, jsonData);
         return response.data?.data || response.data;
       }
