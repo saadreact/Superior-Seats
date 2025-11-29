@@ -4,7 +4,6 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Scene3D from './components/3D/Scene3D';
 import CustomizationPanel from './components/CustomizationPanel';
 import PartCustomizationPopup from './components/PartCustomizationPopup';
-import SubmitButton from './components/SubmitButton';
 import Toast from './components/Toast';
 import InfoPopup from './components/InfoPopup';
 
@@ -12,7 +11,8 @@ function App({
   onSubmit,
   modelFileUrl,
   availableMaterials,
-  customizeOptions
+  customizeOptions,
+  onCustomizationChange
 }) {
   const scene3DRef = useRef();
   const theme = useTheme();
@@ -44,6 +44,78 @@ function App({
   const [partClickStates, setPartClickStates] = useState({});
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [defaultsApplied, setDefaultsApplied] = useState(false);
+
+  // Notify parent component of 3D customization changes for price calculation
+  useEffect(() => {
+    if (onCustomizationChange && availableMaterials) {
+      const selections = {};
+
+      // Material Type
+      if (fabricType) {
+        const material = availableMaterials.find(m => m.id.toString() === fabricType);
+        if (material) {
+          selections.materialType = {
+            id: fabricType,
+            name: material.name,
+            price: material.price ? parseFloat(String(material.price)) : 0
+          };
+        }
+      }
+
+      // Color
+      if (fabricColor && fabricType) {
+        const material = availableMaterials.find(m => m.id.toString() === fabricType);
+        if (material && material.colors) {
+          const color = material.colors.find(c => c.hex_code === fabricColor);
+          if (color) {
+            selections.color = {
+              id: String(color.id),
+              name: color.name,
+              price: color.price ? parseFloat(String(color.price)) : (color.price_tiers && color.price_tiers.length > 0 ? parseFloat(String(color.price_tiers[0].price)) : 0)
+            };
+          }
+        }
+      }
+
+      // Pattern
+      if (patternId && patternId !== 'default' && customizeOptions?.stitch_patterns) {
+        const pattern = customizeOptions.stitch_patterns.find(p => 
+          String(p.id) === String(patternId) || 
+          p.static_pattern_id === String(patternId)
+        );
+        if (pattern) {
+          selections.pattern = {
+            id: String(pattern.id),
+            name: pattern.name,
+            price: pattern.price ? parseFloat(String(pattern.price)) : (pattern.price_adjustment ? parseFloat(String(pattern.price_adjustment)) : 0)
+          };
+        }
+      }
+
+      // Stitch Color (if pattern has stitch colors)
+      if (patternId && patternId !== 'default' && stitchColor && customizeOptions?.stitch_patterns) {
+        const pattern = customizeOptions.stitch_patterns.find(p => 
+          String(p.id) === String(patternId) || 
+          p.static_pattern_id === String(patternId)
+        );
+        if (pattern && pattern.stitch_colors) {
+          const stitchColorObj = pattern.stitch_colors.find(c => c.hex_code === stitchColor);
+          if (stitchColorObj) {
+            // Check if stitch color has price (may be in price field or price_adjustment)
+            const stitchPrice = stitchColorObj.price ? parseFloat(String(stitchColorObj.price)) : 
+                               (stitchColorObj.price_adjustment ? parseFloat(String(stitchColorObj.price_adjustment)) : 0);
+            selections.stitchColor = {
+              id: String(stitchColorObj.id),
+              name: stitchColorObj.name,
+              price: stitchPrice
+            };
+          }
+        }
+      }
+
+      onCustomizationChange(selections);
+    }
+  }, [fabricType, fabricColor, patternId, stitchColor, availableMaterials, customizeOptions, onCustomizationChange]);
 
   // Set default fabric type and color when materials are loaded (only once)
   useEffect(() => {
@@ -545,8 +617,7 @@ function App({
         ))}
       </Stack>
 
-      {/* Submit Button */}
-      <SubmitButton onSubmit={handleSubmit} disabled={isSubmitting} />
+      {/* Submit Button removed - now in CustomizedSeat component below price breakdown */}
 
       {/* Info Popup */}
       {showInfoPopup && (
