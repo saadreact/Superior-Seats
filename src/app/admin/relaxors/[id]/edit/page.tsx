@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import {
   Box,
   Typography,
@@ -19,24 +19,29 @@ import {
   Checkbox,
   ListItemText,
   Chip,
-  FormControlLabel,
   Divider,
+  FormControlLabel,
+  Grid,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { heatOptionsService } from '@/services/heat-options';
+import { relaxorsService } from '@/services/relaxors';
 import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
-const CreateHeatOptionPage = () => {
+const EditRelaxorPage = () => {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [priceTiers, setPriceTiers] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -48,42 +53,129 @@ const CreateHeatOptionPage = () => {
     price_adjustments: {} as Record<string, number>
   });
   
-  const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
-  
   const [enablePriceTiers, setEnablePriceTiers] = useState(false);
-  
-  const [priceTiers, setPriceTiers] = useState<any[]>([]);
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
+  const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState<string>('');
   const [overridePriceInputs, setOverridePriceInputs] = useState<Record<number, string>>({});
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => {
-      const newFormData = { ...prev, [field]: value };
+  useEffect(() => {
+    loadRelaxor();
+    loadPriceTiers();
+  }, [id]);
+
+  const loadRelaxor = async () => {
+    try {
+      setInitialLoading(true);
+      setError(null);
       
-      // Sync priceInput state with formData.price
-      if (field === 'price') {
-        setPriceInput(value > 0 ? value.toString() : '');
-      }
+      const relaxor = await relaxorsService.getRelaxor(parseInt(id));
+      const priceTierIds = relaxor.price_tiers?.map((tier: any) => tier.id) || [];
       
-      // Recalculate price tiers when base price changes
-      if (field === 'price' && calculatedPriceTiers.length > 0) {
-        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
-        setCalculatedPriceTiers(newCalculatedTiers);
+      // Initialize calculated price tiers from existing data
+      const initialCalculatedTiers: CalculatedPriceTier[] = relaxor.price_tiers?.map((tier: any) => {
+        const existingPrice = parseFloat(tier.pivot?.price_adjustment) || 0;
+        const calculatedPrice = VariantsCalculation.calculatePriceAdjustment(
+          relaxor.price || 0, 
+          parseFloat(tier.discount_off_retail_price)
+        ).calculatedPrice;
         
-        // Update price_adjustments with new calculated prices
-        const newPriceAdjustments = Object.fromEntries(
-          newCalculatedTiers.map(tier => [
-            tier.id.toString(), 
-            VariantsCalculation.getFinalPrice(tier)
-          ])
-        );
-        newFormData.price_adjustments = newPriceAdjustments;
-      }
+        // Check if this is an override
+        const isOverridden = Math.abs(existingPrice - calculatedPrice) > 0.01;
+        
+        return {
+          id: tier.id,
+          name: tier.name,
+          display_name: tier.display_name,
+          discount_off_retail_price: tier.discount_off_retail_price,
+          calculated_price: calculatedPrice,
+          override_price: isOverridden ? existingPrice : undefined,
+          is_overridden: isOverridden
+        };
+      }) || [];
       
-      return newFormData;
-    });
+      // Initialize price adjustments from existing data
+      const initialPriceAdjustments: Record<string, number> = {};
+      initialCalculatedTiers.forEach((tier) => {
+        initialPriceAdjustments[tier.id.toString()] = VariantsCalculation.getFinalPrice(tier);
+      });
+      
+      const initialPrice = relaxor.price || 0;
+      
+      setFormData({
+        name: relaxor.name || '',
+        description: relaxor.description || '',
+        image: null,
+        cost: relaxor.cost || 0,
+        price: initialPrice,
+        price_tier_ids: priceTierIds,
+        price_adjustments: initialPriceAdjustments
+      });
+      setPriceInput(initialPrice > 0 ? initialPrice.toString() : '');
+      setEnablePriceTiers(priceTierIds.length > 0);
+      setCalculatedPriceTiers(initialCalculatedTiers);
+      setCurrentImage(relaxor.image);
+      
+      // Set up price overrides from calculated tiers
+      const priceOverrides: Record<string, number> = {};
+      initialCalculatedTiers.forEach((tier) => {
+        if (tier.is_overridden && tier.override_price !== undefined) {
+          priceOverrides[tier.id.toString()] = tier.override_price;
+          setOverridePriceInputs(prev => ({
+            ...prev,
+            [tier.id]: tier.override_price!.toString()
+          }));
+        }
+      });
+      setPriceOverrides(priceOverrides);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load relaxor');
+      console.error('Error loading relaxor:', err);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  const loadPriceTiers = async () => {
+    try {
+      const response = await relaxorsService.getPriceTiers();
+      setPriceTiers(response || []);
+    } catch (err: any) {
+      console.error('Error loading price tiers:', err);
+    }
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Sync priceInput state with formData.price
+    if (field === 'price') {
+      setPriceInput(value > 0 ? value.toString() : '');
+    }
+    
+    // Recalculate price tiers when base price changes
+    if (field === 'price' && enablePriceTiers && value > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Update price_adjustments with calculated prices
+      const newPriceAdjustments = Object.fromEntries(
+        newCalculatedTiers.map(tier => [
+          tier.id.toString(), 
+          VariantsCalculation.getFinalPrice(tier)
+        ])
+      );
+      setFormData(prev => ({
+        ...prev,
+        price_adjustments: newPriceAdjustments
+      }));
+    }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,17 +191,10 @@ const CreateHeatOptionPage = () => {
   };
 
   const handlePriceTierChange = (event: any) => {
-    const value = event.target.value as number[];
-    setFormData(prev => ({ ...prev, price_tier_ids: value }));
-  };
-
-  const handlePriceAdjustmentChange = (tierId: number, adjustment: number) => {
+    const value = event.target.value;
     setFormData(prev => ({
       ...prev,
-      price_adjustments: {
-        ...prev.price_adjustments,
-        [tierId.toString()]: adjustment
-      }
+      price_tier_ids: typeof value === 'string' ? [] : value
     }));
   };
 
@@ -145,6 +230,7 @@ const CreateHeatOptionPage = () => {
       }));
       setCalculatedPriceTiers([]);
       setPriceOverrides({});
+      setOverridePriceInputs({});
     }
   };
 
@@ -181,6 +267,7 @@ const CreateHeatOptionPage = () => {
     if (formData.price > 0) {
       // Clear all overrides
       setPriceOverrides({});
+      setOverridePriceInputs({});
       
       // Recalculate price tiers without overrides
       const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, {});
@@ -200,18 +287,6 @@ const CreateHeatOptionPage = () => {
     }
   };
 
-  useEffect(() => {
-    const loadPriceTiers = async () => {
-      try {
-        const response = await heatOptionsService.getPriceTiers();
-        setPriceTiers(response || []);
-      } catch (err) {
-        console.error('Error loading price tiers:', err);
-      }
-    };
-    loadPriceTiers();
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -220,13 +295,8 @@ const CreateHeatOptionPage = () => {
       return;
     }
 
-    if (!formData.image) {
-      setError('Image is required');
-      return;
-    }
-
     if (formData.price <= 0) {
-      setError('In Store price must be greater than 0');
+      setError('Price must be greater than 0');
       return;
     }
 
@@ -234,67 +304,58 @@ const CreateHeatOptionPage = () => {
       setLoading(true);
       setError(null);
       
-      // Create the data object that matches the backend schema
-      const submissionData = {
-        name: formData.name.trim(),
-        description: formData.description.trim() || undefined,
-        image: formData.image,
-        cost: 0, // Fixed cost value
+      // Only include image if a new one is uploaded
+      const submissionData: any = {
+        name: formData.name,
+        description: formData.description,
+        cost: 0, // Fixed cost value as requested
         price: formData.price,
-        price_tier_ids: enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map(tier => tier.id) : [],
-        price_adjustments: enablePriceTiers && calculatedPriceTiers.length > 0 ? Object.fromEntries(
-          calculatedPriceTiers.map(tier => [
-            tier.id.toString(), 
-            VariantsCalculation.getFinalPrice(tier)
-          ])
-        ) : undefined
+        price_tier_ids: enablePriceTiers && formData.price_tier_ids.length > 0 ? formData.price_tier_ids : [],
+        price_adjustments: enablePriceTiers && formData.price_adjustments ? formData.price_adjustments : {},
       };
+
+      // Only add image to submission data if a new image is selected
+      if (formData.image) {
+        submissionData.image = formData.image;
+      } else if (currentImage) {
+        // Only pass current_image if no new image is being uploaded
+        submissionData.current_image = currentImage;
+      }
+
+      console.log('Submitting relaxor update data:', submissionData);
       
-      console.log('Submitting heat option data:', submissionData);
-      console.log('Image file details:', {
-        name: formData.image?.name,
-        size: formData.image?.size,
-        type: formData.image?.type
-      });
-      
-      const result = await heatOptionsService.createHeatOption(submissionData);
-      console.log('API response:', result);
-      
-      setSuccess('Heat Option created successfully!');
+      await relaxorsService.updateRelaxor(parseInt(id), submissionData);
+      setSuccess('Relaxor updated successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/heat-options');
+        router.push('/admin/relaxors');
       }, 1500);
       
     } catch (err: any) {
-      console.error('Full error object:', err);
-      console.error('Error response:', err.response);
-      console.error('Error status:', err.response?.status);
-      console.error('Error data:', err.response?.data);
-      
-      let errorMessage = 'Failed to create heat option';
-      
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setError(errorMessage);
+      setError(err.message || 'Failed to update relaxor');
+      console.error('Error updating relaxor:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleBack = () => {
-    router.push('/admin/heat-options');
+    router.push('/admin/relaxors');
   };
 
+  if (initialLoading) {
+    return (
+      <AdminLayout title="Edit Relaxor">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <CircularProgress />
+        </Box>
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout title="Create Heat Option">
+    <AdminLayout title="Edit Relaxor">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -306,8 +367,6 @@ const CreateHeatOptionPage = () => {
             Back
           </Button>
         </Box>
-
-       
 
         {/* Alerts */}
         {error && (
@@ -328,12 +387,7 @@ const CreateHeatOptionPage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Basic Information */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700, 
-                    mb: 2,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Basic Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
@@ -344,16 +398,8 @@ const CreateHeatOptionPage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter heat option name"
-                  sx={{ 
-                    mb: 3,
-                    '& .MuiInputBase-input': {
-                      fontSize: { xs: '1rem', sm: '0.875rem' }
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontSize: { xs: '1rem', sm: '0.875rem' }
-                    }
-                  }}
+                  placeholder="Enter relaxor name"
+                  sx={{ mb: 3 }}
                 />
 
                 <TextField
@@ -364,30 +410,16 @@ const CreateHeatOptionPage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
-                  sx={{
-                    '& .MuiInputBase-input': {
-                      fontSize: { xs: '1rem', sm: '0.875rem' }
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontSize: { xs: '1rem', sm: '0.875rem' }
-                    }
-                  }}
                 />
                 </Box>
 
                 {/* Pricing Information */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700, 
-                    mb: 2,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Pricing Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
                     label="In Store Price"
                     type="number"
@@ -420,33 +452,76 @@ const CreateHeatOptionPage = () => {
                     }}
                     required
                     fullWidth
-                    placeholder="Enter in Store price"
+                    placeholder="Enter shop price"
                     inputProps={{ min: 0, step: 0.01 }}
-                    sx={{
-                      '& .MuiInputBase-input': {
-                        fontSize: { xs: '1rem', sm: '0.875rem' }
-                      },
-                      '& .MuiInputLabel-root': {
-                        fontSize: { xs: '1rem', sm: '0.875rem' }
-                      }
-                    }}
                   />
                 </Box>
-                </Box>
 
-                {/* Image Upload Field */}
+                {/* Image Upload */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700, 
-                    mb: 2,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Image
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
-                
+
                 <Box>
+                  {/* Current Image */}
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Current Image:
+                      </Typography>
+                    {currentImage ? (
+                      <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'flex-start',
+                        gap: 1
+                      }}>
+                        <Box sx={{ 
+                          border: '2px solid #e0e0e0', 
+                          borderRadius: 2, 
+                          p: 1,
+                          backgroundColor: '#fafafa'
+                        }}>
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${currentImage}`}
+                            alt="Current relaxor"
+                        style={{
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                              borderRadius: '8px',
+                              display: 'block'
+                            }}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Image not available</div>';
+                              }
+                            }}
+                          />
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Current image path: {currentImage}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box sx={{ 
+                        border: '2px dashed #ccc', 
+                        borderRadius: 2, 
+                        p: 3, 
+                        textAlign: 'center',
+                        backgroundColor: '#fafafa'
+                      }}>
+                        <Typography variant="body2" color="text.secondary">
+                          No current image
+                        </Typography>
+                    </Box>
+                  )}
+                  </Box>
+
                   <input
                     accept="image/*"
                     style={{ display: 'none' }}
@@ -458,27 +533,21 @@ const CreateHeatOptionPage = () => {
                     <Button
                       variant="outlined"
                       component="span"
-                      sx={{ 
-                        mb: 2,
-                        minHeight: { xs: 44, sm: 'auto' },
-                        fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                        width: { xs: '100%', sm: 'auto' }
-                      }}
+                      sx={{ mb: 2 }}
                     >
                       {formData.image ? `Image Selected: ${formData.image.name}` : 'Upload Image'}
                     </Button>
                   </label>
-                  
                   {imagePreview && (
                     <Box sx={{ mt: 2 }}>
                       <img
                         src={imagePreview}
                         alt="Preview"
                         style={{
-                          maxWidth: '100%',
-                          maxHeight: 200,
-                          borderRadius: 8,
-                          border: '1px solid #e0e0e0'
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
                         }}
                       />
                     </Box>
@@ -488,73 +557,45 @@ const CreateHeatOptionPage = () => {
 
                 {/* Price Tiers */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700, 
-                    mb: 2,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Price Tiers
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ 
-                  display: 'flex', 
-                  gap: 2,
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'flex-start', sm: 'center' }
-                }}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={enablePriceTiers}
-                        onChange={handleEnablePriceTiersChange}
-                        color="primary"
-                      />
-                    }
-                    label={
-                      <Typography variant="body1" sx={{ 
-                        fontWeight: 500,
-                        fontSize: { xs: '1rem', sm: '0.875rem' }
-                      }}>
-                        Enable Price Tiers
-                      </Typography>
-                    }
-                    sx={{ 
-                      '& .MuiFormControlLabel-label': {
-                        fontSize: { xs: '1rem', sm: '0.875rem' },
-                        fontWeight: 500
-                      }
-                    }}
-                  />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={enablePriceTiers}
+                      onChange={handleEnablePriceTiersChange}
+                      color="primary"
+                    />
+                  }
+                  label="Enable Price Tiers"
+                />
                   {enablePriceTiers && (
                     <Button
                       variant="outlined"
-                      size="small"
                       onClick={handleResetPriceTiers}
-                      sx={{ 
-                        ml: { xs: 0, sm: 1 },
-                        mt: { xs: 1, sm: 0 },
-                        minHeight: { xs: 36, sm: 'auto' },
-                        fontSize: { xs: '0.9rem', sm: '0.75rem' }
-                      }}
+                      disabled={calculatedPriceTiers.length === 0}
+                      sx={{ ml: 2 }}
                     >
                       Reset
                     </Button>
                   )}
-                </Box>
+                </div>
 
                 {enablePriceTiers && calculatedPriceTiers.length > 0 && (
                   <Box>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
-                      Calculated Price Tiers
+                      Price Tiers
                     </Typography>
                     <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-                      Based on base price: ${VariantsCalculation.formatPrice(formData.price)}
+                      Base price: ${VariantsCalculation.formatPrice(formData.price)}
                     </Typography>
                     
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {VariantsCalculation.sortByDiscountPercentage(calculatedPriceTiers).map((tier) => (
+                      {calculatedPriceTiers.map((tier) => (
                         <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
                             <Box sx={{ flex: 1 }}>
@@ -567,12 +608,9 @@ const CreateHeatOptionPage = () => {
                                   : 'No discount'
                                 }
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
-                              </Typography>
-                              {tier.discount_amount > 0 && (
-                                <Typography variant="caption" color="success.main">
-                                  Save: ${VariantsCalculation.formatPrice(tier.discount_amount)}
+                              {tier.is_overridden && (
+                                <Typography variant="body2" color="text.secondary">
+                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
                                 </Typography>
                               )}
                             </Box>
@@ -581,7 +619,7 @@ const CreateHeatOptionPage = () => {
                                 label="Override Price"
                                 type="number"
                                 size="small"
-                                value={overridePriceInputs[tier.id] ?? (tier.is_overridden ? (tier.override_price?.toString() || '') : '')}
+                                value={overridePriceInputs[tier.id] ?? (tier.is_overridden ? (tier.override_price?.toString() || '') : (tier.calculated_price?.toString() || ''))}
                                 onChange={(e) => {
                                   const value = e.target.value;
                                   setOverridePriceInputs(prev => ({
@@ -630,7 +668,7 @@ const CreateHeatOptionPage = () => {
                                   fontWeight: 600, 
                                   color: tier.is_overridden ? 'warning.main' : 'primary.main'
                                 }}>
-                                  ${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}
+                                  ${VariantsCalculation.formatPrice(tier.is_overridden ? tier.override_price : tier.calculated_price)}
                                 </Typography>
                                 {tier.is_overridden && (
                                   <Typography variant="caption" color="warning.main">
@@ -658,10 +696,10 @@ const CreateHeatOptionPage = () => {
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
+                    fullWidth={isMobile}
                     sx={{
                       minHeight: { xs: 44, sm: 'auto' },
-                      fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                      order: { xs: 2, sm: 1 }
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
                     }}
                   >
                     Cancel
@@ -671,17 +709,17 @@ const CreateHeatOptionPage = () => {
                     variant="contained"
                     startIcon={<SaveIcon />}
                     disabled={loading}
+                    fullWidth={isMobile}
                     sx={{
                       backgroundColor: 'primary.main',
                       minHeight: { xs: 44, sm: 'auto' },
                       fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                      order: { xs: 1, sm: 2 },
                       '&:hover': {
                         backgroundColor: 'primary.dark',
                       },
                     }}
                   >
-                    {loading ? 'Creating...' : 'Create Heat Option'}
+                    {loading ? 'Updating...' : 'Update Relaxor'}
                   </Button>
                 </Box>
             </Box>
@@ -692,4 +730,5 @@ const CreateHeatOptionPage = () => {
   );
 };
 
-export default CreateHeatOptionPage;
+export default EditRelaxorPage;
+

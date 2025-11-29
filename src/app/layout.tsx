@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   title: 'Superior Seats LLC',
   description: 'A modern, responsive Next.js application built with Material UI',
   icons: {
-    icon: '/superiorlogo/logored.png',
-    shortcut: '/superiorlogo/logored.png',
-    apple: '/superiorlogo/logored.png',
+    icon: '/assets/logored.png',
+    shortcut: '/assets/logored.png',
+    apple: '/assets/logored.png',
   },
 };
 

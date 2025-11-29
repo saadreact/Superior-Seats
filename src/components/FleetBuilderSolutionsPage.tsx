@@ -82,7 +82,7 @@ const FleetBuilderSolutionsPage = () => {
       {/* Hero Section */}
       <HeroSectionCommon
         title="Fleet & Builder Solutions"
-        description="We partner with RV, limousine, and bus manufacturers."
+        description="We partner with RV, limousine and bus manufacturers."
         height={{
           xs: "75px",
           sm: "70px",
