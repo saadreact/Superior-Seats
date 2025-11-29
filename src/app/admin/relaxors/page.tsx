@@ -7,6 +7,7 @@ import {
   Button,
   IconButton,
   Chip,
+  Dialog,
   Alert,
   CircularProgress,
   Paper,
@@ -21,8 +22,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Dialog,
-  Tooltip,
   FormControl,
   Select,
   MenuItem,
@@ -31,79 +30,63 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Search as SearchIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
 import { useRouter } from 'next/navigation';
-import { apiService } from '@/utils/api';
+import { relaxorsService } from '@/services/relaxors';
 import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
-interface Color {
+interface Relaxor {
   id: number;
   name: string;
-  hex_code: string;
   description: string;
-  image?: string;
-  color_vendor_id?: number;
-  material_type_ids?: number[];
-  material_types?: MaterialType[];
-  price_tier_ids: number[];
-  price_tiers?: any[];
-  cost: number | null;
-  price: number | null;
-  is_active: boolean;
+  image: string | null;
+  cost: number;
+  price: number;
   created_at: string;
   updated_at: string;
+  created_by: number | null;
+  creator: {
+    id: number;
+    email: string;
+    username: string;
+    role_id: number;
+    role_type: string;
+    email_verified_at: string | null;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+  } | null;
+  price_tiers: Array<{
+    id: number;
+    name: string;
+    display_name: string;
+    discount_off_retail_price: string;
+    created_at: string;
+    updated_at: string;
+    pivot: {
+      price_adjustment: number;
+    };
+  }>;
 }
 
-interface MaterialType {
-  id: number;
-  name: string;
-  shader_id?: string;
-  description?: string;
-  image?: string;
-  is_active: boolean;
-}
-
-interface ColorVendor {
-  id: number;
-  name: string;
-  description?: string;
-}
-
-interface PriceTier {
-  id: number;
-  name: string;
-  display_name: string;
-  description?: string;
-  discount_off_retail_price: string;
-  minimum_order_amount?: number;
-  created_at: string;
-  updated_at: string;
-}
-
-const ColorsPage = () => {
+const RelaxorsPage = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [colors, setColors] = useState<Color[]>([]);
-  const [materialTypes, setMaterialTypes] = useState<MaterialType[]>([]);
-  const [colorVendors, setColorVendors] = useState<ColorVendor[]>([]);
-  const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
+  const [relaxors, setRelaxors] = useState<Relaxor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [colorToDelete, setColorToDelete] = useState<Color | null>(null);
+  const [relaxorToDelete, setRelaxorToDelete] = useState<Relaxor | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Pagination state
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-  const [hasMorePages, setHasMorePages] = useState(false);
 
   // Ref to track debounce timer
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -112,123 +95,89 @@ const ColorsPage = () => {
   // Ref to track if component has mounted
   const isMounted = useRef(false);
 
+  // Helper function to get relaxor image URL
+  const getRelaxorImage = (relaxor: Relaxor) => {
+    if (relaxor.image) {
+      return `${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${relaxor.image}`;
+    }
+    return null;
+  };
+
   // Helper function to get calculated price tiers for display
-  const getCalculatedPriceTiers = (color: Color): CalculatedPriceTier[] => {
-    if (!color.price_tiers || color.price_tiers.length === 0) {
-      return [];
-    }
-
-    const priceValue = typeof color.price === 'string' ? parseFloat(color.price) : (color.price || 0);
-    if (priceValue <= 0) return [];
-
-    // Extract price adjustments and determine which are truly overridden
-    const overriddenPrices: Record<string, number> = {};
-    
-    color.price_tiers.forEach((tier: any) => {
-      if (tier.pivot && tier.pivot.price_adjustment !== undefined) {
-        const adjustmentValue = parseFloat(tier.pivot.price_adjustment);
-        const discountPercentage = parseFloat(tier.discount_off_retail_price);
-        const calculatedPrice = priceValue - (priceValue * discountPercentage / 100);
-        
-        // Check if the adjustment value is different from calculated price (indicating override)
-        if (Math.abs(adjustmentValue - calculatedPrice) > 0.01) {
-          overriddenPrices[tier.id.toString()] = adjustmentValue;
-        }
-      }
-    });
-
-  return VariantsCalculation.calculatePriceTiers(priceValue, color.price_tiers, overriddenPrices);
+  const getCalculatedPriceTiers = (relaxor: Relaxor) => {
+    return relaxor.price_tiers?.map((tier) => ({
+      id: tier.id,
+      display_name: tier.display_name,
+      calculated_price: tier.pivot?.price_adjustment || 0,
+      is_overridden: false // For list display, we don't track overrides
+    })) || [];
   };
 
-  const getMaterialTypeName = (color: Color): string => {
-    if (!color.material_types || color.material_types.length === 0) {
-      return 'Not assigned';
-    }
-    return color.material_types.map(mt => mt.name).join(', ');
-  };
-
-  const loadColors = useCallback(async () => {
+  const loadRelaxors = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
+      // Build API parameters for server-side pagination
       const params: Record<string, any> = {
-        page: page + 1, // API uses 1-based pagination
+        page: page + 1, // API uses 1-based pagination, but MUI uses 0-based
         per_page: rowsPerPage
       };
-      if (searchTerm.trim()) params.search = searchTerm.trim();
       
-      console.log('🎨 Colors - API call params:', params);
-      const response = await apiService.getColors(params);
-      console.log('🎨 Colors - API Response:', response);
+      // Add optional search parameter
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
       
-      if (response && response.data && Array.isArray(response.data)) {
-        setColors(response.data);
-        // Extract total count from meta object
-        const total = response.meta?.total || 
-                     response.meta?.pagination?.total || 
-                     response.meta?.last_page * rowsPerPage || 
-                     response.data.length;
-        setTotalCount(total);
-        console.log('📊 Setting total count:', total);
-        
-        // Set hasMorePages from the API response
-        const morePages = response.meta?.pagination?.has_more_pages === true;
-        setHasMorePages(morePages);
-        console.log('📊 Setting hasMorePages to:', morePages, 'from response.meta.pagination.has_more_pages:', response.meta?.pagination?.has_more_pages);
+      console.log('🔍 Loading relaxors with params:', params);
+      
+      const response = await relaxorsService.getRelaxors(params);
+      console.log('🔍 API Response:', response);
+      
+      // Handle the API response structure
+      if (response && response.data) {
+        setRelaxors(response.data);
+        // Update total count for pagination from the meta.pagination object
+        if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+          setTotalCount(response.meta.pagination.total);
+        } else if (response.meta && response.meta.total) {
+          setTotalCount(response.meta.total);
+        } else if (response.total !== undefined) {
+          setTotalCount(response.total);
+        } else if (response.data && Array.isArray(response.data)) {
+          // If no total count provided, use the length of current data
+          // This is not ideal for server-side pagination but prevents errors
+          setTotalCount(response.data.length);
+        }
       } else if (Array.isArray(response)) {
-        setColors(response);
+        setRelaxors(response);
         setTotalCount(response.length);
-        setHasMorePages(false);
       } else {
-        setColors([]);
+        setRelaxors([]);
         setTotalCount(0);
-        setHasMorePages(false);
       }
     } catch (err: any) {
-      setColors([]);
-      setTotalCount(0);
-      setHasMorePages(false);
-      if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        setError('Please log in to access this page');
+      console.error('Error loading relaxors:', err);
+      
+      if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+        setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+        // Redirect to home page where user can login
+        setTimeout(() => {
+          router.push('/');
+        }, 3000);
+      } else if (err.response?.status === 403) {
+        setError('Access denied. You do not have permission to view relaxors.');
+      } else if (err.response?.status === 404) {
+        setError('Relaxors endpoint not found. Please contact support.');
+      } else if (err.response?.status >= 500) {
+        setError('Server error. Please try again later.');
       } else {
-        setError(err.message || 'Failed to load colors. Please try again later.');
+        setError(err.message || 'Failed to load relaxors. Please try again later.');
       }
-      console.error('❌ Error loading colors:', err);
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, searchTerm]);
-
-  const loadMaterialTypes = useCallback(async () => {
-    try {
-      const response = await apiService.getMaterialTypes({ is_active: true });
-      setMaterialTypes(response?.data || response || []);
-    } catch (err: any) {
-      console.error('Error loading material types:', err);
-      setMaterialTypes([]);
-    }
-  }, []);
-
-  const loadColorVendors = useCallback(async () => {
-    try {
-      const response = await apiService.getColorVendors();
-      setColorVendors(response?.data || []);
-    } catch (err: any) {
-      console.error('Error loading color vendors:', err);
-      setColorVendors([]);
-    }
-  }, []);
-
-  const loadPriceTiers = useCallback(async () => {
-    try {
-      const response = await apiService.getPriceTiers();
-      setPriceTiers(response || []);
-    } catch (err: any) {
-      console.error('Error loading price tiers:', err);
-      setPriceTiers([]);
-    }
-  }, []);
+  }, [page, rowsPerPage, searchTerm, router]);
 
   // Debounced search effect - triggers search after user stops typing
   useEffect(() => {
@@ -266,36 +215,43 @@ const ColorsPage = () => {
           params.search = searchTerm.trim();
         }
         
-        const response = await apiService.getColors(params);
+        const response = await relaxorsService.getRelaxors(params);
         
-        if (response && response.data && Array.isArray(response.data)) {
-          setColors(response.data);
-          const total = response.meta?.total || 
-                       response.meta?.pagination?.total || 
-                       response.meta?.last_page * rowsPerPage || 
-                       response.data.length;
-          setTotalCount(total);
-          const morePages = response.meta?.pagination?.has_more_pages === true;
-          setHasMorePages(morePages);
+        if (response && response.data) {
+          setRelaxors(response.data);
+          if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+            setTotalCount(response.meta.pagination.total);
+          } else if (response.meta && response.meta.total) {
+            setTotalCount(response.meta.total);
+          } else if (response.total !== undefined) {
+            setTotalCount(response.total);
+          } else if (response.data && Array.isArray(response.data)) {
+            setTotalCount(response.data.length);
+          }
         } else if (Array.isArray(response)) {
-          setColors(response);
+          setRelaxors(response);
           setTotalCount(response.length);
-          setHasMorePages(false);
         } else {
-          setColors([]);
+          setRelaxors([]);
           setTotalCount(0);
-          setHasMorePages(false);
         }
       } catch (err: any) {
-        setColors([]);
-        setTotalCount(0);
-        setHasMorePages(false);
-        if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-          setError('Please log in to access this page');
+        console.error('Error loading relaxors:', err);
+        
+        if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+          setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+          setTimeout(() => {
+            router.push('/');
+          }, 3000);
+        } else if (err.response?.status === 403) {
+          setError('Access denied. You do not have permission to view relaxors.');
+        } else if (err.response?.status === 404) {
+          setError('Relaxors endpoint not found. Please contact support.');
+        } else if (err.response?.status >= 500) {
+          setError('Server error. Please try again later.');
         } else {
-          setError(err.message || 'Failed to load colors. Please try again later.');
+          setError(err.message || 'Failed to load relaxors. Please try again later.');
         }
-        console.error('❌ Error loading colors:', err);
       } finally {
         setLoading(false);
       }
@@ -328,33 +284,39 @@ const ColorsPage = () => {
     }
     
     // Fetch immediately when pagination changes
-    loadColors();
+    loadRelaxors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage]);
 
-  // Load material types and price tiers on mount
-  useEffect(() => {
-    loadMaterialTypes();
-    // loadColorVendors();
-    loadPriceTiers();
-  }, [loadMaterialTypes, loadPriceTiers]);
-
-
   const handleAdd = () => {
-    router.push('/admin/colors/create');
+    router.push('/admin/relaxors/create');
   };
 
-  const handleEdit = (color: Color) => {
-    router.push(`/admin/colors/${color.id}/edit`);
+  const handleEdit = (relaxor: Relaxor) => {
+    router.push(`/admin/relaxors/${relaxor.id}/edit`);
   };
 
-
-
-
-
-  const handleDelete = (color: Color) => {
-    setColorToDelete(color);
+  const handleDelete = (relaxor: Relaxor) => {
+    setRelaxorToDelete(relaxor);
     setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (relaxorToDelete) {
+      try {
+        setDeleting(true);
+        await relaxorsService.deleteRelaxor(relaxorToDelete.id);
+        setRelaxors(prev => prev.filter(item => item.id !== relaxorToDelete.id));
+        setAlert({ type: 'success', message: 'Relaxor deleted successfully' });
+      } catch (err: any) {
+        setError(err.message || 'Failed to delete relaxor');
+        console.error('Error deleting relaxor:', err);
+      } finally {
+        setDeleting(false);
+      }
+    }
+    setIsDeleteDialogOpen(false);
+    setRelaxorToDelete(null);
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -366,31 +328,14 @@ const ColorsPage = () => {
     setPage(newPage);
   };
 
-
-
-
-  const confirmDelete = async () => {
-    if (colorToDelete) {
-      try {
-        setDeleting(true);
-        await apiService.deleteColor(colorToDelete.id);
-        setColors(prev => prev.filter(c => c.id !== colorToDelete.id));
-        setAlert({ type: 'success', message: 'Color deleted successfully' });
-      } catch (err: any) {
-        setError(err.message || 'Failed to delete color');
-        console.error('Error deleting color:', err);
-      } finally {
-        setDeleting(false);
-      }
-    }
-    setIsDeleteDialogOpen(false);
-    setColorToDelete(null);
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
 
-
   return (
-    <AdminLayout title="Colors">
+    <AdminLayout title="Relaxors">
       <Box>
         <Box sx={{ 
           mb: 3, 
@@ -409,7 +354,7 @@ const ColorsPage = () => {
           }}>
             {/* Search Bar */}
             <TextField
-              placeholder="Search colors..."
+              placeholder="Search relaxors..."
               value={searchTerm}
               onChange={handleSearch}
               InputProps={{
@@ -429,7 +374,7 @@ const ColorsPage = () => {
             {/* Results count for mobile */}
             {isMobile && totalCount > 0 && (
               <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'flex-start' }}>
-                {totalCount} color{totalCount !== 1 ? 's' : ''} found
+                {totalCount} relaxor{totalCount !== 1 ? 's' : ''} found
               </Typography>
             )}
           </Box>
@@ -444,13 +389,15 @@ const ColorsPage = () => {
               minWidth: { xs: '100%', sm: 'auto' },
               height: { xs: 44, sm: 'auto' },
               fontSize: { xs: '0.95rem', sm: '0.875rem' },
+              backgroundColor: 'primary.main',
               boxShadow: 'none',
               '&:hover': {
+                backgroundColor: 'primary.dark',
                 boxShadow: 'none',
               }
             }}
           >
-            {isMobile ? 'Add Color' : 'Add'}
+            {isMobile ? 'Add Relaxor' : 'Add'}
           </Button>
         </Box>
 
@@ -474,7 +421,7 @@ const ColorsPage = () => {
                 size="small"
                 onClick={() => {
                   setError(null);
-                  loadColors();
+                  loadRelaxors();
                 }}
               >
                 Retry
@@ -485,18 +432,18 @@ const ColorsPage = () => {
           </Alert>
         )}
 
-        {/* Colors Table */}
+        {/* Relaxors Table */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
           </Box>
         ) : totalCount === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No colors found
+              No relaxors found
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Color" to create your first color.'}
+              {searchTerm ? 'Try adjusting your search terms.' : 'Click "Add Relaxor" to create your first relaxor.'}
             </Typography>
           </Paper>
         ) : (
@@ -504,142 +451,158 @@ const ColorsPage = () => {
             {/* Mobile Card View */}
             {isMobile ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {colors.map((color) => (
-                    <Paper key={color.id} sx={{ p: 2 }}>
-                      <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                        {/* Color Swatch */}
-                        <Box sx={{ 
-                          width: 60, 
-                          height: 60, 
-                          flexShrink: 0,
-                          borderRadius: 1,
-                          backgroundColor: color.hex_code || '#ccc',
-                          border: 1,
-                          borderColor: 'divider',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ 
-                            fontSize: '0.6rem',
-                            color: color.hex_code === '#ffffff' || color.hex_code === '#fff' ? '#000' : '#fff',
-                            textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
-                          }}>
-                            {color.hex_code}
+                {relaxors.map((relaxor) => (
+                  <Paper key={relaxor.id} sx={{ p: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                      {/* Image */}
+                      <Box sx={{ 
+                        width: 80, 
+                        height: 80, 
+                        flexShrink: 0,
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {getRelaxorImage(relaxor) ? (
+                          <Box
+                            component="img"
+                            src={getRelaxorImage(relaxor)!}
+                            alt={relaxor.name}
+                            sx={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              borderRadius: 1,
+                              border: '1px solid #e0e0e0'
+                            }}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.parentElement?.querySelector('.image-fallback');
+                              if (fallback) {
+                                (fallback as HTMLElement).style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        
+                        <Box
+                          className="image-fallback"
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            bgcolor: 'grey.200',
+                            display: getRelaxorImage(relaxor) ? 'none' : 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 1,
+                            border: '1px solid #e0e0e0',
+                            position: getRelaxorImage(relaxor) ? 'absolute' : 'static',
+                            top: 0,
+                            left: 0
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                            {getRelaxorImage(relaxor) ? 'Error' : 'No Image'}
                           </Typography>
-                        </Box>
-
-                        {/* Content */}
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, pr: 1 }}>
-                              {color.name}
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 0.5 }}>
-                              <IconButton
-                                size="small"
-                                onClick={() => handleEdit(color)}
-                                title="Edit"
-                                sx={{ color: 'primary.main', p: 0.5 }}
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                onClick={() => handleDelete(color)}
-                                title="Delete"
-                                color="error"
-                                sx={{ p: 0.5 }}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Box>
-                          </Box>
-                          
-                          <Typography 
-                            variant="body2" 
-                            color="text.secondary"
-                            sx={{ mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                          >
-                            {color.description || 'No description available'}
-                          </Typography>
-                          
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                            Vendor: {Array.isArray(colorVendors) ? colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown' : 'Unknown'}
-                          </Typography>
-                          
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', mb: 1 }}>
-                            ${color.price || 0}
-                          </Typography>
-                          
-                          {(() => {
-                            const calculatedTiers = getCalculatedPriceTiers(color);
-                            if (calculatedTiers.length > 0) {
-                              const firstTier = calculatedTiers[0];
-                              const allTiersText = calculatedTiers.map(tier => 
-                                `${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`
-                              ).join('\n');
-                              
-                              return (
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                    {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
-                                  </Typography>
-                                  <Tooltip 
-                                    title={
-                                      <Box sx={{ whiteSpace: 'pre-line', textAlign: 'left' }}>
-                                        {allTiersText}
-                                      </Box>
-                                    }
-                                    arrow
-                                    placement="top"
-                                  >
-                                    <Box sx={{ display: 'inline-block', cursor: 'pointer' }}>
-                                      <Chip
-                                        label={`${firstTier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(firstTier))}`}
-                                        size="small"
-                                        variant="outlined"
-                                        sx={{ 
-                                          fontSize: '0.65rem',
-                                          height: 18,
-                                          borderColor: firstTier.is_overridden ? 'warning.main' : undefined,
-                                          color: firstTier.is_overridden ? 'warning.main' : undefined,
-                                          '& .MuiChip-label': {
-                                            px: 0.5
-                                          }
-                                        }}
-                                      />
-                                      {calculatedTiers.length > 1 && (
-                                        <Chip
-                                          label={`+${calculatedTiers.length - 1} more`}
-                                          size="small"
-                                          variant="outlined"
-                                          sx={{ 
-                                            fontSize: '0.65rem',
-                                            height: 18,
-                                            ml: 0.5,
-                                            '& .MuiChip-label': {
-                                              px: 0.5
-                                            }
-                                          }}
-                                        />
-                                      )}
-                                    </Box>
-                                  </Tooltip>
-                                </Box>
-                              );
-                            }
-                            return (
-                              <Typography variant="caption" color="text.secondary">
-                                No tiers
-                              </Typography>
-                            );
-                          })()}
-                          
                         </Box>
                       </Box>
-                    </Paper>
-                  ))}
+
+                      {/* Content */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, pr: 1 }}>
+                            {relaxor.name}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 0.5 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEdit(relaxor)}
+                              title="Edit"
+                              sx={{ color: 'primary.main', p: 0.5 }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(relaxor)}
+                              title="Delete"
+                              color="error"
+                              sx={{ p: 0.5 }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                        
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{ mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                        >
+                          {relaxor.description || 'No description available'}
+                        </Typography>
+                        
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', mb: 1 }}>
+                          ${VariantsCalculation.formatPrice(relaxor.price || 0)}
+                        </Typography>
+                        
+                        {(() => {
+                          const calculatedTiers = getCalculatedPriceTiers(relaxor);
+                          if (calculatedTiers.length > 0) {
+                            return (
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                  {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
+                                </Typography>
+                                <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                  {calculatedTiers.slice(0, 1).map((tier) => (
+                                    <Chip
+                                      key={tier.id}
+                                      label={`${tier.display_name}: $${VariantsCalculation.formatPrice(tier.calculated_price)}`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.65rem',
+                                        height: 18,
+                                        borderColor: tier.is_overridden ? 'warning.main' : undefined,
+                                        color: tier.is_overridden ? 'warning.main' : undefined,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                  {calculatedTiers.length > 1 && (
+                                    <Chip
+                                      label={`+${calculatedTiers.length - 1} more`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ 
+                                        fontSize: '0.65rem',
+                                        height: 18,
+                                        '& .MuiChip-label': {
+                                          px: 0.5
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Stack>
+                              </Box>
+                            );
+                          }
+                          return (
+                            <Typography variant="caption" color="text.secondary">
+                              No tiers
+                            </Typography>
+                          );
+                        })()}
+                        
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))}
               </Box>
             ) : (
               /* Desktop Table View */
@@ -648,45 +611,84 @@ const ColorsPage = () => {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                        <TableCell sx={{ fontWeight: 600 }}>Color</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                        {/* <TableCell sx={{ fontWeight: 600 }}>Vendor</TableCell> */}
-                        <TableCell sx={{ fontWeight: 600 }}>Material Type</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>In Store Price</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Price Tiers</TableCell>
                         <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {colors.map((color) => (
+                      {relaxors.map((relaxor) => (
                         <TableRow 
-                          key={color.id}
+                          key={relaxor.id}
                           sx={{ 
                             '&:hover': { backgroundColor: 'action.hover' },
                             transition: 'background-color 0.2s ease'
                           }}
                         >
                           <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ 
+                              width: 60, 
+                              height: 60, 
+                              position: 'relative',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              {getRelaxorImage(relaxor) ? (
+                                <Box
+                                  component="img"
+                                  src={getRelaxorImage(relaxor)!}
+                                  alt={relaxor.name}
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: 1,
+                                    border: '1px solid #e0e0e0',
+                                    maxWidth: 60,
+                                    maxHeight: 60
+                                  }}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    // Show fallback when image fails to load
+                                    const fallback = target.parentElement?.querySelector('.image-fallback');
+                                    if (fallback) {
+                                      (fallback as HTMLElement).style.display = 'flex';
+                                    }
+                                  }}
+                                />
+                              ) : null}
+                              
+                              {/* Fallback for when image is missing or fails to load */}
                               <Box
+                                className="image-fallback"
                                 sx={{
-                                  width: 40,
-                                  height: 40,
+                                  width: '100%',
+                                  height: '100%',
+                                  bgcolor: 'grey.200',
+                                  display: getRelaxorImage(relaxor) ? 'none' : 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
                                   borderRadius: 1,
-                                  backgroundColor: color.hex_code || '#ccc',
-                                  border: 1,
-                                  borderColor: 'divider',
+                                  border: '1px solid #e0e0e0',
+                                  position: getRelaxorImage(relaxor) ? 'absolute' : 'static',
+                                  top: 0,
+                                  left: 0
                                 }}
-                              />
-                              <Typography variant="body2" color="text.secondary">
-                                {color.hex_code}
-                              </Typography>
+                              >
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                  {getRelaxorImage(relaxor) ? 'Error' : 'No Image'}
+                                </Typography>
+                              </Box>
                             </Box>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                              {color.name}
+                              {relaxor.name}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -700,79 +702,56 @@ const ColorsPage = () => {
                                 whiteSpace: 'nowrap'
                               }}
                             >
-                              {color.description || 'No description available'}
-                            </Typography>
-                          </TableCell>
-                          {/* <TableCell>
-                            <Typography variant="body2" color="text.secondary">
-                              {Array.isArray(colorVendors) ? colorVendors.find(v => v.id === color.color_vendor_id)?.name || 'Unknown' : 'Unknown'}
-                            </Typography>
-                          </TableCell> */}
-                          <TableCell>
-                            <Typography variant="body2" color="text.secondary">
-                              {getMaterialTypeName(color)}
+                              {relaxor.description || 'No description available'}
                             </Typography>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              ${color.price || 0}
+                              ${VariantsCalculation.formatPrice(relaxor.price || 0)}
                             </Typography>
                           </TableCell>
                           <TableCell>
                             {(() => {
-                              const calculatedTiers = getCalculatedPriceTiers(color);
+                              const calculatedTiers = getCalculatedPriceTiers(relaxor);
                               if (calculatedTiers.length > 0) {
-                                const firstTier = calculatedTiers[0];
-                                const allTiersText = calculatedTiers.map(tier => 
-                                  `${tier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}`
-                                ).join('\n');
-                                
                                 return (
                                   <Box>
                                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
                                       {calculatedTiers.length} tier{calculatedTiers.length > 1 ? 's' : ''}
                                     </Typography>
-                                    <Tooltip 
-                                      title={
-                                        <Box sx={{ whiteSpace: 'pre-line', textAlign: 'left' }}>
-                                          {allTiersText}
-                                        </Box>
-                                      }
-                                      arrow
-                                      placement="top"
-                                    >
-                                      <Box sx={{ display: 'inline-block', cursor: 'pointer' }}>
+                                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                      {calculatedTiers.slice(0, 2).map((tier) => (
                                         <Chip
-                                          label={`${firstTier.display_name}: $${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(firstTier))}`}
+                                          key={tier.id}
+                                          label={`${tier.display_name}: $${VariantsCalculation.formatPrice(tier.calculated_price)}`}
                                           size="small"
                                           variant="outlined"
                                           sx={{ 
                                             fontSize: '0.7rem',
                                             height: 20,
-                                            borderColor: firstTier.is_overridden ? 'warning.main' : undefined,
-                                            color: firstTier.is_overridden ? 'warning.main' : undefined,
+                                            borderColor: tier.is_overridden ? 'warning.main' : undefined,
+                                            color: tier.is_overridden ? 'warning.main' : undefined,
                                             '& .MuiChip-label': {
                                               px: 0.5
                                             }
                                           }}
                                         />
-                                        {calculatedTiers.length > 1 && (
-                                          <Chip
-                                            label={`+${calculatedTiers.length - 1} more`}
-                                            size="small"
-                                            variant="outlined"
-                                            sx={{ 
-                                              fontSize: '0.7rem',
-                                              height: 20,
-                                              ml: 0.5,
-                                              '& .MuiChip-label': {
-                                                px: 0.5
-                                              }
-                                            }}
-                                          />
-                                        )}
-                                      </Box>
-                                    </Tooltip>
+                                      ))}
+                                      {calculatedTiers.length > 2 && (
+                                        <Chip
+                                          label={`+${calculatedTiers.length - 2} more`}
+                                          size="small"
+                                          variant="outlined"
+                                          sx={{ 
+                                            fontSize: '0.7rem',
+                                            height: 20,
+                                            '& .MuiChip-label': {
+                                              px: 0.5
+                                            }
+                                          }}
+                                        />
+                                      )}
+                                    </Stack>
                                   </Box>
                                 );
                               }
@@ -787,7 +766,7 @@ const ColorsPage = () => {
                             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                               <IconButton
                                 size="small"
-                                onClick={() => handleEdit(color)}
+                                onClick={() => handleEdit(relaxor)}
                                 title="Edit"
                                 sx={{ color: 'primary.main' }}
                               >
@@ -795,7 +774,7 @@ const ColorsPage = () => {
                               </IconButton>
                               <IconButton
                                 size="small"
-                                onClick={() => handleDelete(color)}
+                                onClick={() => handleDelete(relaxor)}
                                 title="Delete"
                                 color="error"
                               >
@@ -853,7 +832,7 @@ const ColorsPage = () => {
               
               {/* Center - Page info */}
               <Typography variant="body2" color="text.secondary">
-                Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} colors
+                Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} relaxors
               </Typography>
               
               {/* Right side - Navigation controls */}
@@ -881,7 +860,7 @@ const ColorsPage = () => {
                 <Button
                   variant="outlined"
                   size="small"
-                  disabled={!hasMorePages}
+                  disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
                   onClick={() => handleChangePage({} as any, page + 1)}
                   sx={{
                     minWidth: 'auto',
@@ -901,7 +880,7 @@ const ColorsPage = () => {
               <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                 {/* Pagination Info */}
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} colors
+                  Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} relaxors
                 </Typography>
                 
                 {/* Navigation Controls */}
@@ -929,7 +908,7 @@ const ColorsPage = () => {
                   <Button
                     variant="outlined"
                     size="small"
-                    disabled={!hasMorePages}
+                    disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
                     onClick={() => handleChangePage({} as any, page + 1)}
                     sx={{
                       minWidth: 'auto',
@@ -976,8 +955,6 @@ const ColorsPage = () => {
           </>
         )}
 
-
-
         {/* Delete Confirmation Dialog */}
         <Dialog
           open={isDeleteDialogOpen}
@@ -996,7 +973,7 @@ const ColorsPage = () => {
               Confirm Delete
             </Typography>
             <Typography sx={{ mb: 3 }}>
-              Are you sure you want to delete &quot;{colorToDelete?.name}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;{relaxorToDelete?.name}&quot;? This action cannot be undone.
             </Typography>
             <Stack 
               direction={{ xs: 'column', sm: 'row' }} 
@@ -1029,11 +1006,10 @@ const ColorsPage = () => {
             </Stack>
           </Box>
         </Dialog>
-
-                          
       </Box>
     </AdminLayout>
   );
 };
 
-export default ColorsPage; 
+export default RelaxorsPage;
+

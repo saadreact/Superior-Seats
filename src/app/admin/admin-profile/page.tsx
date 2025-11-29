@@ -8,19 +8,9 @@ import {
   Button,
   Alert,
   CircularProgress,
-  FormControlLabel,
-  Switch,
   Paper,
   useTheme,
   useMediaQuery,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Checkbox,
-  ListItemText,
-  OutlinedInput,
-  Chip,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
@@ -28,7 +18,6 @@ import {
   FormField, 
   SelectField, 
   FormActions,
-  SwitchField
 } from '@/components/common/FormComponents';
 import { apiService } from '@/utils/api';
 
@@ -38,9 +27,6 @@ interface AdminFormData {
   phone: string;
   address: string;
   designation: string;
-  permissions: string[];
-  is_super_admin: boolean;
-  is_active: boolean;
 }
 
 const AdminProfilePage = () => {
@@ -51,8 +37,6 @@ const AdminProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
-  const [isActive, setIsActive] = useState<boolean>(true);
-  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
   
   // Form data state
   const [formData, setFormData] = useState<AdminFormData>({
@@ -61,22 +45,7 @@ const AdminProfilePage = () => {
     phone: '',
     address: '',
     designation: '',
-    permissions: [],
-    is_super_admin: false,
-    is_active: true,
   });
-
-  // Available permissions
-  const availablePermissions = [
-    'manage_staff',
-    'manage_customers',
-    'manage_products',
-    'manage_orders',
-    'manage_categories',
-    'manage_payments',
-    'view_analytics',
-    'manage_settings',
-  ];
 
   // Available designations
   const designations = [
@@ -104,13 +73,7 @@ const AdminProfilePage = () => {
         phone: adminData.phone || '',
         address: adminData.address || '',
         designation: adminData.designation || '',
-        permissions: adminData.permissions || [],
-        is_super_admin: adminData.is_super_admin || false,
-        is_active: adminData.is_active !== undefined ? adminData.is_active : true,
       });
-      
-      setIsActive(adminData.is_active !== undefined ? adminData.is_active : true);
-      setIsSuperAdmin(adminData.is_super_admin || false);
     } catch (err: any) {
       setAlert({ type: 'error', message: err.message || 'Failed to load admin data' });
     } finally {
@@ -135,24 +98,17 @@ const AdminProfilePage = () => {
     }
   };
 
-  const handlePermissionChange = (event: any) => {
-    const value = event.target.value;
-    setFormData(prev => ({
-      ...prev,
-      permissions: typeof value === 'string' ? value.split(',') : value,
-    }));
-  };
-
   const handleSubmit = async () => {
     setLoading(true);
     setAlert(null);
     setServerErrors({});
     try {
-      // Update form data with current switch states
+      // Update form data with hardcoded values for permissions, is_active, and is_super_admin
       const updatedFormData = {
         ...formData,
-        is_active: isActive,
-        is_super_admin: isSuperAdmin,
+        permissions: [], // Hardcoded: empty permissions array
+        is_active: true, // Hardcoded: always active
+        is_super_admin: false, // Hardcoded: not super admin
       };
       
       // Assuming we're updating admin with ID 1 as per the requirement
@@ -199,39 +155,6 @@ const AdminProfilePage = () => {
   }));
 
   const allErrors = getAllErrors();
-
-  const statusToggle = (
-    <FormControlLabel
-      control={
-        <Switch
-          checked={isActive}
-          onChange={(e) => setIsActive(e.target.checked)}
-          color="primary"
-          size="small"
-        />
-      }
-      label={
-        <Typography variant="body1" sx={{ 
-          fontWeight: 500,
-          fontSize: { xs: '0.875rem', sm: '0.875rem' }
-        }}>
-          {isActive ? 'Active' : 'Inactive'}
-        </Typography>
-      }
-      labelPlacement="start"
-      sx={{ 
-        margin: 0,
-        '& .MuiFormControlLabel-label': {
-          fontSize: { xs: '0.875rem', sm: '0.875rem' },
-          fontWeight: 500,
-          marginLeft: { xs: 0.5, sm: 1 }
-        },
-        '& .MuiSwitch-root': {
-          marginRight: { xs: 0.5, sm: 1 }
-        }
-      }}
-    />
-  );
 
   return (
     <AdminLayout title="Update Admin">
@@ -290,32 +213,14 @@ const AdminProfilePage = () => {
             <Box sx={{ pt: { xs: 1, sm: 2 } }}>
               {/* Basic Information */}
               <Box sx={{ mb: { xs: 2, sm: 2.5 } }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  justifyContent: 'space-between', 
-                  alignItems: { xs: 'flex-start', sm: 'center' }, 
-                  mb: { xs: 2, sm: 1 },
-                  gap: { xs: 1, sm: 0 }
+                <Typography variant="h6" sx={{ 
+                  fontWeight: 600, 
+                  color: 'text.primary',
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                  mb: { xs: 2, sm: 1 }
                 }}>
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 600, 
-                    color: 'text.primary',
-                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                  }}>
-                    Basic Information
-                  </Typography>
-                  {statusToggle && (
-                    <Box sx={{ 
-                      alignSelf: { xs: 'flex-start', sm: 'center' },
-                      '& .MuiFormControlLabel-label': {
-                        fontSize: { xs: '0.875rem', sm: '0.875rem' }
-                      }
-                    }}>
-                      {statusToggle}
-                    </Box>
-                  )}
-                </Box>
+                  Basic Information
+                </Typography>
                 <Box sx={{ 
                   display: 'grid', 
                   gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
@@ -378,117 +283,6 @@ const AdminProfilePage = () => {
                   rows={isMobile ? 3 : 4}
                   error={allErrors.address}
                 />
-              </Box>
-
-              {/* Permissions */}
-              <Box sx={{ mb: { xs: 2, sm: 2.5 } }}>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 600, 
-                  mb: { xs: 1.5, sm: 2 }, 
-                  color: 'text.primary',
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                }}>
-                  Permissions
-                </Typography>
-                <FormControl fullWidth>
-                  <InputLabel sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                    Permissions
-                  </InputLabel>
-                  <Select
-                    multiple
-                    value={formData.permissions}
-                    onChange={handlePermissionChange}
-                    input={<OutlinedInput label="Permissions" />}
-                    renderValue={(selected) => (
-                      <Box sx={{ 
-                        display: 'flex', 
-                        flexWrap: 'wrap', 
-                        gap: 0.5,
-                        maxHeight: { xs: '60px', sm: '80px' },
-                        overflow: 'auto'
-                      }}>
-                        {selected.map((value) => (
-                          <Chip 
-                            key={value} 
-                            label={value.replace('_', ' ')} 
-                            size="small"
-                            sx={{ 
-                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                              height: { xs: 24, sm: 28 }
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    )}
-                    sx={{
-                      mb: 1,
-                      '& .MuiOutlinedInput-root': {
-                        minHeight: { xs: '45px', sm: '50px' },
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
-                          borderWidth: 2,
-                        },
-                      },
-                      '& .MuiInputLabel-root': {
-                        fontSize: { xs: '0.875rem', sm: '1rem' }
-                      }
-                    }}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: {
-                          maxHeight: { xs: 300, sm: 400 },
-                          '& .MuiMenuItem-root': {
-                            fontSize: { xs: '0.875rem', sm: '1rem' },
-                            py: { xs: 0.5, sm: 1 }
-                          }
-                        }
-                      }
-                    }}
-                  >
-                    {availablePermissions.map((permission) => (
-                      <MenuItem key={permission} value={permission}>
-                        <Checkbox 
-                          checked={formData.permissions.indexOf(permission) > -1}
-                          size="small"
-                        />
-                        <ListItemText 
-                          primary={permission.replace('_', ' ')}
-                          primaryTypographyProps={{
-                            fontSize: { xs: '0.875rem', sm: '1rem' }
-                          }}
-                        />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-
-              {/* Status Settings */}
-              <Box sx={{ mb: { xs: 2, sm: 2.5 } }}>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 600, 
-                  mb: { xs: 1.5, sm: 2 }, 
-                  color: 'text.primary',
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                }}>
-                  Status Settings
-                </Typography>
-                <Box sx={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                  gap: { xs: 1.5, sm: 2 }
-                }}>
-                  <SwitchField
-                    name="is_super_admin"
-                    label="Super Administrator"
-                    checked={isSuperAdmin}
-                    onChange={(checked) => setIsSuperAdmin(checked)}
-                  />
-                </Box>
               </Box>
 
               <FormActions

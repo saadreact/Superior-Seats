@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -96,6 +96,13 @@ const HeatOptionsPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Ref to track debounce timer
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref to track if page reset is due to search change
+  const isSearchResettingPage = useRef(false);
+  // Ref to track if component has mounted
+  const isMounted = useRef(false);
 
   // Helper function to get heat option image URL
   const getHeatOptionImage = (heatOption: HeatOption) => {
@@ -208,9 +215,114 @@ const HeatOptionsPage = () => {
     }
   }, [page, rowsPerPage, searchTerm, router]);
 
+  // Debounced search effect - triggers search after user stops typing
   useEffect(() => {
+    // On initial mount, skip debounce (let pagination effect handle initial fetch)
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    
+    // Clear any existing debounce timer
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+    
+    // Mark that we're resetting page due to search
+    isSearchResettingPage.current = true;
+    
+    // Reset to page 0 when search changes
+    setPage(0);
+    
+    // Set up new debounce timer - fetch after 300ms delay
+    searchDebounceRef.current = setTimeout(async () => {
+      // Fetch with current search term and page 0
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params: Record<string, any> = {
+          page: 1, // Page 1 for API (0-based converted to 1-based)
+          per_page: rowsPerPage
+        };
+        
+        if (searchTerm.trim()) {
+          params.search = searchTerm.trim();
+        }
+        
+        const response = await heatOptionsService.getHeatOptions(params);
+        
+        if (response && response.data) {
+          setHeatOptions(response.data);
+          if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+            setTotalCount(response.meta.pagination.total);
+          } else if (response.meta && response.meta.total) {
+            setTotalCount(response.meta.total);
+          } else if (response.total !== undefined) {
+            setTotalCount(response.total);
+          } else if (response.data && Array.isArray(response.data)) {
+            setTotalCount(response.data.length);
+          }
+        } else if (Array.isArray(response)) {
+          setHeatOptions(response);
+          setTotalCount(response.length);
+        } else {
+          setHeatOptions([]);
+          setTotalCount(0);
+        }
+      } catch (err: any) {
+        console.error('Error loading heat options:', err);
+        
+        if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+          setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+          setTimeout(() => {
+            router.push('/');
+          }, 3000);
+        } else if (err.response?.status === 403) {
+          setError('Access denied. You do not have permission to view heat options.');
+        } else if (err.response?.status === 404) {
+          setError('Heat options endpoint not found. Please contact support.');
+        } else if (err.response?.status >= 500) {
+          setError('Server error. Please try again later.');
+        } else {
+          setError(err.message || 'Failed to load heat options. Please try again later.');
+        }
+      } finally {
+        setLoading(false);
+      }
+      
+      searchDebounceRef.current = null;
+      isSearchResettingPage.current = false;
+    }, 300); // 300ms delay after user stops typing
+
+    // Cleanup function to clear timer if user types again before delay completes
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Fetch data on mount and when pagination changes
+  useEffect(() => {
+    // Skip if page change is due to search reset (debounce effect will handle the fetch)
+    if (isSearchResettingPage.current) {
+      isSearchResettingPage.current = false; // Reset the flag
+      return;
+    }
+    
+    // Skip if there's an active search debounce timer
+    if (searchDebounceRef.current) {
+      return;
+    }
+    
+    // Fetch immediately when pagination changes
     loadHeatOptions();
-  }, [loadHeatOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage]);
 
   const handleAdd = () => {
     router.push('/admin/heat-options/create');
@@ -247,7 +359,7 @@ const HeatOptionsPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0); // Reset to first page when searching
+    // Page reset is handled by the debounce effect
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {

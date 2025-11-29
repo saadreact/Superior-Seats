@@ -84,6 +84,8 @@ const EditMaterialTypePage = () => {
   const [enablePriceTiers, setEnablePriceTiers] = useState(false);
   
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
+  const [multipliers, setMultipliers] = useState<Record<number, number>>({});
+  const [overridePriceInputs, setOverridePriceInputs] = useState<Record<number, string>>({});
 
   useEffect(() => {
     loadOptions();
@@ -145,20 +147,29 @@ const EditMaterialTypePage = () => {
       const hasPriceTiers = priceTierIds.length > 0;
       setEnablePriceTiers(hasPriceTiers);
       
-      // Create calculated price tiers from existing data
+      // Create calculated price tiers from existing data - using percentage value directly
       let existingCalculatedTiers: CalculatedPriceTier[] = [];
-      if (hasPriceTiers && materialType.price > 0) {
-        const basePrice = typeof materialType.price === 'string' ? parseFloat(materialType.price) : materialType.price;
-        
+      let initialMultipliers: Record<number, number> = {};
+      
+      if (hasPriceTiers) {
         existingCalculatedTiers = materialType.price_tiers?.map((tier: any) => {
-          const existingPrice = parseFloat(tier.pivot?.price_adjustment) || 0;
-          const calculatedPrice = VariantsCalculation.calculatePriceAdjustment(
-            basePrice, 
-            parseFloat(tier.discount_off_retail_price)
-          ).calculatedPrice;
+          const percentageValue = parseFloat(tier.discount_off_retail_price) || 0;
+          const existingPriceAdjustment = parseFloat(tier.pivot?.price_adjustment) || 0;
           
-          // Check if this is an override
-          const isOverridden = Math.abs(existingPrice - calculatedPrice) > 0.01;
+          // Try to calculate multiplier from existing price adjustment
+          let multiplier = 1;
+          if (existingPriceAdjustment > 0 && percentageValue > 0) {
+            multiplier = existingPriceAdjustment / percentageValue;
+            // Round to nearest integer if close
+            if (Math.abs(multiplier - Math.round(multiplier)) < 0.01) {
+              multiplier = Math.round(multiplier);
+            }
+          }
+          initialMultipliers[tier.id] = multiplier;
+          
+          // Check if there's an override (when price adjustment doesn't match percentage * multiplier)
+          const expectedPrice = percentageValue * multiplier;
+          const isOverridden = existingPriceAdjustment > 0 && Math.abs(existingPriceAdjustment - expectedPrice) > 0.01;
           
           return {
             id: tier.id,
@@ -168,34 +179,31 @@ const EditMaterialTypePage = () => {
             created_at: tier.created_at,
             updated_at: tier.updated_at,
             customers_count: 0,
-            calculated_price: calculatedPrice,
-            discount_amount: (basePrice * parseFloat(tier.discount_off_retail_price)) / 100,
-            override_price: isOverridden ? existingPrice : undefined,
+            calculated_price: percentageValue, // Use percentage value directly
+            discount_amount: 0, // No discount calculation
+            override_price: isOverridden ? existingPriceAdjustment / multiplier : undefined,
             is_overridden: isOverridden
           };
         }) || [];
         
         setCalculatedPriceTiers(existingCalculatedTiers);
+        setMultipliers(initialMultipliers);
         
         // Set up price overrides from calculated tiers
         const priceOverrides: Record<string, number> = {};
+        const initialOverrideInputs: Record<number, string> = {};
         existingCalculatedTiers.forEach((tier: CalculatedPriceTier) => {
           if (tier.is_overridden && tier.override_price !== undefined) {
             priceOverrides[tier.id.toString()] = tier.override_price;
+            initialOverrideInputs[tier.id] = tier.override_price.toString();
           }
         });
         setPriceOverrides(priceOverrides);
+        setOverridePriceInputs(initialOverrideInputs);
       }
       
-      // Initialize price adjustments from calculated tiers if available, otherwise use existing data
-      const finalPriceAdjustments = hasPriceTiers && existingCalculatedTiers.length > 0 
-        ? Object.fromEntries(
-            existingCalculatedTiers.map((tier: CalculatedPriceTier) => [
-              tier.id.toString(), 
-              VariantsCalculation.getFinalPrice(tier)
-            ])
-          )
-        : priceAdjustments;
+      // Initialize price adjustments from existing data
+      const finalPriceAdjustments = priceAdjustments;
 
       setFormData({
         name: materialType.name || '',
@@ -223,26 +231,10 @@ const EditMaterialTypePage = () => {
   // Removed loadPriceTiers function as we're using simplified pricing
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => {
-      const newFormData = { ...prev, [field]: value };
-      
-      // Recalculate price tiers when base price changes
-      if (field === 'price' && calculatedPriceTiers.length > 0) {
-        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
-        setCalculatedPriceTiers(newCalculatedTiers);
-        
-        // Update price_adjustments with new calculated prices
-        const newPriceAdjustments = Object.fromEntries(
-          newCalculatedTiers.map(tier => [
-            tier.id.toString(), 
-            VariantsCalculation.getFinalPrice(tier)
-          ])
-        );
-        newFormData.price_adjustments = newPriceAdjustments;
-      }
-      
-      return newFormData;
-    });
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -344,17 +336,38 @@ const EditMaterialTypePage = () => {
     const checked = event.target.checked;
     setEnablePriceTiers(checked);
     
-    // Calculate price tiers when enabled
-    if (checked && formData.price > 0) {
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, priceOverrides);
+    // Initialize price tiers when enabled - using percentage value directly
+    if (checked && priceTiers.length > 0) {
+      // Map price tiers to calculated tiers using percentage value directly
+      const newCalculatedTiers: CalculatedPriceTier[] = priceTiers.map(tier => {
+        const percentageValue = parseFloat(tier.discount_off_retail_price) || 0;
+        const overridePrice = priceOverrides[tier.id.toString()];
+        const isOverridden = overridePrice !== undefined && overridePrice !== null;
+        
+        return {
+          ...tier,
+          calculated_price: percentageValue, // Use percentage value directly
+          discount_amount: 0, // No discount calculation
+          override_price: overridePrice,
+          is_overridden: isOverridden
+        };
+      });
       setCalculatedPriceTiers(newCalculatedTiers);
       
-      // Update price_adjustments with calculated prices
+      // Initialize multipliers (use existing if available, otherwise default to 1)
+      const initialMultipliers = Object.fromEntries(
+        newCalculatedTiers.map(tier => [tier.id, multipliers[tier.id] || 1])
+      );
+      setMultipliers(prev => ({ ...prev, ...initialMultipliers }));
+      
+      // Update price_adjustments using percentage value directly (multiplier applied)
       const newPriceAdjustments = Object.fromEntries(
-        newCalculatedTiers.map(tier => [
-          tier.id.toString(), 
-          VariantsCalculation.getFinalPrice(tier)
-        ])
+        newCalculatedTiers.map(tier => {
+          const basePrice = tier.is_overridden && tier.override_price 
+            ? tier.override_price 
+            : parseFloat(tier.discount_off_retail_price) || 0;
+          return [tier.id.toString(), basePrice * (initialMultipliers[tier.id] || 1)];
+        })
       );
       setFormData(prev => ({
         ...prev,
@@ -372,6 +385,7 @@ const EditMaterialTypePage = () => {
       }));
       setCalculatedPriceTiers([]);
       setPriceOverrides({});
+      setMultipliers({});
     }
   };
 
@@ -381,10 +395,11 @@ const EditMaterialTypePage = () => {
       [tierId.toString()]: overridePrice
     }));
     
-    // Update the calculated price tiers with the new override
+    // Update calculated tiers with new override
     setCalculatedPriceTiers(prev => prev.map(tier => {
       if (tier.id === tierId) {
-        const isOverridden = overridePrice > 0 && overridePrice !== tier.calculated_price;
+        const percentageValue = parseFloat(tier.discount_off_retail_price) || 0;
+        const isOverridden = overridePrice > 0 && overridePrice !== percentageValue;
         return {
           ...tier,
           override_price: overridePrice,
@@ -394,37 +409,68 @@ const EditMaterialTypePage = () => {
       return tier;
     }));
     
-    // Update price_adjustments with the new price
+    // Update price_adjustments with override price (multiplier applied)
+    const multiplier = multipliers[tierId] || 1;
     setFormData(prev => ({
       ...prev,
       price_adjustments: {
         ...prev.price_adjustments,
-        [tierId.toString()]: overridePrice
+        [tierId.toString()]: overridePrice * multiplier
       }
     }));
   };
 
-  const handleResetPriceTiers = () => {
-    if (formData.price > 0) {
-      // Clear all overrides
-      setPriceOverrides({});
-      
-      // Recalculate price tiers without overrides
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, {});
-      setCalculatedPriceTiers(newCalculatedTiers);
-      
-      // Update price_adjustments with calculated prices
+  const handleMultiplierChange = (tierId: number, multiplier: number) => {
+    setMultipliers(prev => ({
+      ...prev,
+      [tierId]: multiplier
+    }));
+    
+    // Recalculate price with multiplier for all tiers - using percentage value directly
+    if (calculatedPriceTiers.length > 0) {
       const newPriceAdjustments = Object.fromEntries(
-        newCalculatedTiers.map(tier => [
-          tier.id.toString(), 
-          tier.calculated_price
-        ])
+        calculatedPriceTiers.map(tier => {
+          const percentageValue = parseFloat(tier.discount_off_retail_price) || 0;
+          const basePrice = tier.is_overridden && tier.override_price ? tier.override_price : percentageValue;
+          const tierMultiplier = tier.id === tierId ? multiplier : (multipliers[tier.id] || 1);
+          return [tier.id.toString(), basePrice * tierMultiplier];
+        })
       );
       setFormData(prev => ({
         ...prev,
         price_adjustments: newPriceAdjustments
       }));
     }
+  };
+
+  const handleResetPriceTiers = () => {
+    // Clear all overrides and reset multipliers to 1
+    setPriceOverrides({});
+    const resetMultipliers = Object.fromEntries(
+      calculatedPriceTiers.map(tier => [tier.id, 1])
+    );
+    setMultipliers(resetMultipliers);
+    
+    // Reset calculated tiers without overrides - using percentage value directly
+    const newCalculatedTiers: CalculatedPriceTier[] = calculatedPriceTiers.map(tier => ({
+      ...tier,
+      override_price: undefined,
+      is_overridden: false,
+      calculated_price: parseFloat(tier.discount_off_retail_price) || 0
+    }));
+    setCalculatedPriceTiers(newCalculatedTiers);
+    
+    // Update price_adjustments using percentage value directly (1x multiplier)
+    const newPriceAdjustments = Object.fromEntries(
+      newCalculatedTiers.map(tier => {
+        const percentageValue = parseFloat(tier.discount_off_retail_price) || 0;
+        return [tier.id.toString(), percentageValue];
+      })
+    );
+    setFormData(prev => ({
+      ...prev,
+      price_adjustments: newPriceAdjustments
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1036,94 +1082,137 @@ const EditMaterialTypePage = () => {
                     }}>
                       Price Tiers
                     </Typography>
-                    <Typography variant="body2" sx={{ 
-                      mb: 2, 
-                      color: 'text.secondary',
-                      fontSize: { xs: '0.9rem', sm: '0.875rem' }
-                    }}>
-                      Base price: ${VariantsCalculation.formatPrice(formData.price)}
-                    </Typography>
                     
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {calculatedPriceTiers.map((tier) => (
-                        <Paper key={tier.id} variant="outlined" sx={{ 
-                          p: { xs: 2, sm: 2 }
-                        }}>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'flex-start', 
-                            gap: 2,
-                            flexDirection: { xs: 'column', sm: 'row' }
+                      {calculatedPriceTiers.map((tier) => {
+                        const multiplier = multipliers[tier.id] || 1;
+                        const percentageValue = parseFloat(tier.discount_off_retail_price) || 0;
+                        const basePrice = tier.is_overridden && tier.override_price ? tier.override_price : percentageValue;
+                        const finalPrice = basePrice * multiplier;
+                        
+                        return (
+                          <Paper key={tier.id} variant="outlined" sx={{ 
+                            p: { xs: 2, sm: 2 }
                           }}>
-                            <Box sx={{ flex: 1 }}>
-                              <Typography variant="subtitle2" sx={{ 
-                                fontWeight: 600,
-                                fontSize: { xs: '1rem', sm: '0.875rem' }
-                              }}>
-                                {tier.display_name}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ 
-                                mb: 1,
-                                fontSize: { xs: '0.9rem', sm: '0.75rem' }
-                              }}>
-                                {parseFloat(tier.discount_off_retail_price) > 0 
-                                  ? `${tier.discount_off_retail_price}% discount` 
-                                  : 'No discount'
-                                }
-                              </Typography>
-                              {tier.is_overridden && (
-                                <Typography variant="body2" color="text.secondary" sx={{
+                            <Box sx={{ 
+                              display: 'grid', 
+                              gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr 1fr' }, 
+                              gap: 2,
+                              alignItems: 'flex-start'
+                            }}>
+                              <Box sx={{ flex: 1 }}>
+                                <Typography variant="subtitle2" sx={{ 
+                                  fontWeight: 600,
+                                  fontSize: { xs: '1rem', sm: '0.875rem' }
+                                }}>
+                                  {tier.display_name}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ 
+                                  mb: 1,
                                   fontSize: { xs: '0.9rem', sm: '0.75rem' }
                                 }}>
-                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
+                                  Price Value: ${VariantsCalculation.formatPrice(percentageValue)}
                                 </Typography>
-                              )}
-                            </Box>
-                            <Box sx={{ 
-                              minWidth: { xs: '100%', sm: 120 },
-                              width: { xs: '100%', sm: 'auto' }
-                            }}>
-                              <TextField
-                                label="Price"
-                                type="number"
-                                size="small"
-                                value={tier.is_overridden ? tier.override_price || '' : tier.calculated_price || ''}
-                                onChange={(e) => {
-                                  const value = parseFloat(e.target.value) || 0;
-                                  handlePriceOverrideChange(tier.id, value);
-                                }}
-                                inputProps={{ min: 0, step: 0.01 }}
-                                sx={{ 
-                                  mb: 1,
-                                  '& .MuiInputBase-input': {
-                                    fontSize: { xs: '1rem', sm: '0.875rem' }
-                                  },
-                                  '& .MuiInputLabel-root': {
-                                    fontSize: { xs: '1rem', sm: '0.875rem' }
-                                  }
-                                }}
-                              />
+                              </Box>
+                              <Box>
+                                <TextField
+                                  label="Override Price"
+                                  type="number"
+                                  size="small"
+                                  value={overridePriceInputs[tier.id] ?? (tier.is_overridden ? (tier.override_price?.toString() || '') : '')}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setOverridePriceInputs(prev => ({
+                                      ...prev,
+                                      [tier.id]: value
+                                    }));
+                                    
+                                    // Only update when we have a valid numeric value
+                                    if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
+                                      const numValue = parseFloat(value);
+                                      if (!isNaN(numValue)) {
+                                        handlePriceOverrideChange(tier.id, numValue);
+                                      }
+                                    } else if (value === '') {
+                                      // If empty, reset the override
+                                      handlePriceOverrideChange(tier.id, 0);
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    // When field loses focus, finalize the value
+                                    const value = e.target.value.trim();
+                                    if (value === '' || value === '-' || isNaN(parseFloat(value))) {
+                                      // If invalid or empty, clear override
+                                      setOverridePriceInputs(prev => {
+                                        const newInputs = { ...prev };
+                                        delete newInputs[tier.id];
+                                        return newInputs;
+                                      });
+                                      handlePriceOverrideChange(tier.id, 0);
+                                    } else {
+                                      const numValue = parseFloat(value);
+                                      const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+                                      setOverridePriceInputs(prev => ({
+                                        ...prev,
+                                        [tier.id]: finalValue.toString()
+                                      }));
+                                      handlePriceOverrideChange(tier.id, finalValue);
+                                    }
+                                  }}
+                                  placeholder={VariantsCalculation.formatPrice(percentageValue)}
+                                  inputProps={{ min: 0, step: 0.01 }}
+                                  sx={{ 
+                                    mb: 1,
+                                    '& .MuiInputBase-input': {
+                                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                                    },
+                                    '& .MuiInputLabel-root': {
+                                      fontSize: { xs: '1rem', sm: '0.875rem' }
+                                    }
+                                  }}
+                                  fullWidth
+                                />
+                              </Box>
+                              <Box>
+                                <FormControl fullWidth size="small">
+                                  <InputLabel>Multiplier</InputLabel>
+                                  <Select
+                                    value={multiplier}
+                                    label="Multiplier"
+                                    onChange={(e) => handleMultiplierChange(tier.id, Number(e.target.value))}
+                                  >
+                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((val) => (
+                                      <MenuItem key={val} value={val}>{val}x</MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              </Box>
                               <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.7rem' } }}>
+                                  Final Price
+                                </Typography>
                                 <Typography variant="h6" sx={{ 
                                   fontWeight: 600, 
                                   color: tier.is_overridden ? 'warning.main' : 'primary.main',
-                                  fontSize: { xs: '1.2rem', sm: '1.125rem' }
+                                  fontSize: { xs: '1.1rem', sm: '1rem' }
                                 }}>
-                                  ${VariantsCalculation.formatPrice(tier.is_overridden ? tier.override_price : tier.calculated_price)}
+                                  ${VariantsCalculation.formatPrice(finalPrice)}
                                 </Typography>
+                                {multiplier > 1 && (
+                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.65rem' } }}>
+                                    ({multiplier}x)
+                                  </Typography>
+                                )}
                                 {tier.is_overridden && (
-                                  <Typography variant="caption" color="warning.main" sx={{
-                                    fontSize: { xs: '0.8rem', sm: '0.75rem' }
-                                  }}>
+                                  <Typography variant="caption" color="warning.main" sx={{ display: 'block', fontSize: { xs: '0.7rem', sm: '0.65rem' } }}>
                                     Overridden
                                   </Typography>
                                 )}
                               </Box>
                             </Box>
-                          </Box>
-                        </Paper>
-                      ))}
+                          </Paper>
+                        );
+                      })}
                     </Box>
                   </Box>
                 )}
