@@ -29,6 +29,8 @@ export interface VariationOption {
   price?: number;
   image?: string;
   hex_code?: string;
+  // Optional price adjustment string used by some APIs (e.g. variation price tiers)
+  price_adjustment?: string;
   is_active?: boolean | null;
 }
 

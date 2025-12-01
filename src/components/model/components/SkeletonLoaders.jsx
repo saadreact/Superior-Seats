@@ -14,7 +14,7 @@ export const SkeletonColorTile = ({ size = { xs: 32, sm: 30, md: 28 } }) => {
         minHeight: size,
         borderRadius: 1,
         overflow: 'hidden',
-        position: 'relative'
+        position: 'relative',
       }}
     >
       <Skeleton
@@ -25,8 +25,9 @@ export const SkeletonColorTile = ({ size = { xs: 32, sm: 30, md: 28 } }) => {
         sx={{
           bgcolor: 'grey.200',
           '&::after': {
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-          }
+            background:
+              'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+          },
         }}
       />
     </Box>
@@ -44,7 +45,7 @@ export const SkeletonPatternTile = ({ size = { xs: 30, md: 35 } }) => {
         aspectRatio: '1',
         borderRadius: 1,
         overflow: 'hidden',
-        position: 'relative'
+        position: 'relative',
       }}
     >
       <Skeleton
@@ -55,8 +56,9 @@ export const SkeletonPatternTile = ({ size = { xs: 30, md: 35 } }) => {
         sx={{
           bgcolor: 'grey.200',
           '&::after': {
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-          }
+            background:
+              'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+          },
         }}
       />
     </Box>
@@ -74,7 +76,7 @@ export const SkeletonFabricPreview = ({ height = { xs: 120, md: 150 } }) => {
         height: height,
         borderRadius: 1,
         overflow: 'hidden',
-        position: 'relative'
+        position: 'relative',
       }}
     >
       <Skeleton
@@ -85,8 +87,9 @@ export const SkeletonFabricPreview = ({ height = { xs: 120, md: 150 } }) => {
         sx={{
           bgcolor: 'grey.200',
           '&::after': {
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-          }
+            background:
+              'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+          },
         }}
       />
     </Box>
@@ -107,7 +110,7 @@ export const SkeletonHoverPreview = () => {
         sx={{
           mb: 1.5,
           bgcolor: 'grey.200',
-          borderRadius: 1
+          borderRadius: 1,
         }}
       />
       <Skeleton
@@ -128,10 +131,4 @@ export const SkeletonHoverPreview = () => {
   );
 };
 
-export default {
-  SkeletonColorTile,
-  SkeletonPatternTile,
-  SkeletonFabricPreview,
-  SkeletonHoverPreview
-};
 

@@ -21,7 +21,8 @@ import Header from '@/components/Header';
 import HeroSectionCommon from './common/HeroSectionaCommon';
 import Footer from './Footer';
 import styles from './CustomizedSeat.module.css';
-import { useSelectedItem, ProductVariations, VariationOption } from '@/contexts/SelectedItemContext';
+import { useSelectedItem, ProductVariations, VariationOption as ContextVariationOption } from '@/contexts/SelectedItemContext';
+import type { VariationOption as ApiVariationOption } from '@/services/materialApi';
 import { CustomizedSeatApi, Product } from '@/services/CustomizedSeatApi';
 import { materialApi, Product3DConfig } from '@/services/materialApi';
 import { apiService } from '@/utils/api';
@@ -43,6 +44,9 @@ const ModelViewer = dynamic(() => import('@/components/model/Main'), {
     </Box>
   ),
 });
+// Union type for variation options coming from either legacy context or new API
+type AnyVariationOption = ContextVariationOption | ApiVariationOption;
+
 interface CustomizeYourSeatProps {
   showHeader?: boolean;
   showHero?: boolean;
@@ -353,7 +357,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
   // Calculate price breakdown
   const calculatePriceBreakdown = () => {
-    const breakdown: Array<{ label: string; price: number; option?: VariationOption }> = [];
+    const breakdown: Array<{ label: string; price: number; option?: AnyVariationOption }> = [];
     const basePrice = productData?.price ? parseFloat(String(productData.price)) : 0;
 
     // Get 3D customization prices from product3DConfig
@@ -363,7 +367,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         breakdown.push({
           label: 'Material Type',
           price: current3DSelections.materialType.price,
-          option: { id: 0, name: current3DSelections.materialType.name, price_adjustment: String(current3DSelections.materialType.price) } as VariationOption
+          option: {
+            id: 0,
+            name: current3DSelections.materialType.name,
+            price_adjustment: String(current3DSelections.materialType.price)
+          } as AnyVariationOption
         });
       }
 
@@ -372,7 +380,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         breakdown.push({
           label: 'Color',
           price: current3DSelections.color.price,
-          option: { id: 0, name: current3DSelections.color.name, price_adjustment: String(current3DSelections.color.price) } as VariationOption
+          option: {
+            id: 0,
+            name: current3DSelections.color.name,
+            price_adjustment: String(current3DSelections.color.price)
+          } as AnyVariationOption
         });
       }
 
@@ -381,7 +393,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         breakdown.push({
           label: 'Stitch Pattern',
           price: current3DSelections.pattern.price,
-          option: { id: 0, name: current3DSelections.pattern.name, price_adjustment: String(current3DSelections.pattern.price) } as VariationOption
+          option: {
+            id: 0,
+            name: current3DSelections.pattern.name,
+            price_adjustment: String(current3DSelections.pattern.price)
+          } as AnyVariationOption
         });
       }
 
@@ -390,18 +406,38 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         breakdown.push({
           label: 'Stitch Color',
           price: current3DSelections.stitchColor.price || 0,
-          option: { id: 0, name: current3DSelections.stitchColor.name, price_adjustment: String(current3DSelections.stitchColor.price || 0) } as VariationOption
+          option: {
+            id: 0,
+            name: current3DSelections.stitchColor.name,
+            price_adjustment: String(current3DSelections.stitchColor.price || 0)
+          } as AnyVariationOption
         });
       }
     }
 
+    // Helper to safely read price from either price_adjustment (string) or price (number)
+    const getOptionPrice = (option?: AnyVariationOption | undefined): number => {
+      if (!option) return 0;
+      const anyOpt: any = option as any;
+      if (anyOpt.price_adjustment !== undefined && anyOpt.price_adjustment !== null) {
+        const v = parseFloat(String(anyOpt.price_adjustment));
+        if (!Number.isNaN(v)) return v;
+      }
+      if ((option as any).price !== undefined && (option as any).price !== null) {
+        const v = parseFloat(String((option as any).price));
+        if (!Number.isNaN(v)) return v;
+      }
+      return 0;
+    };
+
     // Recline Type
     if (selectedRecline && variations?.recline_types) {
-      const option = variations.recline_types.find((opt: VariationOption) => String(opt.id) === selectedRecline);
-      if (option && option.price_adjustment) {
+      const option = variations.recline_types.find((opt: AnyVariationOption) => String(opt.id) === selectedRecline);
+      const optPrice = getOptionPrice(option);
+      if (option && optPrice !== 0) {
         breakdown.push({
           label: 'Recline Type',
-          price: parseFloat(String(option.price_adjustment)),
+          price: optPrice,
           option
         });
       }
@@ -409,11 +445,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     // Lumbar Type
     if (selectedLumber && variations?.lumbar_types) {
-      const option = variations.lumbar_types.find((opt: VariationOption) => String(opt.id) === selectedLumber);
-      if (option && option.price_adjustment) {
+      const option = variations.lumbar_types.find((opt: AnyVariationOption) => String(opt.id) === selectedLumber);
+      const optPrice = getOptionPrice(option);
+      if (option && optPrice !== 0) {
         breakdown.push({
           label: 'Lumbar Type',
-          price: parseFloat(String(option.price_adjustment)),
+          price: optPrice,
           option
         });
       }
@@ -421,11 +458,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     // Heat/Cool Option
     if (selectedHeatingCooling && variations?.heat_options) {
-      const option = variations.heat_options.find((opt: VariationOption) => String(opt.id) === selectedHeatingCooling);
-      if (option && option.price_adjustment) {
+      const option = variations.heat_options.find((opt: AnyVariationOption) => String(opt.id) === selectedHeatingCooling);
+      const optPrice = getOptionPrice(option);
+      if (option && optPrice !== 0) {
         breakdown.push({
           label: 'Heat/Cool Option',
-          price: parseFloat(String(option.price_adjustment)),
+          price: optPrice,
           option
         });
       }
@@ -433,11 +471,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     // Seat Type
     if (selectedSeatType && variations?.seat_types) {
-      const option = variations.seat_types.find((opt: VariationOption) => String(opt.id) === selectedSeatType);
-      if (option && option.price_adjustment) {
+      const option = variations.seat_types.find((opt: AnyVariationOption) => String(opt.id) === selectedSeatType);
+      const optPrice = getOptionPrice(option);
+      if (option && optPrice !== 0) {
         breakdown.push({
           label: 'Seat Type',
-          price: parseFloat(String(option.price_adjustment)),
+          price: optPrice,
           option
         });
       }
@@ -445,11 +484,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     // Item Type
     if (selectedItemType && variations?.item_types) {
-      const option = variations.item_types.find((opt: VariationOption) => String(opt.id) === selectedItemType);
-      if (option && option.price_adjustment) {
+      const option = variations.item_types.find((opt: AnyVariationOption) => String(opt.id) === selectedItemType);
+      const optPrice = getOptionPrice(option);
+      if (option && optPrice !== 0) {
         breakdown.push({
           label: 'Item Type',
-          price: parseFloat(String(option.price_adjustment)),
+          price: optPrice,
           option
         });
       }
@@ -457,11 +497,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     // Seat Style
     if (selectedSeatStyle && variations?.seat_styles) {
-      const option = variations.seat_styles.find((opt: VariationOption) => String(opt.id) === selectedSeatStyle);
-      if (option && option.price_adjustment) {
+      const option = variations.seat_styles.find((opt: AnyVariationOption) => String(opt.id) === selectedSeatStyle);
+      const optPrice = getOptionPrice(option);
+      if (option && optPrice !== 0) {
         breakdown.push({
           label: 'Seat Style',
-          price: parseFloat(String(option.price_adjustment)),
+          price: optPrice,
           option
         });
       }
@@ -469,11 +510,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     // Included Arm
     if (selectedIncludedArm && variations?.arm_types) {
-      const option = variations.arm_types.find((opt: VariationOption) => String(opt.id) === selectedIncludedArm);
-      if (option && option.price_adjustment) {
+      const option = variations.arm_types.find((opt: AnyVariationOption) => String(opt.id) === selectedIncludedArm);
+      const optPrice = getOptionPrice(option);
+      if (option && optPrice !== 0) {
         breakdown.push({
           label: 'Included Arm',
-          price: parseFloat(String(option.price_adjustment)),
+          price: optPrice,
           option
         });
       }
@@ -489,7 +531,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       label: string,
       value: string,
       onChange: (v: string) => void,
-      options?: VariationOption[]
+      options?: AnyVariationOption[]
     ) => (
       <Box>
         <FormControl fullWidth size="small" disabled={!options || options.length === 0}>
@@ -628,10 +670,11 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             >
               <ModelViewer 
                 product3DConfig={product3DConfig}
-                onCustomizationChange={(selections) => {
+                onCustomizationChange={(selections: any) => {
                   // Update 3D customization selections for price calculation
                   setCurrent3DSelections(selections);
                 }}
+                onSubmit={() => {}}
               />
             </Box>
           </CardContent>
