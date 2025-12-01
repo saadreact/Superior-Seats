@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Drawer,
@@ -45,6 +45,7 @@ import {
   Style as StyleIcon,
   DirectionsCar as VehicleIcon,
   Email as EmailIcon,
+  Spa as SpaIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -66,6 +67,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
   const router = useRouter();
   const pathname = usePathname();
   const [variationsExpanded, setVariationsExpanded] = useState(false);
+  const [materialColorsExpanded, setMaterialColorsExpanded] = useState(false);
+  const [seatBuildExpanded, setSeatBuildExpanded] = useState(false);
+  const [comfortFeaturesExpanded, setComfortFeaturesExpanded] = useState(false);
+  const [designDetailsExpanded, setDesignDetailsExpanded] = useState(false);
   const [vehicleInfoExpanded, setVehicleInfoExpanded] = useState(false);
   const [vendorsExpanded, setVendorsExpanded] = useState(false);
   
@@ -112,21 +117,12 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     },
   ];
 
-  const variationSubItems = [
-    {
-      text: 'Arm Types',
-      icon: <CategoryIcon />,
-      href: '/admin/arm-types',
-    },
+  // Material & Colors sub-section
+  const materialColorsItems = [
     {
       text: 'Colors',
       icon: <ColorIcon />,
       href: '/admin/colors',
-    },
-    {
-      text: 'Heat Options',
-      icon: <HeatIcon />,
-      href: '/admin/heat-options',
     },
     {
       text: 'Item Types',
@@ -134,24 +130,18 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/item-types',
     },
     {
-      text: 'Lumbar Types',
-      icon: <BackHandIcon />,
-      href: '/admin/lumbar-types',
-    },
-    {
       text: 'Material Types',
       icon: <PaletteIcon />,
       href: '/admin/material-types',
     },
+  ];
+
+  // Seat Build sub-section
+  const seatBuildItems = [
     {
-      text: 'Recline Types',
-      icon: <ReplayIcon />,
-      href: '/admin/recline-types',
-    },
-    {
-      text: 'Seat Stitch Patterns',
-      icon: <PatternIcon />,
-      href: '/admin/seat-stitch-patterns',
+      text: 'Seat Bases',
+      icon: <ChairIcon />,
+      href: '/admin/seat-bases',
     },
     {
       text: 'Seat Styles',
@@ -159,14 +149,47 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
       href: '/admin/seat-styles',
     },
     {
-      text: 'Seat Bases',
-      icon: <ChairIcon />,
-      href: '/admin/seat-bases',
-    },
-    {
       text: 'Seat Types',
       icon: <ChairIcon />,
       href: '/admin/seat-types',
+    },
+  ];
+
+  // Comfort Features sub-section
+  const comfortFeaturesItems = [
+    {
+      text: 'Heat Options',
+      icon: <HeatIcon />,
+      href: '/admin/heat-options',
+    },
+    {
+      text: 'Lumbar Types',
+      icon: <BackHandIcon />,
+      href: '/admin/lumbar-types',
+    },
+    {
+      text: 'Recline Types',
+      icon: <ReplayIcon />,
+      href: '/admin/recline-types',
+    },
+    {
+      text: 'Relaxors',
+      icon: <SpaIcon />,
+      href: '/admin/relaxors',
+    },
+  ];
+
+  // Design Details sub-section
+  const designDetailsItems = [
+    {
+      text: 'Arm Types',
+      icon: <CategoryIcon />,
+      href: '/admin/arm-types',
+    },
+    {
+      text: 'Seat Stitch Patterns',
+      icon: <PatternIcon />,
+      href: '/admin/seat-stitch-patterns',
     },
   ];
 
@@ -242,6 +265,22 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
     setVariationsExpanded(!variationsExpanded);
   };
 
+  const handleMaterialColorsToggle = () => {
+    setMaterialColorsExpanded(!materialColorsExpanded);
+  };
+
+  const handleSeatBuildToggle = () => {
+    setSeatBuildExpanded(!seatBuildExpanded);
+  };
+
+  const handleComfortFeaturesToggle = () => {
+    setComfortFeaturesExpanded(!comfortFeaturesExpanded);
+  };
+
+  const handleDesignDetailsToggle = () => {
+    setDesignDetailsExpanded(!designDetailsExpanded);
+  };
+
   const handleVehicleInfoToggle = () => {
     setVehicleInfoExpanded(!vehicleInfoExpanded);
   };
@@ -263,9 +302,39 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
            pathname.startsWith('/admin/seat-stitch-patterns') ||
            pathname.startsWith('/admin/seat-pricing') ||
            pathname.startsWith('/admin/recline-types') ||
+           pathname.startsWith('/admin/relaxors') ||
            pathname.startsWith('/admin/seat-styles') ||
            pathname.startsWith('/admin/seat-bases');
   };
+
+  // Auto-expand Variations and sub-sections when active
+  useEffect(() => {
+    if (isVariationsActive()) {
+      setVariationsExpanded(true);
+      
+      // Auto-expand relevant sub-section based on pathname
+      if (pathname.startsWith('/admin/colors') || 
+          pathname.startsWith('/admin/item-types') || 
+          pathname.startsWith('/admin/material-types')) {
+        setMaterialColorsExpanded(true);
+      }
+      if (pathname.startsWith('/admin/seat-bases') || 
+          pathname.startsWith('/admin/seat-styles') || 
+          pathname.startsWith('/admin/seat-types')) {
+        setSeatBuildExpanded(true);
+      }
+      if (pathname.startsWith('/admin/heat-options') || 
+          pathname.startsWith('/admin/lumbar-types') || 
+          pathname.startsWith('/admin/recline-types') || 
+          pathname.startsWith('/admin/relaxors')) {
+        setComfortFeaturesExpanded(true);
+      }
+      if (pathname.startsWith('/admin/arm-types') || 
+          pathname.startsWith('/admin/seat-stitch-patterns')) {
+        setDesignDetailsExpanded(true);
+      }
+    }
+  }, [pathname]);
 
   const isVendorsActive = () => {
     return pathname.startsWith('/admin/color-vendors');
@@ -299,7 +368,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
               height={60}
               style={{
                 width: 'auto',
-                height: '45px',
+                height: '38px',
                 objectFit: 'contain',
               }}
               priority
@@ -414,51 +483,337 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed = false, onT
             
             <Collapse in={variationsExpanded} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
-                {variationSubItems.map((item) => (
-                  <ListItem key={item.text} disablePadding>
-                    <ListItemButton
-                      onClick={() => handleNavigation(item.href)}
-                      selected={isActive(item.href)}
-                      sx={{
-                        mx: 0.5,
-                        ml: 3,
-                        borderRadius: 1,
-                        mb: 0.25,
-                        minHeight: 32,
-                        py: 0.5,
-                        '&.Mui-selected': {
-                          backgroundColor: 'primary.main',
-                          color: 'white',
-                          '&:hover': {
-                            backgroundColor: 'primary.dark',
-                          },
-                          '& .MuiListItemIcon-root': {
-                            color: 'white',
-                          },
-                        },
+                {/* Comfort Features Sub-section */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleComfortFeaturesToggle}
+                    selected={comfortFeaturesItems.some(item => isActive(item.href))}
+                    sx={{
+                      mx: 0.5,
+                      ml: 3,
+                      borderRadius: 1,
+                      mb: 0.25,
+                      minHeight: 32,
+                      py: 0.5,
+                      '&.Mui-selected': {
+                        backgroundColor: 'action.selected',
                         '&:hover': {
                           backgroundColor: 'action.hover',
                         },
+                      },
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                    }}
+                  >
+                    <ListItemText
+                      primary="Comfort Features"
+                      primaryTypographyProps={{
+                        fontWeight: comfortFeaturesItems.some(item => isActive(item.href)) ? 600 : 400,
+                        fontSize: '0.8rem',
                       }}
-                    >
-                      <ListItemIcon
-                        sx={{
-                          minWidth: 32,
-                          color: isActive(item.href) ? 'white' : 'inherit',
-                        }}
-                      >
-                        {item.icon}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={item.text}
-                        primaryTypographyProps={{
-                          fontWeight: isActive(item.href) ? 600 : 400,
-                          fontSize: '0.8rem',
-                        }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                    />
+                    {comfortFeaturesExpanded ? <ExpandLessIcon sx={{ fontSize: '1rem' }} /> : <ExpandMoreIcon sx={{ fontSize: '1rem' }} />}
+                  </ListItemButton>
+                </ListItem>
+                <Collapse in={comfortFeaturesExpanded} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding>
+                    {comfortFeaturesItems.map((item) => (
+                      <ListItem key={item.text} disablePadding>
+                        <ListItemButton
+                          onClick={() => handleNavigation(item.href)}
+                          selected={isActive(item.href)}
+                          sx={{
+                            mx: 0.5,
+                            ml: 5,
+                            borderRadius: 1,
+                            mb: 0.25,
+                            minHeight: 32,
+                            py: 0.5,
+                            '&.Mui-selected': {
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: 'primary.dark',
+                              },
+                              '& .MuiListItemIcon-root': {
+                                color: 'white',
+                              },
+                            },
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <ListItemIcon
+                            sx={{
+                              minWidth: 28,
+                              color: isActive(item.href) ? 'white' : 'inherit',
+                            }}
+                          >
+                            {item.icon}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={item.text}
+                            primaryTypographyProps={{
+                              fontWeight: isActive(item.href) ? 600 : 400,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Collapse>
+
+                {/* Design Details Sub-section */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleDesignDetailsToggle}
+                    selected={designDetailsItems.some(item => isActive(item.href))}
+                    sx={{
+                      mx: 0.5,
+                      ml: 3,
+                      borderRadius: 1,
+                      mb: 0.25,
+                      minHeight: 32,
+                      py: 0.5,
+                      '&.Mui-selected': {
+                        backgroundColor: 'action.selected',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      },
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                    }}
+                  >
+                    <ListItemText
+                      primary="Design Details"
+                      primaryTypographyProps={{
+                        fontWeight: designDetailsItems.some(item => isActive(item.href)) ? 600 : 400,
+                        fontSize: '0.8rem',
+                      }}
+                    />
+                    {designDetailsExpanded ? <ExpandLessIcon sx={{ fontSize: '1rem' }} /> : <ExpandMoreIcon sx={{ fontSize: '1rem' }} />}
+                  </ListItemButton>
+                </ListItem>
+                <Collapse in={designDetailsExpanded} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding>
+                    {designDetailsItems.map((item) => (
+                      <ListItem key={item.text} disablePadding>
+                        <ListItemButton
+                          onClick={() => handleNavigation(item.href)}
+                          selected={isActive(item.href)}
+                          sx={{
+                            mx: 0.5,
+                            ml: 5,
+                            borderRadius: 1,
+                            mb: 0.25,
+                            minHeight: 32,
+                            py: 0.5,
+                            '&.Mui-selected': {
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: 'primary.dark',
+                              },
+                              '& .MuiListItemIcon-root': {
+                                color: 'white',
+                              },
+                            },
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <ListItemIcon
+                            sx={{
+                              minWidth: 28,
+                              color: isActive(item.href) ? 'white' : 'inherit',
+                            }}
+                          >
+                            {item.icon}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={item.text}
+                            primaryTypographyProps={{
+                              fontWeight: isActive(item.href) ? 600 : 400,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Collapse>
+
+                {/* Material & Colors Sub-section */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleMaterialColorsToggle}
+                    selected={materialColorsItems.some(item => isActive(item.href))}
+                    sx={{
+                      mx: 0.5,
+                      ml: 3,
+                      borderRadius: 1,
+                      mb: 0.25,
+                      minHeight: 32,
+                      py: 0.5,
+                      '&.Mui-selected': {
+                        backgroundColor: 'action.selected',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      },
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                    }}
+                  >
+                    <ListItemText
+                      primary="Material & Colors"
+                      primaryTypographyProps={{
+                        fontWeight: materialColorsItems.some(item => isActive(item.href)) ? 600 : 400,
+                        fontSize: '0.8rem',
+                      }}
+                    />
+                    {materialColorsExpanded ? <ExpandLessIcon sx={{ fontSize: '1rem' }} /> : <ExpandMoreIcon sx={{ fontSize: '1rem' }} />}
+                  </ListItemButton>
+                </ListItem>
+                <Collapse in={materialColorsExpanded} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding>
+                    {materialColorsItems.map((item) => (
+                      <ListItem key={item.text} disablePadding>
+                        <ListItemButton
+                          onClick={() => handleNavigation(item.href)}
+                          selected={isActive(item.href)}
+                          sx={{
+                            mx: 0.5,
+                            ml: 5,
+                            borderRadius: 1,
+                            mb: 0.25,
+                            minHeight: 32,
+                            py: 0.5,
+                            '&.Mui-selected': {
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: 'primary.dark',
+                              },
+                              '& .MuiListItemIcon-root': {
+                                color: 'white',
+                              },
+                            },
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <ListItemIcon
+                            sx={{
+                              minWidth: 28,
+                              color: isActive(item.href) ? 'white' : 'inherit',
+                            }}
+                          >
+                            {item.icon}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={item.text}
+                            primaryTypographyProps={{
+                              fontWeight: isActive(item.href) ? 600 : 400,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Collapse>
+
+                {/* Seat Build Sub-section */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleSeatBuildToggle}
+                    selected={seatBuildItems.some(item => isActive(item.href))}
+                    sx={{
+                      mx: 0.5,
+                      ml: 3,
+                      borderRadius: 1,
+                      mb: 0.25,
+                      minHeight: 32,
+                      py: 0.5,
+                      '&.Mui-selected': {
+                        backgroundColor: 'action.selected',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      },
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                    }}
+                  >
+                    <ListItemText
+                      primary="Seat Build"
+                      primaryTypographyProps={{
+                        fontWeight: seatBuildItems.some(item => isActive(item.href)) ? 600 : 400,
+                        fontSize: '0.8rem',
+                      }}
+                    />
+                    {seatBuildExpanded ? <ExpandLessIcon sx={{ fontSize: '1rem' }} /> : <ExpandMoreIcon sx={{ fontSize: '1rem' }} />}
+                  </ListItemButton>
+                </ListItem>
+                <Collapse in={seatBuildExpanded} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding>
+                    {seatBuildItems.map((item) => (
+                      <ListItem key={item.text} disablePadding>
+                        <ListItemButton
+                          onClick={() => handleNavigation(item.href)}
+                          selected={isActive(item.href)}
+                          sx={{
+                            mx: 0.5,
+                            ml: 5,
+                            borderRadius: 1,
+                            mb: 0.25,
+                            minHeight: 32,
+                            py: 0.5,
+                            '&.Mui-selected': {
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: 'primary.dark',
+                              },
+                              '& .MuiListItemIcon-root': {
+                                color: 'white',
+                              },
+                            },
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <ListItemIcon
+                            sx={{
+                              minWidth: 28,
+                              color: isActive(item.href) ? 'white' : 'inherit',
+                            }}
+                          >
+                            {item.icon}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={item.text}
+                            primaryTypographyProps={{
+                              fontWeight: isActive(item.href) ? 600 : 400,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Collapse>
               </List>
             </Collapse>
           </>

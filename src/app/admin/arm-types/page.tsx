@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -89,6 +89,13 @@ const ArmTypesPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMorePages, setHasMorePages] = useState(false);
+
+  // Ref to track debounce timer
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref to track if page reset is due to search change
+  const isSearchResettingPage = useRef(false);
+  // Ref to track if component has mounted
+  const isMounted = useRef(false);
 
   // Helper function to get arm type image URL
   const getArmTypeImage = (armType: ArmType) => {
@@ -194,9 +201,113 @@ const ArmTypesPage = () => {
     }
   }, [page, rowsPerPage, searchTerm]);
 
+  // Debounced search effect - triggers search after user stops typing
   useEffect(() => {
+    // On initial mount, skip debounce (let pagination effect handle initial fetch)
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    
+    // Clear any existing debounce timer
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+    
+    // Mark that we're resetting page due to search
+    isSearchResettingPage.current = true;
+    
+    // Reset to page 0 when search changes
+    setPage(0);
+    
+    // Set up new debounce timer - fetch after 300ms delay
+    searchDebounceRef.current = setTimeout(async () => {
+      // Fetch with current search term and page 0
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params: Record<string, any> = {
+          page: 1, // Page 1 for API (0-based converted to 1-based)
+          per_page: rowsPerPage
+        };
+        
+        if (searchTerm.trim()) {
+          params.search = searchTerm.trim();
+        }
+        
+        const response = await apiService.getArmTypes(params);
+        
+        if (response && response.data) {
+          setArmTypes(response.data);
+          if (response.meta && response.meta.pagination) {
+            if (response.meta.pagination.total) {
+              setTotalCount(response.meta.pagination.total);
+            }
+            const morePages = response.meta.pagination.has_more_pages === true;
+            setHasMorePages(morePages);
+          } else if (response.meta && response.meta.total) {
+            setTotalCount(response.meta.total);
+            setHasMorePages(false);
+          } else if (response.total !== undefined) {
+            setTotalCount(response.total);
+            setHasMorePages(false);
+          } else if (response.data && Array.isArray(response.data)) {
+            setTotalCount(response.data.length);
+            setHasMorePages(false);
+          }
+        } else if (Array.isArray(response)) {
+          setArmTypes(response);
+          setTotalCount(response.length);
+          setHasMorePages(false);
+        } else {
+          setArmTypes([]);
+          setTotalCount(0);
+          setHasMorePages(false);
+        }
+      } catch (err: any) {
+        if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+          setError('Please log in to access this page');
+        } else {
+          setError(err.message || 'Failed to load arm types. Please try again later.');
+        }
+        console.error('Error loading arm types:', err);
+      } finally {
+        setLoading(false);
+      }
+      
+      searchDebounceRef.current = null;
+      isSearchResettingPage.current = false;
+    }, 300); // 300ms delay after user stops typing
+
+    // Cleanup function to clear timer if user types again before delay completes
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Fetch data on mount and when pagination changes
+  useEffect(() => {
+    // Skip if page change is due to search reset (debounce effect will handle the fetch)
+    if (isSearchResettingPage.current) {
+      isSearchResettingPage.current = false; // Reset the flag
+      return;
+    }
+    
+    // Skip if there's an active search debounce timer
+    if (searchDebounceRef.current) {
+      return;
+    }
+    
+    // Fetch immediately when pagination changes
     loadArmTypes();
-  }, [loadArmTypes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage]);
 
   // Refresh data when page becomes visible (after navigation back from create/edit)
   useEffect(() => {
@@ -252,7 +363,7 @@ const ArmTypesPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0); // Reset to first page when searching
+    // Page reset is handled by the debounce effect
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {

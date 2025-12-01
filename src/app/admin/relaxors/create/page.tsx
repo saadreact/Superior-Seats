@@ -19,17 +19,17 @@ import {
   Checkbox,
   ListItemText,
   Chip,
-  FormControlLabel,
   Divider,
+  FormControlLabel,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
 import AdminLayout from '@/components/AdminLayout';
-import { heatOptionsService } from '@/services/heat-options';
+import { relaxorsService } from '@/services/relaxors';
 import { VariantsCalculation, CalculatedPriceTier } from '@/utils/VariantsCalculation';
 
-const CreateHeatOptionPage = () => {
+const CreateRelaxorPage = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -37,6 +37,7 @@ const CreateHeatOptionPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [priceTiers, setPriceTiers] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -48,15 +49,26 @@ const CreateHeatOptionPage = () => {
     price_adjustments: {} as Record<string, number>
   });
   
+  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
+  const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
   const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
   
-  const [enablePriceTiers, setEnablePriceTiers] = useState(false);
-  
-  const [priceTiers, setPriceTiers] = useState<any[]>([]);
-  const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState<string>('');
   const [overridePriceInputs, setOverridePriceInputs] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    loadPriceTiers();
+  }, []);
+
+  const loadPriceTiers = async () => {
+    try {
+      const response = await relaxorsService.getPriceTiers();
+      setPriceTiers(response || []);
+    } catch (err: any) {
+      console.error('Error loading price tiers:', err);
+    }
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
@@ -99,17 +111,10 @@ const CreateHeatOptionPage = () => {
   };
 
   const handlePriceTierChange = (event: any) => {
-    const value = event.target.value as number[];
-    setFormData(prev => ({ ...prev, price_tier_ids: value }));
-  };
-
-  const handlePriceAdjustmentChange = (tierId: number, adjustment: number) => {
+    const value = event.target.value;
     setFormData(prev => ({
       ...prev,
-      price_adjustments: {
-        ...prev.price_adjustments,
-        [tierId.toString()]: adjustment
-      }
+      price_tier_ids: typeof value === 'string' ? [] : value
     }));
   };
 
@@ -200,18 +205,6 @@ const CreateHeatOptionPage = () => {
     }
   };
 
-  useEffect(() => {
-    const loadPriceTiers = async () => {
-      try {
-        const response = await heatOptionsService.getPriceTiers();
-        setPriceTiers(response || []);
-      } catch (err) {
-        console.error('Error loading price tiers:', err);
-      }
-    };
-    loadPriceTiers();
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -226,7 +219,7 @@ const CreateHeatOptionPage = () => {
     }
 
     if (formData.price <= 0) {
-      setError('In Store price must be greater than 0');
+      setError('Price must be greater than 0');
       return;
     }
 
@@ -234,67 +227,77 @@ const CreateHeatOptionPage = () => {
       setLoading(true);
       setError(null);
       
-      // Create the data object that matches the backend schema
       const submissionData = {
-        name: formData.name.trim(),
-        description: formData.description.trim() || undefined,
+        name: formData.name,
+        description: formData.description,
         image: formData.image,
-        cost: 0, // Fixed cost value
+        cost: 0, // Fixed cost value as requested
         price: formData.price,
-        price_tier_ids: enablePriceTiers && calculatedPriceTiers.length > 0 ? calculatedPriceTiers.map(tier => tier.id) : [],
-        price_adjustments: enablePriceTiers && calculatedPriceTiers.length > 0 ? Object.fromEntries(
-          calculatedPriceTiers.map(tier => [
-            tier.id.toString(), 
-            VariantsCalculation.getFinalPrice(tier)
-          ])
-        ) : undefined
+        price_tier_ids: enablePriceTiers && formData.price_tier_ids.length > 0 ? formData.price_tier_ids : [],
+        price_adjustments: enablePriceTiers && formData.price_adjustments ? formData.price_adjustments : {}
       };
-      
-      console.log('Submitting heat option data:', submissionData);
-      console.log('Image file details:', {
+
+      console.log('=== RELAXOR CREATION DEBUG ===');
+      console.log('Form Data:', submissionData);
+      console.log('Image File Details:', {
         name: formData.image?.name,
         size: formData.image?.size,
-        type: formData.image?.type
+        type: formData.image?.type,
+        lastModified: formData.image?.lastModified
       });
+      console.log('Price Tier IDs:', formData.price_tier_ids);
       
-      const result = await heatOptionsService.createHeatOption(submissionData);
-      console.log('API response:', result);
+      // Create FormData manually to see exactly what's being sent
+      const testFormData = new FormData();
+      testFormData.append('name', formData.name);
+      if (formData.description) testFormData.append('description', formData.description);
+      testFormData.append('image', formData.image);
+      testFormData.append('cost', '0'); // Fixed cost value
+      testFormData.append('price', formData.price.toString());
+      if (formData.price_tier_ids && formData.price_tier_ids.length > 0) {
+        formData.price_tier_ids.forEach(id => testFormData.append('price_tier_ids[]', id.toString()));
+      }
+      if (formData.price_adjustments && Object.keys(formData.price_adjustments).length > 0) {
+        Object.entries(formData.price_adjustments).forEach(([tierId, price]) => {
+          testFormData.append(`price_adjustments[${tierId}]`, price.toString());
+        });
+      }
       
-      setSuccess('Heat Option created successfully!');
+      // Log FormData contents
+      console.log('=== FORMDATA CONTENTS ===');
+      for (let [key, value] of testFormData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      console.log('=== END FORMDATA CONTENTS ===');
+      
+      await relaxorsService.createRelaxor(submissionData);
+      setSuccess('Relaxor created successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/heat-options');
+        router.push('/admin/relaxors');
       }, 1500);
       
     } catch (err: any) {
-      console.error('Full error object:', err);
-      console.error('Error response:', err.response);
-      console.error('Error status:', err.response?.status);
-      console.error('Error data:', err.response?.data);
-      
-      let errorMessage = 'Failed to create heat option';
-      
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
-      } else if (err.message) {
-        errorMessage = err.message;
+      console.error('=== RELAXOR CREATION ERROR ===');
+      console.error('Error details:', err);
+      if (err.response) {
+        console.error('Response status:', err.response.status);
+        console.error('Response data:', err.response.data);
+        console.error('Response headers:', err.response.headers);
       }
-      
-      setError(errorMessage);
+      setError(err.message || 'Failed to create relaxor');
     } finally {
       setLoading(false);
     }
   };
 
   const handleBack = () => {
-    router.push('/admin/heat-options');
+    router.push('/admin/relaxors');
   };
 
   return (
-    <AdminLayout title="Create Heat Option">
+    <AdminLayout title="Create Relaxor">
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -306,8 +309,6 @@ const CreateHeatOptionPage = () => {
             Back
           </Button>
         </Box>
-
-       
 
         {/* Alerts */}
         {error && (
@@ -328,12 +329,7 @@ const CreateHeatOptionPage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Basic Information */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700, 
-                    mb: 2,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Basic Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
@@ -344,16 +340,8 @@ const CreateHeatOptionPage = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   fullWidth
-                  placeholder="Enter heat option name"
-                  sx={{ 
-                    mb: 3,
-                    '& .MuiInputBase-input': {
-                      fontSize: { xs: '1rem', sm: '0.875rem' }
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontSize: { xs: '1rem', sm: '0.875rem' }
-                    }
-                  }}
+                  placeholder="Enter relaxor name"
+                  sx={{ mb: 3 }}
                 />
 
                 <TextField
@@ -364,88 +352,60 @@ const CreateHeatOptionPage = () => {
                   multiline
                   rows={3}
                   placeholder="Enter description (optional)"
-                  sx={{
-                    '& .MuiInputBase-input': {
-                      fontSize: { xs: '1rem', sm: '0.875rem' }
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontSize: { xs: '1rem', sm: '0.875rem' }
-                    }
-                  }}
                 />
                 </Box>
 
                 {/* Pricing Information */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700, 
-                    mb: 2,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Pricing Information
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    label="In Store Price"
-                    type="number"
-                    value={priceInput}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setPriceInput(value);
-                      
-                      // Only update formData when we have a valid numeric value
-                      if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
-                        const numValue = parseFloat(value);
-                        if (!isNaN(numValue)) {
-                          handleInputChange('price', numValue);
-                        }
+                <TextField
+                  label="In Store Price"
+                  type="number"
+                  value={priceInput}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPriceInput(value);
+                    
+                    // Only update formData when we have a valid numeric value
+                    if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue)) {
+                        handleInputChange('price', numValue);
                       }
-                    }}
-                    onBlur={(e) => {
-                      // When field loses focus, finalize the value
-                      const value = e.target.value.trim();
-                      if (value === '' || value === '-' || isNaN(parseFloat(value))) {
-                        // If invalid or empty, clear and set to 0
-                        setPriceInput('');
-                        handleInputChange('price', 0);
-                      } else {
-                        const numValue = parseFloat(value);
-                        const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
-                        setPriceInput(finalValue.toString());
-                        handleInputChange('price', finalValue);
-                      }
-                    }}
-                    required
-                    fullWidth
-                    placeholder="Enter in Store price"
-                    inputProps={{ min: 0, step: 0.01 }}
-                    sx={{
-                      '& .MuiInputBase-input': {
-                        fontSize: { xs: '1rem', sm: '0.875rem' }
-                      },
-                      '& .MuiInputLabel-root': {
-                        fontSize: { xs: '1rem', sm: '0.875rem' }
-                      }
-                    }}
-                  />
-                </Box>
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // When field loses focus, finalize the value
+                    const value = e.target.value.trim();
+                    if (value === '' || value === '-' || isNaN(parseFloat(value))) {
+                      // If invalid or empty, clear and set to 0
+                      setPriceInput('');
+                      handleInputChange('price', 0);
+                    } else {
+                      const numValue = parseFloat(value);
+                      const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+                      setPriceInput(finalValue.toString());
+                      handleInputChange('price', finalValue);
+                    }
+                  }}
+                  required
+                  fullWidth
+                  placeholder="Enter shop price"
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
                 </Box>
 
-                {/* Image Upload Field */}
+                {/* Image Upload */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700, 
-                    mb: 2,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Image
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
-                
+
                 <Box>
                   <input
                     accept="image/*"
@@ -458,27 +418,21 @@ const CreateHeatOptionPage = () => {
                     <Button
                       variant="outlined"
                       component="span"
-                      sx={{ 
-                        mb: 2,
-                        minHeight: { xs: 44, sm: 'auto' },
-                        fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                        width: { xs: '100%', sm: 'auto' }
-                      }}
+                      sx={{ mb: 2 }}
                     >
                       {formData.image ? `Image Selected: ${formData.image.name}` : 'Upload Image'}
                     </Button>
                   </label>
-                  
                   {imagePreview && (
                     <Box sx={{ mt: 2 }}>
                       <img
                         src={imagePreview}
                         alt="Preview"
                         style={{
-                          maxWidth: '100%',
-                          maxHeight: 200,
-                          borderRadius: 8,
-                          border: '1px solid #e0e0e0'
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
                         }}
                       />
                     </Box>
@@ -488,22 +442,12 @@ const CreateHeatOptionPage = () => {
 
                 {/* Price Tiers */}
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
-                    color: 'text.primary', 
-                    fontWeight: 700, 
-                    mb: 2,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 700, mb: 2 }}>
                     Price Tiers
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                <Box sx={{ 
-                  display: 'flex', 
-                  gap: 2,
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'flex-start', sm: 'center' }
-                }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -512,37 +456,19 @@ const CreateHeatOptionPage = () => {
                         color="primary"
                       />
                     }
-                    label={
-                      <Typography variant="body1" sx={{ 
-                        fontWeight: 500,
-                        fontSize: { xs: '1rem', sm: '0.875rem' }
-                      }}>
-                        Enable Price Tiers
-                      </Typography>
-                    }
-                    sx={{ 
-                      '& .MuiFormControlLabel-label': {
-                        fontSize: { xs: '1rem', sm: '0.875rem' },
-                        fontWeight: 500
-                      }
-                    }}
+                    label="Enable Price Tiers"
                   />
                   {enablePriceTiers && (
                     <Button
                       variant="outlined"
-                      size="small"
                       onClick={handleResetPriceTiers}
-                      sx={{ 
-                        ml: { xs: 0, sm: 1 },
-                        mt: { xs: 1, sm: 0 },
-                        minHeight: { xs: 36, sm: 'auto' },
-                        fontSize: { xs: '0.9rem', sm: '0.75rem' }
-                      }}
+                      disabled={calculatedPriceTiers.length === 0}
+                      sx={{ ml: 2 }}
                     >
                       Reset
                     </Button>
                   )}
-                </Box>
+                </div>
 
                 {enablePriceTiers && calculatedPriceTiers.length > 0 && (
                   <Box>
@@ -658,10 +584,10 @@ const CreateHeatOptionPage = () => {
                     variant="outlined"
                     onClick={handleBack}
                     disabled={loading}
+                    fullWidth={isMobile}
                     sx={{
                       minHeight: { xs: 44, sm: 'auto' },
-                      fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                      order: { xs: 2, sm: 1 }
+                      fontSize: { xs: '0.95rem', sm: '0.875rem' }
                     }}
                   >
                     Cancel
@@ -671,17 +597,17 @@ const CreateHeatOptionPage = () => {
                     variant="contained"
                     startIcon={<SaveIcon />}
                     disabled={loading}
+                    fullWidth={isMobile}
                     sx={{
                       backgroundColor: 'primary.main',
                       minHeight: { xs: 44, sm: 'auto' },
                       fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                      order: { xs: 1, sm: 2 },
                       '&:hover': {
                         backgroundColor: 'primary.dark',
                       },
                     }}
                   >
-                    {loading ? 'Creating...' : 'Create Heat Option'}
+                    {loading ? 'Creating...' : 'Create Relaxor'}
                   </Button>
                 </Box>
             </Box>
@@ -692,4 +618,5 @@ const CreateHeatOptionPage = () => {
   );
 };
 
-export default CreateHeatOptionPage;
+export default CreateRelaxorPage;
+

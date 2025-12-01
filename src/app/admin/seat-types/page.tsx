@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -77,6 +77,13 @@ const SeatTypesPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Ref to track debounce timer
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref to track if page reset is due to search change
+  const isSearchResettingPage = useRef(false);
+  // Ref to track if component has mounted
+  const isMounted = useRef(false);
+
   const loadSeatTypes = useCallback(async () => {
     try {
       setLoading(true);
@@ -143,9 +150,107 @@ const SeatTypesPage = () => {
     }
   }, [page, rowsPerPage, searchTerm, router]);
 
+  // Debounced search effect - triggers search after user stops typing
   useEffect(() => {
+    // On initial mount, skip debounce (let pagination effect handle initial fetch)
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    
+    // Clear any existing debounce timer
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+    
+    // Mark that we're resetting page due to search
+    isSearchResettingPage.current = true;
+    
+    // Reset to page 0 when search changes
+    setPage(0);
+    
+    // Set up new debounce timer - fetch after 300ms delay
+    searchDebounceRef.current = setTimeout(async () => {
+      // Fetch with current search term and page 0
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params: Record<string, any> = {
+          page: 1, // API uses 1-based pagination
+          per_page: rowsPerPage
+        };
+        
+        if (searchTerm.trim()) {
+          params.search = searchTerm.trim();
+        }
+        
+        const response = await apiService.getSeatTypes(params);
+        
+        if (response && response.data) {
+          setSeatTypes(response.data);
+          if (response.meta && response.meta.pagination && response.meta.pagination.total) {
+            setTotalCount(response.meta.pagination.total);
+          } else if (response.meta && response.meta.total) {
+            setTotalCount(response.meta.total);
+          } else if (response.total !== undefined) {
+            setTotalCount(response.total);
+          } else if (response.data && Array.isArray(response.data)) {
+            setTotalCount(response.data.length);
+          }
+        } else if (Array.isArray(response)) {
+          setSeatTypes(response);
+          setTotalCount(response.length);
+        } else {
+          setSeatTypes([]);
+          setTotalCount(0);
+        }
+        
+        // Reset the flag after fetch completes
+        isSearchResettingPage.current = false;
+      } catch (err: any) {
+        console.error('Error loading seat types:', err);
+        isSearchResettingPage.current = false;
+        
+        if (err.response?.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
+          setError('Authentication required. You will be redirected to the login page in 3 seconds.');
+          setTimeout(() => {
+            router.push('/');
+          }, 3000);
+        } else if (err.response?.status === 403) {
+          setError('Access denied. You do not have permission to view seat types.');
+        } else if (err.response?.status === 404) {
+          setError('Seat types endpoint not found. Please contact support.');
+        } else if (err.response?.status >= 500) {
+          setError('Server error. Please try again later.');
+        } else {
+          setError(err.message || 'Failed to load seat types. Please try again later.');
+        }
+      } finally {
+        setLoading(false);
+        searchDebounceRef.current = null;
+      }
+    }, 300);
+    
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = null;
+      }
+    };
+  }, [searchTerm, rowsPerPage, router]);
+
+  // Effect for page and rowsPerPage changes (only when not resetting due to search)
+  useEffect(() => {
+    // Skip if this is triggered by search reset
+    if (isSearchResettingPage.current) {
+      isSearchResettingPage.current = false; // Reset flag for next time
+      return;
+    }
+    
     loadSeatTypes();
-  }, [loadSeatTypes]);
+  }, [page, rowsPerPage, loadSeatTypes]);
 
   const handleAdd = () => {
     router.push('/admin/seat-types/create');
@@ -180,7 +285,7 @@ const SeatTypesPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0); // Reset to first page when searching
+    // Page reset is handled by the debounce effect
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {

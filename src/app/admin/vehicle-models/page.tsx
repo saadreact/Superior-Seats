@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -66,19 +66,16 @@ const VehicleModelsPage = () => {
   const [deleting, setDeleting] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15); // Match API default
   const [totalCount, setTotalCount] = useState(0);
 
-  // Debounce search term to avoid too many API calls
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+  // Ref to track debounce timer
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref to track if page reset is due to search change
+  const isSearchResettingPage = useRef(false);
+  // Ref to track if component has mounted
+  const isMounted = useRef(false);
 
   const loadVehicleModels = useCallback(async () => {
     try {
@@ -89,7 +86,7 @@ const VehicleModelsPage = () => {
         page: page + 1, // API uses 1-based pagination
         per_page: rowsPerPage
       };
-      if (debouncedSearchTerm) params.search = debouncedSearchTerm;
+      if (searchTerm.trim()) params.search = searchTerm.trim();
       
       console.log('🚗 Vehicle Models - API call params:', params);
       const response = await vehicleModelApiService.getVehicleModels(params);
@@ -123,11 +120,93 @@ const VehicleModelsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, debouncedSearchTerm]);
+  }, [page, rowsPerPage, searchTerm]);
 
+  // Debounced search effect - triggers search after user stops typing
   useEffect(() => {
+    // On initial mount, skip debounce (let pagination effect handle initial fetch)
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    
+    // Clear any existing debounce timer
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+    
+    // Mark that we're resetting page due to search
+    isSearchResettingPage.current = true;
+    
+    // Reset to page 0 when search changes
+    setPage(0);
+    
+    // Set up new debounce timer - fetch after 300ms delay
+    searchDebounceRef.current = setTimeout(async () => {
+      // Fetch with current search term and page 0
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params: Record<string, any> = {
+          page: 1, // API uses 1-based pagination
+          per_page: rowsPerPage
+        };
+        if (searchTerm.trim()) params.search = searchTerm.trim();
+        
+        const response = await vehicleModelApiService.getVehicleModels(params);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          setVehicleModels(response.data);
+          const total = response.meta?.total || 
+                       response.meta?.pagination?.total || 
+                       response.meta?.last_page * rowsPerPage || 
+                       response.data.length;
+          setTotalCount(total);
+        } else if (Array.isArray(response)) {
+          setVehicleModels(response);
+          setTotalCount(response.length);
+        } else {
+          setVehicleModels([]);
+          setTotalCount(0);
+        }
+        
+        // Reset the flag after fetch completes
+        isSearchResettingPage.current = false;
+      } catch (err: any) {
+        console.error('Error loading vehicle models:', err);
+        isSearchResettingPage.current = false;
+        
+        if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+          setError('Please log in to access this page');
+        } else {
+          setError(err.message || 'Failed to load vehicle models. Please try again later.');
+        }
+      } finally {
+        setLoading(false);
+        searchDebounceRef.current = null;
+      }
+    }, 300);
+    
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = null;
+      }
+    };
+  }, [searchTerm, rowsPerPage]);
+
+  // Effect for page and rowsPerPage changes (only when not resetting due to search)
+  useEffect(() => {
+    // Skip if this is triggered by search reset
+    if (isSearchResettingPage.current) {
+      isSearchResettingPage.current = false; // Reset flag for next time
+      return;
+    }
+    
     loadVehicleModels();
-  }, [loadVehicleModels]);
+  }, [page, rowsPerPage, loadVehicleModels]);
 
   const handleAdd = () => {
     router.push('/admin/vehicle-models/create');
@@ -162,7 +241,7 @@ const VehicleModelsPage = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0); // Reset to first page when searching
+    // Page reset is handled by the debounce effect
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -173,8 +252,6 @@ const VehicleModelsPage = () => {
     const newRowsPerPage = parseInt(event.target.value, 10);
     setRowsPerPage(newRowsPerPage);
     setPage(0); // Reset to first page
-    // Clear debounced search to trigger immediate reload
-    setDebouncedSearchTerm(searchTerm);
   };
 
   // Remove client-side filtering since we're using server-side pagination

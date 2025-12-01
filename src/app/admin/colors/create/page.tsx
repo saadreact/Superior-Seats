@@ -132,6 +132,8 @@ const CreateColorPage = () => {
   const [enablePriceTiers, setEnablePriceTiers] = useState(false);
   const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
+  const [priceInput, setPriceInput] = useState<string>('');
+  const [overridePriceInputs, setOverridePriceInputs] = useState<Record<number, string>>({});
 
   const loadMaterialTypes = useCallback(async () => {
     try {
@@ -174,6 +176,11 @@ const CreateColorPage = () => {
       ...prev,
       [field]: value
     }));
+
+    // Sync priceInput state with formData.price
+    if (field === 'price') {
+      setPriceInput(value > 0 ? value.toString() : '');
+    }
 
     // Recalculate price tiers when price changes
     if (field === 'price' && value > 0) {
@@ -794,8 +801,33 @@ const CreateColorPage = () => {
                 <TextField
                   label="In Store Price"
                   type="number"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                  value={priceInput}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPriceInput(value);
+                    
+                    // Only update formData when we have a valid numeric value
+                    if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue)) {
+                        handleInputChange('price', numValue);
+                      }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // When field loses focus, finalize the value
+                    const value = e.target.value.trim();
+                    if (value === '' || value === '-' || isNaN(parseFloat(value))) {
+                      // If invalid or empty, clear and set to 0
+                      setPriceInput('');
+                      handleInputChange('price', 0);
+                    } else {
+                      const numValue = parseFloat(value);
+                      const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+                      setPriceInput(finalValue.toString());
+                      handleInputChange('price', finalValue);
+                    }
+                  }}
                   required
                   fullWidth
                   placeholder="Enter in Store price"
@@ -925,10 +957,45 @@ const CreateColorPage = () => {
                                 label="Override Price"
                                 type="number"
                                 size="small"
-                                value={tier.is_overridden ? tier.override_price || '' : ''}
+                                value={overridePriceInputs[tier.id] ?? (tier.is_overridden ? (tier.override_price?.toString() || '') : '')}
                                 onChange={(e) => {
-                                  const value = parseFloat(e.target.value) || 0;
-                                  handlePriceOverrideChange(tier.id, value);
+                                  const value = e.target.value;
+                                  setOverridePriceInputs(prev => ({
+                                    ...prev,
+                                    [tier.id]: value
+                                  }));
+                                  
+                                  // Only update when we have a valid numeric value
+                                  if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
+                                    const numValue = parseFloat(value);
+                                    if (!isNaN(numValue)) {
+                                      handlePriceOverrideChange(tier.id, numValue);
+                                    }
+                                  } else if (value === '') {
+                                    // If empty, reset the override
+                                    handlePriceOverrideChange(tier.id, 0);
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  // When field loses focus, finalize the value
+                                  const value = e.target.value.trim();
+                                  if (value === '' || value === '-' || isNaN(parseFloat(value))) {
+                                    // If invalid or empty, clear override
+                                    setOverridePriceInputs(prev => {
+                                      const newInputs = { ...prev };
+                                      delete newInputs[tier.id];
+                                      return newInputs;
+                                    });
+                                    handlePriceOverrideChange(tier.id, 0);
+                                  } else {
+                                    const numValue = parseFloat(value);
+                                    const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+                                    setOverridePriceInputs(prev => ({
+                                      ...prev,
+                                      [tier.id]: finalValue.toString()
+                                    }));
+                                    handlePriceOverrideChange(tier.id, finalValue);
+                                  }
                                 }}
                                 placeholder={VariantsCalculation.formatPrice(tier.calculated_price)}
                                 inputProps={{ min: 0, step: 0.01 }}

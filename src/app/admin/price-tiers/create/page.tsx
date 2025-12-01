@@ -33,6 +33,8 @@ const CreatePriceTierPage = () => {
     is_active: true,
   });
 
+  const [discountInput, setDiscountInput] = useState<string>('');
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -206,8 +208,35 @@ const CreatePriceTierPage = () => {
                   <TextField
                     label="Discount Off In Store Price (%)"
                     type="number"
-                    value={formData.discount_off_retail_price}
-                    onChange={(e) => handleInputChange('discount_off_retail_price', parseFloat(e.target.value) || 0)}
+                    value={discountInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setDiscountInput(value);
+                      
+                      // Only update formData when we have a valid numeric value
+                      if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
+                        const numValue = parseFloat(value);
+                        if (!isNaN(numValue)) {
+                          handleInputChange('discount_off_retail_price', numValue);
+                        }
+                      }
+                      // If empty, don't update formData - let it stay at previous value or 0
+                    }}
+                    onBlur={(e) => {
+                      // When field loses focus, finalize the value
+                      const value = e.target.value.trim();
+                      if (value === '' || value === '-' || isNaN(parseFloat(value))) {
+                        // If invalid or empty, clear and set to 0
+                        setDiscountInput('');
+                        handleInputChange('discount_off_retail_price', 0);
+                      } else {
+                        const numValue = parseFloat(value);
+                        const clampedValue = Math.max(0, Math.min(100, numValue));
+                        const finalValue = isNaN(clampedValue) ? 0 : clampedValue;
+                        setDiscountInput(finalValue.toString());
+                        handleInputChange('discount_off_retail_price', finalValue);
+                      }
+                    }}
                     required
                     fullWidth
                     placeholder="Enter discount percentage"
