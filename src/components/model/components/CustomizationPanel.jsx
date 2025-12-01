@@ -15,13 +15,17 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  CircularProgress,
+  Backdrop,
+  Fade
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { AVAILABLE_MODELS, CUSTOMIZATION_OPTIONS } from '../config/assets';
 import { COLOR_PALETTE } from '../config/colorPalette';
 import { getPatternOptionsForModel } from '../utils/PatternLoader';
 import { getColorsForFabric } from '../config/fabricColors';
+import { SkeletonColorTile, SkeletonPatternTile, SkeletonFabricPreview } from './SkeletonLoaders';
 
 function CustomizationPanel({
   availableMaterials, // API materials
@@ -55,6 +59,9 @@ function CustomizationPanel({
   const [failedImages, setFailedImages] = useState(new Set()); // Track which images failed to load
   const [hoveredPattern, setHoveredPattern] = useState(null);
   const [patternHoverPosition, setPatternHoverPosition] = useState({ x: 0, y: 0 });
+  const [loadingImages, setLoadingImages] = useState(new Set()); // Track which images are currently loading
+  const [loadedImages, setLoadedImages] = useState(new Set()); // Track which images have loaded successfully
+  const [isApplyingChange, setIsApplyingChange] = useState(false); // Track when 3D model is updating
 
   // Get text color based on background
   const getTextColor = (hexColor) => {
@@ -364,7 +371,13 @@ function CustomizationPanel({
               return (
                 <Grid item key={`fabric-${colorId}`}>
                   <ButtonBase
-                    onClick={() => onFabricColorChange(color.hex)}
+                    onClick={() => {
+                      setIsApplyingChange(true);
+                      onFabricColorChange(color.hex);
+                      // Reset loading state after a short delay
+                      setTimeout(() => setIsApplyingChange(false), 500);
+                    }}
+                    disabled={isApplyingChange}
                     onMouseEnter={(e) => {
                       if (!isMobile) {
                         setHoveredColor(color);
@@ -416,41 +429,74 @@ function CustomizationPanel({
                       }
                     }}
                   >
-                    {/* Always show image tile - prefer API image, fallback to hex color */}
+                    {/* Show skeleton while loading, image when loaded, or hex fallback */}
                     {hasImage && !failedImages.has(colorId) ? (
-                      <Box
-                        component="img"
-                        src={colorImageUrl}
-                        alt={color.name}
-                        onError={(e) => {
-                          // Try .jpg extension if .png failed (some files are .jpg like LONESTAR BLACK.jpg)
-                          if (colorImageUrl && colorImageUrl.endsWith('.png')) {
-                            const jpgUrl = colorImageUrl.replace('.png', '.jpg');
-                            // Try loading .jpg version
-                            const img = new Image();
-                            img.onload = () => {
-                              e.target.src = jpgUrl;
-                              e.target.style.display = 'block';
-                            };
-                            img.onerror = () => {
-                              console.warn(`⚠️ Failed to load color image (both .png and .jpg): ${colorImageUrl} for color ${color.name}`);
+                      loadingImages.has(colorId) && !loadedImages.has(colorId) ? (
+                        <SkeletonColorTile size={{ xs: 32, sm: 30, md: 28 }} />
+                      ) : (
+                        <Box
+                          component="img"
+                          src={colorImageUrl}
+                          alt={color.name}
+                          onLoad={() => {
+                            setLoadedImages(prev => new Set(prev).add(colorId));
+                            setLoadingImages(prev => {
+                              const next = new Set(prev);
+                              next.delete(colorId);
+                              return next;
+                            });
+                          }}
+                          onLoadStart={() => {
+                            setLoadingImages(prev => new Set(prev).add(colorId));
+                          }}
+                          onError={(e) => {
+                            // Try .jpg extension if .png failed (some files are .jpg like LONESTAR BLACK.jpg)
+                            if (colorImageUrl && colorImageUrl.endsWith('.png')) {
+                              const jpgUrl = colorImageUrl.replace('.png', '.jpg');
+                              // Try loading .jpg version
+                              const img = new Image();
+                              img.onload = () => {
+                                e.target.src = jpgUrl;
+                                e.target.style.display = 'block';
+                                setLoadedImages(prev => new Set(prev).add(colorId));
+                                setLoadingImages(prev => {
+                                  const next = new Set(prev);
+                                  next.delete(colorId);
+                                  return next;
+                                });
+                              };
+                              img.onerror = () => {
+                                console.warn(`⚠️ Failed to load color image (both .png and .jpg): ${colorImageUrl} for color ${color.name}`);
+                                setFailedImages(prev => new Set(prev).add(colorId));
+                                setLoadingImages(prev => {
+                                  const next = new Set(prev);
+                                  next.delete(colorId);
+                                  return next;
+                                });
+                                e.target.style.display = 'none';
+                              };
+                              img.src = jpgUrl;
+                            } else {
+                              console.warn(`⚠️ Failed to load color image: ${colorImageUrl} for color ${color.name}`);
                               setFailedImages(prev => new Set(prev).add(colorId));
+                              setLoadingImages(prev => {
+                                const next = new Set(prev);
+                                next.delete(colorId);
+                                return next;
+                              });
                               e.target.style.display = 'none';
-                            };
-                            img.src = jpgUrl;
-                          } else {
-                            console.warn(`⚠️ Failed to load color image: ${colorImageUrl} for color ${color.name}`);
-                            setFailedImages(prev => new Set(prev).add(colorId));
-                            e.target.style.display = 'none';
-                          }
-                        }}
-                        sx={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          display: 'block'
-                        }}
-                      />
+                            }
+                          }}
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            display: 'block',
+                            opacity: loadedImages.has(colorId) ? 1 : 0,
+                            transition: 'opacity 0.3s ease-in-out'
+                          }}
+                        />
+                      )
                     ) : (
                       <Box
                         sx={{
@@ -842,7 +888,13 @@ function CustomizationPanel({
               return (
                 <Grid item xs={4} sm={3} md={2} lg={1.7} key={pattern.id}>
                   <ButtonBase
-                      onClick={() => onPatternChange(pattern.id)}
+                      onClick={() => {
+                        setIsApplyingChange(true);
+                        onPatternChange(pattern.id);
+                        // Reset loading state after a short delay
+                        setTimeout(() => setIsApplyingChange(false), 500);
+                      }}
+                      disabled={isApplyingChange}
                       onMouseEnter={(e) => {
                         if (!isMobile) {
                           setHoveredPattern(pattern);
@@ -926,19 +978,45 @@ function CustomizationPanel({
                           justifyContent: 'center'
                         }}>
                           {pattern.image || pattern.thumbnail ? (
-                            <img
-                              src={pattern.image || pattern.thumbnail}
-                              alt={pattern.name}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover'
-                              }}
-                              onError={(e) => {
-                                console.error('Failed to load pattern image:', pattern.image || pattern.thumbnail);
-                                e.target.style.display = 'none';
-                              }}
-                            />
+                            (() => {
+                              const patternImageId = `pattern-${pattern.id}`;
+                              const isLoading = loadingImages.has(patternImageId) && !loadedImages.has(patternImageId);
+                              return isLoading ? (
+                                <SkeletonPatternTile size={{ xs: 30, md: 35 }} />
+                              ) : (
+                                <img
+                                  src={pattern.image || pattern.thumbnail}
+                                  alt={pattern.name}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    opacity: loadedImages.has(patternImageId) ? 1 : 0,
+                                    transition: 'opacity 0.3s ease-in-out'
+                                  }}
+                                  onLoad={() => {
+                                    setLoadedImages(prev => new Set(prev).add(patternImageId));
+                                    setLoadingImages(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(patternImageId);
+                                      return next;
+                                    });
+                                  }}
+                                  onLoadStart={() => {
+                                    setLoadingImages(prev => new Set(prev).add(`pattern-${pattern.id}`));
+                                  }}
+                                  onError={(e) => {
+                                    console.error('Failed to load pattern image:', pattern.image || pattern.thumbnail);
+                                    setLoadingImages(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(patternImageId);
+                                      return next;
+                                    });
+                                    e.target.style.display = 'none';
+                                  }}
+                                />
+                              );
+                            })()
                           ) : (
                             <Typography variant="caption" sx={{ fontSize: '0.5rem', color: 'text.disabled' }}>
                               No preview
