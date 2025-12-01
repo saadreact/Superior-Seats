@@ -26,6 +26,7 @@ function Model3D({
   const originalMaterialsRef = useRef(new Map()); // Store original materials for glow effect
   const texturesRef = useRef(null); // Store loaded textures
   const [texturesLoaded, setTexturesLoaded] = useState(false); // Track texture loading state
+  const prevMeshCustomizationsRef = useRef(JSON.stringify(meshCustomizations)); // Track previous meshCustomizations to prevent infinite loops
 
   // Get model configuration dynamically based on modelId
   const modelConfig = useMemo(() => getModelConfig(modelId), [modelId]);
@@ -48,7 +49,6 @@ function Model3D({
         const response = await fetch(modelFileUrl, { method: 'HEAD' });
         if (response.ok) {
           // API file exists, use it
-          console.log(`✅ API model file found: ${modelFileUrl}`);
           setActualModelPath(modelFileUrl);
         } else {
           // API file doesn't exist (404), use static asset fallback
@@ -201,112 +201,124 @@ function Model3D({
   useEffect(() => {
     if (!scene || !texturesLoaded || !texturesRef.current) return;
 
-    console.log('🚨 MATERIAL CREATION EFFECT - All materials being recreated');
     let partCounts = {};
     const patternUpdatePromises = [];
     const allMeshNames = [];
 
-    scene.traverse((child) => {
-      if (child.isMesh) {
-        allMeshNames.push(child.name);
-        const partCategory = getPartCategory(child.name);
-        const config = materialConfigs[partCategory];
-        partCounts[partCategory] = (partCounts[partCategory] || 0) + 1;
+    // Async function to create materials
+    const setupMaterials = async () => {
+      const materialPromises = [];
 
-        // Get customizations for this specific mesh
-        const meshCustomization = meshCustomizations[child.name] || {};
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          allMeshNames.push(child.name);
+          const partCategory = getPartCategory(child.name);
+          const config = materialConfigs[partCategory];
+          partCounts[partCategory] = (partCounts[partCategory] || 0) + 1;
 
-        // Resolve color at runtime
-        let configColor = config.color || (config.useFabricColor ? fabricColor : (config.useStitchColor ? stitchColor : '#ffffff'));
-        let finalFabricColor = meshCustomization.fabricColor || configColor;
-        const finalStitchColor = meshCustomization.stitchColor || stitchColor;
-        const finalFabricType = meshCustomization.fabricType || (config.fabricType || fabricType);
+          // Get customizations for this specific mesh
+          const meshCustomization = meshCustomizations[child.name] || {};
 
-        // In two-tone mode, only use custom patterns, not the global pattern
-        const finalPatternId = meshCustomization.patternId || (seatType === 'two-tone' ? null : patternId);
+          // Resolve color at runtime
+          let configColor = config.color || (config.useFabricColor ? fabricColor : (config.useStitchColor ? stitchColor : '#ffffff'));
+          let finalFabricColor = meshCustomization.fabricColor || configColor;
+          const finalStitchColor = meshCustomization.stitchColor || stitchColor;
+          const finalFabricType = meshCustomization.fabricType || (config.fabricType || fabricType);
 
-        // Keep original color in two-tone mode
+          // In two-tone mode, only use custom patterns, not the global pattern
+          const finalPatternId = meshCustomization.patternId || (seatType === 'two-tone' ? null : patternId);
 
-        // Create material using ShaderManager
-        if (finalFabricType === 'metal') {
-          // Use standard PBR for metal parts
-          child.material = new THREE.MeshStandardMaterial({
-            color: finalFabricColor,
-            roughness: 0.3,
-            metalness: 0.8,
-            envMapIntensity: 1.0,
-          });
+          // Keep original color in two-tone mode
 
-          materialsRef.current.set(child.name, {
-            material: child.material,
-            type: 'standard',
-            fabricColor: finalFabricColor
-          });
-        } else if (finalFabricType === 'piping') {
-          // Use simple standard material for piping (follows stitch color)
-          child.material = new THREE.MeshStandardMaterial({
-            color: finalFabricColor,
-            roughness: 0.4,
-            metalness: 0.0,
-            envMapIntensity: 0.5,
-          });
+          // Create material using ShaderManager
+          if (finalFabricType === 'metal') {
+            // Use standard PBR for metal parts
+            child.material = new THREE.MeshStandardMaterial({
+              color: finalFabricColor,
+              roughness: 0.3,
+              metalness: 0.8,
+              envMapIntensity: 1.0,
+            });
 
-          materialsRef.current.set(child.name, {
-            material: child.material,
-            type: 'piping',
-            fabricColor: finalFabricColor,
-            stitchColor: finalStitchColor
-          });
-        } else {
-          // Use ShaderManager for fabric materials (synchronous)
-          // Pass isTwoTone flag based on global seatType, not individual part pattern
-          const isTwoTone = seatType === 'two-tone';
+            materialsRef.current.set(child.name, {
+              material: child.material,
+              type: 'standard',
+              fabricColor: finalFabricColor
+            });
+          } else if (finalFabricType === 'piping') {
+            // Use simple standard material for piping (follows stitch color)
+            child.material = new THREE.MeshStandardMaterial({
+              color: finalFabricColor,
+              roughness: 0.4,
+              metalness: 0.0,
+              envMapIntensity: 0.5,
+            });
 
-          // In two-tone mode, disable stitching for all parts that don't have custom patterns
-          const hasCustomPattern = !!meshCustomization.patternId;
-          const noStitching = (finalPatternId === 'default' || !finalPatternId) || (isTwoTone && !hasCustomPattern);
+            materialsRef.current.set(child.name, {
+              material: child.material,
+              type: 'piping',
+              fabricColor: finalFabricColor,
+              stitchColor: finalStitchColor
+            });
+          } else {
+            // Use ShaderManager for fabric materials (now async)
+            // Pass isTwoTone flag based on global seatType, not individual part pattern
+            const isTwoTone = seatType === 'two-tone';
 
-          child.material = ShaderManager.createMaterial(
-            finalFabricType,
-            finalFabricColor,
-            finalStitchColor,
-            texturesRef.current,
-            ambientStrength,
-            isTwoTone,
-            noStitching
-          );
+            // In two-tone mode, disable stitching for all parts that don't have custom patterns
+            const hasCustomPattern = !!meshCustomization.patternId;
+            const noStitching = (finalPatternId === 'default' || !finalPatternId) || (isTwoTone && !hasCustomPattern);
 
-          materialsRef.current.set(child.name, {
-            material: child.material,
-            type: finalFabricType,
-            fabricColor: finalFabricColor,
-            stitchColor: finalStitchColor,
-            patternId: finalPatternId,
-            ambientStrength: ambientStrength
-          });
-
-          // Apply per-part pattern if it differs from global pattern
-          if (finalPatternId && finalPatternId !== patternId) {
-            const patternPromise = ShaderManager.updateMaterial(
-              child.material,
+            const materialPromise = ShaderManager.createMaterial(
               finalFabricType,
-              null,
-              null,
-              finalPatternId,
-              originalTexturesRef.current,
-              null,
-              modelId
-            ).catch(err => console.warn(`Failed to apply pattern ${finalPatternId} to ${child.name}:`, err));
+              finalFabricColor,
+              finalStitchColor,
+              texturesRef.current,
+              ambientStrength,
+              isTwoTone,
+              noStitching
+            ).then(material => {
+              child.material = material;
 
-            patternUpdatePromises.push(patternPromise);
+              materialsRef.current.set(child.name, {
+                material: child.material,
+                type: finalFabricType,
+                fabricColor: finalFabricColor,
+                stitchColor: finalStitchColor,
+                patternId: finalPatternId,
+                ambientStrength: ambientStrength
+              });
+
+              // Apply per-part pattern if it differs from global pattern
+              if (finalPatternId && finalPatternId !== patternId) {
+                return ShaderManager.updateMaterial(
+                  child.material,
+                  finalFabricType,
+                  null,
+                  null,
+                  finalPatternId,
+                  originalTexturesRef.current,
+                  null,
+                  modelId
+                ).catch(err => console.warn(`Failed to apply pattern ${finalPatternId} to ${child.name}:`, err));
+              }
+            }).catch(err => console.error(`Failed to create material for ${child.name}:`, err));
+
+            materialPromises.push(materialPromise);
           }
-        }
 
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-  }, [scene, texturesLoaded, fabricColor, stitchColor, fabricType, modelId, ambientStrength, materialConfigs, seatParts, seatType]);
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      // Wait for all materials to be created
+      await Promise.all(materialPromises);
+    };
+
+    setupMaterials();
+  }, [scene, texturesLoaded, fabricColor, stitchColor, fabricType, modelId, ambientStrength, seatType]);
+  // Note: materialConfigs and seatParts are memoized with empty deps, so they're stable and don't need to be in deps
   // Note: meshCustomizations and patternId removed from deps to prevent full material rebuild
   // Pattern changes are handled via updateMaterial in the dynamic update effect below
   // seatType changes trigger material recreation to update UV mapping
@@ -318,6 +330,14 @@ function Model3D({
   // Handle dynamic material updates (uniforms only - no material recreation)
   useEffect(() => {
     if (!texturesLoaded || !materialsRef.current.size) return;
+
+    // Check if meshCustomizations actually changed (deep comparison via JSON.stringify)
+    const currentMeshCustomizationsStr = JSON.stringify(meshCustomizations);
+    if (currentMeshCustomizationsStr === prevMeshCustomizationsRef.current) {
+      // No actual change, skip update to prevent infinite loop
+      return;
+    }
+    prevMeshCustomizationsRef.current = currentMeshCustomizationsStr;
 
     const updateMaterials = async () => {
       const updatePromises = [];
@@ -331,7 +351,7 @@ function Model3D({
 
         // For piping parts, use stitch color instead of fabric color
         if (materialData.type === 'piping') {
-          newFabricColor = newStitchColor;
+          newFabricColor = newStitchColor; // important 
         }
 
         // Check if colors, pattern, or ambient strength changed to avoid unnecessary updates
@@ -416,6 +436,7 @@ function Model3D({
 
     updateMaterials();
   }, [texturesLoaded, fabricColor, stitchColor, meshCustomizations, patternId, ambientStrength, seatType, customizableParts, modelId]);
+  // Note: meshCustomizations is in deps but we use a ref check inside to prevent infinite loops from object recreation
 
   // Handle mesh highlighting
   useEffect(() => {
@@ -569,7 +590,6 @@ function Model3D({
       }
     }
 
-    console.log('🖱️ PointerDown - Object:', clickedObject?.name, 'Intersections count:', event.intersections?.length || 0);
 
     // Store click start position, time, and object to differentiate from drag
     clickStartRef.current = {
@@ -598,7 +618,6 @@ function Model3D({
     );
     const duration = clickEnd.time - clickStart.time;
 
-    console.log('📊 Click analysis:', { distance, duration, object: clickStart.object?.name });
 
     // Consider it a click if: distance < 50px AND duration < 1000ms (more lenient)
     if (distance < 50 && duration < 1000) {
@@ -607,13 +626,9 @@ function Model3D({
       // Use the object from pointer down (most reliable)
       const clickedObject = clickStart.object;
 
-      console.log('🖱️ Click VALID - detected on:', clickedObject?.name);
-      console.log('📋 Customizable parts list:', customizableParts);
-      console.log('🔍 Is in list?', clickedObject ? customizableParts.includes(clickedObject.name) : false);
 
       if (clickedObject && customizableParts.includes(clickedObject.name)) {
         // Valid part clicked - open popup for customization
-        console.log('✅ OPENING POPUP - Valid part clicked:', clickedObject.name);
         // Get click position for popup placement
         const clickPosition = {
           x: event.clientX,
@@ -622,11 +637,9 @@ function Model3D({
         onPartRightClick(clickedObject.name, clickPosition, true);
       } else {
         // Invalid part clicked - show warning and highlight valid parts
-        console.log('❌ INVALID - Invalid part clicked:', clickedObject?.name || 'unknown', 'Object exists?', !!clickedObject);
         onPartRightClick(null, null, false);
       }
     } else {
-      console.log('⚠️ Click IGNORED - distance:', distance, 'duration:', duration);
     }
 
     // Clear click start reference

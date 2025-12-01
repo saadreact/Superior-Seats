@@ -18,14 +18,6 @@ function App({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Log received props for debugging
-  if (modelFileUrl || availableMaterials?.length > 0) {
-    console.log('📦 App.jsx received props:', {
-      modelUrl: modelFileUrl,
-      materialsCount: availableMaterials?.length || 0,
-      hasOptions: !!customizeOptions
-    });
-  }
 
   const [modelId, setModelId] = useState('1');
   const [stitchColor, setStitchColor] = useState('#ffffff');
@@ -124,16 +116,12 @@ function App({
       const firstMaterial = availableMaterials[0];
       const defaultMaterialId = firstMaterial.id.toString();
       
-      console.log('🎨 Applying defaults from API materials:');
-      console.log('   Material:', firstMaterial.name, `(ID: ${defaultMaterialId}, shader: ${firstMaterial.shader_id})`);
-      
       // Set default fabric type
       setFabricType(defaultMaterialId);
       
       // Set default color from first material's first color
       if (firstMaterial.colors && firstMaterial.colors.length > 0) {
         const firstColor = firstMaterial.colors[0];
-        console.log('   Color:', firstColor.name, `(Hex: ${firstColor.hex_code})`);
         setFabricColor(firstColor.hex_code);
         setTwoToneColor(firstColor.hex_code);
       } else {
@@ -308,7 +296,6 @@ function App({
 
   const handlePopupApply = (customization) => {
     if (popupState) {
-      console.log(`🎯 Applying customization to ${popupState.partName}:`, customization);
       handleMeshCustomizationChange(popupState.partName, customization);
     }
   };
@@ -323,20 +310,17 @@ function App({
   };
 
   const handleResetModel = () => {
-    console.log('🔄 Resetting model to default settings');
     setModelId('1');
     
     // Reset to first API material if available, otherwise use 'leather'
     if (availableMaterials && availableMaterials.length > 0) {
       const firstMaterial = availableMaterials[0];
       const defaultMaterialId = firstMaterial.id.toString();
-      console.log('   Resetting to first API material:', firstMaterial.name);
       setFabricType(defaultMaterialId);
       
       // Reset to first color of first material
       if (firstMaterial.colors && firstMaterial.colors.length > 0) {
         const firstColor = firstMaterial.colors[0];
-        console.log('   Resetting to first color:', firstColor.name, firstColor.hex_code);
         setFabricColor(firstColor.hex_code);
         setTwoToneColor(firstColor.hex_code);
       } else {
@@ -369,16 +353,13 @@ function App({
       setSeatType('single');
     }
 
-    console.log('✅ Model reset to defaults');
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      console.log('📸 Starting image capture...');
       const images = await scene3DRef.current.captureImages();
       const uniqueId = `design_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      console.log(`✅ Captured ${images.length} images with ID: ${uniqueId}`);
 
       const configData = {
         id: uniqueId,

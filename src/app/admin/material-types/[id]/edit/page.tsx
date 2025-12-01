@@ -108,16 +108,6 @@ const EditMaterialTypePage = () => {
     }
   };
 
-  // Debug form data changes
-  useEffect(() => {
-    console.log('Form data changed:', formData);
-    console.log('Image field type:', typeof formData.image);
-    console.log('Image field value:', formData.image);
-    if (formData.image) {
-      console.log('Image is File:', formData.image instanceof File);
-      console.log('Image constructor:', formData.image.constructor?.name);
-    }
-  }, [formData]);
 
   const loadMaterialType = async () => {
     try {
@@ -125,11 +115,9 @@ const EditMaterialTypePage = () => {
       setError(null);
       
       const response = await materialTypesService.getMaterialType(parseInt(id));
-      console.log('Loaded material type response:', response);
       
       // Extract the data from the response
       const materialType = response.data || response;
-      console.log('Material type data:', materialType);
       
       // Extract price tier IDs and adjustments from pivot.price_adjustment
       const priceTierIds = materialType.price_tiers?.map((tier: any) => tier.id) || [];
@@ -257,11 +245,6 @@ const EditMaterialTypePage = () => {
       return;
     }
 
-    console.log('Image file selected:', file);
-    console.log('File type:', typeof file);
-    console.log('File instanceof File:', file instanceof File);
-    console.log('File name:', file.name);
-    console.log('File size:', file.size);
     
     setFormData(prev => ({ ...prev, image: file }));
     
@@ -524,19 +507,6 @@ const EditMaterialTypePage = () => {
         current_image: !formData.image && currentImage ? currentImage : undefined
       };
 
-      // Additional debugging for submission data
-      console.log('=== SUBMISSION DEBUG ===');
-      console.log('FormData.image type:', typeof formData.image);
-      console.log('FormData.image value:', formData.image);
-      console.log('FormData.image instanceof File:', formData.image instanceof File);
-      console.log('SubmissionData.image type:', typeof submissionData.image);
-      console.log('SubmissionData.image value:', submissionData.image);
-      console.log('Current image path:', currentImage);
-      console.log('=== END SUBMISSION DEBUG ===');
-
-      // Debug logging
-      console.log('Form Data:', formData);
-      console.log('Image File:', formData.image);
       console.log('Image File Name:', formData.image?.name);
       console.log('Image File Size:', formData.image?.size);
       console.log('Image File Type:', formData.image?.type);
@@ -553,11 +523,6 @@ const EditMaterialTypePage = () => {
       debugFormData.append('cost', submissionData.cost.toString());
       debugFormData.append('price', submissionData.price.toString());
 
-      // Log FormData contents
-      console.log('Debug FormData entries:');
-      for (let [key, value] of debugFormData.entries()) {
-        console.log(`${key}:`, value);
-      }
       
       await materialTypesService.updateMaterialType(parseInt(id), submissionData);
       setSuccess('Material Type updated successfully!');

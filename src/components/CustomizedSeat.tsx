@@ -88,31 +88,16 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         try {
           setProductLoading(true);
           setProductError(null);
-          console.log('🔄 CustomizedSeat - Fetching 3D config for product ID:', idToFetch);
 
           // NEW: Fetch complete 3D configuration from new API
           const config = await materialApi.getProduct3DConfig(idToFetch);
           setProduct3DConfig(config);
 
-          console.log('✅ CustomizedSeat - 3D config loaded:', {
-            productId: config.product.id,
-            productName: config.product.name,
-            materialsCount: config.materials.length,
-            modelUrl: config.model_config.model_file_url,
-          });
 
           // LEGACY: Also fetch old format for backward compatibility
           const product = await CustomizedSeatApi.getProductById(Number(idToFetch));
           setProductData(product);
 
-          // Debug: Log the images data from API
-          console.log('🖼️ CustomizedSeat - Product images from API:', {
-            totalImages: product.product_images?.length || 0,
-            product_images: product.product_images,
-            primaryImage: product.primary_image,
-            currentImageIndex: 0,
-            fullProduct: product
-          });
 
 
           // Use actual API variation data directly (cast to match context interface)
@@ -136,7 +121,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           };
 
           setVariations(processedVariations);
-          console.log('✅ CustomizedSeat - Legacy product data also loaded for compatibility');
         } catch (error: any) {
           console.error('❌ CustomizedSeat - Error fetching 3D config:', error);
           setProductError(error.message || 'Failed to load 3D customization data');
@@ -144,7 +128,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           setProductLoading(false);
         }
       } else {
-        console.log('⚠️ CustomizedSeat - No product ID available (neither from prop nor context)');
         setProduct3DConfig(null);
         setProductData(null);
         setVariations(null);
@@ -160,7 +143,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       if (productData && productData.vehicle_trim_id) {
         try {
           setVehicleTrimLoading(true);
-          console.log('🚗 CustomizedSeat - Fetching vehicle trim data for ID:', productData.vehicle_trim_id);
 
           const trimData = await apiService.getVehicleTrimById(productData.vehicle_trim_id);
           setVehicleTrimData(trimData);
@@ -171,11 +153,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             setSelectedModel(trimData.model?.id?.toString() || '');
             setSelectedTrim(trimData.id?.toString() || '');
 
-            console.log('✅ CustomizedSeat - Vehicle trim data loaded:', {
-              make: trimData.model?.make?.name,
-              model: trimData.model?.name,
-              trim: trimData.name
-            });
           }
         } catch (error) {
           console.error('❌ CustomizedSeat - Error fetching vehicle trim data:', error);
