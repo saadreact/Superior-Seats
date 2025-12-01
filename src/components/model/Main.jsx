@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 // import './index.css'
 import App from './App.jsx'
 
-const Model = ({ product3DConfig }) => {
+const Model = ({ product3DConfig, onCustomizationChange, onSubmit }) => {
 
   // Example callback function to handle submission
   const handleSubmit = async ({ images, config }) => {
@@ -49,10 +49,11 @@ const Model = ({ product3DConfig }) => {
   return (
     <>
       <App
-        onSubmit={handleSubmit}
+        onSubmit={onSubmit || handleSubmit}
         modelFileUrl={modelFileUrl}
         availableMaterials={availableMaterials}
         customizeOptions={customizeOptions}
+        onCustomizationChange={onCustomizationChange}
       />
     </>
   )

@@ -13,6 +13,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Divider,
+  Button,
 } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import Header from '@/components/Header';
@@ -210,6 +212,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedStitching, setSelectedStitching] = useState<string>('');
 
+  // State to track 3D customization selections (will be updated via callback from ModelViewer)
+  const [current3DSelections, setCurrent3DSelections] = useState<{
+    materialType?: { id: string; name: string; price?: number };
+    color?: { id: string; name: string; price?: number };
+    pattern?: { id: string; name: string; price?: number };
+    stitchColor?: { id: string; name: string; price?: number };
+  }>({});
+
   const formatLabel = (label: string) =>
     label
       .replace(/_/g, ' ')
@@ -341,6 +351,139 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     );
   };
 
+  // Calculate price breakdown
+  const calculatePriceBreakdown = () => {
+    const breakdown: Array<{ label: string; price: number; option?: VariationOption }> = [];
+    const basePrice = productData?.price ? parseFloat(String(productData.price)) : 0;
+
+    // Get 3D customization prices from product3DConfig
+    if (product3DConfig && current3DSelections) {
+      // Material Type (from 3D customization)
+      if (current3DSelections.materialType && current3DSelections.materialType.price) {
+        breakdown.push({
+          label: 'Material Type',
+          price: current3DSelections.materialType.price,
+          option: { id: 0, name: current3DSelections.materialType.name, price_adjustment: String(current3DSelections.materialType.price) } as VariationOption
+        });
+      }
+
+      // Color (from 3D customization)
+      if (current3DSelections.color && current3DSelections.color.price) {
+        breakdown.push({
+          label: 'Color',
+          price: current3DSelections.color.price,
+          option: { id: 0, name: current3DSelections.color.name, price_adjustment: String(current3DSelections.color.price) } as VariationOption
+        });
+      }
+
+      // Pattern (from 3D customization)
+      if (current3DSelections.pattern && current3DSelections.pattern.price) {
+        breakdown.push({
+          label: 'Stitch Pattern',
+          price: current3DSelections.pattern.price,
+          option: { id: 0, name: current3DSelections.pattern.name, price_adjustment: String(current3DSelections.pattern.price) } as VariationOption
+        });
+      }
+
+      // Stitch Color (from 3D customization) - Show even if price is 0
+      if (current3DSelections.stitchColor) {
+        breakdown.push({
+          label: 'Stitch Color',
+          price: current3DSelections.stitchColor.price || 0,
+          option: { id: 0, name: current3DSelections.stitchColor.name, price_adjustment: String(current3DSelections.stitchColor.price || 0) } as VariationOption
+        });
+      }
+    }
+
+    // Recline Type
+    if (selectedRecline && variations?.recline_types) {
+      const option = variations.recline_types.find((opt: VariationOption) => String(opt.id) === selectedRecline);
+      if (option && option.price_adjustment) {
+        breakdown.push({
+          label: 'Recline Type',
+          price: parseFloat(String(option.price_adjustment)),
+          option
+        });
+      }
+    }
+
+    // Lumbar Type
+    if (selectedLumber && variations?.lumbar_types) {
+      const option = variations.lumbar_types.find((opt: VariationOption) => String(opt.id) === selectedLumber);
+      if (option && option.price_adjustment) {
+        breakdown.push({
+          label: 'Lumbar Type',
+          price: parseFloat(String(option.price_adjustment)),
+          option
+        });
+      }
+    }
+
+    // Heat/Cool Option
+    if (selectedHeatingCooling && variations?.heat_options) {
+      const option = variations.heat_options.find((opt: VariationOption) => String(opt.id) === selectedHeatingCooling);
+      if (option && option.price_adjustment) {
+        breakdown.push({
+          label: 'Heat/Cool Option',
+          price: parseFloat(String(option.price_adjustment)),
+          option
+        });
+      }
+    }
+
+    // Seat Type
+    if (selectedSeatType && variations?.seat_types) {
+      const option = variations.seat_types.find((opt: VariationOption) => String(opt.id) === selectedSeatType);
+      if (option && option.price_adjustment) {
+        breakdown.push({
+          label: 'Seat Type',
+          price: parseFloat(String(option.price_adjustment)),
+          option
+        });
+      }
+    }
+
+    // Item Type
+    if (selectedItemType && variations?.item_types) {
+      const option = variations.item_types.find((opt: VariationOption) => String(opt.id) === selectedItemType);
+      if (option && option.price_adjustment) {
+        breakdown.push({
+          label: 'Item Type',
+          price: parseFloat(String(option.price_adjustment)),
+          option
+        });
+      }
+    }
+
+    // Seat Style
+    if (selectedSeatStyle && variations?.seat_styles) {
+      const option = variations.seat_styles.find((opt: VariationOption) => String(opt.id) === selectedSeatStyle);
+      if (option && option.price_adjustment) {
+        breakdown.push({
+          label: 'Seat Style',
+          price: parseFloat(String(option.price_adjustment)),
+          option
+        });
+      }
+    }
+
+    // Included Arm
+    if (selectedIncludedArm && variations?.arm_types) {
+      const option = variations.arm_types.find((opt: VariationOption) => String(opt.id) === selectedIncludedArm);
+      if (option && option.price_adjustment) {
+        breakdown.push({
+          label: 'Included Arm',
+          price: parseFloat(String(option.price_adjustment)),
+          option
+        });
+      }
+    }
+
+    const total = basePrice + breakdown.reduce((sum, item) => sum + item.price, 0);
+
+    return { basePrice, breakdown, total };
+  };
+
   const renderVariations = () => {
     const dropdown = (
       label: string,
@@ -365,18 +508,98 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       </Box>
     );
 
+    const priceData = calculatePriceBreakdown();
+
     return (
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2 }}>
-        {dropdown('Material Type', selectedMaterialType, setSelectedMaterialType, variations?.material_types)}
-        {dropdown('Color', selectedColor, setSelectedColor, variations?.colors)}
-        {dropdown('Seat Stitch Pattern', selectedStitching, setSelectedStitching, variations?.seat_stitch_patterns)}
-        {dropdown('Recline Type', selectedRecline, setSelectedRecline, variations?.recline_types)}
-        {dropdown('Lumbar Type', selectedLumber, setSelectedLumber, variations?.lumbar_types)}
-        {dropdown('Heat/Cool Option', selectedHeatingCooling, setSelectedHeatingCooling, variations?.heat_options)}
-        {dropdown('Seat Type', selectedSeatType, setSelectedSeatType, variations?.seat_types)}
-        {dropdown('Item Type', selectedItemType, setSelectedItemType, variations?.item_types)}
-        {dropdown('Seat Style', selectedSeatStyle, setSelectedSeatStyle, variations?.seat_styles)}
-        {dropdown('Included Arm', selectedIncludedArm, setSelectedIncludedArm, variations?.arm_types)}
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+        {/* Left Side - Dropdowns in 2 columns */}
+        <Box sx={{ flex: { xs: '1', md: '1' }, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          {dropdown('Recline Type', selectedRecline, setSelectedRecline, variations?.recline_types)}
+          {dropdown('Lumbar Type', selectedLumber, setSelectedLumber, variations?.lumbar_types)}
+          {dropdown('Heat/Cool Option', selectedHeatingCooling, setSelectedHeatingCooling, variations?.heat_options)}
+          {dropdown('Seat Type', selectedSeatType, setSelectedSeatType, variations?.seat_types)}
+          {dropdown('Item Type', selectedItemType, setSelectedItemType, variations?.item_types)}
+          {dropdown('Seat Style', selectedSeatStyle, setSelectedSeatStyle, variations?.seat_styles)}
+          {dropdown('Included Arm', selectedIncludedArm, setSelectedIncludedArm, variations?.arm_types)}
+        </Box>
+
+        {/* Right Side - Price Breakdown */}
+        <Box sx={{ flex: { xs: '1', md: '0 0 300px' }, minWidth: { xs: '100%', md: 300 } }}>
+          <Card variant="outlined" sx={{ p: 2, bgcolor: 'background.paper' }}>
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+              Price Breakdown
+            </Typography>
+            
+            <Stack spacing={1.5}>
+              {/* Base Price */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  Base Price
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  ${priceData.basePrice.toFixed(2)}
+                </Typography>
+              </Box>
+
+              {/* Customization Prices */}
+              {priceData.breakdown.length > 0 && (
+                <>
+                  <Divider />
+                  {priceData.breakdown.map((item, index) => (
+                    <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {item.option?.name || item.label}
+                      </Typography>
+                      <Typography variant="body2" fontWeight={500} color={item.price >= 0 ? 'text.primary' : 'error.main'}>
+                        {item.price >= 0 ? '+' : ''}${item.price.toFixed(2)}
+                      </Typography>
+                    </Box>
+                  ))}
+                </>
+              )}
+
+              {/* Total */}
+              <Divider sx={{ my: 1 }} />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1 }}>
+                <Typography variant="h6" fontWeight={700}>
+                  Total
+                </Typography>
+                <Typography variant="h6" fontWeight={700} color="primary.main">
+                  ${priceData.total.toFixed(2)}
+                </Typography>
+              </Box>
+            </Stack>
+
+            {/* Submit Design Button */}
+            <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Button
+                variant="contained"
+                color="success"
+                fullWidth
+                size="large"
+                onClick={() => {
+                  // TODO: Add to cart functionality
+                  // For now, just show an alert
+                  alert('Add to cart functionality will be implemented next. Total: $' + priceData.total.toFixed(2));
+                }}
+                sx={{
+                  py: 1.5,
+                  fontSize: { xs: '0.875rem', md: '1rem' },
+                  fontWeight: 'bold',
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  '&:hover': {
+                    boxShadow: 4,
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
+              >
+                Add to Cart
+              </Button>
+            </Box>
+          </Card>
+        </Box>
       </Box>
     );
   };
@@ -403,7 +626,13 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               }}
               className="modelScope"
             >
-              <ModelViewer product3DConfig={product3DConfig} />
+              <ModelViewer 
+                product3DConfig={product3DConfig}
+                onCustomizationChange={(selections) => {
+                  // Update 3D customization selections for price calculation
+                  setCurrent3DSelections(selections);
+                }}
+              />
             </Box>
           </CardContent>
         </Card>
