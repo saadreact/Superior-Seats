@@ -492,10 +492,9 @@ function Model3D({
     // Store original materials and create glow materials
     scene.traverse((child) => {
       if (child.isMesh && customizableParts.includes(child.name)) {
-        // Store original material
-        if (!originalMaterialsRef.current.has(child.name)) {
-          originalMaterialsRef.current.set(child.name, child.material);
-        }
+        // Store original material - ALWAYS update to ensure we have the latest material
+        // This fixes the issue where restoration reverts to an old material if it was changed (e.g. color change)
+        originalMaterialsRef.current.set(child.name, child.material);
 
         // Create glow material with reduced brightness
         const glowMaterial = new THREE.MeshStandardMaterial({
