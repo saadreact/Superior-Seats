@@ -1,6 +1,8 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
 import {
   Box,
   Container,
@@ -26,6 +28,7 @@ import type { VariationOption as ApiVariationOption } from '@/services/materialA
 import { CustomizedSeatApi, Product } from '@/services/CustomizedSeatApi';
 import { materialApi, Product3DConfig } from '@/services/materialApi';
 import { apiService } from '@/utils/api';
+import { addItem } from '@/store/cartSlice';
 
 const ModelViewer = dynamic(() => import('@/components/model/Main'), {
   ssr: false,
@@ -65,6 +68,8 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   productId // NEW: Accept productId prop
 }) => {
   const { selectedItem } = useSelectedItem();
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   // NEW: State for 3D config from new API
   const [product3DConfig, setProduct3DConfig] = useState<Product3DConfig | null>(null);
@@ -77,6 +82,9 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
   // Removed localStorage functionality - product ID is now only managed through context
 
+  // Track the last fetched ID to prevent duplicate calls
+  const lastFetchedIdRef = useRef<string | number | null>(null);
+
   // Fetch product data when productId prop or selectedItem changes
   useEffect(() => {
     const fetchProductData = async () => {
@@ -84,46 +92,54 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       // Priority 2: Fall back to selectedItem from context
       const idToFetch = productId || selectedItem?.id;
 
+      // Prevent duplicate calls for the same ID
+      if (idToFetch && lastFetchedIdRef.current === idToFetch) {
+        console.log(`⏭️ Skipping duplicate fetch for product ID: ${idToFetch}`);
+        return;
+      }
+
       if (idToFetch) {
         try {
           setProductLoading(true);
           setProductError(null);
+          lastFetchedIdRef.current = idToFetch;
 
-          // NEW: Fetch complete 3D configuration from new API
+          // NEW: Fetch complete 3D configuration from new API (now cached)
           const config = await materialApi.getProduct3DConfig(idToFetch);
           setProduct3DConfig(config);
 
-
           // LEGACY: Also fetch old format for backward compatibility
-          const product = await CustomizedSeatApi.getProductById(Number(idToFetch));
-          setProductData(product);
+          // Only fetch if we don't have product data yet or if it's a different product
+          if (!productData || productData.id !== Number(idToFetch)) {
+            const product = await CustomizedSeatApi.getProductById(Number(idToFetch));
+            setProductData(product);
 
+            // Use actual API variation data directly (cast to match context interface)
+            const processedVariations = {
+              vehicle_trim: product.vehicle_trim ? [{
+                id: product.vehicle_trim.id,
+                name: product.vehicle_trim.name,
+                price: 0,
+                is_active: product.vehicle_trim.is_active
+              }] : [],
+              colors: (product.colors || []) as any[],
+              material_types: (product.material_types || []) as any[],
+              heat_options: (product.heat_options || []) as any[],
+              lumbar_types: (product.lumbar_types || []) as any[],
+              recline_types: (product.recline_types || []) as any[],
+              seat_stitch_patterns: (product.seat_stitch_patterns || []) as any[],
+              arm_types: (product.arm_types || []) as any[],
+              seat_types: (product.seat_types || []) as any[],
+              seat_styles: (product.seat_styles || []) as any[],
+              item_types: (product.item_types || []) as any[]
+            };
 
-
-          // Use actual API variation data directly (cast to match context interface)
-          const processedVariations = {
-            vehicle_trim: product.vehicle_trim ? [{
-              id: product.vehicle_trim.id,
-              name: product.vehicle_trim.name,
-              price: 0,
-              is_active: product.vehicle_trim.is_active
-            }] : [],
-            colors: (product.colors || []) as any[],
-            material_types: (product.material_types || []) as any[],
-            heat_options: (product.heat_options || []) as any[],
-            lumbar_types: (product.lumbar_types || []) as any[],
-            recline_types: (product.recline_types || []) as any[],
-            seat_stitch_patterns: (product.seat_stitch_patterns || []) as any[],
-            arm_types: (product.arm_types || []) as any[],
-            seat_types: (product.seat_types || []) as any[],
-            seat_styles: (product.seat_styles || []) as any[],
-            item_types: (product.item_types || []) as any[]
-          };
-
-          setVariations(processedVariations);
+            setVariations(processedVariations);
+          }
         } catch (error: any) {
           console.error('❌ CustomizedSeat - Error fetching 3D config:', error);
           setProductError(error.message || 'Failed to load 3D customization data');
+          lastFetchedIdRef.current = null; // Reset on error to allow retry
         } finally {
           setProductLoading(false);
         }
@@ -131,11 +147,12 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         setProduct3DConfig(null);
         setProductData(null);
         setVariations(null);
+        lastFetchedIdRef.current = null;
       }
     };
 
     fetchProductData();
-  }, [productId, selectedItem]); // NEW: Now depends on both productId and selectedItem
+  }, [productId, selectedItem?.id]); // Only depend on IDs, not the whole selectedItem object
 
   // Fetch vehicle trim data when product loads
   useEffect(() => {
@@ -199,6 +216,10 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     color?: { id: string; name: string; price?: number };
     pattern?: { id: string; name: string; price?: number };
     stitchColor?: { id: string; name: string; price?: number };
+    externalStitchColor?: string;
+    pipingColor?: string;
+    seatType?: string;
+    meshCustomizations?: any;
   }>({});
 
   const formatLabel = (label: string) =>
@@ -596,10 +617,77 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                 color="success"
                 fullWidth
                 size="large"
-                onClick={() => {
-                  // TODO: Add to cart functionality
-                  // For now, just show an alert
-                  alert('Add to cart functionality will be implemented next. Total: $' + priceData.total.toFixed(2));
+                onClick={async () => {
+                  try {
+                    // Get product ID
+                    const idToUse = productId || selectedItem?.id || productData?.id;
+                    if (!idToUse) {
+                      alert('Please select a product first');
+                      return;
+                    }
+
+                    // Map 3D selections to variants
+                    const variants: any = {
+                      reclineType: selectedRecline || undefined,
+                      lumbarType: selectedLumber || undefined,
+                      heatOption: selectedHeatingCooling || undefined,
+                      seatType: selectedSeatType || undefined,
+                      itemType: selectedItemType || undefined,
+                      seatStyle: selectedSeatStyle || undefined,
+                      armType: selectedIncludedArm || undefined,
+                    };
+
+                    // Add 3D customization data to variants if available
+                    if (current3DSelections.materialType) {
+                      variants.materialType = current3DSelections.materialType.id;
+                    }
+                    if (current3DSelections.color) {
+                      variants.color = current3DSelections.color.id;
+                    }
+                    if (current3DSelections.pattern) {
+                      variants.seatStitchPattern = current3DSelections.pattern.id;
+                    }
+                    if (current3DSelections.stitchColor) {
+                      variants.stitchColor = current3DSelections.stitchColor.id;
+                    }
+
+                    // Get product image
+                    // Use primary_image.image_url or fallback to product_images array
+                    const productImage = productData?.primary_image?.image_url || 
+                                       (productData?.product_images && productData.product_images.length > 0 && productData.product_images[0]?.image_url) ||
+                                       (productData?.active_images && productData.active_images.length > 0 && productData.active_images[0]?.image_url) ||
+                                       '/placeholder-image.jpg';
+
+                    // Add to cart
+                    dispatch(addItem({
+                      id: Number(idToUse),
+                      title: productData?.name || 'Customized Seat',
+                      price: priceData.total.toFixed(2),
+                      image: productImage,
+                      description: productData?.description || '',
+                      category: typeof productData?.category === 'string' 
+                        ? productData.category 
+                        : (productData?.category as any)?.name || 'seat',
+                      is3DProduct: true,
+                      customizationData: {
+                        fabricType: current3DSelections.materialType?.id,
+                        fabricColor: current3DSelections.color?.id,
+                        patternId: current3DSelections.pattern?.id,
+                        stitchColor: current3DSelections.stitchColor?.id,
+                        externalStitchColor: current3DSelections.externalStitchColor,
+                        pipingColor: current3DSelections.pipingColor,
+                        seatType: current3DSelections.seatType,
+                        meshCustomizations: current3DSelections.meshCustomizations,
+                      },
+                      variants
+                    }));
+
+                    // Navigate to order wizard
+                    router.push('/shop/order-wizard');
+                  } catch (error) {
+                    console.error('Error adding to cart:', error);
+                    alert('Failed to add item to cart. Please try again.');
+                  }
                 }}
                 sx={{
                   py: 1.5,
