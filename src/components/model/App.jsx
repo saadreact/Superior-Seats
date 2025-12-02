@@ -542,8 +542,8 @@ function App({
 
       <Box sx={{
         width: { xs: '100%', md: '70%' },
-        height: { xs: '100%', sm: '100%', md: '100%' },
-        minHeight: { xs: 400, sm: 450, md: 'auto' },
+        height: { xs: 'auto', sm: '100%', md: '100%' },
+        minHeight: { xs: 300, sm: 450, md: 'auto' },
         position: 'relative',
         flexGrow: 1,
         flexShrink: 0,
