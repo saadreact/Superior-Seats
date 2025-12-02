@@ -331,6 +331,7 @@ const Scene3D = forwardRef(({
         {/* Ground shadow removed for maximum brightness */}
 
         {/* Controls - Rotation and zoom around model origin */}
+        {/* In two-tone mode, allow rotation on drag, but clicks will be handled by Model3D */}
         <OrbitControls
           ref={controlsRef}
           enablePan={false}
