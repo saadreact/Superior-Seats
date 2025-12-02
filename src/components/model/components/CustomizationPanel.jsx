@@ -32,8 +32,12 @@ function CustomizationPanel({
   customizeOptions, // API customize options (stitch_patterns, seat_types, etc.)
   modelId,
   onModelIdChange,
-  stitchColor,
+  stitchColor, // Internal stitching (pattern stitching)
   onStitchColorChange,
+  externalStitchColor, // External stitching (edges)
+  onExternalStitchColorChange,
+  pipingColor, // Piping color
+  onPipingColorChange,
   fabricColor,
   onFabricColorChange,
   fabricType,
@@ -661,7 +665,7 @@ function CustomizationPanel({
         )}
       </Box>
 
-            {/* STITCHING SECTION */}
+            {/* INTERNAL STITCHING SECTION */}
       <Box sx={{ mb: { xs: 2, md: 3 } }}>
         <Typography 
           variant="subtitle2" 
@@ -672,7 +676,18 @@ function CustomizationPanel({
             fontWeight: 600
           }}
         >
-          Stitching Color
+          Internal Stitching Color
+        </Typography>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            mb: { xs: 0.5, md: 0.75 }, 
+            color: 'text.secondary',
+            fontSize: { xs: '0.75rem', md: '0.875rem' },
+            display: 'block'
+          }}
+        >
+          Pattern stitching color
         </Typography>
 
         <Paper variant="outlined" sx={{ p: { xs: 0.75, md: 1 }, bgcolor: 'background.paper' }}>
@@ -762,6 +777,168 @@ function CustomizationPanel({
               </Grid>
             );
           })()}
+        </Paper>
+      </Box>
+
+      {/* EXTERNAL STITCHING SECTION */}
+      <Box sx={{ mb: { xs: 2, md: 3 } }}>
+        <Typography 
+          variant="subtitle2" 
+          sx={{ 
+            mb: { xs: 0.75, md: 1 }, 
+            color: 'text.secondary',
+            fontSize: { xs: '0.875rem', md: '1rem' },
+            fontWeight: 600
+          }}
+        >
+          External Stitching Color
+        </Typography>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            mb: { xs: 0.5, md: 0.75 }, 
+            color: 'text.secondary',
+            fontSize: { xs: '0.75rem', md: '0.875rem' },
+            display: 'block'
+          }}
+        >
+          Edge stitching color
+        </Typography>
+
+        <Paper variant="outlined" sx={{ p: { xs: 0.75, md: 1 }, bgcolor: 'background.paper' }}>
+          <Grid 
+            container 
+            spacing={{ xs: 0.5, md: 0.5 }} 
+            sx={{ 
+              maxHeight: { xs: 150, sm: 180, md: 120 }, 
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              pb: 0.5
+            }}
+          >
+            {Object.values(COLOR_PALETTE).flat().map((color) => {
+              const colorId = `${color.name}-${color.hex}`;
+              const isSelected = externalStitchColor === color.hex;
+
+              return (
+                <Grid item key={`external-stitch-${colorId}`}>
+                  <Tooltip title={color.name} arrow placement="top" disableHoverListener={isMobile}>
+                    <ButtonBase
+                      onClick={() => onExternalStitchColorChange(color.hex)}
+                      sx={{
+                        width: { xs: 32, sm: 30, md: 28 },
+                        height: { xs: 32, sm: 30, md: 28 },
+                        minWidth: { xs: 32, sm: 30, md: 28 },
+                        minHeight: { xs: 32, sm: 30, md: 28 },
+                        bgcolor: color.hex,
+                        border: isSelected ? 2 : 1,
+                        borderColor: isSelected ? 'primary.main' : 'divider',
+                        borderRadius: 0.5,
+                        transition: 'all 0.2s',
+                        touchAction: 'manipulation',
+                        '&:active': {
+                          transform: 'scale(0.9)',
+                        },
+                        '&:hover': {
+                          boxShadow: isMobile ? 0 : `0 0 0 2px ${theme.palette.primary.main}`,
+                          transform: isMobile ? 'none' : 'scale(1.15)',
+                          zIndex: 1
+                        }
+                      }}
+                    >
+                      {isSelected && (
+                        <CheckIcon sx={{
+                          fontSize: 16,
+                          color: getTextColor(color.hex)
+                        }} />
+                      )}
+                    </ButtonBase>
+                  </Tooltip>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Paper>
+      </Box>
+
+      {/* PIPING COLOR SECTION */}
+      <Box sx={{ mb: { xs: 2, md: 3 } }}>
+        <Typography 
+          variant="subtitle2" 
+          sx={{ 
+            mb: { xs: 0.75, md: 1 }, 
+            color: 'text.secondary',
+            fontSize: { xs: '0.875rem', md: '1rem' },
+            fontWeight: 600
+          }}
+        >
+          Piping Color
+        </Typography>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            mb: { xs: 0.5, md: 0.75 }, 
+            color: 'text.secondary',
+            fontSize: { xs: '0.75rem', md: '0.875rem' },
+            display: 'block'
+          }}
+        >
+          Piping trim color
+        </Typography>
+
+        <Paper variant="outlined" sx={{ p: { xs: 0.75, md: 1 }, bgcolor: 'background.paper' }}>
+          <Grid 
+            container 
+            spacing={{ xs: 0.5, md: 0.5 }} 
+            sx={{ 
+              maxHeight: { xs: 150, sm: 180, md: 120 }, 
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              pb: 0.5
+            }}
+          >
+            {Object.values(COLOR_PALETTE).flat().map((color) => {
+              const colorId = `${color.name}-${color.hex}`;
+              const isSelected = pipingColor === color.hex;
+
+              return (
+                <Grid item key={`piping-${colorId}`}>
+                  <Tooltip title={color.name} arrow placement="top" disableHoverListener={isMobile}>
+                    <ButtonBase
+                      onClick={() => onPipingColorChange(color.hex)}
+                      sx={{
+                        width: { xs: 32, sm: 30, md: 28 },
+                        height: { xs: 32, sm: 30, md: 28 },
+                        minWidth: { xs: 32, sm: 30, md: 28 },
+                        minHeight: { xs: 32, sm: 30, md: 28 },
+                        bgcolor: color.hex,
+                        border: isSelected ? 2 : 1,
+                        borderColor: isSelected ? 'primary.main' : 'divider',
+                        borderRadius: 0.5,
+                        transition: 'all 0.2s',
+                        touchAction: 'manipulation',
+                        '&:active': {
+                          transform: 'scale(0.9)',
+                        },
+                        '&:hover': {
+                          boxShadow: isMobile ? 0 : `0 0 0 2px ${theme.palette.primary.main}`,
+                          transform: isMobile ? 'none' : 'scale(1.15)',
+                          zIndex: 1
+                        }
+                      }}
+                    >
+                      {isSelected && (
+                        <CheckIcon sx={{
+                          fontSize: 16,
+                          color: getTextColor(color.hex)
+                        }} />
+                      )}
+                    </ButtonBase>
+                  </Tooltip>
+                </Grid>
+              );
+            })}
+          </Grid>
         </Paper>
       </Box>
 

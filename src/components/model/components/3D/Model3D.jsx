@@ -9,7 +9,9 @@ import { TextureManager } from '../../utils/TextureManager';
 function Model3D({
   modelFileUrl, // New prop for dynamic model loading
   modelId = '1',
-  stitchColor = '#ffffff',
+  stitchColor = '#ffffff', // Internal stitching (pattern stitching)
+  externalStitchColor = '#ffffff', // External stitching (edges)
+  pipingColor = '#ffffff', // Piping color
   fabricColor = '#ffffff',
   fabricType = 'leather',
   meshCustomizations = {}, // Individual mesh customizations
@@ -221,9 +223,11 @@ function Model3D({
           const meshCustomization = meshCustomizations[child.name] || {};
 
           // Resolve color at runtime
-          let configColor = config.color || (config.useFabricColor ? fabricColor : (config.useStitchColor ? stitchColor : '#ffffff'));
+          // For piping parts, use pipingColor; for others, use fabricColor or stitchColor as appropriate
+          let configColor = config.color || (config.useFabricColor ? fabricColor : (config.useStitchColor ? pipingColor : '#ffffff'));
           let finalFabricColor = meshCustomization.fabricColor || configColor;
-          const finalStitchColor = meshCustomization.stitchColor || stitchColor;
+          // For piping, use pipingColor; for stitching, use stitchColor
+          const finalStitchColor = meshCustomization.stitchColor || (config.useStitchColor ? pipingColor : stitchColor);
           const finalFabricType = meshCustomization.fabricType || (config.fabricType || fabricType);
 
           // In two-tone mode, only use custom patterns, not the global pattern
@@ -277,7 +281,8 @@ function Model3D({
               texturesRef.current,
               ambientStrength,
               isTwoTone,
-              noStitching
+              noStitching,
+              externalStitchColor // Pass external stitching color
             ).then(material => {
               child.material = material;
 
@@ -318,7 +323,7 @@ function Model3D({
     };
 
     setupMaterials();
-  }, [scene, texturesLoaded, fabricColor, stitchColor, fabricType, modelId, ambientStrength, seatType]);
+  }, [scene, texturesLoaded, fabricColor, stitchColor, externalStitchColor, pipingColor, fabricType, modelId, ambientStrength, seatType]);
   // Note: materialConfigs and seatParts are memoized with empty deps, so they're stable and don't need to be in deps
   // Note: meshCustomizations and patternId removed from deps to prevent full material rebuild
   // Pattern changes are handled via updateMaterial in the dynamic update effect below
@@ -355,13 +360,16 @@ function Model3D({
       materialsRef.current.forEach((materialData, meshName) => {
         const meshCustomization = meshCustomizations[meshName] || {};
         let newFabricColor = meshCustomization.fabricColor || fabricColor;
-        const newStitchColor = meshCustomization.stitchColor || stitchColor;
+        // Determine stitch color: use pipingColor for piping parts, stitchColor for others
+        const partCategory = getPartCategory(meshName);
+        const isPipingPart = partCategory === 'piping';
+        const newStitchColor = meshCustomization.stitchColor || (isPipingPart ? pipingColor : stitchColor);
         // In two-tone mode, don't apply global pattern to uncustomized parts
         const newPatternId = meshCustomization.patternId || (seatType === 'two-tone' ? null : patternId);
 
-        // For piping parts, use stitch color instead of fabric color
+        // For piping parts, use piping color instead of fabric color
         if (materialData.type === 'piping') {
-          newFabricColor = newStitchColor; // important 
+          newFabricColor = pipingColor; // Use piping color for piping parts
         }
 
         // Check if colors, pattern, or ambient strength changed to avoid unnecessary updates
@@ -408,7 +416,8 @@ function Model3D({
               patternChanged ? newPatternId : null, // Only update pattern texture if changed
               originalTexturesRef.current, // Pass original textures for default pattern
               ambientChanged ? ambientStrength : null,
-              modelId // Pass modelId for stitching updates
+              modelId, // Pass modelId for stitching updates
+              externalStitchColor // Pass external stitching color
             ).then(() => {
               // Update tracked values AFTER successful update
               if (fabricChanged) materialData.fabricColor = newFabricColor;
@@ -445,7 +454,7 @@ function Model3D({
     };
 
     updateMaterials();
-  }, [texturesLoaded, fabricColor, stitchColor, meshCustomizations, patternId, ambientStrength, seatType, customizableParts, modelId]);
+  }, [texturesLoaded, fabricColor, stitchColor, externalStitchColor, pipingColor, meshCustomizations, patternId, ambientStrength, seatType, customizableParts, modelId]);
   // Note: meshCustomizations is in deps but we use a ref check inside to prevent infinite loops from object recreation
 
   // Handle mesh highlighting

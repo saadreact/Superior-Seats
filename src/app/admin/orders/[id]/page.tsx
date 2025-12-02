@@ -72,6 +72,11 @@ interface OrderItem {
     itemType?: string | number;
     seatStyle?: string | number;
     armType?: string | number;
+    // 3D customization colors
+    externalStitchColor?: string;
+    pipingColor?: string;
+    // 3D customization data (stored as JSON string)
+    customizationData?: string;
   };
   product?: {
     name?: string;
@@ -879,7 +884,19 @@ console.log("order",order)
           open={variantsDrawerOpen}
           onClose={() => setVariantsDrawerOpen(false)}
           productId={selectedOrderItem?.product_id || null}
-          initialSelections={selectedOrderItem?.variants || {}}
+          initialSelections={(() => {
+            // Parse customizationData from variants if present
+            const variants = selectedOrderItem?.variants || {};
+            if (variants.customizationData && typeof variants.customizationData === 'string') {
+              try {
+                const parsed = JSON.parse(variants.customizationData);
+                return { ...variants, ...parsed, customizationData: variants.customizationData };
+              } catch (e) {
+                console.error('Failed to parse customizationData:', e);
+              }
+            }
+            return variants;
+          })()}
           basePrice={0}
           displayPrice={selectedOrderItem?.unit_price || 0}
           readOnly={true}

@@ -116,7 +116,7 @@ export class ShaderManager {
    * @param {boolean} noStitching - Whether to disable stitching for this material
    * @returns {Promise<THREE.Material>} The created material
    */
-  static async createMaterial(fabricType, fabricColor, stitchColor, textures, ambientStrength = 0.5, isTwoTone = false, noStitching = false) {
+  static async createMaterial(fabricType, fabricColor, stitchColor, textures, ambientStrength = 0.5, isTwoTone = false, noStitching = false, externalStitchColor = null) {
     const fabricConfig = this.fabricTypes[fabricType];
     
     if (!fabricConfig) {
@@ -133,7 +133,7 @@ export class ShaderManager {
     
     // Create material based on type with material-specific specular properties
     if (finalFabricConfig.hasStitching) {
-      return createMaterialFn(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
+      return createMaterialFn(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching, externalStitchColor);
     } else {
       return createMaterialFn(fabricColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
     }
@@ -150,7 +150,7 @@ export class ShaderManager {
    * @param {number} ambientStrength - Ambient lighting strength (0.0 to 1.0)
    * @param {string} modelId - Model ID for loading pattern-specific stitching
    */
-  static async updateMaterial(material, fabricType, fabricColor, stitchColor, patternId = null, originalTextures = null, ambientStrength = null, modelId = '1') {
+  static async updateMaterial(material, fabricType, fabricColor, stitchColor, patternId = null, originalTextures = null, ambientStrength = null, modelId = '1', externalStitchColor = null) {
     const fabricConfig = this.fabricTypes[fabricType];
     
     if (!fabricConfig) {
@@ -235,7 +235,7 @@ export class ShaderManager {
     
     // Update material colors and properties based on type
     if (fabricConfig.hasStitching) {
-      updateUniformsFn(material, fabricColor, stitchColor, ambientStrength, specularPower, specularIntensity);
+      updateUniformsFn(material, fabricColor, stitchColor, ambientStrength, specularPower, specularIntensity, externalStitchColor);
     } else {
       updateUniformsFn(material, fabricColor, ambientStrength, specularPower, specularIntensity);
     }

@@ -15,6 +15,11 @@ export interface VariantSelections {
 	itemType?: string | number;
 	seatStyle?: string | number;
 	armType?: string | number;
+	// 3D customization colors
+	externalStitchColor?: string;
+	pipingColor?: string;
+	// 3D customization data (stored as JSON string in variants.customizationData)
+	customizationData?: string;
 }
 
 interface AdminVariantsDrawerProps {
@@ -39,6 +44,28 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [variations, setVariations] = useState<any>(null);
+	// Parse customizationData from variants if present
+	const parseCustomizationData = (selections: VariantSelections | null | undefined) => {
+		if (!selections) return { externalStitchColor: '', pipingColor: '' };
+		
+		// Check if customizationData is a JSON string in variants
+		let customizationData: any = null;
+		if (selections.customizationData) {
+			try {
+				customizationData = typeof selections.customizationData === 'string' 
+					? JSON.parse(selections.customizationData) 
+					: selections.customizationData;
+			} catch (e) {
+				console.error('Failed to parse customizationData:', e);
+			}
+		}
+		
+		return {
+			externalStitchColor: selections.externalStitchColor || customizationData?.externalStitchColor || '',
+			pipingColor: selections.pipingColor || customizationData?.pipingColor || '',
+		};
+	};
+
 	const [selections, setSelections] = useState<VariantSelections>({
 		materialType: initialSelections?.materialType || '',
 		color: initialSelections?.color || '',
@@ -50,6 +77,7 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		itemType: initialSelections?.itemType || '',
 		seatStyle: initialSelections?.seatStyle || '',
 		armType: initialSelections?.armType || '',
+		...parseCustomizationData(initialSelections),
 	});
 
 	useEffect(() => {
@@ -82,6 +110,7 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 						itemType: initialSelections.itemType || '',
 						seatStyle: initialSelections.seatStyle || '',
 						armType: initialSelections.armType || '',
+						...parseCustomizationData(initialSelections),
 					});
 				}
 			})
@@ -108,7 +137,7 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		
 		// Otherwise, calculate from basePrice + variants
 		if (!variations) return basePrice;
-		const lookup: Record<keyof VariantSelections, any[]> = {
+		const lookup: Record<string, any[]> = {
 			materialType: variations.material_types || [],
 			color: variations.colors || [],
 			seatStitchPattern: variations.seat_stitch_patterns || [],
@@ -121,6 +150,10 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 			armType: variations.arm_types || [],
 		};
 		const variantsSum = (Object.keys(selections) as (keyof VariantSelections)[]).reduce((sum, key) => {
+			// Skip non-priced fields (customization colors don't have prices)
+			if (key === 'externalStitchColor' || key === 'pipingColor' || key === 'customizationData') {
+				return sum;
+			}
 			const list = lookup[key] || [];
 			const found = list.find((x: any) => String(x.id) === String(selections[key]));
 			const price = found ? parseFloat(found.price) || 0 : 0;
@@ -133,6 +166,24 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		const material = getItem(variations?.material_types || [], selections.materialType);
 		const color = getItem(variations?.colors || [], selections.color);
 		const stitch = getItem(variations?.seat_stitch_patterns || [], selections.seatStitchPattern);
+		
+		// Common color palette for display
+		const commonColors = [
+			{ name: 'White', hex: '#ffffff' },
+			{ name: 'Black', hex: '#000000' },
+			{ name: 'Red', hex: '#ff0000' },
+			{ name: 'Blue', hex: '#0000ff' },
+			{ name: 'Green', hex: '#00ff00' },
+			{ name: 'Yellow', hex: '#ffff00' },
+			{ name: 'Gray', hex: '#808080' },
+			{ name: 'Brown', hex: '#8b4513' },
+		];
+
+		const getColorName = (hex: string) => {
+			const found = commonColors.find(c => c.hex.toLowerCase() === hex.toLowerCase());
+			return found?.name || hex;
+		};
+
 		return (
 			<Box>
 				<Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Material & Appearance</Typography>
@@ -166,6 +217,28 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 							<Typography variant="body2" fontWeight={600}>{stitch?.name || '—'}</Typography>
 						</Box>
 					</Box>
+					{selections.externalStitchColor && (
+						<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+							<Typography variant="body2">External Stitching Color:</Typography>
+							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+								<Box sx={{ width: 24, height: 24, borderRadius: '50%', border: '1px solid #ddd', bgcolor: selections.externalStitchColor || 'transparent', display: 'inline-block' }} />
+								<Typography variant="body2" fontWeight={600}>
+									{getColorName(selections.externalStitchColor)} ({selections.externalStitchColor})
+								</Typography>
+							</Box>
+						</Box>
+					)}
+					{selections.pipingColor && (
+						<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+							<Typography variant="body2">Piping Color:</Typography>
+							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+								<Box sx={{ width: 24, height: 24, borderRadius: '50%', border: '1px solid #ddd', bgcolor: selections.pipingColor || 'transparent', display: 'inline-block' }} />
+								<Typography variant="body2" fontWeight={600}>
+									{getColorName(selections.pipingColor)} ({selections.pipingColor})
+								</Typography>
+							</Box>
+						</Box>
+					)}
 				</Box>
 			</Box>
 		);

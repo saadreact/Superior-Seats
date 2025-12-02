@@ -47,7 +47,20 @@ import shopNowApis, { PriceTier as ShopPriceTier, User as ShopUser } from '@/ser
 interface ProductOption { id: number; name: string; price?: any; sku?: string }
 interface VariationOption { id: number; name: string; price?: number }
 interface Address { street: string; city: string; state: string; postalCode: string; country: string }
-interface CartItem { itemId: string; productId: number; variationId?: number; name: string; quantity: number; unitPrice: number; total: number; totalPrice: number; variants?: VariantSelections; unitPriceLocked?: boolean }
+interface CartItem { 
+  itemId: string; 
+  productId: number; 
+  variationId?: number; 
+  name: string; 
+  quantity: number; 
+  unitPrice: number; 
+  total: number; 
+  totalPrice: number; 
+  variants?: VariantSelections; 
+  customizationData?: any;
+  is3DProduct?: boolean;
+  unitPriceLocked?: boolean;
+}
 
 const steps = [
   'Select Products',
@@ -145,6 +158,32 @@ export default function ShopOrderWizard() {
             const computedDisplay = effectiveTier?.finalPrice ?? shopNowApis.getDisplayPrice(basePrice, !!auth?.isAuthenticated, userRes?.data || userRes || null, Array.isArray(tiersPayload) ? tiersPayload : []);
             const unitPrice = !isNaN(cartPriceNum) && cartPriceNum > 0 ? cartPriceNum : (isNaN(Number(computedDisplay)) ? 0 : Number(computedDisplay));
             const quantity = Number(ci.quantity) || 1;
+            
+            // Parse customizationData from variants if present (for 3D products)
+            let variants = (ci as any).variants || {};
+            const customizationData = (ci as any).customizationData;
+            
+            // If customizationData exists in variants as JSON string, parse it
+            if (variants.customizationData && typeof variants.customizationData === 'string') {
+              try {
+                const parsed = JSON.parse(variants.customizationData);
+                // Merge parsed customizationData into variants
+                variants = { ...variants, ...parsed, customizationData: variants.customizationData };
+              } catch (e) {
+                console.error('Failed to parse customizationData from variants:', e);
+              }
+            }
+            
+            // If we have separate customizationData object, merge it into variants
+            if (customizationData) {
+              variants = { 
+                ...variants, 
+                externalStitchColor: customizationData.externalStitchColor,
+                pipingColor: customizationData.pipingColor,
+                customizationData: JSON.stringify(customizationData)
+              };
+            }
+            
             return {
               itemId: String(productId),
               productId,
@@ -153,8 +192,9 @@ export default function ShopOrderWizard() {
               unitPrice,
               total: quantity * unitPrice,
               totalPrice: quantity * unitPrice,
-              // If cart item already tracks variants, preserve them
-              variants: (ci as any).variants || undefined,
+              variants: variants,
+              customizationData: customizationData,
+              is3DProduct: (ci as any).is3DProduct || false,
               unitPriceLocked: true,
             } as CartItem;
           }));
@@ -655,19 +695,31 @@ export default function ShopOrderWizard() {
       const usedCardToken = cardToken;
 
       const payload = {
-        cartItems: cartItems.map(ci => ({
-          itemId: String(ci.productId || ci.itemId || ''),
-          productId: ci.productId,
-          variationId: ci.variationId,
-          name: ci.name || (products.find(p => p.id === ci.productId)?.name || 'Item'),
-          quantity: ci.quantity,
-          unitPrice: Number(ci.unitPrice) || 0,
-          total: ci.total,
-          totalPrice: ci.totalPrice,
-          variants: ci.variants ? Object.fromEntries(
-            Object.entries(ci.variants).map(([key, value]) => [key, value !== undefined && value !== null && value !== '' ? String(value) : ''])
-          ) : {},
-        })),
+        cartItems: cartItems.map(ci => {
+          // Build variants object, including customization data for 3D products
+          let variantsObj: any = {};
+          if (ci.variants) {
+            variantsObj = Object.fromEntries(
+              Object.entries(ci.variants).map(([key, value]) => [key, value !== undefined && value !== null && value !== '' ? String(value) : ''])
+            );
+          }
+          // Include customization data in variants for 3D products
+          if (ci.is3DProduct && ci.customizationData) {
+            variantsObj.customizationData = JSON.stringify(ci.customizationData);
+          }
+          
+          return {
+            itemId: String(ci.productId || ci.itemId || ''),
+            productId: ci.productId,
+            variationId: ci.variationId,
+            name: ci.name || (products.find(p => p.id === ci.productId)?.name || 'Item'),
+            quantity: ci.quantity,
+            unitPrice: Number(ci.unitPrice) || 0,
+            total: ci.total,
+            totalPrice: ci.totalPrice,
+            variants: variantsObj,
+          };
+        }),
         customerInfo: {
           firstName,
           lastName,
