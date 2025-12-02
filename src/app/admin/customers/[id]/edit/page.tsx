@@ -178,7 +178,10 @@ const EditCustomerPage = ({ params }: EditCustomerPageProps) => {
         last_name: formData.last_name || '',
         email: formData.email || '',
         phone: formData.phone || '',
-        company_name: formData.company_name || '',
+        address: '456 Updated St', // Hardcoded
+        city: 'Updated City', // Hardcoded
+        state: 'CA', // Hardcoded
+        company_name: 'Updated Corp', // Hardcoded
         customer_type: 'retail', // Hardcoded like in create page
         price_tier_id: Number(formData.price_tier_id) || 1,
         is_active: Boolean(isActive),

@@ -56,6 +56,7 @@ const EditReclineTypePage = () => {
   const [enablePriceTiers, setEnablePriceTiers] = useState(false);
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
   const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
+  const [priceOverrideInputs, setPriceOverrideInputs] = useState<Record<number, string>>({});
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -73,16 +74,13 @@ const EditReclineTypePage = () => {
       const reclineType = await reclineTypesService.getReclineType(parseInt(id));
       const priceTierIds = reclineType.price_tiers?.map((tier: any) => tier.id) || [];
       
-      // Initialize calculated price tiers from existing data
+      // Initialize calculated price tiers from existing data using multiplier logic
+      const basePrice = typeof reclineType.price === 'string' ? parseFloat(reclineType.price) : (reclineType.price || 0);
       const initialCalculatedTiers: CalculatedPriceTier[] = reclineType.price_tiers?.map((tier: any) => {
-        const existingPrice = parseFloat(tier.pivot?.price_adjustment) || 0;
-        const calculatedPrice = VariantsCalculation.calculatePriceAdjustment(
-          reclineType.price || 0, 
-          parseFloat(tier.discount_off_retail_price)
-        ).calculatedPrice;
-        
-        // Check if this is an override
-        const isOverridden = Math.abs(existingPrice - calculatedPrice) > 0.01;
+        const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+        const calculatedPrice = Math.round(basePrice * multiplier * 100) / 100;
+        const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
+        const isOverridden = actualPrice !== calculatedPrice;
         
         return {
           id: tier.id,
@@ -90,7 +88,8 @@ const EditReclineTypePage = () => {
           display_name: tier.display_name,
           discount_off_retail_price: tier.discount_off_retail_price,
           calculated_price: calculatedPrice,
-          override_price: isOverridden ? existingPrice : undefined,
+          discount_amount: 0,
+          override_price: isOverridden ? actualPrice : undefined,
           is_overridden: isOverridden
         };
       }) || [];
@@ -114,14 +113,17 @@ const EditReclineTypePage = () => {
       setCalculatedPriceTiers(initialCalculatedTiers);
       setCurrentImage(reclineType.image);
       
-      // Set up price overrides from calculated tiers
+      // Set up price overrides and inputs from calculated tiers
       const priceOverrides: Record<string, number> = {};
+      const initialInputs: Record<number, string> = {};
       initialCalculatedTiers.forEach((tier) => {
         if (tier.is_overridden && tier.override_price !== undefined) {
           priceOverrides[tier.id.toString()] = tier.override_price;
+          initialInputs[tier.id] = tier.override_price.toFixed(2);
         }
       });
       setPriceOverrides(priceOverrides);
+      setPriceOverrideInputs(initialInputs);
     } catch (err: any) {
       setError(err.message || 'Failed to load recline type');
       console.error('Error loading recline type:', err);
@@ -139,15 +141,10 @@ const EditReclineTypePage = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    
-    // Recalculate price tiers when base price changes
-    if (field === 'price' && enablePriceTiers && value > 0) {
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
+  // Automatic price tier calculation
+  useEffect(() => {
+    if (enablePriceTiers && formData.price > 0 && priceTiers.length > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, priceOverrides);
       setCalculatedPriceTiers(newCalculatedTiers);
       
       // Update price_adjustments with calculated prices
@@ -159,9 +156,26 @@ const EditReclineTypePage = () => {
       );
       setFormData(prev => ({
         ...prev,
+        price_tier_ids: newCalculatedTiers.map(tier => tier.id),
         price_adjustments: newPriceAdjustments
       }));
+
+      // Initialize overridePriceInputs for all tiers
+      const initialInputs: Record<number, string> = {};
+      newCalculatedTiers.forEach(tier => {
+        if (tier.is_overridden && tier.override_price !== undefined) {
+          initialInputs[tier.id] = tier.override_price.toFixed(2);
+        }
+      });
+      setPriceOverrideInputs(prev => ({ ...prev, ...initialInputs }));
     }
+  }, [priceTiers, enablePriceTiers, formData.price, priceOverrides]);
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,25 +202,6 @@ const EditReclineTypePage = () => {
     const checked = event.target.checked;
     setEnablePriceTiers(checked);
     
-    // Calculate price tiers when enabled
-    if (checked && formData.price > 0) {
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, priceOverrides);
-      setCalculatedPriceTiers(newCalculatedTiers);
-      
-      // Update price_adjustments with calculated prices
-      const newPriceAdjustments = Object.fromEntries(
-        newCalculatedTiers.map(tier => [
-          tier.id.toString(), 
-          VariantsCalculation.getFinalPrice(tier)
-        ])
-      );
-      setFormData(prev => ({
-        ...prev,
-        price_tier_ids: newCalculatedTiers.map(tier => tier.id),
-        price_adjustments: newPriceAdjustments
-      }));
-    }
-    
     // Clear price tiers and adjustments when disabled
     if (!checked) {
       setFormData(prev => ({
@@ -216,6 +211,7 @@ const EditReclineTypePage = () => {
       }));
       setCalculatedPriceTiers([]);
       setPriceOverrides({});
+      setPriceOverrideInputs({});
     }
   };
 
@@ -224,51 +220,60 @@ const EditReclineTypePage = () => {
       ...prev,
       [tierId.toString()]: overridePrice
     }));
-    
-    // Recalculate price tiers with new override
-    if (formData.price > 0) {
-      const newOverrides = {
-        ...priceOverrides,
-        [tierId.toString()]: overridePrice
-      };
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, newOverrides);
-      setCalculatedPriceTiers(newCalculatedTiers);
-      
-      // Update price_adjustments with new calculated prices
-      const newPriceAdjustments = Object.fromEntries(
-        newCalculatedTiers.map(tier => [
-          tier.id.toString(), 
-          VariantsCalculation.getFinalPrice(tier)
-        ])
-      );
-      setFormData(prev => ({
-        ...prev,
-        price_adjustments: newPriceAdjustments
-      }));
+  };
+
+  const handlePriceOverrideInputChange = (tierId: number, value: string) => {
+    setPriceOverrideInputs(prev => ({
+      ...prev,
+      [tierId]: value
+    }));
+  };
+
+  const handlePriceOverrideBlur = (tierId: number) => {
+    const inputValue = priceOverrideInputs[tierId];
+    if (inputValue === undefined || inputValue === '') {
+      // Clear override if input is empty
+      setPriceOverrides(prev => {
+        const newOverrides = { ...prev };
+        delete newOverrides[tierId.toString()];
+        return newOverrides;
+      });
+      setPriceOverrideInputs(prev => {
+        const newInputs = { ...prev };
+        delete newInputs[tierId];
+        return newInputs;
+      });
+    } else {
+      const numValue = parseFloat(inputValue);
+      if (!isNaN(numValue) && numValue >= 0) {
+        const roundedValue = Math.round(numValue * 100) / 100;
+        handlePriceOverrideChange(tierId, roundedValue);
+        setPriceOverrideInputs(prev => ({
+          ...prev,
+          [tierId]: roundedValue.toFixed(2)
+        }));
+      } else {
+        // Reset to calculated price if invalid
+        const tier = calculatedPriceTiers.find(t => t.id === tierId);
+        if (tier) {
+          setPriceOverrideInputs(prev => {
+            const newInputs = { ...prev };
+            delete newInputs[tierId];
+            return newInputs;
+          });
+          setPriceOverrides(prev => {
+            const newOverrides = { ...prev };
+            delete newOverrides[tierId.toString()];
+            return newOverrides;
+          });
+        }
+      }
     }
   };
 
   const handleResetPriceTiers = () => {
-    if (formData.price > 0) {
-      // Clear all overrides
-      setPriceOverrides({});
-      
-      // Recalculate price tiers without overrides
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, {});
-      setCalculatedPriceTiers(newCalculatedTiers);
-      
-      // Update price_adjustments with calculated prices
-      const newPriceAdjustments = Object.fromEntries(
-        newCalculatedTiers.map(tier => [
-          tier.id.toString(), 
-          tier.calculated_price
-        ])
-      );
-      setFormData(prev => ({
-        ...prev,
-        price_adjustments: newPriceAdjustments
-      }));
-    }
+    setPriceOverrides({});
+    setPriceOverrideInputs({});
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -554,7 +559,11 @@ const EditReclineTypePage = () => {
                       Base price: ${VariantsCalculation.formatPrice(formData.price)}
                     </Typography>
                     
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                      gap: 2 
+                    }}>
                       {calculatedPriceTiers.map((tier) => (
                         <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
@@ -563,10 +572,7 @@ const EditReclineTypePage = () => {
                                 {tier.display_name}
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                {parseFloat(tier.discount_off_retail_price) > 0 
-                                  ? `${tier.discount_off_retail_price}% discount` 
-                                  : 'No discount'
-                                }
+                                Multiplier: {parseFloat(tier.discount_off_retail_price) || 1} × Base Price
                               </Typography>
                               {tier.is_overridden && (
                                 <Typography variant="body2" color="text.secondary">
@@ -577,14 +583,44 @@ const EditReclineTypePage = () => {
                             <Box sx={{ minWidth: 120 }}>
                               <TextField
                                 label="Price"
-                                type="number"
+                                type="text"
                                 size="small"
-                                value={tier.is_overridden ? tier.override_price || '' : tier.calculated_price || ''}
+                                value={priceOverrideInputs[tier.id] ?? (tier.is_overridden && tier.override_price !== undefined
+                                  ? tier.override_price.toFixed(2)
+                                  : tier.calculated_price !== undefined
+                                  ? tier.calculated_price.toFixed(2)
+                                  : '')}
                                 onChange={(e) => {
-                                  const value = parseFloat(e.target.value) || 0;
-                                  handlePriceOverrideChange(tier.id, value);
+                                  const value = e.target.value;
+                                  setPriceOverrideInputs(prev => ({
+                                    ...prev,
+                                    [tier.id]: value
+                                  }));
                                 }}
-                                inputProps={{ min: 0, step: 0.01 }}
+                                onBlur={(e) => {
+                                  const value = e.target.value.trim();
+                                  if (value === '' || isNaN(parseFloat(value)) || parseFloat(value) <= 0) {
+                                    // Clear override if invalid
+                                    setPriceOverrideInputs(prev => {
+                                      const newInputs = { ...prev };
+                                      delete newInputs[tier.id];
+                                      return newInputs;
+                                    });
+                                    handlePriceOverrideChange(tier.id, 0);
+                                  } else {
+                                    const numValue = parseFloat(value);
+                                    const roundedValue = Math.round(numValue * 100) / 100;
+                                    setPriceOverrideInputs(prev => ({
+                                      ...prev,
+                                      [tier.id]: roundedValue.toFixed(2)
+                                    }));
+                                    handlePriceOverrideChange(tier.id, roundedValue);
+                                  }
+                                }}
+                                inputProps={{ 
+                                  inputMode: 'decimal',
+                                  pattern: '[0-9]*\\.?[0-9]*'
+                                }}
                                 sx={{ mb: 1 }}
                               />
                               <Box sx={{ textAlign: 'center' }}>
@@ -592,7 +628,7 @@ const EditReclineTypePage = () => {
                                   fontWeight: 600, 
                                   color: tier.is_overridden ? 'warning.main' : 'primary.main'
                                 }}>
-                                  ${VariantsCalculation.formatPrice(tier.is_overridden ? tier.override_price : tier.calculated_price)}
+                                  ${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}
                                 </Typography>
                                 {tier.is_overridden && (
                                   <Typography variant="caption" color="warning.main">

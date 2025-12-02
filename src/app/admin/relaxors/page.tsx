@@ -103,14 +103,25 @@ const RelaxorsPage = () => {
     return null;
   };
 
-  // Helper function to get calculated price tiers for display
+  // Helper function to get calculated price tiers for display using multiplier logic
   const getCalculatedPriceTiers = (relaxor: Relaxor) => {
-    return relaxor.price_tiers?.map((tier) => ({
-      id: tier.id,
-      display_name: tier.display_name,
-      calculated_price: tier.pivot?.price_adjustment || 0,
-      is_overridden: false // For list display, we don't track overrides
-    })) || [];
+    const basePrice = typeof relaxor.price === 'string' ? parseFloat(relaxor.price) : (relaxor.price || 0);
+    if (relaxor.price_tiers && relaxor.price_tiers.length > 0 && basePrice > 0) {
+      return relaxor.price_tiers.map((tier) => {
+        const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+        const calculatedPrice = Math.round(basePrice * multiplier * 100) / 100;
+        const actualPrice = tier.pivot?.price_adjustment ?? calculatedPrice;
+        const isOverridden = actualPrice !== calculatedPrice;
+        
+        return {
+          id: tier.id,
+          display_name: tier.display_name,
+          calculated_price: calculatedPrice,
+          is_overridden: isOverridden
+        };
+      });
+    }
+    return [];
   };
 
   const loadRelaxors = useCallback(async () => {

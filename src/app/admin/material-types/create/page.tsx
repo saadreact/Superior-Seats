@@ -205,7 +205,18 @@ const CreateMaterialTypePage = () => {
     } catch (err: any) {
       setColors([]);
       setColorsTotalCount(0);
-      setColorsError(err.message || 'Failed to load colors');
+      
+      // Handle network errors more gracefully
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
+        setColorsError('Network error: Unable to connect to the server. Please check your internet connection and try again.');
+      } else if (err.response?.status === 401) {
+        setColorsError('Please log in to access colors');
+      } else if (err.response?.status === 404) {
+        setColorsError('Colors endpoint not found. Please contact support.');
+      } else {
+        setColorsError(err.response?.data?.message || err.message || 'Failed to load colors');
+      }
+      
       console.error('Error loading colors:', err);
     } finally {
       setLoadingColors(false);
@@ -504,7 +515,7 @@ const CreateMaterialTypePage = () => {
     }
   }, [isColorStepperOpen, loadPriceTiersForColor]);
 
-  // Recalculate price tiers when price changes and price tiers are enabled
+  // Automatic price tier calculation
   useEffect(() => {
     if (enablePriceTiers && colorFormData.price > 0 && priceTiers.length > 0) {
       const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(
@@ -513,6 +524,15 @@ const CreateMaterialTypePage = () => {
         priceOverrides
       );
       setCalculatedPriceTiers(newCalculatedTiers);
+
+      // Initialize overridePriceInputs for all tiers
+      const initialInputs: Record<number, string> = {};
+      newCalculatedTiers.forEach(tier => {
+        if (tier.is_overridden && tier.override_price !== undefined) {
+          initialInputs[tier.id] = tier.override_price.toFixed(2);
+        }
+      });
+      setOverridePriceInputs(prev => ({ ...prev, ...initialInputs }));
     }
   }, [colorFormData.price, enablePriceTiers, priceTiers, priceOverrides]);
 
@@ -564,25 +584,28 @@ const CreateMaterialTypePage = () => {
         setColorImagePreview(`${process.env.NEXT_PUBLIC_API_IMAGE_BASE_URL}/${fullColorData.image}`);
       }
       
-      // Handle price tiers
+      // Handle price tiers using multiplier logic
       if (fullColorData.price_tiers && fullColorData.price_tiers.length > 0) {
         setEnablePriceTiers(true);
         const priceValue = typeof fullColorData.price === 'string' ? parseFloat(fullColorData.price) : (fullColorData.price || 0);
         const overriddenPrices: Record<string, number> = {};
+        const initialInputs: Record<number, string> = {};
         
         fullColorData.price_tiers.forEach((tier: any) => {
           if (tier.pivot && tier.pivot.price_adjustment !== undefined) {
             const adjustmentValue = parseFloat(tier.pivot.price_adjustment);
-            const discountPercentage = parseFloat(tier.discount_off_retail_price);
-            const calculatedPrice = priceValue - (priceValue * discountPercentage / 100);
+            const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+            const calculatedPrice = Math.round(priceValue * multiplier * 100) / 100;
             
             if (Math.abs(adjustmentValue - calculatedPrice) > 0.01) {
               overriddenPrices[tier.id.toString()] = adjustmentValue;
+              initialInputs[tier.id] = adjustmentValue.toFixed(2);
             }
           }
         });
         
         setPriceOverrides(overriddenPrices);
+        setOverridePriceInputs(initialInputs);
         const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(
           priceValue,
           fullColorData.price_tiers,
@@ -647,15 +670,6 @@ const CreateMaterialTypePage = () => {
 
     if (field === 'price') {
       setColorPriceInput(value > 0 ? value.toString() : '');
-      
-      if (value > 0 && enablePriceTiers) {
-        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(
-          value,
-          priceTiers,
-          priceOverrides
-        );
-        setCalculatedPriceTiers(newCalculatedTiers);
-      }
     }
   };
 
@@ -666,13 +680,7 @@ const CreateMaterialTypePage = () => {
     if (!checked) {
       setPriceOverrides({});
       setCalculatedPriceTiers([]);
-    } else if (colorFormData.price > 0) {
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(
-        colorFormData.price,
-        priceTiers,
-        priceOverrides
-      );
-      setCalculatedPriceTiers(newCalculatedTiers);
+      setOverridePriceInputs({});
     }
   };
 
@@ -681,14 +689,54 @@ const CreateMaterialTypePage = () => {
       ...prev,
       [tierId.toString()]: overridePrice
     }));
-    
-    if (colorFormData.price > 0) {
-      const newOverrides = {
-        ...priceOverrides,
-        [tierId.toString()]: overridePrice
-      };
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(colorFormData.price, priceTiers, newOverrides);
-      setCalculatedPriceTiers(newCalculatedTiers);
+  };
+
+  const handleColorPriceOverrideInputChange = (tierId: number, value: string) => {
+    setOverridePriceInputs(prev => ({
+      ...prev,
+      [tierId]: value
+    }));
+  };
+
+  const handleColorPriceOverrideBlur = (tierId: number) => {
+    const inputValue = overridePriceInputs[tierId];
+    if (inputValue === undefined || inputValue === '') {
+      // Clear override if input is empty
+      setPriceOverrides(prev => {
+        const newOverrides = { ...prev };
+        delete newOverrides[tierId.toString()];
+        return newOverrides;
+      });
+      setOverridePriceInputs(prev => {
+        const newInputs = { ...prev };
+        delete newInputs[tierId];
+        return newInputs;
+      });
+    } else {
+      const numValue = parseFloat(inputValue);
+      if (!isNaN(numValue) && numValue >= 0) {
+        const roundedValue = Math.round(numValue * 100) / 100;
+        handleColorPriceOverrideChange(tierId, roundedValue);
+        setOverridePriceInputs(prev => ({
+          ...prev,
+          [tierId]: roundedValue.toFixed(2)
+        }));
+      } else {
+        // Reset to calculated price if invalid
+        const tier = calculatedPriceTiers.find(t => t.id === tierId);
+        if (tier) {
+          setOverridePriceInputs(prev => {
+            const newInputs = { ...prev };
+            delete newInputs[tierId];
+            return newInputs;
+          });
+          setPriceOverrides(prev => {
+            const newOverrides = { ...prev };
+            delete newOverrides[tierId.toString()];
+            return newOverrides;
+          });
+        }
+      }
     }
   };
 
@@ -754,14 +802,7 @@ const CreateMaterialTypePage = () => {
 
   const handleColorResetPriceTiers = () => {
     setPriceOverrides({});
-    if (colorFormData.price > 0) {
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(
-        colorFormData.price,
-        priceTiers,
-        {}
-      );
-      setCalculatedPriceTiers(newCalculatedTiers);
-    }
+    setOverridePriceInputs({});
   };
 
   const handleColorStepperClose = () => {
@@ -1697,49 +1738,48 @@ const CreateMaterialTypePage = () => {
                         Based on base price: ${VariantsCalculation.formatPrice(colorFormData.price)}
                       </Typography>
                       
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {VariantsCalculation.sortByDiscountPercentage(calculatedPriceTiers).map((tier) => (
+                      <Box sx={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                        gap: 2 
+                      }}>
+                        {calculatedPriceTiers.map((tier) => (
                           <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
                               <Box sx={{ flex: 1 }}>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                                   {tier.display_name}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {parseFloat(tier.discount_off_retail_price) > 0 
-                                    ? `${tier.discount_off_retail_price}% discount` 
-                                    : 'No discount'
-                                  }
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                  Multiplier: {parseFloat(tier.discount_off_retail_price) || 1} × Base Price
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
-                                </Typography>
+                                {tier.is_overridden && (
+                                  <Typography variant="body2" color="text.secondary">
+                                    Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
+                                  </Typography>
+                                )}
                               </Box>
                               <Box sx={{ minWidth: 120 }}>
                                 <TextField
-                                  label="Override Price"
-                                  type="number"
+                                  label="Price"
+                                  type="text"
                                   size="small"
-                                  value={overridePriceInputs[tier.id] ?? (tier.is_overridden ? (tier.override_price?.toString() || '') : '')}
+                                  value={overridePriceInputs[tier.id] ?? (tier.is_overridden && tier.override_price !== undefined
+                                    ? tier.override_price.toFixed(2)
+                                    : tier.calculated_price !== undefined
+                                    ? tier.calculated_price.toFixed(2)
+                                    : '')}
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     setOverridePriceInputs(prev => ({
                                       ...prev,
                                       [tier.id]: value
                                     }));
-                                    
-                                    if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
-                                      const numValue = parseFloat(value);
-                                      if (!isNaN(numValue)) {
-                                        handleColorPriceOverrideChange(tier.id, numValue);
-                                      }
-                                    } else if (value === '') {
-                                      handleColorPriceOverrideChange(tier.id, 0);
-                                    }
                                   }}
                                   onBlur={(e) => {
                                     const value = e.target.value.trim();
-                                    if (value === '' || value === '-' || isNaN(parseFloat(value))) {
+                                    if (value === '' || isNaN(parseFloat(value)) || parseFloat(value) <= 0) {
+                                      // Clear override if invalid
                                       setOverridePriceInputs(prev => {
                                         const newInputs = { ...prev };
                                         delete newInputs[tier.id];
@@ -1748,17 +1788,18 @@ const CreateMaterialTypePage = () => {
                                       handleColorPriceOverrideChange(tier.id, 0);
                                     } else {
                                       const numValue = parseFloat(value);
-                                      const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+                                      const roundedValue = Math.round(numValue * 100) / 100;
                                       setOverridePriceInputs(prev => ({
                                         ...prev,
-                                        [tier.id]: finalValue.toString()
+                                        [tier.id]: roundedValue.toFixed(2)
                                       }));
-                                      handleColorPriceOverrideChange(tier.id, finalValue);
+                                      handleColorPriceOverrideChange(tier.id, roundedValue);
                                     }
                                   }}
-                                  placeholder={VariantsCalculation.formatPrice(tier.calculated_price)}
-                                  inputProps={{ min: 0, step: 0.01 }}
-                                  fullWidth
+                                  inputProps={{ 
+                                    inputMode: 'decimal',
+                                    pattern: '[0-9]*\\.?[0-9]*'
+                                  }}
                                   sx={{ mb: 1 }}
                                 />
                                 <Box sx={{ textAlign: 'center' }}>

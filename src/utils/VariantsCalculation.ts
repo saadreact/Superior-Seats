@@ -49,17 +49,17 @@ interface PriceTiersResponse {
 
 export class VariantsCalculation {
   /**
-   * Calculate discounted prices for all price tiers based on base price
-   * @param basePrice - The base/retail price to calculate discounts from
-   * @param priceTiers - Array of price tiers with discount percentages
+   * Calculate prices for all price tiers based on base price using multiplication factor
+   * @param basePrice - The base/retail price to calculate from
+   * @param priceTiers - Array of price tiers with multiplication factors
    * @param overrides - Optional object with tier ID as key and override price as value
    * @returns Array of price tiers with calculated prices
    */
   static calculatePriceTiers(basePrice: number, priceTiers: PriceTier[], overrides?: Record<string, number>): CalculatedPriceTier[] {
     return priceTiers.map(tier => {
-      const discountPercentage = parseFloat(tier.discount_off_retail_price) || 0;
-      const discountAmount = (basePrice * discountPercentage) / 100;
-      const calculatedPrice = basePrice - discountAmount;
+      const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+      const calculatedPrice = Math.round((basePrice * multiplier) * 100) / 100; // Round to 2 decimal places
+      const discountAmount = Math.round((basePrice - calculatedPrice) * 100) / 100; // Keep for backward compatibility
       const overridePrice = overrides?.[tier.id.toString()];
       const isOverridden = overridePrice !== undefined && overridePrice !== null;
       
@@ -67,7 +67,7 @@ export class VariantsCalculation {
         ...tier,
         calculated_price: Math.max(0, calculatedPrice), // Ensure price is not negative
         discount_amount: discountAmount,
-        override_price: overridePrice,
+        override_price: overridePrice !== undefined ? Math.round(overridePrice * 100) / 100 : overridePrice,
         is_overridden: isOverridden
       };
     });
@@ -91,7 +91,10 @@ export class VariantsCalculation {
   static formatPrice(price: number | string | undefined): string {
     if (price === undefined || price === null) return '0.00';
     const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+    if (isNaN(numPrice)) return '0.00';
+    // Round to 2 decimal places to avoid floating point precision issues
+    const rounded = Math.round(numPrice * 100) / 100;
+    return rounded.toFixed(2);
   }
 
   /**
@@ -104,14 +107,14 @@ export class VariantsCalculation {
   }
 
   /**
-   * Get the retail price tier (usually the one with 0% discount)
+   * Get the retail price tier (usually the one with multiplier of 1.0)
    * @param calculatedTiers - Array of calculated price tiers
    * @returns Retail price tier or undefined if not found
    */
   static getRetailPriceTier(calculatedTiers: CalculatedPriceTier[]): CalculatedPriceTier | undefined {
     return calculatedTiers.find(tier => 
       tier.name.toLowerCase().includes('retail') || 
-      parseFloat(tier.discount_off_retail_price) === 0
+      parseFloat(tier.discount_off_retail_price) === 1.0
     );
   }
 
@@ -127,16 +130,25 @@ export class VariantsCalculation {
   }
 
   /**
-   * Sort price tiers by discount percentage (ascending)
+   * Sort price tiers by multiplication factor (ascending)
    * @param calculatedTiers - Array of calculated price tiers
    * @returns Sorted array of calculated price tiers
    */
   static sortByDiscountPercentage(calculatedTiers: CalculatedPriceTier[]): CalculatedPriceTier[] {
     return [...calculatedTiers].sort((a, b) => {
-      const discountA = parseFloat(a.discount_off_retail_price) || 0;
-      const discountB = parseFloat(b.discount_off_retail_price) || 0;
-      return discountA - discountB;
+      const multiplierA = parseFloat(a.discount_off_retail_price) || 1;
+      const multiplierB = parseFloat(b.discount_off_retail_price) || 1;
+      return multiplierA - multiplierB;
     });
+  }
+
+  /**
+   * Sort price tiers by multiplication factor (ascending) - alias for sortByDiscountPercentage
+   * @param calculatedTiers - Array of calculated price tiers
+   * @returns Sorted array of calculated price tiers
+   */
+  static sortByMultiplier(calculatedTiers: CalculatedPriceTier[]): CalculatedPriceTier[] {
+    return VariantsCalculation.sortByDiscountPercentage(calculatedTiers);
   }
 
   /**
@@ -159,9 +171,9 @@ export class VariantsCalculation {
       errors.push('Price tier display name is required');
     }
     
-    const discountPercentage = parseFloat(priceTier.discount_off_retail_price);
-    if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
-      errors.push('Discount percentage must be between 0 and 100');
+    const multiplier = parseFloat(priceTier.discount_off_retail_price);
+    if (isNaN(multiplier) || multiplier < 0) {
+      errors.push('Price tier multiplier must be a positive number');
     }
     
     return {
@@ -171,21 +183,21 @@ export class VariantsCalculation {
   }
 
   /**
-   * Calculate price adjustment for a specific tier
+   * Calculate price adjustment for a specific tier using multiplication factor
    * @param basePrice - The base price
-   * @param tierDiscountPercentage - The discount percentage for the tier
+   * @param tierMultiplier - The multiplication factor for the tier
    * @returns Object with calculated price and adjustment amount
    */
-  static calculatePriceAdjustment(basePrice: number, tierDiscountPercentage: number): {
+  static calculatePriceAdjustment(basePrice: number, tierMultiplier: number): {
     calculatedPrice: number;
     adjustmentAmount: number;
   } {
-    const discountPercentage = Math.max(0, Math.min(100, tierDiscountPercentage)); // Clamp between 0-100
-    const adjustmentAmount = (basePrice * discountPercentage) / 100;
-    const calculatedPrice = Math.max(0, basePrice - adjustmentAmount);
+    const multiplier = Math.max(0, tierMultiplier); // Ensure multiplier is not negative
+    const calculatedPrice = Math.round((basePrice * multiplier) * 100) / 100; // Round to 2 decimal places
+    const adjustmentAmount = Math.round((basePrice - calculatedPrice) * 100) / 100; // Keep for backward compatibility
     
     return {
-      calculatedPrice,
+      calculatedPrice: Math.max(0, calculatedPrice),
       adjustmentAmount
     };
   }
