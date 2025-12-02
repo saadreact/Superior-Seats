@@ -38,6 +38,7 @@ function App({
   const [partClickStates, setPartClickStates] = useState({});
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [defaultsApplied, setDefaultsApplied] = useState(false);
+  const [isModelUpdating, setIsModelUpdating] = useState(false); // Track when model is updating
 
   // Notify parent component of 3D customization changes for price calculation
   // Use useRef to store previous selections and only call callback when selections actually change

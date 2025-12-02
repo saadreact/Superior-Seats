@@ -335,8 +335,11 @@ function Model3D({
 
   // Track previous patternId to detect changes
   const prevPatternIdRef = useRef(patternId);
+  const updateTimeoutRef = useRef(null);
+  const isUpdatingRef = useRef(false);
 
   // Handle dynamic material updates (uniforms only - no material recreation)
+  // Debounced to prevent blocking UI during rapid changes
   useEffect(() => {
     if (!texturesLoaded || !materialsRef.current.size) return;
 
@@ -350,14 +353,29 @@ function Model3D({
       return;
     }
     
-    // Update refs
-    prevMeshCustomizationsRef.current = currentMeshCustomizationsStr;
-    prevPatternIdRef.current = patternId;
+    // Clear any pending update
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
 
-    const updateMaterials = async () => {
-      const updatePromises = [];
+    // Debounce updates to prevent blocking (150ms delay)
+    updateTimeoutRef.current = setTimeout(async () => {
+      if (isUpdatingRef.current) return; // Skip if already updating
+      
+      // Update refs
+      prevMeshCustomizationsRef.current = currentMeshCustomizationsStr;
+      prevPatternIdRef.current = patternId;
 
-      materialsRef.current.forEach((materialData, meshName) => {
+      isUpdatingRef.current = true;
+
+      const updateMaterials = async () => {
+        // Use requestAnimationFrame to batch updates and prevent blocking
+        await new Promise(resolve => requestAnimationFrame(resolve));
+
+        const updatePromises = [];
+
+        materialsRef.current.forEach((materialData, meshName) => {
+          // const meshCustomization = meshCustomizations[meshName] || {};
         const meshCustomization = meshCustomizations[meshName] || {};
         let newFabricColor = meshCustomization.fabricColor || fabricColor;
         // Determine stitch color: use pipingColor for piping parts, stitchColor for others
@@ -449,11 +467,28 @@ function Model3D({
         }
       });
 
-      // Wait for all updates to complete
-      await Promise.all(updatePromises);
+      // Batch updates: process in chunks to prevent blocking
+      const BATCH_SIZE = 5;
+      for (let i = 0; i < updatePromises.length; i += BATCH_SIZE) {
+        const batch = updatePromises.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch);
+        // Yield to browser between batches
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      }
     };
 
-    updateMaterials();
+    try {
+      await updateMaterials();
+    } finally {
+      isUpdatingRef.current = false;
+    }
+    }, 150); // 150ms debounce delay
+
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
   }, [texturesLoaded, fabricColor, stitchColor, externalStitchColor, pipingColor, meshCustomizations, patternId, ambientStrength, seatType, customizableParts, modelId]);
   // Note: meshCustomizations is in deps but we use a ref check inside to prevent infinite loops from object recreation
 

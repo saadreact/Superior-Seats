@@ -147,6 +147,11 @@ export interface ApiResponse<T> {
 // API Methods
 // ===========================
 
+// Cache for API responses to prevent duplicate calls
+const configCache = new Map<string, { data: Product3DConfig; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const pendingRequests = new Map<string, Promise<Product3DConfig>>();
+
 export const materialApi = {
   /**
    * Get complete 3D configuration for a product
@@ -154,55 +159,86 @@ export const materialApi = {
    * Returns: Product info, GLB model URL, materials with colors, and customization options
    */
   async getProduct3DConfig(productId: number | string): Promise<Product3DConfig> {
-    try {
-      console.log(`🔄 Fetching 3D config for product ID: ${productId}`);
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/shop/products/${productId}/3d-config`,
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `HTTP ${response.status}: ${response.statusText}`
-        );
-      }
-
-      const apiResponse: ApiResponse<Product3DConfig> = await response.json();
-
-      if (apiResponse.status !== 'success') {
-        throw new Error(apiResponse.message || 'Failed to fetch 3D config');
-      }
-
-      console.log('✅ 3D config loaded successfully:', {
-        productId: apiResponse.data.product.id,
-        productName: apiResponse.data.product.name,
-        materialsCount: apiResponse.data.materials.length,
-        modelUrl: apiResponse.data.model_config.model_file_url,
-        customizableOptions: {
-          seat_types: apiResponse.data.customize_options.seat_types.length,
-          seat_styles: apiResponse.data.customize_options.seat_styles.length,
-          arm_types: apiResponse.data.customize_options.arm_types.length,
-          lumbar_types: apiResponse.data.customize_options.lumbar_types.length,
-          recline_types: apiResponse.data.customize_options.recline_types.length,
-          heat_options: apiResponse.data.customize_options.heat_options.length,
-          item_types: apiResponse.data.customize_options.item_types.length,
-          stitch_patterns: apiResponse.data.customize_options.stitch_patterns.length,
-        },
-      });
-
-      return apiResponse.data;
-    } catch (error: any) {
-      console.error(`❌ Error fetching 3D config for product ${productId}:`, error);
-      throw error;
+    const cacheKey = String(productId);
+    
+    // Check cache first
+    const cached = configCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log(`✅ Using cached 3D config for product ID: ${productId}`);
+      return cached.data;
     }
+
+    // Check if there's already a pending request for this product
+    if (pendingRequests.has(cacheKey)) {
+      console.log(`⏳ Reusing pending request for product ID: ${productId}`);
+      return pendingRequests.get(cacheKey)!;
+    }
+
+    // Create new request
+    const requestPromise = (async () => {
+      try {
+        console.log(`🔄 Fetching 3D config for product ID: ${productId}`);
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/shop/products/${productId}/3d-config`,
+          {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || `HTTP ${response.status}: ${response.statusText}`
+          );
+        }
+
+        const apiResponse: ApiResponse<Product3DConfig> = await response.json();
+
+        if (apiResponse.status !== 'success') {
+          throw new Error(apiResponse.message || 'Failed to fetch 3D config');
+        }
+
+        // Cache the result
+        configCache.set(cacheKey, {
+          data: apiResponse.data,
+          timestamp: Date.now()
+        });
+
+        console.log('✅ 3D config loaded successfully:', {
+          productId: apiResponse.data.product.id,
+          productName: apiResponse.data.product.name,
+          materialsCount: apiResponse.data.materials.length,
+          modelUrl: apiResponse.data.model_config.model_file_url,
+          customizableOptions: {
+            seat_types: apiResponse.data.customize_options.seat_types.length,
+            seat_styles: apiResponse.data.customize_options.seat_styles.length,
+            arm_types: apiResponse.data.customize_options.arm_types.length,
+            lumbar_types: apiResponse.data.customize_options.lumbar_types.length,
+            recline_types: apiResponse.data.customize_options.recline_types.length,
+            heat_options: apiResponse.data.customize_options.heat_options.length,
+            item_types: apiResponse.data.customize_options.item_types.length,
+            stitch_patterns: apiResponse.data.customize_options.stitch_patterns.length,
+          },
+        });
+
+        return apiResponse.data;
+      } catch (error: any) {
+        console.error(`❌ Error fetching 3D config for product ${productId}:`, error);
+        throw error;
+      } finally {
+        // Remove from pending requests
+        pendingRequests.delete(cacheKey);
+      }
+    })();
+
+    // Store pending request
+    pendingRequests.set(cacheKey, requestPromise);
+    return requestPromise;
   },
 
   /**
