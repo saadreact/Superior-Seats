@@ -74,11 +74,11 @@ const HeatOptionDetailPage = () => {
         const basePrice = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
         
         const existingCalculatedTiers = data.price_tiers.map((tier: any) => {
-          const discountPercentage = parseFloat(tier.discount_off_retail_price) || 0;
-          const discountAmount = (basePrice * discountPercentage) / 100;
-          const calculatedPrice = basePrice - discountAmount;
-          const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
-          const isOverridden = actualPrice !== calculatedPrice;
+          const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+          const calculatedPriceFromMultiplier = Math.round((basePrice * multiplier) * 100) / 100;
+          const discountAmount = Math.round((basePrice - calculatedPriceFromMultiplier) * 100) / 100;
+          const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPriceFromMultiplier;
+          const isOverridden = Math.abs(actualPrice - calculatedPriceFromMultiplier) > 0.01;
           
           return {
             id: tier.id,
@@ -88,9 +88,9 @@ const HeatOptionDetailPage = () => {
             created_at: tier.created_at,
             updated_at: tier.updated_at,
             customers_count: 0,
-            calculated_price: calculatedPrice,
+            calculated_price: calculatedPriceFromMultiplier,
             discount_amount: discountAmount,
-            override_price: isOverridden ? actualPrice : undefined,
+            override_price: isOverridden ? Math.round(actualPrice * 100) / 100 : undefined,
             is_overridden: isOverridden
           };
         });
@@ -304,10 +304,7 @@ const HeatOptionDetailPage = () => {
                               <Typography variant="body2" color="text.secondary" sx={{
                                 fontSize: { xs: '0.85rem', sm: '0.75rem' }
                               }}>
-                                {parseFloat(tier.discount_off_retail_price) > 0 
-                                  ? `${tier.discount_off_retail_price}% discount` 
-                                  : 'No discount'
-                                }
+                                Multiplier: {parseFloat(tier.discount_off_retail_price) || 1} × Base Price
                               </Typography>
                               {tier.is_overridden && (
                                 <Typography variant="body2" color="text.secondary" sx={{ 

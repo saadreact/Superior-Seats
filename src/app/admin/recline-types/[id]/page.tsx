@@ -65,16 +65,25 @@ const ReclineTypeDetailsPage = () => {
       const data = await reclineTypesService.getReclineType(parseInt(id));
       setReclineType(data);
       
-      // Create calculated price tiers from existing data
-      const priceTiers: CalculatedPriceTier[] = data.price_tiers?.map((tier: any) => ({
-        id: tier.id,
-        name: tier.name,
-        display_name: tier.display_name,
-        discount_off_retail_price: tier.discount_off_retail_price,
-        calculated_price: tier.pivot?.price_adjustment || 0,
-        override_price: undefined,
-        is_overridden: false
-      })) || [];
+      // Create calculated price tiers from existing data using multiplier logic
+      const basePrice = typeof data.price === 'string' ? parseFloat(data.price) : (data.price || 0);
+      const priceTiers: CalculatedPriceTier[] = data.price_tiers?.map((tier: any) => {
+        const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+        const calculatedPrice = Math.round(basePrice * multiplier * 100) / 100;
+        const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
+        const isOverridden = actualPrice !== calculatedPrice;
+        
+        return {
+          id: tier.id,
+          name: tier.name,
+          display_name: tier.display_name,
+          discount_off_retail_price: tier.discount_off_retail_price,
+          calculated_price: calculatedPrice,
+          discount_amount: 0,
+          override_price: isOverridden ? actualPrice : undefined,
+          is_overridden: isOverridden
+        };
+      }) || [];
       setCalculatedPriceTiers(priceTiers);
     } catch (err: any) {
       setError(err.message || 'Failed to load recline type');
@@ -199,7 +208,7 @@ const ReclineTypeDetailsPage = () => {
                       Based on base price: ${VariantsCalculation.formatPrice(reclineType.price)}
                     </Typography>
                     <Stack spacing={2}>
-                      {VariantsCalculation.sortByDiscountPercentage(calculatedPriceTiers).map((tier) => (
+                      {VariantsCalculation.sortByMultiplier(calculatedPriceTiers).map((tier) => (
                         <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Box>
@@ -207,10 +216,7 @@ const ReclineTypeDetailsPage = () => {
                                 {tier.display_name}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                {parseFloat(tier.discount_off_retail_price) > 0 
-                                  ? `${tier.discount_off_retail_price}% discount` 
-                                  : 'No discount'
-                                }
+                                Multiplier: {parseFloat(tier.discount_off_retail_price) || 1} × Base Price
                               </Typography>
                               {tier.is_overridden && (
                                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>

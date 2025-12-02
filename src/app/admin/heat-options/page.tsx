@@ -123,13 +123,13 @@ const HeatOptionsPage = () => {
   const getCalculatedPriceTiers = (heatOption: HeatOption): CalculatedPriceTier[] => {
     const basePrice = typeof heatOption.price === 'string' ? parseFloat(heatOption.price) : heatOption.price;
     if (heatOption.price_tiers && heatOption.price_tiers.length > 0 && typeof basePrice === 'number' && basePrice > 0) {
-      // Create calculated price tiers from existing data (show actual prices from API)
+      // Create calculated price tiers from existing data using multiplier logic
       return heatOption.price_tiers.map((tier: any) => {
-        const discountPercentage = parseFloat(tier.discount_off_retail_price) || 0;
-        const discountAmount = (basePrice * discountPercentage) / 100;
-        const calculatedPrice = basePrice - discountAmount;
-        const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
-        const isOverridden = actualPrice !== calculatedPrice;
+        const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+        const calculatedPriceFromMultiplier = Math.round((basePrice * multiplier) * 100) / 100;
+        const discountAmount = Math.round((basePrice - calculatedPriceFromMultiplier) * 100) / 100;
+        const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPriceFromMultiplier;
+        const isOverridden = Math.abs(actualPrice - calculatedPriceFromMultiplier) > 0.01;
         
         return {
           id: tier.id,
@@ -139,9 +139,9 @@ const HeatOptionsPage = () => {
           created_at: tier.created_at,
           updated_at: tier.updated_at,
           customers_count: 0,
-          calculated_price: calculatedPrice,
+          calculated_price: calculatedPriceFromMultiplier,
           discount_amount: discountAmount,
-          override_price: isOverridden ? actualPrice : undefined,
+          override_price: isOverridden ? Math.round(actualPrice * 100) / 100 : undefined,
           is_overridden: isOverridden
         };
       });

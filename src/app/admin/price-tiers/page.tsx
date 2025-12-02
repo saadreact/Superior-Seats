@@ -249,7 +249,7 @@ const PriceTiersPage = () => {
                     <TableRow sx={{ backgroundColor: 'grey.50' }}>
                       <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Display Name</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Discount %</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Increases X</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Customers</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
@@ -261,7 +261,7 @@ const PriceTiersPage = () => {
                       <TableRow key={priceTier.id}>
                         <TableCell>{priceTier.name}</TableCell>
                         <TableCell>{priceTier.display_name || priceTier.name}</TableCell>
-                        <TableCell>{priceTier.discount_off_retail_price}%</TableCell>
+                        <TableCell>{priceTier.discount_off_retail_price}x</TableCell>
                         <TableCell>
                           <Chip
                             label={customerCounts[priceTier.id] || 0}

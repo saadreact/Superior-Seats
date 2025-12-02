@@ -56,7 +56,7 @@ const CreateHeatOptionPage = () => {
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState<string>('');
-  const [overridePriceInputs, setOverridePriceInputs] = useState<Record<number, string>>({});
+  const [overridePriceInputs, setOverridePriceInputs] = useState<Record<string, string>>({});
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
@@ -67,20 +67,7 @@ const CreateHeatOptionPage = () => {
         setPriceInput(value > 0 ? value.toString() : '');
       }
       
-      // Recalculate price tiers when base price changes
-      if (field === 'price' && calculatedPriceTiers.length > 0) {
-        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
-        setCalculatedPriceTiers(newCalculatedTiers);
-        
-        // Update price_adjustments with new calculated prices
-        const newPriceAdjustments = Object.fromEntries(
-          newCalculatedTiers.map(tier => [
-            tier.id.toString(), 
-            VariantsCalculation.getFinalPrice(tier)
-          ])
-        );
-        newFormData.price_adjustments = newPriceAdjustments;
-      }
+      // Price tier recalculation is now handled by useEffect
       
       return newFormData;
     });
@@ -117,8 +104,48 @@ const CreateHeatOptionPage = () => {
     const checked = event.target.checked;
     setEnablePriceTiers(checked);
     
-    // Calculate price tiers when enabled
-    if (checked && formData.price > 0) {
+    // Clear price tiers and adjustments when disabled
+    if (!checked) {
+      setFormData(prev => ({
+        ...prev,
+        price_tier_ids: [],
+        price_adjustments: {}
+      }));
+      setCalculatedPriceTiers([]);
+      setPriceOverrides({});
+      setOverridePriceInputs({});
+    }
+    // When enabled, useEffect will handle calculation
+  };
+
+  const handlePriceOverrideChange = (tierId: number, overridePrice: number) => {
+    // Handle clearing override (when overridePrice is 0)
+    if (overridePrice === 0) {
+      setPriceOverrides(prev => {
+        const newOverrides: Record<string, number> = {};
+        const tierIdStr = tierId.toString();
+        for (const key in prev) {
+          if (key !== tierIdStr) {
+            newOverrides[key] = prev[key];
+          }
+        }
+        return newOverrides;
+      });
+    } else {
+      // Round to 2 decimal places
+      const roundedPrice = Math.round(overridePrice * 100) / 100;
+      setPriceOverrides(prev => ({
+        ...prev,
+        [tierId.toString()]: roundedPrice
+      }));
+    }
+    
+    // Let useEffect handle the recalculation to avoid conflicts
+  };
+
+  // Effect to calculate price tiers when priceTiers are loaded or dependencies change
+  useEffect(() => {
+    if (enablePriceTiers && priceTiers.length > 0 && formData.price > 0) {
       const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, priceOverrides);
       setCalculatedPriceTiers(newCalculatedTiers);
       
@@ -131,51 +158,27 @@ const CreateHeatOptionPage = () => {
       );
       setFormData(prev => ({
         ...prev,
-        price_tier_ids: newCalculatedTiers.map(tier => tier.id),
         price_adjustments: newPriceAdjustments
       }));
-    }
-    
-    // Clear price tiers and adjustments when disabled
-    if (!checked) {
-      setFormData(prev => ({
-        ...prev,
-        price_tier_ids: [],
-        price_adjustments: {}
-      }));
-      setCalculatedPriceTiers([]);
-      setPriceOverrides({});
-    }
-  };
-
-  const handlePriceOverrideChange = (tierId: number, overridePrice: number) => {
-    setPriceOverrides(prev => ({
-      ...prev,
-      [tierId.toString()]: overridePrice
-    }));
-    
-    // Recalculate price tiers with new override
-    if (formData.price > 0) {
-      const newOverrides = {
-        ...priceOverrides,
-        [tierId.toString()]: overridePrice
-      };
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, newOverrides);
-      setCalculatedPriceTiers(newCalculatedTiers);
       
-      // Update price_adjustments with new calculated prices
-      const newPriceAdjustments = Object.fromEntries(
-        newCalculatedTiers.map(tier => [
-          tier.id.toString(), 
-          VariantsCalculation.getFinalPrice(tier)
-        ])
-      );
-      setFormData(prev => ({
-        ...prev,
-        price_adjustments: newPriceAdjustments
-      }));
+      // Initialize input values for new tiers if they don't exist
+      setOverridePriceInputs(prev => {
+        const newInputs = { ...prev };
+        newCalculatedTiers.forEach(tier => {
+          const tierIdStr = tier.id.toString();
+          if (!(tierIdStr in newInputs)) {
+            // Set initial input value based on override or calculated price
+            if (tier.is_overridden && tier.override_price !== undefined) {
+              newInputs[tierIdStr] = tier.override_price.toFixed(2);
+            } else {
+              newInputs[tierIdStr] = tier.calculated_price.toFixed(2);
+            }
+          }
+        });
+        return newInputs;
+      });
     }
-  };
+  }, [priceTiers, enablePriceTiers, formData.price, priceOverrides]);
 
   const handleResetPriceTiers = () => {
     if (formData.price > 0) {
@@ -553,8 +556,12 @@ const CreateHeatOptionPage = () => {
                       Based on base price: ${VariantsCalculation.formatPrice(formData.price)}
                     </Typography>
                     
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {VariantsCalculation.sortByDiscountPercentage(calculatedPriceTiers).map((tier) => (
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                      gap: 2 
+                    }}>
+                      {calculatedPriceTiers.map((tier) => (
                         <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
                             <Box sx={{ flex: 1 }}>
@@ -562,67 +569,55 @@ const CreateHeatOptionPage = () => {
                                 {tier.display_name}
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                {parseFloat(tier.discount_off_retail_price) > 0 
-                                  ? `${tier.discount_off_retail_price}% discount` 
-                                  : 'No discount'
-                                }
+                                Multiplier: {parseFloat(tier.discount_off_retail_price) || 1} × Base Price
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
-                              </Typography>
-                              {tier.discount_amount > 0 && (
-                                <Typography variant="caption" color="success.main">
-                                  Save: ${VariantsCalculation.formatPrice(tier.discount_amount)}
+                              {tier.is_overridden && (
+                                <Typography variant="body2" color="text.secondary">
+                                  Calculated: ${VariantsCalculation.formatPrice(tier.calculated_price)}
                                 </Typography>
                               )}
                             </Box>
                             <Box sx={{ minWidth: 120 }}>
                               <TextField
-                                label="Override Price"
-                                type="number"
+                                label="Price"
+                                type="text"
                                 size="small"
-                                value={overridePriceInputs[tier.id] ?? (tier.is_overridden ? (tier.override_price?.toString() || '') : '')}
+                                value={overridePriceInputs[tier.id.toString()] ?? (tier.is_overridden && tier.override_price !== undefined
+                                  ? tier.override_price.toFixed(2)
+                                  : tier.calculated_price !== undefined
+                                  ? tier.calculated_price.toFixed(2)
+                                  : '')}
                                 onChange={(e) => {
                                   const value = e.target.value;
                                   setOverridePriceInputs(prev => ({
                                     ...prev,
-                                    [tier.id]: value
+                                    [tier.id.toString()]: value
                                   }));
-                                  
-                                  // Only update when we have a valid numeric value
-                                  if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
-                                    const numValue = parseFloat(value);
-                                    if (!isNaN(numValue)) {
-                                      handlePriceOverrideChange(tier.id, numValue);
-                                    }
-                                  } else if (value === '') {
-                                    // If empty, reset the override
-                                    handlePriceOverrideChange(tier.id, 0);
-                                  }
                                 }}
                                 onBlur={(e) => {
-                                  // When field loses focus, finalize the value
                                   const value = e.target.value.trim();
-                                  if (value === '' || value === '-' || isNaN(parseFloat(value))) {
-                                    // If invalid or empty, clear override
+                                  if (value === '' || isNaN(parseFloat(value)) || parseFloat(value) <= 0) {
+                                    // Clear override if invalid
                                     setOverridePriceInputs(prev => {
                                       const newInputs = { ...prev };
-                                      delete newInputs[tier.id];
+                                      delete newInputs[tier.id.toString()];
                                       return newInputs;
                                     });
                                     handlePriceOverrideChange(tier.id, 0);
                                   } else {
                                     const numValue = parseFloat(value);
-                                    const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+                                    const roundedValue = Math.round(numValue * 100) / 100;
                                     setOverridePriceInputs(prev => ({
                                       ...prev,
-                                      [tier.id]: finalValue.toString()
+                                      [tier.id.toString()]: roundedValue.toFixed(2)
                                     }));
-                                    handlePriceOverrideChange(tier.id, finalValue);
+                                    handlePriceOverrideChange(tier.id, roundedValue);
                                   }
                                 }}
-                                placeholder={VariantsCalculation.formatPrice(tier.calculated_price)}
-                                inputProps={{ min: 0, step: 0.01 }}
+                                inputProps={{ 
+                                  inputMode: 'decimal',
+                                  pattern: '[0-9]*\\.?[0-9]*'
+                                }}
                                 sx={{ mb: 1 }}
                               />
                               <Box sx={{ textAlign: 'center' }}>

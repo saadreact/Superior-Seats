@@ -137,8 +137,10 @@ const EditProduct2Page = () => {
   
   // Price tiers states
   const [calculatedPriceTiers, setCalculatedPriceTiers] = useState<CalculatedPriceTier[]>([]);
-  const [priceOverrides, setPriceOverrides] = useState<Record<number, number>>({});
+  const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
   const [priceTiers, setPriceTiers] = useState<any[]>([]);
+  // Track raw input values for price override fields to allow free typing
+  const [priceOverrideInputs, setPriceOverrideInputs] = useState<Record<string, string>>({});
 
   // Data state for dropdowns
   const [categories, setCategories] = useState<{ id: number; name: string; price: number }[]>([]);
@@ -169,11 +171,36 @@ const EditProduct2Page = () => {
     loadPriceTiers();
   }, [id]);
 
+  // Effect to calculate price tiers when priceTiers are loaded or dependencies change
+  useEffect(() => {
+    if (formData.enablePriceTiers && priceTiers.length > 0 && formData.basePrice > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.basePrice, priceTiers, priceOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Initialize input values for new tiers if they don't exist
+      setPriceOverrideInputs(prev => {
+        const newInputs = { ...prev };
+        newCalculatedTiers.forEach(tier => {
+          const tierIdStr = tier.id.toString();
+          if (!(tierIdStr in newInputs)) {
+            // Set initial input value based on override or calculated price
+            if (tier.is_overridden && tier.override_price !== undefined) {
+              newInputs[tierIdStr] = tier.override_price.toFixed(2);
+            } else {
+              newInputs[tierIdStr] = tier.calculated_price.toFixed(2);
+            }
+          }
+        });
+        return newInputs;
+      });
+    }
+  }, [priceTiers, formData.enablePriceTiers, formData.basePrice, priceOverrides]);
+
   const loadInitialData = async () => {
     try {
       setInitialLoading(true);
       
-      console.log('🔍 Loading initial data for product ID:', id);
+    
       
       // Load all required data for dropdowns and the product using productApi with fallbacks
       const [
@@ -274,8 +301,7 @@ const EditProduct2Page = () => {
 
       // Set form data from product
       if (productRes) {
-        console.log('🔍 Setting form data from product response');
-        console.log('🔍 Full product response:', productRes);
+       
         
         // Handle existing images - use product_images array from API response
         const existingImageData: {id: number, url: string}[] = [];
@@ -300,7 +326,7 @@ const EditProduct2Page = () => {
           });
         }
         
-        console.log('🔍 Existing image data:', existingImageData);
+      
         setExistingImages(existingImageData);
 
         // Load price tiers data from API response if available
@@ -320,18 +346,23 @@ const EditProduct2Page = () => {
             // Check if this is an override
             const isOverridden = Math.abs(existingPrice - calculatedPrice) > 0.01;
             
+            const basePrice = parseFloat(productRes.price) || 0;
+            const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+            const calculatedPriceFromMultiplier = Math.round((basePrice * multiplier) * 100) / 100;
+            const discountAmount = Math.round((basePrice - calculatedPriceFromMultiplier) * 100) / 100;
+            
             return {
               id: tier.id,
               name: tier.name,
               display_name: tier.display_name,
               discount_off_retail_price: tier.discount_off_retail_price,
-              calculated_price: calculatedPrice,
-              discount_amount: (parseFloat(productRes.price) * parseFloat(tier.discount_off_retail_price)) / 100,
+              calculated_price: calculatedPriceFromMultiplier,
+              discount_amount: discountAmount,
               created_at: tier.created_at,
               updated_at: tier.updated_at,
               customers_count: tier.customers_count || 0,
               pivot: tier.pivot || { price_adjustment: tier.price_adjustment },
-              override_price: isOverridden ? existingPrice : undefined,
+              override_price: isOverridden ? Math.round(existingPrice * 100) / 100 : undefined,
               is_overridden: isOverridden
             };
           });
@@ -394,37 +425,10 @@ const EditProduct2Page = () => {
           setCalculatedPriceTiers(existingPriceTiers);
         }
         
-        console.log('🔍 Form data set successfully');
-        console.log('🔍 Price tiers data:', { 
-          hasPriceTiers, 
-          existingPriceTiers,
-          enablePriceTiers: hasPriceTiers
-        });
-        console.log('🔍 Mapped variation data:', {
-          seatType: productWithImages.seat_types?.length || 0,
-          armType: productWithImages.arm_types?.length || 0,
-          lumbarType: productWithImages.lumbar_types?.length || 0,
-          reclineType: productWithImages.recline_types?.length || 0,
-          heatOption: productWithImages.heat_options?.length || 0,
-          materialType: productWithImages.material_types?.length || 0,
-          stitchPattern: productWithImages.seat_stitch_patterns?.length || 0,
-          seatItemType: productWithImages.item_types?.length || 0,
-          seatStyle: productWithImages.seat_styles?.length || 0,
-          color: productWithImages.colors?.length || 0,
-        });
+    
+  
         
-        console.log('🔍 "None" mapping results:', {
-          seatType: shouldShowNone(productWithImages.seat_types),
-          armType: shouldShowNone(productWithImages.arm_types),
-          lumbarType: shouldShowNone(productWithImages.lumbar_types),
-          reclineType: shouldShowNone(productWithImages.recline_types),
-          heatOption: shouldShowNone(productWithImages.heat_options),
-          materialType: shouldShowNone(productWithImages.material_types),
-          stitchPattern: shouldShowNone(productWithImages.seat_stitch_patterns),
-          seatItemType: shouldShowNone(productWithImages.item_types),
-          seatStyle: shouldShowNone(productWithImages.seat_styles),
-          color: shouldShowNone(productWithImages.colors),
-        });
+  
         
         // Load vehicle models and trims if vehicle data exists
         // Use the vehicle_trim data to get the full vehicle hierarchy
@@ -436,7 +440,7 @@ const EditProduct2Page = () => {
             const trimData = trimResponse?.data || trimResponse;
             
             if (trimData?.model?.vehicle_make_id) {
-              console.log('🔍 Loading vehicle models for make:', trimData.model.vehicle_make_id);
+        
               const modelsResponse = await apiService.getVehicleModels(trimData.model.vehicle_make_id);
               const modelsData = Array.isArray(modelsResponse?.data) ? modelsResponse.data : 
                                 Array.isArray(modelsResponse) ? modelsResponse : [];
@@ -447,7 +451,7 @@ const EditProduct2Page = () => {
               })));
               
               // Load vehicle trims for the model
-              console.log('🔍 Loading vehicle trims for model:', trimData.model.id);
+            
               const trimsResponse = await apiService.getVehicleTrims(trimData.model.id);
               const trimsData = Array.isArray(trimsResponse?.data) ? trimsResponse.data : 
                                Array.isArray(trimsResponse) ? trimsResponse : [];
@@ -695,26 +699,55 @@ const EditProduct2Page = () => {
     }
   };
 
-  const handlePriceOverrideChange = (tierId: number, overridePrice: number) => {
+  const handlePriceOverrideInputChange = (tierId: number, inputValue: string) => {
+    const tierIdStr = tierId.toString();
+    // Update the raw input value to allow free typing
+    setPriceOverrideInputs(prev => ({
+      ...prev,
+      [tierIdStr]: inputValue
+    }));
+  };
+
+  const handlePriceOverrideBlur = (tierId: number) => {
+    const tierIdStr = tierId.toString();
+    const inputValue = priceOverrideInputs[tierIdStr] || '';
+    
+    // If empty or invalid, remove override and reset to calculated price
+    if (inputValue === '' || isNaN(parseFloat(inputValue)) || parseFloat(inputValue) <= 0) {
+      setPriceOverrides(prev => {
+        const newOverrides: Record<string, number> = {};
+        for (const key in prev) {
+          if (key !== tierIdStr) {
+            newOverrides[key] = prev[key];
+          }
+        }
+        return newOverrides;
+      });
+      
+      // Reset input to calculated price
+      const tier = calculatedPriceTiers.find(t => t.id === tierId);
+      if (tier) {
+        setPriceOverrideInputs(prev => ({
+          ...prev,
+          [tierIdStr]: tier.calculated_price.toFixed(2)
+        }));
+      }
+      return;
+    }
+    
+    // Round to 2 decimal places and set override
+    const roundedPrice = Math.round(parseFloat(inputValue) * 100) / 100;
+    
     setPriceOverrides(prev => ({
       ...prev,
-      [tierId.toString()]: overridePrice
+      [tierIdStr]: roundedPrice
     }));
     
-    // Update the calculated price tiers with the new override
-    setCalculatedPriceTiers(prev => prev.map(tier => {
-      if (tier.id === tierId) {
-        const isOverridden = overridePrice > 0 && overridePrice !== tier.calculated_price;
-        return {
-          ...tier,
-          override_price: overridePrice,
-          is_overridden: isOverridden
-        };
-      }
-      return tier;
+    // Update input to show formatted value
+    setPriceOverrideInputs(prev => ({
+      ...prev,
+      [tierIdStr]: roundedPrice.toFixed(2)
     }));
-    
-    // Price adjustments are now handled directly in handleSubmit
   };
 
   const handleResetPriceTiers = () => {
@@ -1000,13 +1033,7 @@ const EditProduct2Page = () => {
       // Check each image individually
       if (productData.images && productData.images.length > 0) {
         productData.images.forEach((file, index) => {
-          console.log(`🔄 Image ${index}:`, {
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            isFile: file instanceof File,
-            constructor: file.constructor.name
-          });
+      
         });
       } else {
         console.log('❌ No images in productData.images');
@@ -1778,7 +1805,11 @@ const EditProduct2Page = () => {
                       Base price: ${VariantsCalculation.formatPrice(formData.basePrice)}
                     </Typography>
                     
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                      gap: 2 
+                    }}>
                       {calculatedPriceTiers.map((tier) => (
                         <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
@@ -1787,10 +1818,7 @@ const EditProduct2Page = () => {
                                 {tier.display_name}
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                {parseFloat(tier.discount_off_retail_price) > 0 
-                                  ? `${tier.discount_off_retail_price}% discount` 
-                                  : 'No discount'
-                                }
+                                Multiplier: {parseFloat(tier.discount_off_retail_price) || 1} × Base Price
                               </Typography>
                               {tier.is_overridden && (
                                 <Typography variant="body2" color="text.secondary">
@@ -1801,14 +1829,27 @@ const EditProduct2Page = () => {
                             <Box sx={{ minWidth: 120 }}>
                               <TextField
                                 label="Price"
-                                type="number"
+                                type="text"
                                 size="small"
-                                value={tier.is_overridden ? tier.override_price || '' : tier.calculated_price || ''}
+                                value={
+                                  priceOverrideInputs[tier.id.toString()] !== undefined
+                                    ? priceOverrideInputs[tier.id.toString()]
+                                    : tier.is_overridden && tier.override_price !== undefined
+                                    ? tier.override_price.toFixed(2)
+                                    : tier.calculated_price !== undefined
+                                    ? tier.calculated_price.toFixed(2)
+                                    : ''
+                                }
                                 onChange={(e) => {
-                                  const value = parseFloat(e.target.value) || 0;
-                                  handlePriceOverrideChange(tier.id, value);
+                                  handlePriceOverrideInputChange(tier.id, e.target.value);
                                 }}
-                                inputProps={{ min: 0, step: 0.01 }}
+                                onBlur={() => {
+                                  handlePriceOverrideBlur(tier.id);
+                                }}
+                                inputProps={{ 
+                                  inputMode: 'decimal',
+                                  pattern: '[0-9]*\\.?[0-9]*'
+                                }}
                                 sx={{ mb: 1 }}
                               />
                               <Box sx={{ textAlign: 'center' }}>

@@ -112,11 +112,10 @@ const LumbarTypesPage = () => {
   const getCalculatedPriceTiers = (lumbarType: LumbarType): CalculatedPriceTier[] => {
     const basePrice = typeof lumbarType.price === 'string' ? parseFloat(lumbarType.price) : lumbarType.price;
     if (lumbarType.price_tiers && lumbarType.price_tiers.length > 0 && typeof basePrice === 'number' && basePrice > 0) {
-      // Create calculated price tiers from existing data (show actual prices from API)
+      // Create calculated price tiers using multiplier logic
       return lumbarType.price_tiers.map((tier: any) => {
-        const discountPercentage = parseFloat(tier.discount_off_retail_price) || 0;
-        const discountAmount = (basePrice * discountPercentage) / 100;
-        const calculatedPrice = basePrice - discountAmount;
+        const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+        const calculatedPrice = Math.round(basePrice * multiplier * 100) / 100;
         const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
         const isOverridden = actualPrice !== calculatedPrice;
         
@@ -129,7 +128,7 @@ const LumbarTypesPage = () => {
           updated_at: tier.updated_at,
           customers_count: 0,
           calculated_price: calculatedPrice,
-          discount_amount: discountAmount,
+          discount_amount: 0,
           override_price: isOverridden ? actualPrice : undefined,
           is_overridden: isOverridden
         };

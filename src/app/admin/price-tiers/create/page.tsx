@@ -206,7 +206,7 @@ const CreatePriceTierPage = () => {
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
-                    label="Discount Off In Store Price (%)"
+                    label="Multiplier "
                     type="number"
                     value={discountInput}
                     onChange={(e) => {
@@ -239,7 +239,7 @@ const CreatePriceTierPage = () => {
                     }}
                     required
                     fullWidth
-                    placeholder="Enter discount percentage"
+                    placeholder="Enter multiplier Value"
                     inputProps={{ min: 0, max: 100, step: 0.01 }}
                   />
                   
