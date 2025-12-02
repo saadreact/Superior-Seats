@@ -79,7 +79,6 @@ const VehicleMakesPage = () => {
       };
       if (searchTerm.trim()) params.search = searchTerm.trim();
       
-      console.log('🚗 Vehicle Makes - API call params:', params);
       const response = await vehicleMakesApiService.getVehicleMakes(params);
       console.log('🚗 Vehicle Makes - API Response:', response);
       

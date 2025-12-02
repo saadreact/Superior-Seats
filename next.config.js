@@ -51,12 +51,47 @@ const nextConfig = {
       },
     ],
   },
+  // Keep ESLint enabled during builds (best practice for code quality)
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: false,
-    // Disable specific rules that are causing warnings
     dirs: ['src'],
+  },
+  // Keep TypeScript type checking enabled (best practice for code quality)
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  // Note: SWC minification is enabled by default in Next.js 15+ (no config needed)
+  
+  // OPTIMIZATION: Compress output (best practice for production)
+  compress: true,
+  
+  // OPTIMIZATION: Disable source maps in production (best practice for security and performance)
+  // Source maps can expose source code and slow down builds
+  productionBrowserSourceMaps: false,
+  
+  // OPTIMIZATION: Tree-shake unused exports from large packages (best practice)
+  // This reduces bundle size and improves build performance
+  experimental: {
+    optimizePackageImports: [
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/lab',
+      'three',
+      'framer-motion',
+    ],
+  },
+  
+  // OPTIMIZATION: Webpack optimizations for deterministic builds and better caching
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Use deterministic module IDs for better caching between builds
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+      };
+    }
+    
+    return config;
   },
 }
 

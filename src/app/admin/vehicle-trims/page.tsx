@@ -97,9 +97,7 @@ const VehicleTrimsPage = () => {
       };
       if (searchTerm.trim()) params.search = searchTerm.trim();
       
-      console.log('🚗 Vehicle Trims - API call params:', params);
       const response = await vehicleTrimsApiService.getVehicleTrims(params);
-      console.log('🚗 Vehicle Trims - API Response:', response);
       
       if (response && response.data && Array.isArray(response.data)) {
         setVehicleTrims(response.data);
@@ -109,7 +107,6 @@ const VehicleTrimsPage = () => {
                      response.meta?.last_page * rowsPerPage || 
                      response.data.length;
         setTotalCount(total);
-        console.log('📊 Setting total count:', total);
       } else if (Array.isArray(response)) {
         setVehicleTrims(response);
         setTotalCount(response.length);
