@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Box,
@@ -624,33 +624,42 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   };
 
   return (
-    <Box className={styles.mainContainer} sx={{ mt: { xs: 8, md: 10 } }}>
+    <Box className={styles.mainContainer} sx={{ mt: { xs: 6, sm: 8, md: 10 } }}>
       {showHeader && <Header />}
       {/* Keep hero minimal; spacing handled via mt above */}
-      <Container maxWidth="xl" sx={{ mb: 2 }}>
+      <Container maxWidth="xl" sx={{ mb: { xs: 1, sm: 2 } }}>
       </Container>
 
-      <Container maxWidth="xl" className={styles.configContainer} sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Container maxWidth="xl" className={styles.configContainer} sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2, md: 4 }, pb: { xs: 1, sm: 2, md: 4 } }}>
         <Card sx={{ borderRadius: 3, boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)' }}>
           <CardContent sx={{ p: 0 }}>
             <Box
               sx={{
                 position: 'relative',
                 overflow: 'hidden',
-                height: { xs: 520, md: 'calc(100vh - 160px)' },
-                maxHeight: 'calc(100vh - 140px)',
-                minHeight: 480,
+                width: '100%',
+                height: { 
+                  xs: 'calc(100vh - 160px)', 
+                  sm: 'calc(100vh - 150px)', 
+                  md: '75vh', 
+                  lg: '80vh',
+                  xl: '85vh'
+                },
+                minHeight: { xs: 600, sm: 650, md: 700, lg: 800 },
+                maxHeight: { xs: 'calc(100vh - 120px)', sm: 'calc(100vh - 110px)', md: '90vh' },
                 borderRadius: 2,
                 bgcolor: '#fff',
+                display: 'flex',
+                flexDirection: 'column',
               }}
               className="modelScope"
             >
               <ModelViewer 
                 product3DConfig={product3DConfig}
-                onCustomizationChange={(selections: any) => {
+                onCustomizationChange={useCallback((selections: any) => {
                   // Update 3D customization selections for price calculation
                   setCurrent3DSelections(selections);
-                }}
+                }, [])}
                 onSubmit={() => {}}
               />
             </Box>
