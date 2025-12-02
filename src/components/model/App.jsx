@@ -38,76 +38,84 @@ function App({
   const [defaultsApplied, setDefaultsApplied] = useState(false);
 
   // Notify parent component of 3D customization changes for price calculation
+  // Use useRef to store previous selections and only call callback when selections actually change
+  const prevSelectionsRef = useRef(null);
+  
   useEffect(() => {
-    if (onCustomizationChange && availableMaterials) {
-      const selections = {};
+    if (!onCustomizationChange || !availableMaterials) return;
 
-      // Material Type
-      if (fabricType) {
-        const material = availableMaterials.find(m => m.id.toString() === fabricType);
-        if (material) {
-          selections.materialType = {
-            id: fabricType,
-            name: material.name,
-            price: material.price ? parseFloat(String(material.price)) : 0
+    const selections = {};
+
+    // Material Type
+    if (fabricType) {
+      const material = availableMaterials.find(m => m.id.toString() === fabricType);
+      if (material) {
+        selections.materialType = {
+          id: fabricType,
+          name: material.name,
+          price: material.price ? parseFloat(String(material.price)) : 0
+        };
+      }
+    }
+
+    // Color
+    if (fabricColor && fabricType) {
+      const material = availableMaterials.find(m => m.id.toString() === fabricType);
+      if (material && material.colors) {
+        const color = material.colors.find(c => c.hex_code === fabricColor);
+        if (color) {
+          selections.color = {
+            id: String(color.id),
+            name: color.name,
+            price: color.price ? parseFloat(String(color.price)) : (color.price_tiers && color.price_tiers.length > 0 ? parseFloat(String(color.price_tiers[0].price)) : 0)
           };
         }
       }
+    }
 
-      // Color
-      if (fabricColor && fabricType) {
-        const material = availableMaterials.find(m => m.id.toString() === fabricType);
-        if (material && material.colors) {
-          const color = material.colors.find(c => c.hex_code === fabricColor);
-          if (color) {
-            selections.color = {
-              id: String(color.id),
-              name: color.name,
-              price: color.price ? parseFloat(String(color.price)) : (color.price_tiers && color.price_tiers.length > 0 ? parseFloat(String(color.price_tiers[0].price)) : 0)
-            };
-          }
-        }
+    // Pattern
+    if (patternId && patternId !== 'default' && customizeOptions?.stitch_patterns) {
+      const pattern = customizeOptions.stitch_patterns.find(p => 
+        String(p.id) === String(patternId) || 
+        p.static_pattern_id === String(patternId)
+      );
+      if (pattern) {
+        selections.pattern = {
+          id: String(pattern.id),
+          name: pattern.name,
+          price: pattern.price ? parseFloat(String(pattern.price)) : (pattern.price_adjustment ? parseFloat(String(pattern.price_adjustment)) : 0)
+        };
       }
+    }
 
-      // Pattern
-      if (patternId && patternId !== 'default' && customizeOptions?.stitch_patterns) {
-        const pattern = customizeOptions.stitch_patterns.find(p => 
-          String(p.id) === String(patternId) || 
-          p.static_pattern_id === String(patternId)
-        );
-        if (pattern) {
-          selections.pattern = {
-            id: String(pattern.id),
-            name: pattern.name,
-            price: pattern.price ? parseFloat(String(pattern.price)) : (pattern.price_adjustment ? parseFloat(String(pattern.price_adjustment)) : 0)
+    // Stitch Color (if pattern has stitch colors)
+    if (patternId && patternId !== 'default' && stitchColor && customizeOptions?.stitch_patterns) {
+      const pattern = customizeOptions.stitch_patterns.find(p => 
+        String(p.id) === String(patternId) || 
+        p.static_pattern_id === String(patternId)
+      );
+      if (pattern && pattern.stitch_colors) {
+        const stitchColorObj = pattern.stitch_colors.find(c => c.hex_code === stitchColor);
+        if (stitchColorObj) {
+          // Check if stitch color has price (may be in price field or price_adjustment)
+          const stitchPrice = stitchColorObj.price ? parseFloat(String(stitchColorObj.price)) : 
+                             (stitchColorObj.price_adjustment ? parseFloat(String(stitchColorObj.price_adjustment)) : 0);
+          selections.stitchColor = {
+            id: String(stitchColorObj.id),
+            name: stitchColorObj.name,
+            price: stitchPrice
           };
         }
       }
+    }
 
-      // Stitch Color (if pattern has stitch colors)
-      if (patternId && patternId !== 'default' && stitchColor && customizeOptions?.stitch_patterns) {
-        const pattern = customizeOptions.stitch_patterns.find(p => 
-          String(p.id) === String(patternId) || 
-          p.static_pattern_id === String(patternId)
-        );
-        if (pattern && pattern.stitch_colors) {
-          const stitchColorObj = pattern.stitch_colors.find(c => c.hex_code === stitchColor);
-          if (stitchColorObj) {
-            // Check if stitch color has price (may be in price field or price_adjustment)
-            const stitchPrice = stitchColorObj.price ? parseFloat(String(stitchColorObj.price)) : 
-                               (stitchColorObj.price_adjustment ? parseFloat(String(stitchColorObj.price_adjustment)) : 0);
-            selections.stitchColor = {
-              id: String(stitchColorObj.id),
-              name: stitchColorObj.name,
-              price: stitchPrice
-            };
-          }
-        }
-      }
-
+    // Only call callback if selections actually changed (deep comparison)
+    const selectionsStr = JSON.stringify(selections);
+    if (prevSelectionsRef.current !== selectionsStr) {
+      prevSelectionsRef.current = selectionsStr;
       onCustomizationChange(selections);
     }
-  }, [fabricType, fabricColor, patternId, stitchColor, availableMaterials, customizeOptions, onCustomizationChange]);
+  }, [fabricType, fabricColor, patternId, stitchColor, availableMaterials, customizeOptions]); // Removed onCustomizationChange from deps
 
   // Set default fabric type and color when materials are loaded (only once)
   useEffect(() => {
@@ -434,7 +442,7 @@ function App({
       flexDirection: { xs: 'column', md: 'row' },
       width: '100%',
       height: '100%',
-      minHeight: { xs: '100vh', md: 'auto' },
+      minHeight: { xs: 'auto', md: 'auto' },
       overflow: 'hidden',
       bgcolor: 'background.default',
       position: 'relative'
@@ -468,7 +476,7 @@ function App({
         width: { xs: '100%', md: '30%' },
         maxWidth: { md: 400 },
         height: { xs: 'auto', md: '100%' },
-        maxHeight: { xs: '45vh', sm: '40vh', md: '100%' },
+        maxHeight: { xs: '30vh', sm: '28vh', md: '100%' },
         overflowY: 'auto',
         overflowX: 'hidden',
         borderRight: { md: 1 },
@@ -506,8 +514,8 @@ function App({
 
       <Box sx={{
         width: { xs: '100%', md: '70%' },
-        height: { xs: '55vh', sm: '60vh', md: '100%' },
-        minHeight: { xs: 500, sm: 600, md: 'auto' },
+        height: { xs: '100%', sm: '100%', md: '100%' },
+        minHeight: { xs: 400, sm: 450, md: 'auto' },
         position: 'relative',
         flexGrow: 1,
         flexShrink: 0,

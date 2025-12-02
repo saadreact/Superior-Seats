@@ -138,20 +138,11 @@ const ContactPage = () => {
       // Ensure value is always a string, never null or undefined
       const stringValue = value || '';
       
-      if (field === 'phone') {
-        // Only allow digits for phone
-        const digitsOnly = stringValue.replace(/\D/g, '');
-        setFormData(prev => ({ ...prev, [field]: digitsOnly }));
-        value = digitsOnly;
-      } else {
-        setFormData(prev => ({ ...prev, [field]: stringValue }));
-      }
-      
-      // Validate the field
+      // Validate the field (don't update formData here - handleInputChange already does that)
       if (field in contactFormSchema.shape) {
         const fieldSchema = contactFormSchema.shape[field as keyof typeof contactFormSchema.shape];
         if (fieldSchema) {
-          fieldSchema.parse(value);
+          fieldSchema.parse(stringValue);
           setErrors(prev => ({ ...prev, [field]: '' }));
         }
       }
@@ -167,14 +158,16 @@ const ContactPage = () => {
   const handleInputChange = (field: keyof ContactFormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value || '';
     // live update value, but only validate if field has been touched after blur or after submit
+    let processedValue = value;
     if (field === 'phone') {
-      const digitsOnly = value.replace(/\D/g, '');
-      setFormData(prev => ({ ...prev, [field]: digitsOnly }));
+      processedValue = value.replace(/\D/g, '');
+      setFormData(prev => ({ ...prev, [field]: processedValue }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
+      processedValue = value;
     }
     if (touched[field]) {
-      validateField(field, value);
+      validateField(field, processedValue);
     }
   };
 
