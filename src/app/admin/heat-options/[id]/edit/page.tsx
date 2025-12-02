@@ -58,11 +58,51 @@ const EditHeatOptionPage = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [enablePriceTiers, setEnablePriceTiers] = useState(false);
+  // Track raw input values for price override fields to allow free typing
+  const [priceOverrideInputs, setPriceOverrideInputs] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadHeatOption();
     loadPriceTiers();
   }, [id]);
+
+  // Effect to calculate price tiers when priceTiers are loaded or dependencies change
+  useEffect(() => {
+    if (enablePriceTiers && priceTiers.length > 0 && formData.price > 0) {
+      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, priceOverrides);
+      setCalculatedPriceTiers(newCalculatedTiers);
+      
+      // Update price_adjustments with calculated prices
+      const newPriceAdjustments = Object.fromEntries(
+        newCalculatedTiers.map(tier => [
+          tier.id.toString(), 
+          VariantsCalculation.getFinalPrice(tier)
+        ])
+      );
+      setFormData(prev => ({
+        ...prev,
+        price_tier_ids: newCalculatedTiers.map(tier => tier.id),
+        price_adjustments: newPriceAdjustments
+      }));
+      
+      // Initialize input values for new tiers if they don't exist
+      setPriceOverrideInputs(prev => {
+        const newInputs = { ...prev };
+        newCalculatedTiers.forEach(tier => {
+          const tierIdStr = tier.id.toString();
+          if (!(tierIdStr in newInputs)) {
+            // Set initial input value based on override or calculated price
+            if (tier.is_overridden && tier.override_price !== undefined) {
+              newInputs[tierIdStr] = tier.override_price.toFixed(2);
+            } else {
+              newInputs[tierIdStr] = tier.calculated_price.toFixed(2);
+            }
+          }
+        });
+        return newInputs;
+      });
+    }
+  }, [priceTiers, enablePriceTiers, formData.price, priceOverrides]);
 
   const loadPriceTiers = async () => {
     try {
@@ -98,15 +138,15 @@ const EditHeatOptionPage = () => {
       // Create calculated price tiers from existing data
       let existingCalculatedTiers: CalculatedPriceTier[] = [];
       if (hasPriceTiers && heatOption.price > 0) {
+        const basePrice = heatOption.price || 0;
         existingCalculatedTiers = heatOption.price_tiers?.map((tier: any) => {
           const existingPrice = parseFloat(tier.pivot?.price_adjustment) || 0;
-          const calculatedPrice = VariantsCalculation.calculatePriceAdjustment(
-            heatOption.price || 0, 
-            parseFloat(tier.discount_off_retail_price)
-          ).calculatedPrice;
+          const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+          const calculatedPriceFromMultiplier = Math.round((basePrice * multiplier) * 100) / 100;
+          const discountAmount = Math.round((basePrice - calculatedPriceFromMultiplier) * 100) / 100;
           
           // Check if this is an override
-          const isOverridden = Math.abs(existingPrice - calculatedPrice) > 0.01;
+          const isOverridden = Math.abs(existingPrice - calculatedPriceFromMultiplier) > 0.01;
           
           return {
             id: tier.id,
@@ -116,9 +156,9 @@ const EditHeatOptionPage = () => {
             created_at: tier.created_at,
             updated_at: tier.updated_at,
             customers_count: 0,
-            calculated_price: calculatedPrice,
-            discount_amount: (heatOption.price * parseFloat(tier.discount_off_retail_price)) / 100,
-            override_price: isOverridden ? existingPrice : undefined,
+            calculated_price: calculatedPriceFromMultiplier,
+            discount_amount: discountAmount,
+            override_price: isOverridden ? Math.round(existingPrice * 100) / 100 : undefined,
             is_overridden: isOverridden
           };
         }) || [];
@@ -127,12 +167,17 @@ const EditHeatOptionPage = () => {
         
         // Set up price overrides from calculated tiers
         const priceOverrides: Record<string, number> = {};
+        const priceOverrideInputs: Record<string, string> = {};
         existingCalculatedTiers.forEach((tier: CalculatedPriceTier) => {
           if (tier.is_overridden && tier.override_price !== undefined) {
             priceOverrides[tier.id.toString()] = tier.override_price;
+            priceOverrideInputs[tier.id.toString()] = tier.override_price.toFixed(2);
+          } else {
+            priceOverrideInputs[tier.id.toString()] = tier.calculated_price.toFixed(2);
           }
         });
         setPriceOverrides(priceOverrides);
+        setPriceOverrideInputs(priceOverrideInputs);
       }
       
       // Initialize price adjustments from calculated tiers if available, otherwise use existing data
@@ -167,20 +212,7 @@ const EditHeatOptionPage = () => {
     setFormData(prev => {
       const newFormData = { ...prev, [field]: value };
       
-      // Recalculate price tiers when base price changes
-      if (field === 'price' && calculatedPriceTiers.length > 0) {
-        const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(value, priceTiers, priceOverrides);
-        setCalculatedPriceTiers(newCalculatedTiers);
-        
-        // Update price_adjustments with new calculated prices
-        const newPriceAdjustments = Object.fromEntries(
-          newCalculatedTiers.map(tier => [
-            tier.id.toString(), 
-            VariantsCalculation.getFinalPrice(tier)
-          ])
-        );
-        newFormData.price_adjustments = newPriceAdjustments;
-      }
+      // Price tier recalculation is now handled by useEffect
       
       return newFormData;
     });
@@ -217,25 +249,6 @@ const EditHeatOptionPage = () => {
     const checked = event.target.checked;
     setEnablePriceTiers(checked);
     
-    // Calculate price tiers when enabled
-    if (checked && formData.price > 0) {
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, priceOverrides);
-      setCalculatedPriceTiers(newCalculatedTiers);
-      
-      // Update price_adjustments with calculated prices
-      const newPriceAdjustments = Object.fromEntries(
-        newCalculatedTiers.map(tier => [
-          tier.id.toString(), 
-          VariantsCalculation.getFinalPrice(tier)
-        ])
-      );
-      setFormData(prev => ({
-        ...prev,
-        price_tier_ids: newCalculatedTiers.map(tier => tier.id),
-        price_adjustments: newPriceAdjustments
-      }));
-    }
-    
     // Clear price tiers and adjustments when disabled
     if (!checked) {
       setFormData(prev => ({
@@ -245,58 +258,66 @@ const EditHeatOptionPage = () => {
       }));
       setCalculatedPriceTiers([]);
       setPriceOverrides({});
+      setPriceOverrideInputs({});
     }
+    // When enabled, useEffect will handle calculation
   };
 
-  const handlePriceOverrideChange = (tierId: number, overridePrice: number) => {
+  const handlePriceOverrideInputChange = (tierId: number, inputValue: string) => {
+    const tierIdStr = tierId.toString();
+    // Update the raw input value to allow free typing
+    setPriceOverrideInputs(prev => ({
+      ...prev,
+      [tierIdStr]: inputValue
+    }));
+  };
+
+  const handlePriceOverrideBlur = (tierId: number) => {
+    const tierIdStr = tierId.toString();
+    const inputValue = priceOverrideInputs[tierIdStr] || '';
+    
+    // If empty or invalid, remove override and reset to calculated price
+    if (inputValue === '' || isNaN(parseFloat(inputValue)) || parseFloat(inputValue) <= 0) {
+      setPriceOverrides(prev => {
+        const newOverrides: Record<string, number> = {};
+        for (const key in prev) {
+          if (key !== tierIdStr) {
+            newOverrides[key] = prev[key];
+          }
+        }
+        return newOverrides;
+      });
+      
+      // Reset input to calculated price
+      const tier = calculatedPriceTiers.find(t => t.id === tierId);
+      if (tier) {
+        setPriceOverrideInputs(prev => ({
+          ...prev,
+          [tierIdStr]: tier.calculated_price.toFixed(2)
+        }));
+      }
+      return;
+    }
+    
+    // Round to 2 decimal places and set override
+    const roundedPrice = Math.round(parseFloat(inputValue) * 100) / 100;
+    
     setPriceOverrides(prev => ({
       ...prev,
-      [tierId.toString()]: overridePrice
+      [tierIdStr]: roundedPrice
     }));
     
-    // Update the calculated price tiers with the new override
-    setCalculatedPriceTiers(prev => prev.map(tier => {
-      if (tier.id === tierId) {
-        const isOverridden = overridePrice > 0 && overridePrice !== tier.calculated_price;
-        return {
-          ...tier,
-          override_price: overridePrice,
-          is_overridden: isOverridden
-        };
-      }
-      return tier;
-    }));
-    
-    // Update price_adjustments with the new price
-    setFormData(prev => ({
+    // Update input to show formatted value
+    setPriceOverrideInputs(prev => ({
       ...prev,
-      price_adjustments: {
-        ...prev.price_adjustments,
-        [tierId.toString()]: overridePrice
-      }
+      [tierIdStr]: roundedPrice.toFixed(2)
     }));
   };
 
   const handleResetPriceTiers = () => {
     if (formData.price > 0) {
-      // Clear all overrides
+      // Clear all overrides - useEffect will handle recalculation
       setPriceOverrides({});
-      
-      // Recalculate price tiers without overrides
-      const newCalculatedTiers = VariantsCalculation.calculatePriceTiers(formData.price, priceTiers, {});
-      setCalculatedPriceTiers(newCalculatedTiers);
-      
-      // Update price_adjustments with calculated prices
-      const newPriceAdjustments = Object.fromEntries(
-        newCalculatedTiers.map(tier => [
-          tier.id.toString(), 
-          tier.calculated_price
-        ])
-      );
-      setFormData(prev => ({
-        ...prev,
-        price_adjustments: newPriceAdjustments
-      }));
     }
   };
 
@@ -682,7 +703,11 @@ const EditHeatOptionPage = () => {
                         Base price: ${VariantsCalculation.formatPrice(formData.price)}
                       </Typography>
                       
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box sx={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                        gap: 2 
+                      }}>
                         {calculatedPriceTiers.map((tier) => (
                           <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
@@ -691,10 +716,7 @@ const EditHeatOptionPage = () => {
                                   {tier.display_name}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                  {parseFloat(tier.discount_off_retail_price) > 0 
-                                    ? `${tier.discount_off_retail_price}% discount` 
-                                    : 'No discount'
-                                  }
+                                  Multiplier: {parseFloat(tier.discount_off_retail_price) || 1} × Base Price
                                 </Typography>
                                 {tier.is_overridden && (
                                   <Typography variant="body2" color="text.secondary">
@@ -705,14 +727,27 @@ const EditHeatOptionPage = () => {
                               <Box sx={{ minWidth: 120 }}>
                                 <TextField
                                   label="Price"
-                                  type="number"
+                                  type="text"
                                   size="small"
-                                  value={tier.is_overridden ? tier.override_price || '' : tier.calculated_price || ''}
+                                  value={
+                                    priceOverrideInputs[tier.id.toString()] !== undefined
+                                      ? priceOverrideInputs[tier.id.toString()]
+                                      : tier.is_overridden && tier.override_price !== undefined
+                                      ? tier.override_price.toFixed(2)
+                                      : tier.calculated_price !== undefined
+                                      ? tier.calculated_price.toFixed(2)
+                                      : ''
+                                  }
                                   onChange={(e) => {
-                                    const value = parseFloat(e.target.value) || 0;
-                                    handlePriceOverrideChange(tier.id, value);
+                                    handlePriceOverrideInputChange(tier.id, e.target.value);
                                   }}
-                                  inputProps={{ min: 0, step: 0.01 }}
+                                  onBlur={() => {
+                                    handlePriceOverrideBlur(tier.id);
+                                  }}
+                                  inputProps={{ 
+                                    inputMode: 'decimal',
+                                    pattern: '[0-9]*\\.?[0-9]*'
+                                  }}
                                   sx={{ mb: 1 }}
                                 />
                                 <Box sx={{ textAlign: 'center' }}>

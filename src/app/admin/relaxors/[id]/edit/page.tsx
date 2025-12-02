@@ -75,16 +75,13 @@ const EditRelaxorPage = () => {
       const relaxor = await relaxorsService.getRelaxor(parseInt(id));
       const priceTierIds = relaxor.price_tiers?.map((tier: any) => tier.id) || [];
       
-      // Initialize calculated price tiers from existing data
+      // Initialize calculated price tiers from existing data using multiplier logic
+      const basePrice = typeof relaxor.price === 'string' ? parseFloat(relaxor.price) : (relaxor.price || 0);
       const initialCalculatedTiers: CalculatedPriceTier[] = relaxor.price_tiers?.map((tier: any) => {
-        const existingPrice = parseFloat(tier.pivot?.price_adjustment) || 0;
-        const calculatedPrice = VariantsCalculation.calculatePriceAdjustment(
-          relaxor.price || 0, 
-          parseFloat(tier.discount_off_retail_price)
-        ).calculatedPrice;
-        
-        // Check if this is an override
-        const isOverridden = Math.abs(existingPrice - calculatedPrice) > 0.01;
+        const multiplier = parseFloat(tier.discount_off_retail_price) || 1;
+        const calculatedPrice = Math.round(basePrice * multiplier * 100) / 100;
+        const actualPrice = tier.pivot?.price_adjustment ? parseFloat(tier.pivot.price_adjustment) : calculatedPrice;
+        const isOverridden = actualPrice !== calculatedPrice;
         
         return {
           id: tier.id,
@@ -92,7 +89,8 @@ const EditRelaxorPage = () => {
           display_name: tier.display_name,
           discount_off_retail_price: tier.discount_off_retail_price,
           calculated_price: calculatedPrice,
-          override_price: isOverridden ? existingPrice : undefined,
+          discount_amount: 0,
+          override_price: isOverridden ? actualPrice : undefined,
           is_overridden: isOverridden
         };
       }) || [];
@@ -119,18 +117,17 @@ const EditRelaxorPage = () => {
       setCalculatedPriceTiers(initialCalculatedTiers);
       setCurrentImage(relaxor.image);
       
-      // Set up price overrides from calculated tiers
+      // Set up price overrides and inputs from calculated tiers
       const priceOverrides: Record<string, number> = {};
+      const initialInputs: Record<number, string> = {};
       initialCalculatedTiers.forEach((tier) => {
         if (tier.is_overridden && tier.override_price !== undefined) {
           priceOverrides[tier.id.toString()] = tier.override_price;
-          setOverridePriceInputs(prev => ({
-            ...prev,
-            [tier.id]: tier.override_price!.toString()
-          }));
+          initialInputs[tier.id] = tier.override_price.toFixed(2);
         }
       });
       setPriceOverrides(priceOverrides);
+      setOverridePriceInputs(initialInputs);
     } catch (err: any) {
       setError(err.message || 'Failed to load relaxor');
       console.error('Error loading relaxor:', err);
@@ -594,7 +591,11 @@ const EditRelaxorPage = () => {
                       Base price: ${VariantsCalculation.formatPrice(formData.price)}
                     </Typography>
                     
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                      gap: 2 
+                    }}>
                       {calculatedPriceTiers.map((tier) => (
                         <Paper key={tier.id} variant="outlined" sx={{ p: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
@@ -603,10 +604,7 @@ const EditRelaxorPage = () => {
                                 {tier.display_name}
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                {parseFloat(tier.discount_off_retail_price) > 0 
-                                  ? `${tier.discount_off_retail_price}% discount` 
-                                  : 'No discount'
-                                }
+                                Multiplier: {parseFloat(tier.discount_off_retail_price) || 1} × Base Price
                               </Typography>
                               {tier.is_overridden && (
                                 <Typography variant="body2" color="text.secondary">
@@ -616,33 +614,25 @@ const EditRelaxorPage = () => {
                             </Box>
                             <Box sx={{ minWidth: 120 }}>
                               <TextField
-                                label="Override Price"
-                                type="number"
+                                label="Price"
+                                type="text"
                                 size="small"
-                                value={overridePriceInputs[tier.id] ?? (tier.is_overridden ? (tier.override_price?.toString() || '') : (tier.calculated_price?.toString() || ''))}
+                                value={overridePriceInputs[tier.id] ?? (tier.is_overridden && tier.override_price !== undefined
+                                  ? tier.override_price.toFixed(2)
+                                  : tier.calculated_price !== undefined
+                                  ? tier.calculated_price.toFixed(2)
+                                  : '')}
                                 onChange={(e) => {
                                   const value = e.target.value;
                                   setOverridePriceInputs(prev => ({
                                     ...prev,
                                     [tier.id]: value
                                   }));
-                                  
-                                  // Only update when we have a valid numeric value
-                                  if (value !== '' && value !== '-' && value !== '.' && !value.endsWith('.')) {
-                                    const numValue = parseFloat(value);
-                                    if (!isNaN(numValue)) {
-                                      handlePriceOverrideChange(tier.id, numValue);
-                                    }
-                                  } else if (value === '') {
-                                    // If empty, reset the override
-                                    handlePriceOverrideChange(tier.id, 0);
-                                  }
                                 }}
                                 onBlur={(e) => {
-                                  // When field loses focus, finalize the value
                                   const value = e.target.value.trim();
-                                  if (value === '' || value === '-' || isNaN(parseFloat(value))) {
-                                    // If invalid or empty, clear override
+                                  if (value === '' || isNaN(parseFloat(value)) || parseFloat(value) <= 0) {
+                                    // Clear override if invalid
                                     setOverridePriceInputs(prev => {
                                       const newInputs = { ...prev };
                                       delete newInputs[tier.id];
@@ -651,16 +641,18 @@ const EditRelaxorPage = () => {
                                     handlePriceOverrideChange(tier.id, 0);
                                   } else {
                                     const numValue = parseFloat(value);
-                                    const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+                                    const roundedValue = Math.round(numValue * 100) / 100;
                                     setOverridePriceInputs(prev => ({
                                       ...prev,
-                                      [tier.id]: finalValue.toString()
+                                      [tier.id]: roundedValue.toFixed(2)
                                     }));
-                                    handlePriceOverrideChange(tier.id, finalValue);
+                                    handlePriceOverrideChange(tier.id, roundedValue);
                                   }
                                 }}
-                                placeholder={VariantsCalculation.formatPrice(tier.calculated_price)}
-                                inputProps={{ min: 0, step: 0.01 }}
+                                inputProps={{ 
+                                  inputMode: 'decimal',
+                                  pattern: '[0-9]*\\.?[0-9]*'
+                                }}
                                 sx={{ mb: 1 }}
                               />
                               <Box sx={{ textAlign: 'center' }}>
@@ -668,7 +660,7 @@ const EditRelaxorPage = () => {
                                   fontWeight: 600, 
                                   color: tier.is_overridden ? 'warning.main' : 'primary.main'
                                 }}>
-                                  ${VariantsCalculation.formatPrice(tier.is_overridden ? tier.override_price : tier.calculated_price)}
+                                  ${VariantsCalculation.formatPrice(VariantsCalculation.getFinalPrice(tier))}
                                 </Typography>
                                 {tier.is_overridden && (
                                   <Typography variant="caption" color="warning.main">
