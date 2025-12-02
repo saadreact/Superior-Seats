@@ -199,6 +199,19 @@ function App({
     if (seatType !== 'two-tone') return;
 
     if (isValid && partName) {
+      // Define combo parts that sync left-right
+      const comboPairs = {
+        'seat_back_lower_Left': 'seat_back_lower_Right',
+        'seat_back_lower_Right': 'seat_back_lower_Left',
+        'seat_bottom_lower_Left': 'seat_bottom_lower_Right',
+        'seat_bottom_lower_Right': 'seat_bottom_lower_Left',
+        'left_arm_upper': 'right_arm_upper',
+        'right_arm_upper': 'left_arm_upper'
+      };
+      
+      // Get the paired part if this is a combo part
+      const pairedPart = comboPairs[partName];
+
       // Original behavior: Cycle through states on click
       // State 0: No customization (default)
       // State 1: Apply color only
@@ -245,12 +258,24 @@ function App({
 
       // Update the customization for this part
       handleMeshCustomizationChange(partName, newCustomization);
+      
+      // If this is a combo part, also apply to the paired part
+      if (pairedPart) {
+        handleMeshCustomizationChange(pairedPart, newCustomization);
+      }
 
       // Update the click state
-      setPartClickStates(prev => ({
-        ...prev,
-        [partName]: nextState
-      }));
+      setPartClickStates(prev => {
+        const updated = {
+          ...prev,
+          [partName]: nextState
+        };
+        // If this is a combo part, sync the paired part
+        if (pairedPart) {
+          updated[pairedPart] = nextState;
+        }
+        return updated;
+      });
 
       // Show feedback toast
       const stateMessages = {
@@ -259,7 +284,10 @@ function App({
         2: 'Color + Pattern applied',
         3: 'Pattern removed'
       };
-      addToast(`${formatPartName(partName)}: ${stateMessages[nextState]}`, 'info');
+      
+      const partDisplayName = formatPartName(partName);
+      const pairMessage = pairedPart ? ' (and pair)' : '';
+      addToast(`${partDisplayName}${pairMessage}: ${stateMessages[nextState]}`, 'info');
     } else {
       // Invalid part clicked - show warning and highlight valid parts
       const toastId = Date.now() + Math.random();
