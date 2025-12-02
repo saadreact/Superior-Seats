@@ -1,13 +1,5 @@
-import { createLeatherMaterial, updateLeatherUniforms } from './LeatherMaterial';
-import { createClothMaterial, updateClothUniforms } from './ClothMaterial';
-import { createSuedeMaterial, updateSuedeUniforms } from './SuedeMaterial';
-import { createVinylMaterial, updateVinylUniforms } from './VinylMaterial';
-import { createMeshMaterial, updateMeshUniforms } from './MeshMaterial';
-import { createCarbonFiberMaterial, updateCarbonFiberUniforms } from './CarbonFiberMaterial';
-import { createMiamiVinylMaterial, updateMiamiVinylUniforms } from './MiamiVinylMaterial';
-import { createUltraleatherMaterial, updateUltraleatherUniforms } from './UltraleatherMaterial';
-import { createBrisaDistressedMaterial, updateBrisaDistressedUniforms } from './BrisaDistressedMaterial';
-import { createCarrollLeatherMaterial, updateCarrollLeatherUniforms } from './CarrollLeatherMaterial';
+// Lazy loading imports - modules loaded on-demand
+import { getShaderFunctions } from './ShaderLoader';
 import { patternLoader } from '../utils/PatternLoader';
 import { getStitchingPath } from '../config/assets';
 import * as THREE from 'three';
@@ -41,80 +33,60 @@ export class ShaderManager {
     leather: {
       name: 'Premium Leather',
       hasStitching: true,
-      createMaterial: createLeatherMaterial,
-      updateUniforms: updateLeatherUniforms,
       specularPower: 20.0,
       specularIntensity: 0.4
     },
     cloth: {
       name: 'Fabric Cloth',
       hasStitching: true,
-      createMaterial: createClothMaterial,
-      updateUniforms: updateClothUniforms,
       specularPower: 6.0,
       specularIntensity: 0.1
     },
     suede: {
       name: 'Suede Material',
-      hasStitching: true, // Now supports stitching
-      createMaterial: createSuedeMaterial,
-      updateUniforms: updateSuedeUniforms,
+      hasStitching: true,
       specularPower: 8.0,
       specularIntensity: 0.15
     },
     vinyl: {
       name: 'Synthetic Vinyl',
       hasStitching: true,
-      createMaterial: createVinylMaterial,
-      updateUniforms: updateVinylUniforms,
       specularPower: 32.0,
       specularIntensity: 0.6
     },
     mesh: {
       name: 'Breathable Mesh',
-      hasStitching: true, // Now supports stitching (reinforcement threads)
-      createMaterial: createMeshMaterial,
-      updateUniforms: updateMeshUniforms,
+      hasStitching: true,
       specularPower: 10.0,
       specularIntensity: 0.2
     },
     carbon: {
       name: 'Carbon Fiber',
-      hasStitching: true, // Now supports stitching (binding threads)
-      createMaterial: createCarbonFiberMaterial,
-      updateUniforms: updateCarbonFiberUniforms,
+      hasStitching: true,
       specularPower: 48.0,
       specularIntensity: 0.7
     },
     'miami-vinyl': {
       name: 'Miami Vinyl\'s',
       hasStitching: true,
-      createMaterial: createMiamiVinylMaterial,
-      updateUniforms: updateMiamiVinylUniforms,
       specularPower: 28.0,
       specularIntensity: 0.55
     },
     ultraleather: {
       name: 'Ultraleather',
       hasStitching: true,
-      createMaterial: createUltraleatherMaterial,
-      updateUniforms: updateUltraleatherUniforms,
       specularPower: 22.0,
       specularIntensity: 0.45
     },
     'brisa-distressed': {
       name: 'Brisa Distressed',
       hasStitching: true,
-      createMaterial: createBrisaDistressedMaterial,
-      updateUniforms: updateBrisaDistressedUniforms,
       specularPower: 12.0,
       specularIntensity: 0.25
     },
     'carroll-leather': {
       name: 'Carroll Leather',
       hasStitching: true,
-      createMaterial: createCarrollLeatherMaterial,
-      updateUniforms: updateCarrollLeatherUniforms,
       specularPower: 18.0,
       specularIntensity: 0.35
     },
@@ -122,16 +94,12 @@ export class ShaderManager {
     'ultrafabrics': {
       name: 'Ultrafabrics',
       hasStitching: true,
-      createMaterial: createUltraleatherMaterial,
-      updateUniforms: updateUltraleatherUniforms,
       specularPower: 22.0,
       specularIntensity: 0.45
     },
     'miami-corp-cloths': {
       name: 'Miami Corp Cloths',
       hasStitching: true,
-      createMaterial: createClothMaterial,
-      updateUniforms: updateClothUniforms,
       specularPower: 6.0,
       specularIntensity: 0.1
     }
@@ -146,9 +114,9 @@ export class ShaderManager {
    * @param {number} ambientStrength - Ambient lighting strength (0.0 to 1.0)
    * @param {boolean} isTwoTone - Whether we're in two-tone mode (affects UV mapping)
    * @param {boolean} noStitching - Whether to disable stitching for this material
-   * @returns {THREE.Material} The created material
+   * @returns {Promise<THREE.Material>} The created material
    */
-  static createMaterial(fabricType, fabricColor, stitchColor, textures, ambientStrength = 0.5, isTwoTone = false, noStitching = false) {
+  static async createMaterial(fabricType, fabricColor, stitchColor, textures, ambientStrength = 0.5, isTwoTone = false, noStitching = false) {
     const fabricConfig = this.fabricTypes[fabricType];
     
     if (!fabricConfig) {
@@ -160,11 +128,14 @@ export class ShaderManager {
     const specularPower = finalFabricConfig.specularPower || 20.0;
     const specularIntensity = finalFabricConfig.specularIntensity || 0.4;
     
+    // Lazy load shader functions
+    const { createMaterial: createMaterialFn } = await getShaderFunctions(fabricType);
+    
     // Create material based on type with material-specific specular properties
     if (finalFabricConfig.hasStitching) {
-      return finalFabricConfig.createMaterial(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
+      return createMaterialFn(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
     } else {
-      return finalFabricConfig.createMaterial(fabricColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
+      return createMaterialFn(fabricColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
     }
   }
 
@@ -259,11 +230,14 @@ export class ShaderManager {
     const specularPower = fabricConfig.specularPower || null;
     const specularIntensity = fabricConfig.specularIntensity || null;
     
+    // Lazy load shader functions
+    const { updateUniforms: updateUniformsFn } = await getShaderFunctions(fabricType);
+    
     // Update material colors and properties based on type
     if (fabricConfig.hasStitching) {
-      fabricConfig.updateUniforms(material, fabricColor, stitchColor, ambientStrength, specularPower, specularIntensity);
+      updateUniformsFn(material, fabricColor, stitchColor, ambientStrength, specularPower, specularIntensity);
     } else {
-      fabricConfig.updateUniforms(material, fabricColor, ambientStrength, specularPower, specularIntensity);
+      updateUniformsFn(material, fabricColor, ambientStrength, specularPower, specularIntensity);
     }
   }
 

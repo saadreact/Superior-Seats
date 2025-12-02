@@ -886,7 +886,7 @@ function CustomizationPanel({
               const isDefault = pattern.id === 'default';
 
               return (
-                <Grid item xs={4} sm={3} md={2} lg={1.7} key={pattern.id}>
+                <Grid item xs={4} sm={3} md={2} lg={2} key={pattern.id}>
                   <ButtonBase
                       onClick={() => {
                         setIsApplyingChange(true);

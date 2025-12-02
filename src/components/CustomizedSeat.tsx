@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Box,
@@ -88,31 +88,16 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
         try {
           setProductLoading(true);
           setProductError(null);
-          console.log('🔄 CustomizedSeat - Fetching 3D config for product ID:', idToFetch);
 
           // NEW: Fetch complete 3D configuration from new API
           const config = await materialApi.getProduct3DConfig(idToFetch);
           setProduct3DConfig(config);
 
-          console.log('✅ CustomizedSeat - 3D config loaded:', {
-            productId: config.product.id,
-            productName: config.product.name,
-            materialsCount: config.materials.length,
-            modelUrl: config.model_config.model_file_url,
-          });
 
           // LEGACY: Also fetch old format for backward compatibility
           const product = await CustomizedSeatApi.getProductById(Number(idToFetch));
           setProductData(product);
 
-          // Debug: Log the images data from API
-          console.log('🖼️ CustomizedSeat - Product images from API:', {
-            totalImages: product.product_images?.length || 0,
-            product_images: product.product_images,
-            primaryImage: product.primary_image,
-            currentImageIndex: 0,
-            fullProduct: product
-          });
 
 
           // Use actual API variation data directly (cast to match context interface)
@@ -136,7 +121,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           };
 
           setVariations(processedVariations);
-          console.log('✅ CustomizedSeat - Legacy product data also loaded for compatibility');
         } catch (error: any) {
           console.error('❌ CustomizedSeat - Error fetching 3D config:', error);
           setProductError(error.message || 'Failed to load 3D customization data');
@@ -144,7 +128,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           setProductLoading(false);
         }
       } else {
-        console.log('⚠️ CustomizedSeat - No product ID available (neither from prop nor context)');
         setProduct3DConfig(null);
         setProductData(null);
         setVariations(null);
@@ -160,7 +143,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       if (productData && productData.vehicle_trim_id) {
         try {
           setVehicleTrimLoading(true);
-          console.log('🚗 CustomizedSeat - Fetching vehicle trim data for ID:', productData.vehicle_trim_id);
 
           const trimData = await apiService.getVehicleTrimById(productData.vehicle_trim_id);
           setVehicleTrimData(trimData);
@@ -171,11 +153,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             setSelectedModel(trimData.model?.id?.toString() || '');
             setSelectedTrim(trimData.id?.toString() || '');
 
-            console.log('✅ CustomizedSeat - Vehicle trim data loaded:', {
-              make: trimData.model?.make?.name,
-              model: trimData.model?.name,
-              trim: trimData.name
-            });
           }
         } catch (error) {
           console.error('❌ CustomizedSeat - Error fetching vehicle trim data:', error);
@@ -647,33 +624,42 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   };
 
   return (
-    <Box className={styles.mainContainer} sx={{ mt: { xs: 8, md: 10 } }}>
+    <Box className={styles.mainContainer} sx={{ mt: { xs: 6, sm: 8, md: 10 } }}>
       {showHeader && <Header />}
       {/* Keep hero minimal; spacing handled via mt above */}
-      <Container maxWidth="xl" sx={{ mb: 2 }}>
+      <Container maxWidth="xl" sx={{ mb: { xs: 1, sm: 2 } }}>
       </Container>
 
-      <Container maxWidth="xl" className={styles.configContainer} sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Container maxWidth="xl" className={styles.configContainer} sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2, md: 4 }, pb: { xs: 1, sm: 2, md: 4 } }}>
         <Card sx={{ borderRadius: 3, boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)' }}>
           <CardContent sx={{ p: 0 }}>
             <Box
               sx={{
                 position: 'relative',
                 overflow: 'hidden',
-                height: { xs: 520, md: 'calc(100vh - 160px)' },
-                maxHeight: 'calc(100vh - 140px)',
-                minHeight: 480,
+                width: '100%',
+                height: { 
+                  xs: 'calc(100vh - 160px)', 
+                  sm: 'calc(100vh - 150px)', 
+                  md: '75vh', 
+                  lg: '80vh',
+                  xl: '85vh'
+                },
+                minHeight: { xs: 600, sm: 650, md: 700, lg: 800 },
+                maxHeight: { xs: 'calc(100vh - 120px)', sm: 'calc(100vh - 110px)', md: '90vh' },
                 borderRadius: 2,
                 bgcolor: '#fff',
+                display: 'flex',
+                flexDirection: 'column',
               }}
               className="modelScope"
             >
               <ModelViewer 
                 product3DConfig={product3DConfig}
-                onCustomizationChange={(selections: any) => {
+                onCustomizationChange={useCallback((selections: any) => {
                   // Update 3D customization selections for price calculation
                   setCurrent3DSelections(selections);
-                }}
+                }, [])}
                 onSubmit={() => {}}
               />
             </Box>

@@ -88,9 +88,7 @@ const VehicleModelsPage = () => {
       };
       if (searchTerm.trim()) params.search = searchTerm.trim();
       
-      console.log('🚗 Vehicle Models - API call params:', params);
       const response = await vehicleModelApiService.getVehicleModels(params);
-      console.log('🚗 Vehicle Models - API Response:', response);
       
       if (response && response.data && Array.isArray(response.data)) {
         setVehicleModels(response.data);
@@ -100,7 +98,6 @@ const VehicleModelsPage = () => {
                      response.meta?.last_page * rowsPerPage || 
                      response.data.length;
         setTotalCount(total);
-        console.log('📊 Setting total count:', total);
       } else if (Array.isArray(response)) {
         setVehicleModels(response);
         setTotalCount(response.length);
