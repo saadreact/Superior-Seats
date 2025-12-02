@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { getModelConfig, getStitchingPath } from '../../config/assets';
 import { ShaderManager } from '../../shaders/ShaderManager';
@@ -327,17 +328,26 @@ function Model3D({
   // This is handled AFTER pattern updates in the dynamic update effect below
   // to avoid flickering during texture loading
 
+  // Track previous patternId to detect changes
+  const prevPatternIdRef = useRef(patternId);
+
   // Handle dynamic material updates (uniforms only - no material recreation)
   useEffect(() => {
     if (!texturesLoaded || !materialsRef.current.size) return;
 
     // Check if meshCustomizations actually changed (deep comparison via JSON.stringify)
     const currentMeshCustomizationsStr = JSON.stringify(meshCustomizations);
-    if (currentMeshCustomizationsStr === prevMeshCustomizationsRef.current) {
-      // No actual change, skip update to prevent infinite loop
+    const meshCustomizationsChanged = currentMeshCustomizationsStr !== prevMeshCustomizationsRef.current;
+    const patternIdChanged = prevPatternIdRef.current !== patternId;
+    
+    // If neither meshCustomizations nor patternId changed, skip update to prevent infinite loop
+    if (!meshCustomizationsChanged && !patternIdChanged) {
       return;
     }
+    
+    // Update refs
     prevMeshCustomizationsRef.current = currentMeshCustomizationsStr;
+    prevPatternIdRef.current = patternId;
 
     const updateMaterials = async () => {
       const updatePromises = [];
@@ -484,21 +494,40 @@ function Model3D({
 
   // Handle glow effect on editable parts when invalid click happens
   useEffect(() => {
-    if (!glowEditableParts || !scene) return;
+    if (!glowEditableParts || !scene) {
+      // Ensure materials are restored when glow is disabled
+      if (!glowEditableParts && scene) {
+        scene.traverse((child) => {
+          if (child.isMesh && customizableParts.includes(child.name)) {
+            // Get the current material from materialsRef (the actual material being used)
+            const materialData = materialsRef.current.get(child.name);
+            if (materialData && materialData.material) {
+              child.material = materialData.material;
+            }
+          }
+        });
+      }
+      return;
+    }
 
     const glowMaterials = new Map();
     const pulseIntervals = [];
+    const originalMaterialsMap = new Map(); // Store materials at glow start
 
     // Store original materials and create glow materials
     scene.traverse((child) => {
       if (child.isMesh && customizableParts.includes(child.name)) {
-        // Store original material - ALWAYS update to ensure we have the latest material
-        // This fixes the issue where restoration reverts to an old material if it was changed (e.g. color change)
-        originalMaterialsRef.current.set(child.name, child.material);
+        // Get the ACTUAL current material from materialsRef, not from child.material
+        // This ensures we restore to the correct material even if it was changed
+        const materialData = materialsRef.current.get(child.name);
+        const currentMaterial = materialData ? materialData.material : child.material;
+        
+        // Store the current material
+        originalMaterialsMap.set(child.name, currentMaterial);
 
         // Create glow material with reduced brightness
         const glowMaterial = new THREE.MeshStandardMaterial({
-          color: child.material.color || new THREE.Color(0xffffff),
+          color: currentMaterial.color || new THREE.Color(0xffffff),
           emissive: new THREE.Color(0xccaa00), // Less bright yellow
           emissiveIntensity: 0.25, // Reduced from 0.6 to 0.25
           transparent: true,
@@ -519,8 +548,8 @@ function Model3D({
             // Apply glow
             child.material = glowMaterials.get(child.name);
           } else {
-            // Apply normal material
-            child.material = originalMaterialsRef.current.get(child.name);
+            // Apply normal material from our stored map
+            child.material = originalMaterialsMap.get(child.name);
           }
         }
       });
@@ -539,10 +568,15 @@ function Model3D({
       // Clear all pulse intervals
       pulseIntervals.forEach(interval => clearInterval(interval));
 
-      // Restore original materials
+      // Restore original materials from materialsRef (the actual current materials)
       scene.traverse((child) => {
-        if (child.isMesh && originalMaterialsRef.current.has(child.name)) {
-          child.material = originalMaterialsRef.current.get(child.name);
+        if (child.isMesh && customizableParts.includes(child.name)) {
+          const materialData = materialsRef.current.get(child.name);
+          if (materialData && materialData.material) {
+            child.material = materialData.material;
+          } else if (originalMaterialsMap.has(child.name)) {
+            child.material = originalMaterialsMap.get(child.name);
+          }
         }
       });
 
@@ -555,95 +589,174 @@ function Model3D({
       clearTimeout(cleanup);
       pulseIntervals.forEach(interval => clearInterval(interval));
       glowMaterials.forEach(material => material.dispose());
+      
+      // Ensure materials are restored on unmount or when glowEditableParts changes
+      scene.traverse((child) => {
+        if (child.isMesh && customizableParts.includes(child.name)) {
+          const materialData = materialsRef.current.get(child.name);
+          if (materialData && materialData.material) {
+            child.material = materialData.material;
+          }
+        }
+      });
     };
   }, [glowEditableParts, scene, customizableParts]);
 
   // Track click vs drag state
   const clickStartRef = useRef(null);
   const hoveredObjectRef = useRef(null);
+  const { raycaster, camera, gl } = useThree();
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const mouseRef = useRef(new THREE.Vector2());
 
-  // Handle pointer move to track which object is being hovered
+  // Handle pointer move to track which object is being hovered (kept for potential future hover effects)
   const handlePointerMove = (event) => {
     if (seatType !== 'two-tone') return;
     hoveredObjectRef.current = event.object;
   };
 
-  // Handle pointer down events
-  const handlePointerDown = (event) => {
-    // Only handle left-clicks in two-tone mode
-    if (event.button !== 0 || seatType !== 'two-tone') return;
+  // Track mouse down/up to differentiate clicks from drags
+  const mouseDownRef = useRef(null);
+  const isDraggingRef = useRef(false);
 
-    // Get the first intersected object (closest to camera)
-    // event.intersections contains all hit objects, ordered by distance
-    let clickedObject = event.object;
+  // Manual click detection using raycaster (differentiates clicks from drags)
+  useEffect(() => {
+    if (seatType !== 'two-tone' || !onPartRightClick || !scene) return;
 
-    // If we have intersections array, get the first valid mesh
-    if (event.intersections && event.intersections.length > 0) {
-      // Find the first mesh that is in customizable parts
-      for (let i = 0; i < event.intersections.length; i++) {
-        const intersection = event.intersections[i];
-        if (intersection.object && intersection.object.isMesh) {
-          clickedObject = intersection.object;
-          break; // Take the first (closest) one
+    const handleMouseDown = (event) => {
+      // Only track left mouse button
+      if (event.button !== 0) return;
+      
+      mouseDownRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+        time: Date.now()
+      };
+      isDraggingRef.current = false;
+    };
+
+    const handleMouseMove = (event) => {
+      if (!mouseDownRef.current) return;
+      
+      // Check if mouse moved significantly (more than 5px = drag)
+      const distance = Math.sqrt(
+        Math.pow(event.clientX - mouseDownRef.current.x, 2) +
+        Math.pow(event.clientY - mouseDownRef.current.y, 2)
+      );
+      
+      if (distance > 5) {
+        isDraggingRef.current = true;
+      }
+    };
+
+    // Handle mouse leaving canvas - reset tracking to prevent stuck state
+    const handleMouseLeave = () => {
+      if (mouseDownRef.current) {
+        mouseDownRef.current = null;
+        isDraggingRef.current = false;
+      }
+    };
+
+    const handleMouseUp = (event) => {
+      // Only handle left mouse button
+      if (event.button !== 0 || !mouseDownRef.current) {
+        mouseDownRef.current = null;
+        isDraggingRef.current = false;
+        return;
+      }
+
+      const mouseDown = mouseDownRef.current;
+      const mouseUp = {
+        x: event.clientX,
+        y: event.clientY,
+        time: Date.now()
+      };
+
+      // Calculate distance and duration
+      const distance = Math.sqrt(
+        Math.pow(mouseUp.x - mouseDown.x, 2) +
+        Math.pow(mouseUp.y - mouseDown.y, 2)
+      );
+      const duration = mouseUp.time - mouseDown.time;
+
+      // Only treat as click if: distance < 5px AND duration < 300ms AND not dragging
+      const isClick = distance < 5 && duration < 300 && !isDraggingRef.current;
+
+      if (isClick && seatType === 'two-tone' && onPartRightClick) {
+
+        // Stop OrbitControls from handling this click
+        event.stopPropagation();
+        event.preventDefault();
+
+        // Calculate mouse position in normalized device coordinates (-1 to +1)
+        const rect = gl.domElement.getBoundingClientRect();
+        mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        // Update raycaster with camera and mouse position
+        raycasterRef.current.setFromCamera(mouseRef.current, camera);
+
+        // Optimize: Only check customizable parts instead of entire scene
+        // Create a group of only customizable meshes for faster intersection
+        let intersects = [];
+        scene.traverse((child) => {
+          if (child.isMesh && customizableParts.includes(child.name)) {
+            const childIntersects = raycasterRef.current.intersectObject(child, false);
+            if (childIntersects.length > 0) {
+              intersects.push(...childIntersects);
+            }
+          }
+        });
+        
+        // Sort by distance (closest first)
+        intersects.sort((a, b) => a.distance - b.distance);
+        
+        if (intersects.length > 0) {
+          // Get the closest intersection (already sorted)
+          const intersection = intersects[0];
+          const meshName = intersection.object.name;
+          const clickPosition = {
+            x: event.clientX,
+            y: event.clientY
+          };
+          onPartRightClick(meshName, clickPosition, true);
+          mouseDownRef.current = null;
+          isDraggingRef.current = false;
+          return;
+        } else {
+          // No valid part found
+          console.warn('⚠️ Clicked object not in customizable parts');
+          onPartRightClick(null, null, false);
         }
-      }
-    }
-
-
-    // Store click start position, time, and object to differentiate from drag
-    clickStartRef.current = {
-      x: event.clientX,
-      y: event.clientY,
-      time: Date.now(),
-      object: clickedObject
-    };
-  };
-
-  // Handle pointer up events (actual click detection)
-  const handlePointerUp = (event) => {
-    if (!clickStartRef.current || seatType !== 'two-tone' || !onPartRightClick) return;
-
-    const clickStart = clickStartRef.current;
-    const clickEnd = {
-      x: event.clientX,
-      y: event.clientY,
-      time: Date.now()
-    };
-
-    // Calculate distance and time to determine if this was a click vs drag
-    const distance = Math.sqrt(
-      Math.pow(clickEnd.x - clickStart.x, 2) +
-      Math.pow(clickEnd.y - clickStart.y, 2)
-    );
-    const duration = clickEnd.time - clickStart.time;
-
-
-    // Consider it a click if: distance < 50px AND duration < 1000ms (more lenient)
-    if (distance < 50 && duration < 1000) {
-      event.stopPropagation();
-
-      // Use the object from pointer down (most reliable)
-      const clickedObject = clickStart.object;
-
-
-      if (clickedObject && customizableParts.includes(clickedObject.name)) {
-        // Valid part clicked - open popup for customization
-        // Get click position for popup placement
-        const clickPosition = {
-          x: event.clientX,
-          y: event.clientY
-        };
-        onPartRightClick(clickedObject.name, clickPosition, true);
       } else {
-        // Invalid part clicked - show warning and highlight valid parts
-        onPartRightClick(null, null, false);
+        // console.log('🚫 Ignored - was a drag:', { distance, duration, isDragging: isDraggingRef.current });
       }
-    } else {
-    }
 
-    // Clear click start reference
-    clickStartRef.current = null;
-  };
+      // Reset tracking
+      mouseDownRef.current = null;
+      isDraggingRef.current = false;
+    };
+
+    // Use capture phase to intercept before OrbitControls
+    gl.domElement.addEventListener('mousedown', handleMouseDown, true);
+    gl.domElement.addEventListener('mousemove', handleMouseMove, true);
+    gl.domElement.addEventListener('mouseup', handleMouseUp, true);
+    gl.domElement.addEventListener('mouseleave', handleMouseLeave, true);
+
+    return () => {
+      gl.domElement.removeEventListener('mousedown', handleMouseDown, true);
+      gl.domElement.removeEventListener('mousemove', handleMouseMove, true);
+      gl.domElement.removeEventListener('mouseup', handleMouseUp, true);
+      gl.domElement.removeEventListener('mouseleave', handleMouseLeave, true);
+      // Reset refs on cleanup
+      mouseDownRef.current = null;
+      isDraggingRef.current = false;
+    };
+  }, [seatType, onPartRightClick, scene, camera, gl, customizableParts]);
+
+  // NOTE: handlePointerDown and handlePointerUp are kept for potential future use
+  // but are currently not attached to the primitive since we use raycaster-based detection
+  // They can be removed if not needed, but keeping for reference
 
   // Only render if scene is loaded
   if (!scene) {
@@ -657,9 +770,9 @@ function Model3D({
       scale={modelConfig?.scale || [1, 1, 1]}
       position={modelConfig?.position || [0.5, 0, 0]}
       rotation={modelConfig?.rotation || [0, 0, 0]}
-      onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
+      // Note: Click detection is handled via raycaster in useEffect above
+      // to properly differentiate clicks from drags and work with OrbitControls
     />
   );
 }

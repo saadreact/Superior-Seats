@@ -256,12 +256,24 @@ function App({
           break;
       }
 
-      // Update the customization for this part
-      handleMeshCustomizationChange(partName, newCustomization);
-      
-      // If this is a combo part, also apply to the paired part
-      if (pairedPart) {
-        handleMeshCustomizationChange(pairedPart, newCustomization);
+      // If customization is empty (reset), remove it from meshCustomizations
+      if (Object.keys(newCustomization).length === 0) {
+        setMeshCustomizations(prev => {
+          const updated = { ...prev };
+          delete updated[partName];
+          // If this is a combo part, also remove the paired part
+          if (pairedPart) {
+            delete updated[pairedPart];
+          }
+          return updated;
+        });
+      } else {
+        // Apply customization to the clicked part
+        handleMeshCustomizationChange(partName, newCustomization);
+        // If this is a combo part, also apply to the paired part
+        if (pairedPart) {
+          handleMeshCustomizationChange(pairedPart, newCustomization);
+        }
       }
 
       // Update the click state
