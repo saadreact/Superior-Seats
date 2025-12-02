@@ -645,7 +645,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                   lg: '80vh',
                   xl: '85vh'
                 },
-                minHeight: { xs: 600, sm: 650, md: 700, lg: 800 },
+                minHeight: { xs: 500, sm: 650, md: 700, lg: 800 },
                 maxHeight: { xs: 'calc(100vh - 120px)', sm: 'calc(100vh - 110px)', md: '90vh' },
                 borderRadius: 2,
                 bgcolor: '#fff',
