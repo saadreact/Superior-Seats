@@ -51,10 +51,9 @@ const nextConfig = {
       },
     ],
   },
-  // Keep ESLint enabled during builds (best practice for code quality)
+  // ESLint disabled during builds - run separately in CI/CD for code quality
   eslint: {
-    ignoreDuringBuilds: false,
-    dirs: ['src'],
+    ignoreDuringBuilds: true,
   },
   // Keep TypeScript type checking enabled (best practice for code quality)
   typescript: {
