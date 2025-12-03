@@ -13,6 +13,19 @@ export interface CartItem {
   stock?: number; // Add stock to track inventory limits
   // Optional: preserve variant selections from customization
   variants?: any;
+  // 3D product customization fields
+  is3DProduct?: boolean;
+  customizationData?: {
+    fabricType?: string;
+    fabricColor?: string;
+    patternId?: string;
+    stitchColor?: string;
+    externalStitchColor?: string;
+    pipingColor?: string;
+    seatType?: string;
+    meshCustomizations?: any;
+    twoToneCustomizations?: any;
+  };
 }
 
 interface CartState {

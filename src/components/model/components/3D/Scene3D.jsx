@@ -134,7 +134,9 @@ const LIGHTING_ENVIRONMENTS = {
 const Scene3D = forwardRef(({
   modelFileUrl, // NEW prop
   modelId,
-  stitchColor,
+  stitchColor, // Internal stitching (pattern stitching)
+  externalStitchColor, // External stitching (edges)
+  pipingColor, // Piping color
   fabricColor,
   fabricType,
   patternId,
@@ -315,6 +317,8 @@ const Scene3D = forwardRef(({
             modelFileUrl={modelFileUrl} // Pass dynamic URL
             modelId={modelId}
             stitchColor={stitchColor}
+            externalStitchColor={externalStitchColor}
+            pipingColor={pipingColor}
             fabricColor={fabricColor}
             fabricType={fabricType}
             patternId={patternId}
@@ -331,6 +335,7 @@ const Scene3D = forwardRef(({
         {/* Ground shadow removed for maximum brightness */}
 
         {/* Controls - Rotation and zoom around model origin */}
+        {/* In two-tone mode, allow rotation on drag, but clicks will be handled by Model3D */}
         <OrbitControls
           ref={controlsRef}
           enablePan={false}

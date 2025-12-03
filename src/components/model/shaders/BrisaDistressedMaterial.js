@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /**
  * Creates a Carroll Leather material - authentic, premium leather with natural characteristics
  */
-export const createBrisaDistressedMaterial = (fabricColor, stitchColor, textures, ambientStrength = 0.5, specularPower = 12.0, specularIntensity = 0.25, isTwoTone = false, noStitching = false) => {
+export const createBrisaDistressedMaterial = (fabricColor, stitchColor, textures, ambientStrength = 0.5, specularPower = 12.0, specularIntensity = 0.25, isTwoTone = false, noStitching = false, externalStitchColor = null) => {
   // ✅ Load fine-grain procedural bump texture for extra realism
   const leatherGrainTexture = new THREE.TextureLoader().load('/assets/fabrics/BrisaDistressed.png');
   leatherGrainTexture.wrapS = leatherGrainTexture.wrapT = THREE.RepeatWrapping;
@@ -31,6 +31,7 @@ export const createBrisaDistressedMaterial = (fabricColor, stitchColor, textures
     uniform sampler2D grainMap; // ✅ New fine-grain bump map
     uniform vec3 fabricColor;
     uniform vec3 stitchColor;
+    uniform vec3 externalStitchColor;
     uniform float ambientStrength;
     uniform float specularPower;
     uniform float specularIntensity;
@@ -185,8 +186,8 @@ export const createBrisaDistressedMaterial = (fabricColor, stitchColor, textures
         externalStitchAlpha = step(0.1, externalStitchLuminance) * (1.0 - step(0.9, externalStitchLuminance));
       }
       
-      // Apply external stitching with same stitch color
-      finalResult = mix(finalResult, stitchColor, externalStitchAlpha * 0.85);
+      // Apply external stitching with separate external stitch color
+      finalResult = mix(finalResult, externalStitchColor, externalStitchAlpha * 0.85);
       
       gl_FragColor = vec4(finalResult, 1.0);
     }
@@ -200,6 +201,7 @@ export const createBrisaDistressedMaterial = (fabricColor, stitchColor, textures
       externalStitchMap: { value: textures.externalStitch || textures.stitch },
       fabricColor: { value: new THREE.Color(fabricColor) },
       stitchColor: { value: new THREE.Color(stitchColor || '#ffffff') },
+      externalStitchColor: { value: new THREE.Color(externalStitchColor || stitchColor || '#ffffff') },
       grainMap: { value: leatherGrainTexture }, // ✅ Added uniform for fine-grain bump
       ambientStrength: { value: ambientStrength },
       specularPower: { value: specularPower },
@@ -216,13 +218,16 @@ export const createBrisaDistressedMaterial = (fabricColor, stitchColor, textures
 /**
  * Updates Carroll Leather material uniforms for dynamic color changes
  */
-export const updateBrisaDistressedUniforms = (material, fabricColor, stitchColor, ambientStrength, specularPower, specularIntensity) => {
+export const updateBrisaDistressedUniforms = (material, fabricColor, stitchColor, ambientStrength, specularPower, specularIntensity, externalStitchColor = null) => {
   if (material.uniforms) {
     if (fabricColor) {
       material.uniforms.fabricColor.value.set(fabricColor);
     }
     if (stitchColor) {
       material.uniforms.stitchColor.value.set(stitchColor);
+    }
+    if (externalStitchColor && material.uniforms.externalStitchColor) {
+      material.uniforms.externalStitchColor.value.set(externalStitchColor);
     }
     if (ambientStrength !== undefined && ambientStrength !== null) {
       material.uniforms.ambientStrength.value = ambientStrength;

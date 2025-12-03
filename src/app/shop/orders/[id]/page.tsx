@@ -59,7 +59,24 @@ interface OrderItem {
   unit_price?: number;
   discount_amount?: number;
   total?: number;
-  variants?: any;
+  variants?: {
+    materialType?: string | number;
+    color?: string | number;
+    seatStitchPattern?: string | number;
+    reclineType?: string | number;
+    lumbarType?: string | number;
+    heatOption?: string | number;
+    seatType?: string | number;
+    itemType?: string | number;
+    seatStyle?: string | number;
+    armType?: string | number;
+    // 3D customization colors
+    externalStitchColor?: string;
+    pipingColor?: string;
+    // 3D customization data (stored as JSON string)
+    customizationData?: string;
+    [key: string]: any; // Allow additional properties
+  };
   product?: { name?: string; category?: any };
   variation?: { name?: string; material_type?: string; color?: string };
 }
@@ -480,7 +497,19 @@ export default function ShopOrderViewPage() {
             open={variantsDrawerOpen}
             onClose={() => setVariantsDrawerOpen(false)}
             productId={selectedOrderItem?.product_id || null}
-            initialSelections={selectedOrderItem?.variants || {}}
+            initialSelections={(() => {
+              // Parse customizationData from variants if present
+              const variants = selectedOrderItem?.variants || {};
+              if (variants.customizationData && typeof variants.customizationData === 'string') {
+                try {
+                  const parsed = JSON.parse(variants.customizationData);
+                  return { ...variants, ...parsed, customizationData: variants.customizationData };
+                } catch (e) {
+                  console.error('Failed to parse customizationData:', e);
+                }
+              }
+              return variants;
+            })()}
             basePrice={0}
             displayPrice={selectedOrderItem?.unit_price || 0}
             readOnly={true}

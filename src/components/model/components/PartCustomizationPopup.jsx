@@ -343,8 +343,10 @@ function PartCustomizationPopup({
                         sx={{
                           width: '100%',
                           height: '100%',
-                          objectFit: 'cover',
-                          display: 'block'
+                          objectFit: 'contain',
+                          objectPosition: 'center',
+                          display: 'block',
+                          backgroundColor: 'transparent'
                         }}
                       />
                     ) : (
@@ -403,7 +405,7 @@ function PartCustomizationPopup({
               const isDefault = pattern.id === 'default';
 
               return (
-                <Grid item xs={4} sm={3} md={2.4} key={pattern.id}>
+                <Grid item xs={6} sm={4} md={3} lg={2} key={pattern.id}>
                   <ButtonBase
                     onClick={() => handlePatternChange(pattern.id)}
                     onMouseEnter={(e) => {
@@ -420,55 +422,52 @@ function PartCustomizationPopup({
                     onMouseLeave={() => setHoveredPattern(null)}
                     sx={{
                       width: '100%',
-                      aspectRatio: '1',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: { xs: 0.2, md: 0.3 },
-                      p: { xs: 0.25, md: 0.3 },
+                      justifyContent: 'flex-start',
+                      gap: { xs: 0.4, sm: 0.35, md: 0.4 },
+                      p: { xs: 0.75, sm: 0.6, md: 0.5 },
                       border: 'none',
                       borderRadius: 1,
                       bgcolor: 'transparent',
                       transition: 'all 0.2s',
                       position: 'relative',
-                      overflow: 'hidden',
+                      overflow: { xs: 'hidden', md: 'visible' },
                       touchAction: 'manipulation',
                       '&:active': {
                         transform: 'scale(0.95)',
                       },
                       '&:hover': {
                         bgcolor: 'action.hover',
-                        boxShadow: 1
+                        boxShadow: 1,
+                        transform: 'scale(1.02)'
                       }
                     }}
                   >
                     {isDefault ? (
                       <Box sx={{
                         width: '100%',
-                        height: { xs: 30, md: 35 },
+                        height: { xs: 32, sm: 28, md: 26 },
                         background: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%), linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%)',
                         backgroundSize: '6px 6px',
                         backgroundPosition: '0 0, 3px 3px',
                         borderRadius: 0.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: { xs: '0.5rem', md: '0.6rem' },
-                        color: 'text.secondary'
-                      }}>
-                        None
-                      </Box>
+                        border: '1px solid',
+                        borderColor: 'divider'
+                      }} />
                     ) : (
                       <Box sx={{
                         width: '100%',
-                        height: { xs: 30, md: 35 },
+                        height: { xs: 32, sm: 28, md: 26 },
                         borderRadius: 0.5,
                         overflow: 'hidden',
                         bgcolor: 'action.hover',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        border: '1px solid',
+                        borderColor: 'divider'
                       }}>
                         {pattern.thumbnail ? (
                           <img 
@@ -477,7 +476,9 @@ function PartCustomizationPopup({
                             style={{
                               width: '100%',
                               height: '100%',
-                              objectFit: 'cover'
+                              objectFit: 'contain',
+                              objectPosition: 'center',
+                              backgroundColor: 'transparent'
                             }}
                             onError={(e) => {
                               console.error('Failed to load pattern thumbnail:', pattern.thumbnail);
@@ -493,13 +494,18 @@ function PartCustomizationPopup({
                     )}
 
                     <Typography variant="caption" sx={{
-                      fontSize: { xs: '0.55rem', sm: '0.6rem', md: '0.6rem' },
-                      lineHeight: 1.1,
+                      fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
+                      lineHeight: { xs: 1.3, md: 1.2 },
                       textAlign: 'center',
                       color: isSelected ? 'primary.main' : 'text.secondary',
-                      fontWeight: isSelected ? 'bold' : 'regular',
+                      fontWeight: isSelected ? 600 : 400,
                       wordBreak: 'break-word',
-                      px: 0.25
+                      px: { xs: 0.5, md: 0.25 },
+                      mt: { xs: 0.25, md: 0.25 },
+                      minHeight: { xs: '1.4em', md: '1.3em' },
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}>
                       {pattern.name}
                     </Typography>
@@ -702,7 +708,9 @@ function PartCustomizationPopup({
                     sx={{
                       width: '100%',
                       height: { xs: 120, md: 150 },
-                      objectFit: 'cover',
+                      objectFit: 'contain',
+                      objectPosition: 'center',
+                      backgroundColor: 'transparent',
                       borderRadius: 1,
                       mb: { xs: 1, md: 1.5 },
                       border: '1px solid',
@@ -813,7 +821,9 @@ function PartCustomizationPopup({
                     sx={{
                       width: '100%',
                       height: { xs: 120, md: 150 },
-                      objectFit: 'cover',
+                      objectFit: 'contain',
+                      objectPosition: 'center',
+                      backgroundColor: 'transparent',
                       borderRadius: 1,
                       mb: { xs: 1, md: 1.5 },
                       border: '1px solid',

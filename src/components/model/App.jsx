@@ -20,7 +20,9 @@ function App({
 
 
   const [modelId, setModelId] = useState('1');
-  const [stitchColor, setStitchColor] = useState('#ffffff');
+  const [stitchColor, setStitchColor] = useState('#ffffff'); // Internal stitching (pattern stitching)
+  const [externalStitchColor, setExternalStitchColor] = useState('#ffffff'); // External stitching (edges)
+  const [pipingColor, setPipingColor] = useState('#ffffff'); // Piping color
   const [fabricColor, setFabricColor] = useState(null); // Will be set when materials load
   const [fabricType, setFabricType] = useState(null); // Will be set when materials load
   const [patternId, setPatternId] = useState('default');
@@ -36,6 +38,7 @@ function App({
   const [partClickStates, setPartClickStates] = useState({});
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [defaultsApplied, setDefaultsApplied] = useState(false);
+  const [isModelUpdating, setIsModelUpdating] = useState(false); // Track when model is updating
 
   // Notify parent component of 3D customization changes for price calculation
   // Use useRef to store previous selections and only call callback when selections actually change
@@ -109,13 +112,19 @@ function App({
       }
     }
 
+    // Add additional customization data for cart
+    selections.externalStitchColor = externalStitchColor;
+    selections.pipingColor = pipingColor;
+    selections.seatType = seatType;
+    selections.meshCustomizations = meshCustomizations;
+
     // Only call callback if selections actually changed (deep comparison)
     const selectionsStr = JSON.stringify(selections);
     if (prevSelectionsRef.current !== selectionsStr) {
       prevSelectionsRef.current = selectionsStr;
       onCustomizationChange(selections);
     }
-  }, [fabricType, fabricColor, patternId, stitchColor, availableMaterials, customizeOptions]); // Removed onCustomizationChange from deps
+  }, [fabricType, fabricColor, patternId, stitchColor, externalStitchColor, pipingColor, seatType, meshCustomizations, availableMaterials, customizeOptions]); // Removed onCustomizationChange from deps
 
   // Set default fabric type and color when materials are loaded (only once)
   useEffect(() => {
@@ -256,12 +265,24 @@ function App({
           break;
       }
 
-      // Update the customization for this part
-      handleMeshCustomizationChange(partName, newCustomization);
-      
-      // If this is a combo part, also apply to the paired part
-      if (pairedPart) {
-        handleMeshCustomizationChange(pairedPart, newCustomization);
+      // If customization is empty (reset), remove it from meshCustomizations
+      if (Object.keys(newCustomization).length === 0) {
+        setMeshCustomizations(prev => {
+          const updated = { ...prev };
+          delete updated[partName];
+          // If this is a combo part, also remove the paired part
+          if (pairedPart) {
+            delete updated[pairedPart];
+          }
+          return updated;
+        });
+      } else {
+        // Apply customization to the clicked part
+        handleMeshCustomizationChange(partName, newCustomization);
+        // If this is a combo part, also apply to the paired part
+        if (pairedPart) {
+          handleMeshCustomizationChange(pairedPart, newCustomization);
+        }
       }
 
       // Update the click state
@@ -370,6 +391,8 @@ function App({
     }
     
     setStitchColor('#ffffff');
+    setExternalStitchColor('#ffffff');
+    setPipingColor('#ffffff');
     setPatternId('default');
     setMeshCustomizations({});
     setSavedTwoToneCustomizations({});
@@ -521,6 +544,10 @@ function App({
           onModelIdChange={setModelId}
           stitchColor={stitchColor}
           onStitchColorChange={setStitchColor}
+          externalStitchColor={externalStitchColor}
+          onExternalStitchColorChange={setExternalStitchColor}
+          pipingColor={pipingColor}
+          onPipingColorChange={setPipingColor}
           fabricColor={fabricColor}
           onFabricColorChange={setFabricColor}
           fabricType={fabricType}
@@ -542,8 +569,8 @@ function App({
 
       <Box sx={{
         width: { xs: '100%', md: '70%' },
-        height: { xs: '100%', sm: '100%', md: '100%' },
-        minHeight: { xs: 400, sm: 450, md: 'auto' },
+        height: { xs: 'auto', sm: '100%', md: '100%' },
+        minHeight: { xs: 300, sm: 450, md: 'auto' },
         position: 'relative',
         flexGrow: 1,
         flexShrink: 0,
@@ -555,6 +582,8 @@ function App({
           modelFileUrl={modelFileUrl} // Pass API model URL
           modelId={modelId}
           stitchColor={stitchColor}
+          externalStitchColor={externalStitchColor}
+          pipingColor={pipingColor}
           fabricColor={fabricColor || '#dfdfdf'} // Fallback to default gray
           fabricType={(() => {
             // Convert material ID to shader_id for 3D rendering
