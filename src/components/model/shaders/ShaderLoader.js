@@ -4,7 +4,32 @@
  */
 
 // Cache for loaded shader modules to prevent redundant imports
+// In development, clear cache on hot reload to pick up shader changes
 const shaderModuleCache = new Map();
+
+// Shader version - increment this to force material recreation when shader code changes
+// This ensures shader source code changes are picked up
+export const SHADER_VERSION = 'v3-dark-material-enhancements';
+
+// Clear cache in development mode when module hot reloads
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  if (module.hot) {
+    const clearAllCache = () => {
+      shaderModuleCache.clear();
+      console.log('🔄 Shader module cache cleared - materials will recreate');
+    };
+    module.hot.accept('./LeatherMaterial', clearAllCache);
+    module.hot.accept('./ClothMaterial', clearAllCache);
+    module.hot.accept('./SuedeMaterial', clearAllCache);
+    module.hot.accept('./VinylMaterial', clearAllCache);
+    module.hot.accept('./MeshMaterial', clearAllCache);
+    module.hot.accept('./CarbonFiberMaterial', clearAllCache);
+    module.hot.accept('./MiamiVinylMaterial', clearAllCache);
+    module.hot.accept('./UltraleatherMaterial', clearAllCache);
+    module.hot.accept('./BrisaDistressedMaterial', clearAllCache);
+    module.hot.accept('./CarrollLeatherMaterial', clearAllCache);
+  }
+}
 
 /**
  * Lazy load a shader module
