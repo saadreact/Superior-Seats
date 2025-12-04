@@ -116,7 +116,7 @@ export class ShaderManager {
    * @param {boolean} noStitching - Whether to disable stitching for this material
    * @returns {Promise<THREE.Material>} The created material
    */
-  static async createMaterial(fabricType, fabricColor, stitchColor, textures, ambientStrength = 0.5, isTwoTone = false, noStitching = false, externalStitchColor = null) {
+  static async createMaterial(fabricType, fabricColor, stitchColor, textures, ambientStrength = 0.5, isTwoTone = false, noStitching = false, externalStitchColor = null, lightDirection = [1.0, 1.0, 1.0]) {
     const fabricConfig = this.fabricTypes[fabricType];
     
     if (!fabricConfig) {
@@ -133,9 +133,9 @@ export class ShaderManager {
     
     // Create material based on type with material-specific specular properties
     if (finalFabricConfig.hasStitching) {
-      return createMaterialFn(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching, externalStitchColor);
+      return createMaterialFn(fabricColor, stitchColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching, externalStitchColor, lightDirection);
     } else {
-      return createMaterialFn(fabricColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching);
+      return createMaterialFn(fabricColor, textures, ambientStrength, specularPower, specularIntensity, isTwoTone, noStitching, null, lightDirection);
     }
   }
 
@@ -150,7 +150,7 @@ export class ShaderManager {
    * @param {number} ambientStrength - Ambient lighting strength (0.0 to 1.0)
    * @param {string} modelId - Model ID for loading pattern-specific stitching
    */
-  static async updateMaterial(material, fabricType, fabricColor, stitchColor, patternId = null, originalTextures = null, ambientStrength = null, modelId = '1', externalStitchColor = null) {
+  static async updateMaterial(material, fabricType, fabricColor, stitchColor, patternId = null, originalTextures = null, ambientStrength = null, modelId = '1', externalStitchColor = null, lightDirection = null) {
     const fabricConfig = this.fabricTypes[fabricType];
     
     if (!fabricConfig) {
@@ -177,7 +177,12 @@ export class ShaderManager {
         }
 
         material.uniforms.diamondNormalMap.value = patternTexture;
+        // Force shader recompilation to pick up any shader code changes
         material.needsUpdate = true;
+        // Also mark uniforms as needing update to ensure changes are applied
+        if (material.uniforms) {
+          material.uniformsNeedUpdate = true;
+        }
         
         // Update stitching texture when pattern changes (each pattern has its own stitching)
         if (material.uniforms.stitchMap && fabricConfig.hasStitching) {
@@ -226,6 +231,11 @@ export class ShaderManager {
       }
     }
 
+    // Update light direction if provided
+    if (lightDirection && material.uniforms && material.uniforms.lightDirection) {
+      material.uniforms.lightDirection.value.set(...lightDirection).normalize();
+    }
+    
     // Get material-specific specular properties (if updating dynamically)
     const specularPower = fabricConfig.specularPower || null;
     const specularIntensity = fabricConfig.specularIntensity || null;
@@ -235,9 +245,9 @@ export class ShaderManager {
     
     // Update material colors and properties based on type
     if (fabricConfig.hasStitching) {
-      updateUniformsFn(material, fabricColor, stitchColor, ambientStrength, specularPower, specularIntensity, externalStitchColor);
+      updateUniformsFn(material, fabricColor, stitchColor, ambientStrength, specularPower, specularIntensity, externalStitchColor, lightDirection);
     } else {
-      updateUniformsFn(material, fabricColor, ambientStrength, specularPower, specularIntensity);
+      updateUniformsFn(material, fabricColor, ambientStrength, specularPower, specularIntensity, null, lightDirection);
     }
   }
 
