@@ -133,19 +133,12 @@ function App({
       const firstMaterial = availableMaterials[0];
       const defaultMaterialId = firstMaterial.id.toString();
       
-      // Set default fabric type
+      // Set default fabric type (first material)
       setFabricType(defaultMaterialId);
       
-      // Set default color from first material's first color
-      if (firstMaterial.colors && firstMaterial.colors.length > 0) {
-        const firstColor = firstMaterial.colors[0];
-        setFabricColor(firstColor.hex_code);
-        setTwoToneColor(firstColor.hex_code);
-      } else {
-        // Fallback color if no colors in first material
-        console.log('   ⚠️ No colors in first material, using fallback #dfdfdf');
-        setFabricColor('#dfdfdf');
-      }
+      // Always use default light grey color (#dfdfdf) on initial load
+      setFabricColor('#dfdfdf');
+      setTwoToneColor('#dfdfdf');
       
       setDefaultsApplied(true);
     } else if ((!availableMaterials || availableMaterials.length === 0) && !defaultsApplied) {
@@ -153,6 +146,7 @@ function App({
       console.log('⚠️ No API materials available, using fallback defaults');
       setFabricType('leather');
       setFabricColor('#dfdfdf');
+      setTwoToneColor('#dfdfdf');
       setDefaultsApplied(true);
     }
   }, [availableMaterials, defaultsApplied]);
@@ -375,15 +369,9 @@ function App({
       const defaultMaterialId = firstMaterial.id.toString();
       setFabricType(defaultMaterialId);
       
-      // Reset to first color of first material
-      if (firstMaterial.colors && firstMaterial.colors.length > 0) {
-        const firstColor = firstMaterial.colors[0];
-        setFabricColor(firstColor.hex_code);
-        setTwoToneColor(firstColor.hex_code);
-      } else {
-        setFabricColor('#dfdfdf');
-        setTwoToneColor('#dfdfdf');
-      }
+      // Always reset to default light grey color
+      setFabricColor('#dfdfdf');
+      setTwoToneColor('#dfdfdf');
     } else {
       setFabricType('leather');
       setFabricColor('#dfdfdf');
@@ -551,7 +539,12 @@ function App({
           fabricColor={fabricColor}
           onFabricColorChange={setFabricColor}
           fabricType={fabricType}
-          onFabricTypeChange={setFabricType}
+          onFabricTypeChange={(newFabricType) => {
+            // Reset color to default light grey when fabric type changes
+            setFabricType(newFabricType);
+            setFabricColor('#dfdfdf');
+            setTwoToneColor('#dfdfdf');
+          }}
           patternId={patternId}
           onPatternChange={setPatternId}
           seatType={seatType}
