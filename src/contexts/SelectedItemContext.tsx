@@ -20,6 +20,7 @@ export interface ProductVariations {
   seat_types?: VariationOption[];
   seat_styles?: VariationOption[];
   item_types?: VariationOption[];
+  relaxors?: VariationOption[];
 }
 
 // TYPES: Define the structure for individual variation options

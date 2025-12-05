@@ -108,6 +108,10 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           const config = await materialApi.getProduct3DConfig(idToFetch);
           setProduct3DConfig(config);
 
+          // Use customize_options from 3D config (primary source)
+          // Fallback to old API if needed
+          const customizeOptions = config.customize_options || {};
+          
           // LEGACY: Also fetch old format for backward compatibility
           // Only fetch if we don't have product data yet or if it's a different product
           if (!productData || productData.id !== Number(idToFetch)) {
@@ -115,6 +119,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             setProductData(product);
 
             // Use actual API variation data directly (cast to match context interface)
+            // Prefer 3D config customize_options, fallback to product data
             const processedVariations = {
               vehicle_trim: product.vehicle_trim ? [{
                 id: product.vehicle_trim.id,
@@ -124,16 +129,56 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               }] : [],
               colors: (product.colors || []) as any[],
               material_types: (product.material_types || []) as any[],
-              heat_options: (product.heat_options || []) as any[],
-              lumbar_types: (product.lumbar_types || []) as any[],
-              recline_types: (product.recline_types || []) as any[],
-              seat_stitch_patterns: (product.seat_stitch_patterns || []) as any[],
-              arm_types: (product.arm_types || []) as any[],
-              seat_types: (product.seat_types || []) as any[],
-              seat_styles: (product.seat_styles || []) as any[],
-              item_types: (product.item_types || []) as any[]
+              heat_options: (customizeOptions.heat_options || product.heat_options || []) as any[],
+              lumbar_types: (customizeOptions.lumbar_types || product.lumbar_types || []) as any[],
+              recline_types: (customizeOptions.recline_types || product.recline_types || []) as any[],
+              seat_stitch_patterns: (customizeOptions.stitch_patterns || product.seat_stitch_patterns || []) as any[],
+              arm_types: (customizeOptions.arm_types || product.arm_types || []) as any[],
+              seat_types: (customizeOptions.seat_types || product.seat_types || []) as any[],
+              seat_styles: (customizeOptions.seat_styles || product.seat_styles || []) as any[],
+              relaxors: (customizeOptions.relaxors || product.relaxors || []) as any[],
+              item_types: (customizeOptions.item_types || product.item_types || []) as any[]
             };
 
+            // Debug: Log relaxors data
+            console.log('🔍 CustomizedSeat - Relaxors data:', {
+              from3DConfig: customizeOptions.relaxors,
+              fromProduct: product.relaxors,
+              final: processedVariations.relaxors,
+              count: processedVariations.relaxors.length
+            });
+
+            setVariations(processedVariations);
+          } else {
+            // If product data already exists, still update variations from 3D config
+            const processedVariations = {
+              vehicle_trim: productData.vehicle_trim ? [{
+                id: productData.vehicle_trim.id,
+                name: productData.vehicle_trim.name,
+                price: 0,
+                is_active: productData.vehicle_trim.is_active
+              }] : [],
+              colors: (productData.colors || []) as any[],
+              material_types: (productData.material_types || []) as any[],
+              heat_options: (customizeOptions.heat_options || productData.heat_options || []) as any[],
+              lumbar_types: (customizeOptions.lumbar_types || productData.lumbar_types || []) as any[],
+              recline_types: (customizeOptions.recline_types || productData.recline_types || []) as any[],
+              seat_stitch_patterns: (customizeOptions.stitch_patterns || productData.seat_stitch_patterns || []) as any[],
+              arm_types: (customizeOptions.arm_types || productData.arm_types || []) as any[],
+              seat_types: (customizeOptions.seat_types || productData.seat_types || []) as any[],
+              seat_styles: (customizeOptions.seat_styles || productData.seat_styles || []) as any[],
+              relaxors: (customizeOptions.relaxors || productData.relaxors || []) as any[],
+              item_types: (customizeOptions.item_types || productData.item_types || []) as any[]
+            };
+            
+            // Debug: Log relaxors data
+            console.log('🔍 CustomizedSeat - Relaxors data (existing product):', {
+              from3DConfig: customizeOptions.relaxors,
+              fromProduct: productData.relaxors,
+              final: processedVariations.relaxors,
+              count: processedVariations.relaxors.length
+            });
+            
             setVariations(processedVariations);
           }
         } catch (error: any) {
@@ -204,6 +249,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
   const [selectedSeatType, setSelectedSeatType] = useState<string>('');
   const [selectedItemType, setSelectedItemType] = useState<string>('');
   const [selectedSeatStyle, setSelectedSeatStyle] = useState<string>('');
+  const [selectedRelaxor, setSelectedRelaxor] = useState<string>('');
   const [selectedMaterialType, setSelectedMaterialType] = useState<string>('');
   const [selectedIncludedArm, setSelectedIncludedArm] = useState<string>('');
   const [selectedTexture, setSelectedTexture] = useState<string>(''); // material_types mirror
@@ -506,6 +552,19 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
       }
     }
 
+    // Relaxor
+    if (selectedRelaxor && variations?.relaxors) {
+      const option = variations.relaxors.find((opt: AnyVariationOption) => String(opt.id) === selectedRelaxor);
+      const optPrice = getOptionPrice(option);
+      if (option && optPrice !== 0) {
+        breakdown.push({
+          label: 'Relaxor',
+          price: optPrice,
+          option
+        });
+      }
+    }
+
     // Included Arm
     if (selectedIncludedArm && variations?.arm_types) {
       const option = variations.arm_types.find((opt: AnyVariationOption) => String(opt.id) === selectedIncludedArm);
@@ -550,6 +609,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
 
     const priceData = calculatePriceBreakdown();
 
+    // Debug: Log variations data when rendering
+    console.log('🔍 CustomizedSeat - Rendering variations:', {
+      relaxors: variations?.relaxors,
+      relaxorsCount: variations?.relaxors?.length || 0,
+      seatStyles: variations?.seat_styles?.length || 0,
+      seatTypes: variations?.seat_types?.length || 0,
+    });
+
     return (
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
         {/* Left Side - Dropdowns in 2 columns */}
@@ -560,6 +627,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
           {dropdown('Seat Type', selectedSeatType, setSelectedSeatType, variations?.seat_types)}
           {dropdown('Item Type', selectedItemType, setSelectedItemType, variations?.item_types)}
           {dropdown('Seat Style', selectedSeatStyle, setSelectedSeatStyle, variations?.seat_styles)}
+          {dropdown('Relaxor', selectedRelaxor, setSelectedRelaxor, variations?.relaxors)}
           {dropdown('Included Arm', selectedIncludedArm, setSelectedIncludedArm, variations?.arm_types)}
         </Box>
 
@@ -634,6 +702,7 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
                       seatType: selectedSeatType || undefined,
                       itemType: selectedItemType || undefined,
                       seatStyle: selectedSeatStyle || undefined,
+                      relaxor: selectedRelaxor || undefined,
                       armType: selectedIncludedArm || undefined,
                     };
 
