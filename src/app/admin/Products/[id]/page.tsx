@@ -85,6 +85,8 @@ interface Product {
   images?: string[];
   is_active: boolean;
   show_on_special_shop: boolean;
+  is_customize_3d_product?: boolean;
+  has_child_restraint?: boolean;
   created_at: string;
   updated_at: string;
   category_id?: number | null;
@@ -572,6 +574,32 @@ const ProductDetailPage = () => {
                       size="small"
                     />
                   </Box>
+                  
+                  {product.is_customize_3d_product && (
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ color: '#64748b', mb: 1 }}>
+                        3D Customization
+                      </Typography>
+                      <Chip
+                        label="Enabled"
+                        color="success"
+                        size="small"
+                      />
+                    </Box>
+                  )}
+                  
+                  {product.has_child_restraint && (
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ color: '#64748b', mb: 1 }}>
+                        Child Restraint
+                      </Typography>
+                      <Chip
+                        label="Yes"
+                        color="info"
+                        size="small"
+                      />
+                    </Box>
+                  )}
                   
                   <Divider />
                   
