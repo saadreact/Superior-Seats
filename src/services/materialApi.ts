@@ -117,6 +117,7 @@ export interface StitchPattern extends VariationOption {
 export interface CustomizeOptions {
   seat_types: VariationOption[];
   seat_styles: VariationOption[];
+  relaxors: VariationOption[];
   arm_types: VariationOption[];
   lumbar_types: VariationOption[];
   recline_types: VariationOption[];
@@ -215,14 +216,15 @@ export const materialApi = {
           materialsCount: apiResponse.data.materials.length,
           modelUrl: apiResponse.data.model_config.model_file_url,
           customizableOptions: {
-            seat_types: apiResponse.data.customize_options.seat_types.length,
-            seat_styles: apiResponse.data.customize_options.seat_styles.length,
-            arm_types: apiResponse.data.customize_options.arm_types.length,
-            lumbar_types: apiResponse.data.customize_options.lumbar_types.length,
-            recline_types: apiResponse.data.customize_options.recline_types.length,
-            heat_options: apiResponse.data.customize_options.heat_options.length,
-            item_types: apiResponse.data.customize_options.item_types.length,
-            stitch_patterns: apiResponse.data.customize_options.stitch_patterns.length,
+            seat_types: apiResponse.data.customize_options.seat_types?.length || 0,
+            seat_styles: apiResponse.data.customize_options.seat_styles?.length || 0,
+            relaxors: apiResponse.data.customize_options.relaxors?.length || 0,
+            arm_types: apiResponse.data.customize_options.arm_types?.length || 0,
+            lumbar_types: apiResponse.data.customize_options.lumbar_types?.length || 0,
+            recline_types: apiResponse.data.customize_options.recline_types?.length || 0,
+            heat_options: apiResponse.data.customize_options.heat_options?.length || 0,
+            item_types: apiResponse.data.customize_options.item_types?.length || 0,
+            stitch_patterns: apiResponse.data.customize_options.stitch_patterns?.length || 0,
           },
         });
 
