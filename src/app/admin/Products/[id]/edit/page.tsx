@@ -72,6 +72,7 @@ interface ProductPage2Form {
   
   isActive: boolean;
   isCustomize3dProduct: boolean;
+  hasChildRestraint: boolean;
 }
 
 interface ProductItem {
@@ -129,6 +130,7 @@ const EditProduct2Page = () => {
     enablePriceTiers: false,
     isActive: true,
     isCustomize3dProduct: false,
+    hasChildRestraint: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -985,6 +987,7 @@ const EditProduct2Page = () => {
         stock: formData.stock,
         is_active: formData.isActive,
         is_customize_3d_product: formData.isCustomize3dProduct,
+        has_child_restraint: formData.hasChildRestraint,
         show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Only send new images like create page
@@ -1253,6 +1256,25 @@ const EditProduct2Page = () => {
                         />
                       }
                       label="Enable 3D Customization"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.hasChildRestraint}
+                          onChange={handleSwitchChange('hasChildRestraint')}
+                          color="primary"
+                        />
+                      }
+                      label="Has Child Restraint"
                       labelPlacement="start"
                       sx={{ 
                         gap: 1,

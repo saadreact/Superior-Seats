@@ -17,6 +17,7 @@ import {
   MenuItem,
   Divider,
   Button,
+  Chip,
 } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import Header from '@/components/Header';
@@ -140,14 +141,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               item_types: (customizeOptions.item_types || product.item_types || []) as any[]
             };
 
-            // Debug: Log relaxors data
-            console.log('🔍 CustomizedSeat - Relaxors data:', {
-              from3DConfig: customizeOptions.relaxors,
-              fromProduct: product.relaxors,
-              final: processedVariations.relaxors,
-              count: processedVariations.relaxors.length
-            });
-
             setVariations(processedVariations);
           } else {
             // If product data already exists, still update variations from 3D config
@@ -170,14 +163,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
               relaxors: (customizeOptions.relaxors || productData.relaxors || []) as any[],
               item_types: (customizeOptions.item_types || productData.item_types || []) as any[]
             };
-            
-            // Debug: Log relaxors data
-            console.log('🔍 CustomizedSeat - Relaxors data (existing product):', {
-              from3DConfig: customizeOptions.relaxors,
-              fromProduct: productData.relaxors,
-              final: processedVariations.relaxors,
-              count: processedVariations.relaxors.length
-            });
             
             setVariations(processedVariations);
           }
@@ -335,6 +320,14 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
             <Typography variant="body2" color="text.secondary">
               Category: {productData.category.name}
             </Typography>
+          )}
+          {(productData as any)?.has_child_restraint && (
+            <Chip 
+              label="Child Restraint Available" 
+              color="info" 
+              size="small" 
+              sx={{ mt: 1 }}
+            />
           )}
         </Box>
         {productData.price && (
@@ -608,14 +601,6 @@ const CustomizedSeat: React.FC<CustomizeYourSeatProps> = ({
     );
 
     const priceData = calculatePriceBreakdown();
-
-    // Debug: Log variations data when rendering
-    console.log('🔍 CustomizedSeat - Rendering variations:', {
-      relaxors: variations?.relaxors,
-      relaxorsCount: variations?.relaxors?.length || 0,
-      seatStyles: variations?.seat_styles?.length || 0,
-      seatTypes: variations?.seat_types?.length || 0,
-    });
 
     return (
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>

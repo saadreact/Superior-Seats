@@ -70,6 +70,13 @@ export interface SeatStyleImage {
   image_url: string;
 }
 
+export interface SeatStyleProduct {
+  id: number;
+  name: string;
+  price: string | number;
+  is_customize_3d_product: boolean;
+}
+
 export interface SeatStyle {
   id: number;
   name: string;
@@ -78,6 +85,7 @@ export interface SeatStyle {
   created_at: string;
   updated_at: string;
   images: SeatStyleImage[];
+  products?: SeatStyleProduct[];
 }
 
 export interface PaginationMeta {
