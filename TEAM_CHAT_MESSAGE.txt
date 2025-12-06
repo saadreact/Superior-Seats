@@ -1,0 +1,28 @@
+🚀 **Deployment Process Update**
+
+Hey team! We've fixed the VPS build hanging issue and implemented a new deployment workflow.
+
+**What's New:**
+✅ Build happens locally (not on server) - solves the memory/CPU issues
+✅ Automated scripts for easy deployment
+✅ Three-branch strategy: develop → deploy → server
+
+**For Developers:**
+- No changes to your workflow! Keep committing to `develop`/`main` as usual
+- All deployment scripts are now in the repo
+
+**For [Deployment Person Name]:**
+The deployment process is now super simple:
+
+1. Pull latest: `git checkout develop && git pull`
+2. Run script: `./scripts/build-and-deploy.sh` (or `.ps1` on Windows)
+3. Deploy on server: `./scripts/deploy-server.sh`
+
+That's it! No more build hangs. 🎉
+
+**Documentation:**
+- Full guide: `DEPLOYMENT.md`
+- Quick reference: `QUICK_DEPLOYMENT_GUIDE.md`
+
+The scripts automatically handle everything - just pull, run, and deploy. Let me know if you have any questions!
+
