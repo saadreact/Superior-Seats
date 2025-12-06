@@ -1,4 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Deployment branch .gitignore
+# This file allows .next folder to be committed for deployment branch
+# Copy this to .gitignore when working on the deploy branch
 
 # dependencies
 /node_modules
@@ -10,8 +12,8 @@ package-lock.json
 # testing
 /coverage
 
-# next.js
-/.next/
+# next.js - NOTE: .next/ is ALLOWED in deploy branch
+# /.next/  <-- Commented out to allow .next folder
 /out/
 
 # production
@@ -48,4 +50,5 @@ env.example
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts 
+# next-env.d.ts  <-- Commented out to allow this file
+
