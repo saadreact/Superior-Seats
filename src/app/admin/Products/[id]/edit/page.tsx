@@ -417,6 +417,7 @@ const EditProduct2Page = () => {
           enablePriceTiers: hasPriceTiers, // Enable if price tiers exist
           isActive: productRes.is_active ?? true,
           isCustomize3dProduct: productRes.is_customize_3d_product ?? false,
+          hasChildRestraint: (productRes as any).has_child_restraint ?? false,
         });
         
         // Load 3D customization data
