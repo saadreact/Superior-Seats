@@ -697,7 +697,7 @@ const AboutPage = () => {
 </Box>
 
 <YouTubePlayer
-        videoUrl="https://youtu.be/DWuBFo8J8AQ"
+        videoUrl="https://youtu.be/2RozefsPwVM"
         autoPlay={true}
         muted={true}
         loop={true}
@@ -733,7 +733,7 @@ const AboutPage = () => {
            </MotionTypography>
               {/* YouTube Video Player Section */}
       <YouTubePlayer
-        videoUrl="https://youtu.be/Jp3MP4SzWdc"
+        videoUrl="https://youtu.be/DD71scUcTUQ"
         autoPlay={true}
         muted={true}
         loop={true}
