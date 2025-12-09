@@ -41,7 +41,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://sandbox.web.squarecdn.com" />
         <link rel="dns-prefetch" href="https://sandbox.web.squarecdn.com" />
       </head>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <ReduxProvider>
           <ThemeRegistry>
             <SelectedItemProvider>

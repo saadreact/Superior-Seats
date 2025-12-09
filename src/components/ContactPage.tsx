@@ -46,7 +46,7 @@ type ContactFormErrors = {
 
 const ContactPage = () => {
   // Base URL for images from server
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
   
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
   const [errors, setErrors] = useState<ContactFormErrors>({} as ContactFormErrors);
