@@ -67,6 +67,7 @@ interface ProductPage2Form {
   stitchPattern: string[];
   seatItemType: string[];
   seatStyle: string[]; // Added new field
+  relaxor: string[]; // Relaxor field
   color: string[];
   
   
@@ -75,6 +76,7 @@ interface ProductPage2Form {
   
   isActive: boolean;
   isCustomize3dProduct: boolean;
+  hasChildRestraint: boolean;
 }
 
 const CreateProduct2Page = () => {
@@ -104,10 +106,12 @@ const CreateProduct2Page = () => {
     stitchPattern: [],
     seatItemType: [],
     seatStyle: [], // Added new field
+    relaxor: [], // Relaxor field
     color: [],
     enablePriceTiers: false,
     isActive: true,
     isCustomize3dProduct: false,
+    hasChildRestraint: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -133,6 +137,7 @@ const CreateProduct2Page = () => {
   const [stitchPatterns, setStitchPatterns] = useState<{ id: number; name: string; price: number }[]>([]);
   const [seatItemTypes, setSeatItemTypes] = useState<{ id: number; name: string; price: number }[]>([]);
   const [seatStyles, setSeatStyles] = useState<{ id: number; name: string; price: number }[]>([]); // Added new field
+  const [relaxors, setRelaxors] = useState<{ id: number; name: string; price: number }[]>([]); // Relaxor field
   const [colors, setColors] = useState<{ id: number; name: string; price: number }[]>([]);
   
   // Vehicle data state
@@ -233,6 +238,7 @@ const CreateProduct2Page = () => {
         stitchPatternsRes,
         seatItemTypesRes,
         seatStylesRes,
+        relaxorsRes,
         colorsRes,
       ] = await Promise.all([
         productApi.getSeatTypes().catch(() => apiService.getSeatTypes()),
@@ -244,6 +250,7 @@ const CreateProduct2Page = () => {
         productApi.getStitchPatterns(),
         productApi.getItemTypes().catch(() => apiService.getItemTypes()),
         productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
+        productApi.getRelaxors().catch(() => []),
         productApi.getColors(),
       ]);
 
@@ -275,6 +282,9 @@ const CreateProduct2Page = () => {
       const processedSeatStyles = convertToFormFormat(seatStylesRes, false); // Seat styles don't have price
       console.log('Processed Seat Styles:', processedSeatStyles);
       setSeatStyles(processedSeatStyles);
+      const processedRelaxors = convertToFormFormat(relaxorsRes, true); // Relaxors have price
+      console.log('Processed Relaxors:', processedRelaxors);
+      setRelaxors(processedRelaxors);
       setColors(convertToFormFormat(colorsRes));
       
       // Mark variation data as loaded
@@ -764,6 +774,7 @@ const CreateProduct2Page = () => {
         stock: formData.stock,
         is_active: formData.isActive,
         is_customize_3d_product: formData.isCustomize3dProduct,
+        has_child_restraint: formData.hasChildRestraint,
         show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Simple File array like lumbar types
@@ -785,6 +796,7 @@ const CreateProduct2Page = () => {
         seat_stitch_pattern_ids: formData.enableVariations ? mapNamesToIds(formData.stitchPattern, stitchPatterns) : undefined,
         item_type_ids: formData.enableVariations ? mapNamesToIds(formData.seatItemType, seatItemTypes) : undefined,
         seat_style_ids: formData.enableVariations ? mapNamesToIds(formData.seatStyle, seatStyles) : undefined,
+        relaxor_ids: formData.enableVariations ? mapNamesToIds(formData.relaxor, relaxors) : undefined,
         color_ids: formData.enableVariations ? mapNamesToIds(formData.color, colors) : undefined,
         
         // Price tiers - new schema
@@ -1030,6 +1042,25 @@ const CreateProduct2Page = () => {
                         />
                       }
                       label="Enable 3D Customization"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.hasChildRestraint}
+                          onChange={handleSwitchChange('hasChildRestraint')}
+                          color="primary"
+                        />
+                      }
+                      label="Has Child Restraint"
                       labelPlacement="start"
                       sx={{ 
                         gap: 1,
@@ -1408,6 +1439,10 @@ const CreateProduct2Page = () => {
 
                       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
                         {renderMultiSelectField('seatStyle', 'Seat Style', seatStyles)}
+                        {renderMultiSelectField('relaxor', 'Relaxor', relaxors)}
+                      </Box>
+
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
                         {renderMultiSelectField('color', 'Color', colors)}
                       </Box>
                     </Box>

@@ -71,6 +71,16 @@ function CustomizationPanel({
   // Use isModelUpdating prop instead of local state for better synchronization
   const isApplyingChange = isModelUpdating;
   const [stitchingColorTab, setStitchingColorTab] = useState(0); // Tab state for stitching colors (0=Internal, 1=External, 2=Piping)
+  // Default stitching section to collapsed to reduce scrolling
+  const [showStitchingSection, setShowStitchingSection] = useState(false);
+
+  // Shared color swatch sizing so Fabric + Stitching + Two-Tone popup look identical
+  const colorSwatchSize = {
+    width: { xs: 34, sm: 32, md: 30 },
+    height: { xs: 34, sm: 32, md: 30 },
+    minWidth: { xs: 34, sm: 32, md: 30 },
+    minHeight: { xs: 34, sm: 32, md: 30 }
+  };
 
   // Get text color based on background
   const getTextColor = (hexColor) => {
@@ -276,7 +286,7 @@ function CustomizationPanel({
     <Box sx={{
       width: '100%',
       height: '100%',
-      p: { xs: 1.5, sm: 2, md: 2 },
+      p: { xs: 1.25, sm: 1.75, md: 1.75 },
       overflowY: 'auto',
       overflowX: 'hidden',
       WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
@@ -285,7 +295,7 @@ function CustomizationPanel({
         variant="h6" 
         align="center" 
         sx={{ 
-          mb: { xs: 1.5, md: 2 }, 
+          mb: { xs: 1.25, md: 1.75 }, 
           pb: { xs: 0.75, md: 1 }, 
           borderBottom: 1, 
           borderColor: 'divider',
@@ -297,7 +307,7 @@ function CustomizationPanel({
       </Typography>
 
       {/* FABRIC TYPE SELECTION */}
-      <Box sx={{ mb: { xs: 2, md: 3 } }}>
+      <Box sx={{ mb: { xs: 1.75, md: 2.25 } }}>
         <Typography 
           variant="subtitle2" 
           sx={{ 
@@ -339,10 +349,10 @@ function CustomizationPanel({
         </FormControl>
       </Box>
 
-      <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
+      <Divider sx={{ my: { xs: 1.25, md: 1.75 } }} />
       
       {/* FABRIC COLOR SECTION */}
-      <Box sx={{ mb: { xs: 2, md: 3 }, position: 'relative' }}>
+      <Box sx={{ mb: { xs: 1.75, md: 2.25 }, position: 'relative' }}>
         <Typography 
           variant="subtitle2" 
           sx={{ 
@@ -355,12 +365,12 @@ function CustomizationPanel({
           Fabric Color
         </Typography>
 
-        <Paper variant="outlined" sx={{ p: { xs: 0.75, md: 1 }, bgcolor: 'background.paper' }}>
+        <Paper variant="outlined" sx={{ p: { xs: 0.75, md: 0.9 }, bgcolor: 'background.paper' }}>
           <Grid 
             container 
-            spacing={{ xs: 0.75, md: 1 }} 
+            spacing={{ xs: 0.5, md: 0.75 }} 
             sx={{ 
-              maxHeight: { xs: 250, sm: 300, md: 200 }, 
+              maxHeight: { xs: 190, sm: 210, md: 180 }, 
               overflowY: 'auto',
               overflowX: 'hidden',
               WebkitOverflowScrolling: 'touch',
@@ -415,13 +425,10 @@ function CustomizationPanel({
                       }
                     }}
                     sx={{
-                      width: { xs: 32, sm: 30, md: 28 },
-                      height: { xs: 32, sm: 30, md: 28 },
-                      minWidth: { xs: 32, sm: 30, md: 28 },
-                      minHeight: { xs: 32, sm: 30, md: 28 },
-                      border: isSelected ? 2 : 1,
+                      ...colorSwatchSize,
+                      border: isSelected ? 2.5 : 1.5,
                       borderColor: isSelected ? 'primary.main' : 'divider',
-                      borderRadius: 0.5,
+                      borderRadius: 1,
                       overflow: 'hidden',
                       position: 'relative',
                       transition: 'all 0.2s ease-in-out',
@@ -430,8 +437,8 @@ function CustomizationPanel({
                         transform: 'scale(0.9)',
                       },
                       '&:hover': {
-                        boxShadow: isMobile ? 0 : `0 0 0 2px ${theme.palette.primary.main}`,
-                        transform: isMobile ? 'none' : 'scale(1.15)',
+                        boxShadow: isMobile ? (isSelected ? `0 0 0 2px ${theme.palette.primary.light}` : 'none') : `0 0 0 3px ${theme.palette.primary.light}`,
+                        transform: isMobile ? 'none' : 'scale(1.1)',
                         zIndex: 1
                       }
                     }}
@@ -439,7 +446,7 @@ function CustomizationPanel({
                     {/* Show skeleton while loading, image when loaded, or hex fallback */}
                     {hasImage && !failedImages.has(colorId) ? (
                       loadingImages.has(colorId) && !loadedImages.has(colorId) ? (
-                        <SkeletonColorTile size={{ xs: 32, sm: 30, md: 28 }} />
+                        <SkeletonColorTile size={colorSwatchSize} />
                       ) : (
                         <Box
                           component="img"
@@ -647,8 +654,8 @@ function CustomizationPanel({
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                     <Box
                       sx={{
-                        width: 24,
-                        height: 24,
+                            width: 22,
+                            height: 22,
                         bgcolor: hoveredColor.hex,
                         borderRadius: 0.5,
                         border: '1px solid',
@@ -672,311 +679,9 @@ function CustomizationPanel({
         )}
       </Box>
 
-      {/* UNIFIED STITCHING & PIPING COLORS SECTION */}
-      <Box sx={{ mb: { xs: 2, md: 3 } }}>
-        <Typography 
-          variant="subtitle2" 
-          sx={{ 
-            mb: { xs: 1, md: 1.5 }, 
-            color: 'text.secondary',
-            fontSize: { xs: '0.875rem', md: '1rem' },
-            fontWeight: 600
-          }}
-        >
-          Stitching & Piping Colors
-        </Typography>
-        
-        <Paper variant="outlined" sx={{ bgcolor: 'background.paper', overflow: 'hidden' }}>
-          {/* Tabs for Internal, External, Piping */}
-          <Tabs
-            value={stitchingColorTab}
-            onChange={(e, newValue) => setStitchingColorTab(newValue)}
-            variant={isMobile ? 'scrollable' : 'standard'}
-            scrollButtons={isMobile ? 'auto' : false}
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              minHeight: { xs: 40, md: 48 },
-              '& .MuiTab-root': {
-                minHeight: { xs: 40, md: 48 },
-                fontSize: { xs: '0.75rem', md: '0.813rem' },
-                textTransform: 'none',
-                fontWeight: 500
-              }
-            }}
-          >
-            <Tab label="Internal Stitching" />
-            <Tab label="External Stitching" />
-            <Tab label="Piping" />
-          </Tabs>
-
-          {/* Color Picker Content */}
-          <Box sx={{ p: { xs: 1, md: 1.5 } }}>
-            {(() => {
-              // Get available colors - use pattern colors for internal stitching, full palette for others
-              let availableColors = [];
-              
-              if (stitchingColorTab === 0) {
-                // Internal Stitching - use pattern colors if available
-                if (patternId && patternId !== 'default' && String(patternId) !== 'default') {
-                  const selectedPattern = availablePatterns.find(p => 
-                    p.id === patternId || 
-                    p.id?.toString() === patternId?.toString() ||
-                    String(p.id) === String(patternId)
-                  );
-                  
-                  if (selectedPattern?.stitch_colors && selectedPattern.stitch_colors.length > 0) {
-                    availableColors = selectedPattern.stitch_colors.map(color => ({
-                      id: color.id,
-                      name: color.name,
-                      hex: color.hex_code
-                    }));
-                  }
-                }
-                
-                // Fallback to full palette if no pattern colors
-                if (availableColors.length === 0) {
-                  availableColors = Object.values(COLOR_PALETTE).flat().map(color => ({
-                    id: color.name,
-                    name: color.name,
-                    hex: color.hex
-                  }));
-                }
-              } else {
-                // External Stitching and Piping - use full palette
-                availableColors = Object.values(COLOR_PALETTE).flat().map(color => ({
-                  id: color.name,
-                  name: color.name,
-                  hex: color.hex
-                }));
-              }
-
-              // Get current selected color based on active tab
-              const getCurrentColor = () => {
-                if (stitchingColorTab === 0) return stitchColor;
-                if (stitchingColorTab === 1) return externalStitchColor;
-                return pipingColor;
-              };
-
-              // Get change handler based on active tab
-              const handleColorChange = (hex) => {
-                if (stitchingColorTab === 0) onStitchColorChange(hex);
-                else if (stitchingColorTab === 1) onExternalStitchColorChange(hex);
-                else onPipingColorChange(hex);
-              };
-
-              const currentColor = getCurrentColor();
-
-              return (
-                <>
-                  {/* Description for current tab */}
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
-                      mb: 1.5, 
-                      color: 'text.secondary',
-                      fontSize: { xs: '0.75rem', md: '0.813rem' },
-                      display: 'block'
-                    }}
-                  >
-                    {stitchingColorTab === 0 && 'Pattern stitching color'}
-                    {stitchingColorTab === 1 && 'Edge stitching color'}
-                    {stitchingColorTab === 2 && 'Piping trim color'}
-                  </Typography>
-
-                  {/* Color Grid */}
-                  <Grid 
-                    container 
-                    spacing={{ xs: 0.5, md: 0.75 }} 
-                    sx={{ 
-                      maxHeight: { xs: 200, sm: 240, md: 180 }, 
-                      overflowY: 'auto',
-                      WebkitOverflowScrolling: 'touch',
-                      pb: 0.5
-                    }}
-                  >
-                    {availableColors.map((color) => {
-                      const colorId = `${color.name}-${color.hex}`;
-                      const isSelected = currentColor === color.hex;
-
-                      return (
-                        <Grid item key={`color-${stitchingColorTab}-${colorId}`}>
-                          <Tooltip title={color.name} arrow placement="top" disableHoverListener={isMobile}>
-                            <ButtonBase
-                              onClick={() => handleColorChange(color.hex)}
-                              sx={{
-                                width: { xs: 36, sm: 34, md: 32 },
-                                height: { xs: 36, sm: 34, md: 32 },
-                                minWidth: { xs: 36, sm: 34, md: 32 },
-                                minHeight: { xs: 36, sm: 34, md: 32 },
-                                bgcolor: color.hex,
-                                border: isSelected ? 3 : 1.5,
-                                borderColor: isSelected ? 'primary.main' : 'divider',
-                                borderRadius: 1,
-                                transition: 'all 0.2s',
-                                touchAction: 'manipulation',
-                                boxShadow: isSelected ? `0 0 0 2px ${theme.palette.primary.light}` : 'none',
-                                '&:active': {
-                                  transform: 'scale(0.9)',
-                                },
-                                '&:hover': {
-                                  boxShadow: isMobile ? (isSelected ? `0 0 0 2px ${theme.palette.primary.light}` : 'none') : `0 0 0 3px ${theme.palette.primary.light}`,
-                                  transform: isMobile ? 'none' : 'scale(1.1)',
-                                  zIndex: 1,
-                                  borderColor: 'primary.main'
-                                }
-                              }}
-                            >
-                              {isSelected && (
-                                <CheckIcon sx={{
-                                  fontSize: { xs: 18, md: 20 },
-                                  color: getTextColor(color.hex),
-                                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
-                                }} />
-                              )}
-                            </ButtonBase>
-                          </Tooltip>
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
-
-                  {/* Current Selection Display */}
-                  {currentColor && (
-                    <Box sx={{ 
-                      mt: 1.5, 
-                      pt: 1.5, 
-                      borderTop: 1, 
-                      borderColor: 'divider',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1
-                    }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.813rem' } }}>
-                        Selected:
-                      </Typography>
-                      <Box sx={{ 
-                        width: 24, 
-                        height: 24, 
-                        borderRadius: '50%', 
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        bgcolor: currentColor,
-                        display: 'inline-block'
-                      }} />
-                      <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', md: '0.813rem' }, fontWeight: 500 }}>
-                        {availableColors.find(c => c.hex === currentColor)?.name || currentColor}
-                      </Typography>
-                    </Box>
-                  )}
-                </>
-              );
-            })()}
-          </Box>
-        </Paper>
-      </Box>
-
-      <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
-      {/* TWO TONE TOGGLE */}
-      <Box sx={{ mb: { xs: 2, md: 3 } }}>
-        <Typography 
-          variant="subtitle2" 
-          sx={{ 
-            mb: { xs: 0.75, md: 1 }, 
-            color: 'text.secondary',
-            fontSize: { xs: '0.875rem', md: '1rem' },
-            fontWeight: 600
-          }}
-        >
-          Two Tone
-        </Typography>
-
-        <Paper variant="outlined" sx={{
-          p: { xs: 1, md: 1.5 },
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          bgcolor: seatType === 'two-tone' ? 'action.selected' : 'background.paper',
-          borderColor: seatType === 'two-tone' ? 'primary.main' : 'divider'
-        }}>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography 
-              variant="body2" 
-              fontWeight={500}
-              sx={{ fontSize: { xs: '0.813rem', md: '0.875rem' } }}
-            >
-              {seatType === 'two-tone' ? 'Two-Tone Mode Active' : 'Enable Two Tone Mode'}
-            </Typography>
-            <Typography 
-              variant="caption" 
-              color="text.secondary"
-              sx={{ 
-                fontSize: { xs: '0.7rem', md: '0.75rem' },
-                display: { xs: 'none', sm: 'block' }
-              }}
-            >
-              {seatType === 'two-tone' ? 'Click on seat parts to customize' : 'Uniform color and pattern'}
-            </Typography>
-          </Box>
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={seatType === 'two-tone'}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    onSeatTypeChange('two-tone');
-                  } else {
-                    onSeatTypeChange('single');
-                    Object.keys(meshCustomizations).forEach(key => {
-                      onMeshCustomizationChange(key, {});
-                    });
-                  }
-                }}
-                color="primary"
-              />
-            }
-            label=""
-            sx={{ m: 0 }}
-          />
-        </Paper>
-      </Box>
-      {/* Two-Tone Color/Pattern Editor Button */}
-      {seatType === 'two-tone' && (
-        <Box sx={{ mb: { xs: 2, md: 3 }, mt: { xs: -0.5, md: -1 } }}>
-          <Button
-            variant="outlined"
-            fullWidth
-            onClick={() => {
-              // Trigger the two-tone selector popup
-              // You'll need to pass this handler from App.jsx
-              if (onOpenTwoToneSelector) {
-                onOpenTwoToneSelector();
-              }
-            }}
-            sx={{
-              borderStyle: 'dashed',
-              py: { xs: 1.25, md: 1.5 },
-              fontSize: { xs: '0.813rem', md: '0.875rem' },
-              fontWeight: 500,
-              touchAction: 'manipulation',
-              '&:hover': {
-                borderStyle: 'solid',
-                bgcolor: 'action.hover'
-              },
-              '&:active': {
-                transform: 'scale(0.98)',
-              }
-            }}
-          >
-            Edit Two-Tone Color & Pattern
-          </Button>
-        </Box>
-      )}
-      {/* PATTERN SELECTION SECTION - Only shown for Single Tone */}
-
+      {/* PATTERN SELECTION SECTION - Only shown for Single Tone, directly under Fabric Color */}
       {seatType === 'single' && (
-        <Box sx={{ mb: { xs: 2, md: 3 } }}>
+        <Box sx={{ mb: { xs: 1.75, md: 2.25 } }}>
           <Typography 
             variant="subtitle2" 
             sx={{ 
@@ -1244,6 +949,336 @@ function CustomizationPanel({
               })()}
             </Paper>
           )}
+        </Box>
+      )}
+
+      {/* UNIFIED STITCHING & PIPING COLORS SECTION */}
+      <Box sx={{ mb: { xs: 1.75, md: 2.25 } }}>
+        <Box
+          sx={{
+            mb: { xs: 0.75, md: 1 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1
+          }}
+        >
+          <Typography 
+            variant="subtitle2" 
+            sx={{ 
+              color: 'text.secondary',
+              fontSize: { xs: '0.875rem', md: '1rem' },
+              fontWeight: 600
+            }}
+          >
+            Stitching & Piping Colors
+          </Typography>
+
+          <FormControlLabel
+            control={
+              <Switch
+                size="small"
+                checked={showStitchingSection}
+                onChange={(e) => setShowStitchingSection(e.target.checked)}
+                color="primary"
+              />
+            }
+            label={showStitchingSection ? 'Hide' : 'Show'}
+            sx={{
+              m: 0,
+              ml: 1,
+              '& .MuiFormControlLabel-label': {
+                fontSize: { xs: '0.75rem', md: '0.8rem' }
+              }
+            }}
+          />
+        </Box>
+        
+        {showStitchingSection && (
+          <Paper variant="outlined" sx={{ bgcolor: 'background.paper', overflow: 'hidden' }}>
+            {/* Tabs for Internal, External, Piping */}
+            <Tabs
+              value={stitchingColorTab}
+              onChange={(e, newValue) => setStitchingColorTab(newValue)}
+              variant={isMobile ? 'scrollable' : 'standard'}
+              scrollButtons={isMobile ? 'auto' : false}
+              sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                minHeight: { xs: 40, md: 44 },
+                '& .MuiTab-root': {
+                  minHeight: { xs: 40, md: 44 },
+                  fontSize: { xs: '0.75rem', md: '0.813rem' },
+                  textTransform: 'none',
+                  fontWeight: 500
+                }
+              }}
+            >
+              <Tab label="Pattern Stitching" />
+              <Tab label="Seat Stitching" />
+              <Tab label="Piping" />
+            </Tabs>
+
+            {/* Color Picker Content */}
+            <Box sx={{ p: { xs: 0.9, md: 1.25 } }}>
+            {(() => {
+              // Get available colors - use pattern colors for internal stitching, full palette for others
+              let availableColors = [];
+              
+              if (stitchingColorTab === 0) {
+                // Internal Stitching - use pattern colors if available
+                if (patternId && patternId !== 'default' && String(patternId) !== 'default') {
+                  const selectedPattern = availablePatterns.find(p => 
+                    p.id === patternId || 
+                    p.id?.toString() === patternId?.toString() ||
+                    String(p.id) === String(patternId)
+                  );
+                  
+                  if (selectedPattern?.stitch_colors && selectedPattern.stitch_colors.length > 0) {
+                    availableColors = selectedPattern.stitch_colors.map(color => ({
+                      id: color.id,
+                      name: color.name,
+                      hex: color.hex_code
+                    }));
+                  }
+                }
+                
+                // Fallback to full palette if no pattern colors
+                if (availableColors.length === 0) {
+                  availableColors = Object.values(COLOR_PALETTE).flat().map(color => ({
+                    id: color.name,
+                    name: color.name,
+                    hex: color.hex
+                  }));
+                }
+              } else {
+                // External Stitching and Piping - use full palette
+                availableColors = Object.values(COLOR_PALETTE).flat().map(color => ({
+                  id: color.name,
+                  name: color.name,
+                  hex: color.hex
+                }));
+              }
+
+              // Get current selected color based on active tab
+              const getCurrentColor = () => {
+                if (stitchingColorTab === 0) return stitchColor;
+                if (stitchingColorTab === 1) return externalStitchColor;
+                return pipingColor;
+              };
+
+              // Get change handler based on active tab
+              const handleColorChange = (hex) => {
+                if (stitchingColorTab === 0) onStitchColorChange(hex);
+                else if (stitchingColorTab === 1) onExternalStitchColorChange(hex);
+                else onPipingColorChange(hex);
+              };
+
+              const currentColor = getCurrentColor();
+
+              return (
+                <>
+                  {/* Description for current tab */}
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      mb: 1.25, 
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.75rem', md: '0.813rem' },
+                      display: 'block'
+                    }}
+                  >
+                    {stitchingColorTab === 0 && 'Pattern stitching color'}
+                    {stitchingColorTab === 1 && 'Edge stitching color'}
+                    {stitchingColorTab === 2 && 'Piping trim color'}
+                  </Typography>
+
+                  {/* Color Grid */}
+                  <Grid 
+                    container 
+                    spacing={{ xs: 0.5, md: 0.6 }} 
+                    sx={{ 
+                      // Limit to ~3 rows of swatches
+                      maxHeight: { xs: 120, sm: 120, md: 120 }, 
+                      overflowY: 'auto',
+                      WebkitOverflowScrolling: 'touch',
+                      pb: 0.5
+                    }}
+                  >
+                    {availableColors.map((color) => {
+                      const colorId = `${color.name}-${color.hex}`;
+                      const isSelected = currentColor === color.hex;
+
+                      return (
+                        <Grid item key={`color-${stitchingColorTab}-${colorId}`}>
+                          <Tooltip title={color.name} arrow placement="top" disableHoverListener={isMobile}>
+                            <ButtonBase
+                              onClick={() => handleColorChange(color.hex)}
+                              sx={{
+                                ...colorSwatchSize,
+                                bgcolor: color.hex,
+                                border: isSelected ? 3 : 1.5,
+                                borderColor: isSelected ? 'primary.main' : 'divider',
+                                borderRadius: 1,
+                                transition: 'all 0.2s',
+                                touchAction: 'manipulation',
+                                boxShadow: isSelected ? `0 0 0 2px ${theme.palette.primary.light}` : 'none',
+                                '&:active': {
+                                  transform: 'scale(0.9)',
+                                },
+                                '&:hover': {
+                                  boxShadow: isMobile ? (isSelected ? `0 0 0 2px ${theme.palette.primary.light}` : 'none') : `0 0 0 3px ${theme.palette.primary.light}`,
+                                  transform: isMobile ? 'none' : 'scale(1.1)',
+                                  zIndex: 1,
+                                  borderColor: 'primary.main'
+                                }
+                              }}
+                            >
+                              {isSelected && (
+                                <CheckIcon sx={{
+                                  fontSize: { xs: 18, md: 20 },
+                                  color: getTextColor(color.hex),
+                                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
+                                }} />
+                              )}
+                            </ButtonBase>
+                          </Tooltip>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+
+                  {/* Current Selection Display */}
+                  {currentColor && (
+                    <Box sx={{ 
+                      mt: 1.5, 
+                      pt: 1.5, 
+                      borderTop: 1, 
+                      borderColor: 'divider',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.813rem' } }}>
+                        Selected:
+                      </Typography>
+                      <Box sx={{ 
+                        width: 24, 
+                        height: 24, 
+                        borderRadius: '50%', 
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: currentColor,
+                        display: 'inline-block'
+                      }} />
+                      <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', md: '0.813rem' }, fontWeight: 500 }}>
+                        {availableColors.find(c => c.hex === currentColor)?.name || currentColor}
+                      </Typography>
+                    </Box>
+                  )}
+                </>
+              );
+            })()}
+            </Box>
+          </Paper>
+        )}
+      </Box>
+
+      <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
+      {/* TWO TONE TOGGLE */}
+      <Box sx={{ mb: { xs: 2, md: 3 } }}>
+        <Typography 
+          variant="subtitle2" 
+          sx={{ 
+            mb: { xs: 0.75, md: 1 }, 
+            color: 'text.secondary',
+            fontSize: { xs: '0.875rem', md: '1rem' },
+            fontWeight: 600
+          }}
+        >
+          Two Tone
+        </Typography>
+
+        <Paper variant="outlined" sx={{
+          p: { xs: 1, md: 1.5 },
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          bgcolor: seatType === 'two-tone' ? 'action.selected' : 'background.paper',
+          borderColor: seatType === 'two-tone' ? 'primary.main' : 'divider'
+        }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography 
+              variant="body2" 
+              fontWeight={500}
+              sx={{ fontSize: { xs: '0.813rem', md: '0.875rem' } }}
+            >
+              {seatType === 'two-tone' ? 'Two-Tone Mode Active' : 'Enable Two Tone Mode'}
+            </Typography>
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{ 
+                fontSize: { xs: '0.7rem', md: '0.75rem' },
+                display: { xs: 'none', sm: 'block' }
+              }}
+            >
+              {seatType === 'two-tone' ? 'Click on seat parts to customize' : 'Uniform color and pattern'}
+            </Typography>
+          </Box>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={seatType === 'two-tone'}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    onSeatTypeChange('two-tone');
+                  } else {
+                    onSeatTypeChange('single');
+                    Object.keys(meshCustomizations).forEach(key => {
+                      onMeshCustomizationChange(key, {});
+                    });
+                  }
+                }}
+                color="primary"
+              />
+            }
+            label=""
+            sx={{ m: 0 }}
+          />
+        </Paper>
+      </Box>
+      {/* Two-Tone Color/Pattern Editor Button */}
+      {seatType === 'two-tone' && (
+        <Box sx={{ mb: { xs: 2, md: 3 }, mt: { xs: -0.5, md: -1 } }}>
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={() => {
+              // Trigger the two-tone selector popup
+              // You'll need to pass this handler from App.jsx
+              if (onOpenTwoToneSelector) {
+                onOpenTwoToneSelector();
+              }
+            }}
+            sx={{
+              borderStyle: 'dashed',
+              py: { xs: 1.25, md: 1.5 },
+              fontSize: { xs: '0.813rem', md: '0.875rem' },
+              fontWeight: 500,
+              touchAction: 'manipulation',
+              '&:hover': {
+                borderStyle: 'solid',
+                bgcolor: 'action.hover'
+              },
+              '&:active': {
+                transform: 'scale(0.98)',
+              }
+            }}
+          >
+            Edit Two-Tone Color & Pattern
+          </Button>
         </Box>
       )}
 

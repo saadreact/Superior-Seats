@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { getModelConfig, getStitchingPath } from '../../config/assets';
 import { ShaderManager } from '../../shaders/ShaderManager';
 import { TextureManager } from '../../utils/TextureManager';
+import { SHADER_VERSION } from '../../shaders/ShaderLoader';
 
 function Model3D({
   modelFileUrl, // New prop for dynamic model loading
@@ -21,7 +22,9 @@ function Model3D({
   onPartRightClick = null, // Left-click handler for parts in two-tone mode
   seatType = 'single', // Seat type (single or two-tone)
   glowEditableParts = false, // Trigger glow effect on editable parts
-  onLoadComplete = null // Callback when model finishes loading
+  onLoadComplete = null, // Callback when model finishes loading
+  lightDirection = [1.0, 1.0, 1.0], // Dynamic light direction from controls
+  lightIntensity = 2.2 // Dynamic light intensity from controls
 }) {
   const meshRef = useRef();
   const materialsRef = useRef(new Map()); // Track materials for updates
@@ -282,7 +285,8 @@ function Model3D({
               ambientStrength,
               isTwoTone,
               noStitching,
-              externalStitchColor // Pass external stitching color
+              externalStitchColor, // Pass external stitching color
+              lightDirection // Pass dynamic light direction
             ).then(material => {
               child.material = material;
 
@@ -305,7 +309,9 @@ function Model3D({
                   finalPatternId,
                   originalTexturesRef.current,
                   null,
-                  modelId
+                  modelId,
+                  null,
+                  lightDirection
                 ).catch(err => console.warn(`Failed to apply pattern ${finalPatternId} to ${child.name}:`, err));
               }
             }).catch(err => console.error(`Failed to create material for ${child.name}:`, err));
@@ -323,7 +329,7 @@ function Model3D({
     };
 
     setupMaterials();
-  }, [scene, texturesLoaded, fabricColor, stitchColor, externalStitchColor, pipingColor, fabricType, modelId, ambientStrength, seatType]);
+  }, [scene, texturesLoaded, fabricColor, stitchColor, externalStitchColor, pipingColor, fabricType, modelId, ambientStrength, seatType, SHADER_VERSION, lightDirection]);
   // Note: materialConfigs and seatParts are memoized with empty deps, so they're stable and don't need to be in deps
   // Note: meshCustomizations and patternId removed from deps to prevent full material rebuild
   // Pattern changes are handled via updateMaterial in the dynamic update effect below
@@ -435,7 +441,8 @@ function Model3D({
               originalTexturesRef.current, // Pass original textures for default pattern
               ambientChanged ? ambientStrength : null,
               modelId, // Pass modelId for stitching updates
-              externalStitchColor // Pass external stitching color
+              externalStitchColor, // Pass external stitching color
+              lightDirection // Pass dynamic light direction
             ).then(() => {
               // Update tracked values AFTER successful update
               if (fabricChanged) materialData.fabricColor = newFabricColor;
@@ -491,6 +498,20 @@ function Model3D({
     };
   }, [texturesLoaded, fabricColor, stitchColor, externalStitchColor, pipingColor, meshCustomizations, patternId, ambientStrength, seatType, customizableParts, modelId]);
   // Note: meshCustomizations is in deps but we use a ref check inside to prevent infinite loops from object recreation
+
+  // Update light direction on all materials when it changes
+  useEffect(() => {
+    if (!texturesLoaded || !materialsRef.current.size) return;
+
+    materialsRef.current.forEach((materialData, meshName) => {
+      if (materialData.material && materialData.material.uniforms && materialData.material.uniforms.lightDirection) {
+        // Update light direction uniform
+        materialData.material.uniforms.lightDirection.value.set(...lightDirection).normalize();
+        materialData.material.uniformsNeedUpdate = true;
+        materialData.material.needsUpdate = true;
+      }
+    });
+  }, [texturesLoaded, lightDirection]);
 
   // Handle mesh highlighting
   useEffect(() => {

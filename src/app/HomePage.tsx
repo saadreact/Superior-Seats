@@ -25,6 +25,7 @@ import {
   Select,
   MenuItem,
   FormControl,
+  InputLabel,
   CircularProgress,
 } from '@mui/material';
 import Header from '@/components/Header';
@@ -164,6 +165,9 @@ const ctaVariants = {
 import axios from 'axios';
 import { SeatStyle, PaginationMeta, ApiResponse } from '../data/homepage';
 
+// API Base URL - use environment variable or fallback
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 // Direct image URLs - using full URLs from server
 const IMAGE_BASE_URL_STATIC = process.env.NEXT_PUBLIC_STATIC_IMAGES || 'https://api.superiorseatingllc.com/images';
 
@@ -212,6 +216,8 @@ const HomePage = () => {
   const [imageLoading, setImageLoading] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
   const imageLoadingRef = useRef(true);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   // Touch/swipe functionality for mobile
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -221,7 +227,7 @@ const HomePage = () => {
   const fetchGalleryData = async (pageNum: number, limit: number) => {
     setLoading(true);
     try {
-      const response = await axios.get<ApiResponse>(`https://dev-api.superiorseatingllc.com/api/seat-styles?page=${pageNum}&per_page=${limit}&sort_by=name&sort_order=asc`);
+      const response = await axios.get<ApiResponse>(`${API_BASE_URL}/seat-styles?page=${pageNum}&per_page=${limit}&sort_by=name&sort_order=asc`);
       if (response.data.status === 'success') {
         setGalleryData(response.data.data);
         setPagination(response.data.meta.pagination);
@@ -250,13 +256,52 @@ const HomePage = () => {
   };
 
   // Lightbox Handlers
-  const handleOpenLightbox = (style: SeatStyle) => {
+  const handleOpenLightbox = async (style: SeatStyle) => {
     if (style.images && style.images.length > 0) {
       setSelectedStyle(style);
       setCurrentImageIndex(0);
       setImageLoading(true);
       setShowLoader(false);
       imageLoadingRef.current = true;
+      setSelectedProductId(null);
+      
+      // Fetch full seat style with products
+      if (style.id) {
+        setLoadingProducts(true);
+        try {
+          const response = await axios.get(`${API_BASE_URL}/seat-styles/${style.id}`);
+          
+          // Handle different response structures
+          let fullStyle = null;
+          if (response.data?.data?.seat_style) {
+            fullStyle = response.data.data.seat_style;
+          } else if (response.data?.seat_style) {
+            fullStyle = response.data.seat_style;
+          } else if (response.data) {
+            fullStyle = response.data;
+          }
+          
+          if (fullStyle) {
+            // Ensure products is an array
+            if (!Array.isArray(fullStyle.products)) {
+              fullStyle.products = fullStyle.products ? [fullStyle.products] : [];
+            }
+            
+            setSelectedStyle(fullStyle);
+            
+            // Set first product as default if available
+            if (fullStyle.products && fullStyle.products.length > 0) {
+              setSelectedProductId(fullStyle.products[0].id);
+            } else {
+              setSelectedProductId(null);
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error fetching seat style with products:', error);
+        } finally {
+          setLoadingProducts(false);
+        }
+      }
     }
   };
 
@@ -1478,6 +1523,53 @@ const HomePage = () => {
                   }}>
                     {selectedStyle.images.length} images available - swipe or click arrows to view
                   </Typography>
+                )}
+
+                {/* Build Your Own Seat Section */}
+                {selectedStyle?.products && Array.isArray(selectedStyle.products) && selectedStyle.products.length > 0 && (
+                  <Box sx={{ mt: 3 }}>
+                    {selectedStyle.products.length > 1 && (
+                      <FormControl fullWidth sx={{ mb: 2 }}>
+                        <InputLabel>Select Product</InputLabel>
+                        <Select
+                          value={selectedProductId || ''}
+                          onChange={(e) => setSelectedProductId(Number(e.target.value))}
+                          label="Select Product"
+                        >
+                          {selectedStyle.products.map((product) => (
+                            <MenuItem key={product.id} value={product.id}>
+                              {product.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )}
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      size="large"
+                      onClick={() => {
+                        if (selectedProductId) {
+                          router.push(`/build-your-seat?productId=${selectedProductId}`);
+                        }
+                      }}
+                      disabled={!selectedProductId || loadingProducts}
+                      sx={{
+                        py: 1.5,
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        boxShadow: 3,
+                        '&:hover': {
+                          boxShadow: 6,
+                          transform: 'translateY(-2px)',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      {loadingProducts ? 'Loading...' : 'Build Your Own Seat'}
+                    </Button>
+                  </Box>
                 )}
               </Box>
             </Box>

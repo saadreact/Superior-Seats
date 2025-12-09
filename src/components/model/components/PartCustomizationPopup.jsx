@@ -67,6 +67,14 @@ function PartCustomizationPopup({
   const [hoveredPattern, setHoveredPattern] = useState(null);
   const [patternHoverPosition, setPatternHoverPosition] = useState({ x: 0, y: 0 });
 
+  // Shared swatch sizing to match main customization panel
+  const colorSwatchSize = {
+    width: { xs: 34, sm: 32, md: 30 },
+    height: { xs: 34, sm: 32, md: 30 },
+    minWidth: { xs: 34, sm: 32, md: 30 },
+    minHeight: { xs: 34, sm: 32, md: 30 }
+  };
+
   // Get available colors based on fabric type (same logic as CustomizationPanel)
   const availableFabricColors = useMemo(() => {
     // 1. Try to find colors from API data first
@@ -258,7 +266,7 @@ function PartCustomizationPopup({
         </Box>
 
         {/* Color Selection - Use same colors as fabric colors */}
-        <Box sx={{ mb: { xs: 2, md: 3 } }}>
+        <Box sx={{ mb: { xs: 2, md: 2.5 } }}>
           <Typography 
             variant="subtitle2" 
             color="text.secondary" 
@@ -269,7 +277,7 @@ function PartCustomizationPopup({
           >
             Color:
           </Typography>
-          <Grid container spacing={0.5} sx={{ maxHeight: { xs: 120, md: 150 }, overflowY: 'auto', overflowX: 'hidden' }}>
+          <Grid container spacing={0.5} sx={{ maxHeight: { xs: 140, md: 150 }, overflowY: 'auto', overflowX: 'hidden' }}>
             {(availableFabricColors.length > 0 ? availableFabricColors : Object.values(COLOR_PALETTE).flat()).map((color) => {
               const colorHex = color.hex || color.hex_code;
               const colorName = color.name;
@@ -295,13 +303,10 @@ function PartCustomizationPopup({
                     }}
                     onMouseLeave={() => setHoveredColor(null)}
                     sx={{
-                      width: { xs: 32, sm: 30, md: 28 },
-                      height: { xs: 32, sm: 30, md: 28 },
-                      minWidth: { xs: 32, sm: 30, md: 28 },
-                      minHeight: { xs: 32, sm: 30, md: 28 },
-                      border: isSelected ? 2 : 1,
+                      ...colorSwatchSize,
+                      border: isSelected ? 2.5 : 1.5,
                       borderColor: isSelected ? 'primary.main' : 'divider',
-                      borderRadius: 0.5,
+                      borderRadius: 1,
                       transition: 'all 0.2s',
                       overflow: 'hidden',
                       position: 'relative',

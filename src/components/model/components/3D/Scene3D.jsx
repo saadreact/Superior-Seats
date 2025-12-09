@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { Suspense, useRef, useState, useEffect, useImperativeHandle, forwardRef, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -94,41 +94,15 @@ function LoadingOverlay({ isLoading }) {
   );
 }
 
-// Lighting environment presets
+// Studio lighting environment - designed to look good from all angles
 const LIGHTING_ENVIRONMENTS = {
-  // bright: {
-  //   name: 'Bright Studio',
-  //   ambientIntensity: 0.6,
-  //   ambientColor: '#ffffff',
-  //   keyLightIntensity: 2.5,
-  //   fillLightIntensity: 1.5,
-  //   rimLightIntensity: 1.0,
-  //   spotLightIntensity: 2.0,
-  //   backgroundColor: '#f5f5f5',
-  //   ambientStrength: 1.0
-  // },
-  daylight: {
-    name: 'Daylight Neutral',
-    ambientIntensity: 0.4,
+  studio: {
+    name: 'Studio Lighting',
+    ambientIntensity: 0.5,
     ambientColor: '#ffffff',
-    keyLightIntensity: 2.2,
-    fillLightIntensity: 1.2,
-    rimLightIntensity: 0.8,
-    spotLightIntensity: 1.5,
     backgroundColor: '#f5f5f5',
-    ambientStrength: 0.5
+    ambientStrength: 0.6
   }
-  // dark: {
-  //   name: 'Dark Moody',
-  //   ambientIntensity: 0.2,
-  //   ambientColor: '#6699cc',
-  //   keyLightIntensity: 1.8,
-  //   fillLightIntensity: 0.8,
-  //   rimLightIntensity: 0.5,
-  //   spotLightIntensity: 1.0,
-  //   backgroundColor: '#2a2a3a',
-  //   ambientStrength: 0.3
-  // }
 };
 
 const Scene3D = forwardRef(({
@@ -149,11 +123,23 @@ const Scene3D = forwardRef(({
 }, ref) => {
   const controlsRef = useRef();
   const canvasRef = useRef();
-  const [lightingEnv, setLightingEnv] = useState('daylight');
+  const [lightingEnv, setLightingEnv] = useState('studio');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Calculate average light direction from multiple studio lights for shader
+  // This provides a balanced lighting direction that works from all angles
+  const studioLightDirection = useMemo(() => {
+    // Average direction from multiple studio lights positioned around the model
+    // Key light (front-right-top), Fill light (front-left), Rim light (back-top)
+    const keyDir = new THREE.Vector3(-5, -8, -5).normalize();
+    const fillDir = new THREE.Vector3(0, -6, 3).normalize();
+    const rimDir = new THREE.Vector3(0, -10, 6).normalize();
+    const avgDir = keyDir.add(fillDir).add(rimDir).normalize();
+    return [avgDir.x, avgDir.y, avgDir.z];
+  }, []);
 
   // Log model source for debugging and reset loading state when model changes
   useEffect(() => {
@@ -269,13 +255,22 @@ const Scene3D = forwardRef(({
       >
         {/* Set scene background dynamically */}
         <color attach="background" args={[currentEnv.backgroundColor]} />
-        {/* Dynamic lighting setup based on environment */}
+        
+        {/* Studio Lighting Setup - Multi-light configuration for natural look from all angles */}
+        
+        {/* Ambient light for base illumination */}
         <ambientLight intensity={currentEnv.ambientIntensity} color={currentEnv.ambientColor} />
+        
+        {/* Hemisphere light for natural sky/ground lighting */}
+        <hemisphereLight
+          args={['#ffffff', '#888888', 0.4]}
+          position={[0, 10, 0]}
+        />
 
-        {/* Main key light */}
+        {/* Main Key Light - Front-right-top (primary light source) */}
         <directionalLight
           position={[5, 8, 5]}
-          intensity={currentEnv.keyLightIntensity}
+          intensity={2.0}
           color="#ffffff"
           castShadow
           shadow-mapSize-width={2048}
@@ -288,26 +283,56 @@ const Scene3D = forwardRef(({
           shadow-bias={-0.0001}
         />
 
-        {/* Fill light from opposite side */}
+        {/* Fill Light - Front-left (softens shadows) */}
         <directionalLight
-          position={[0, 6, -3]}
-          intensity={currentEnv.fillLightIntensity}
+          position={[-4, 6, 3]}
+          intensity={1.2}
           color="#fff8e1"
         />
 
-        {/* Top rim light for definition */}
+        {/* Rim Light - Back-top (edge definition) */}
         <directionalLight
           position={[0, 10, -6]}
-          intensity={currentEnv.rimLightIntensity}
+          intensity={0.9}
           color="#ffffff"
         />
 
-        {/* Additional spot for material highlights */}
+        {/* Accent Light 1 - Right side (adds depth) */}
+        <directionalLight
+          position={[6, 4, 0]}
+          intensity={0.8}
+          color="#ffffff"
+        />
+
+        {/* Accent Light 2 - Left side (balances right side) */}
+        <directionalLight
+          position={[-6, 4, 0]}
+          intensity={0.7}
+          color="#fff8e1"
+        />
+
+        {/* Top Light - Direct overhead (eliminates harsh shadows) */}
+        <directionalLight
+          position={[0, 12, 0]}
+          intensity={0.6}
+          color="#ffffff"
+        />
+
+        {/* Front Spot Light - Material highlights */}
         <spotLight
           position={[0, 6, 8]}
-          angle={0.3}
-          penumbra={0.1}
-          intensity={currentEnv.spotLightIntensity}
+          angle={0.4}
+          penumbra={0.2}
+          intensity={1.2}
+          color="#ffffff"
+        />
+
+        {/* Back Spot Light - Rim highlights */}
+        <spotLight
+          position={[0, 5, -8]}
+          angle={0.35}
+          penumbra={0.15}
+          intensity={0.8}
           color="#ffffff"
         />
 
@@ -329,6 +354,8 @@ const Scene3D = forwardRef(({
             seatType={seatType}
             glowEditableParts={glowEditableParts}
             onLoadComplete={() => setIsLoading(false)}
+            lightDirection={studioLightDirection}
+            lightIntensity={2.0}
           />
         </Suspense>
 
@@ -349,6 +376,7 @@ const Scene3D = forwardRef(({
           maxDistance={3}
           autoRotate={false}
         />
+
       </Canvas>
 
       {/* Loading Overlay */}

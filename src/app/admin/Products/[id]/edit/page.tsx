@@ -63,6 +63,7 @@ interface ProductPage2Form {
   stitchPattern: string[];
   seatItemType: string[];
   seatStyle: string[];
+  relaxor: string[];
   color: string[];
   
   
@@ -71,6 +72,7 @@ interface ProductPage2Form {
   
   isActive: boolean;
   isCustomize3dProduct: boolean;
+  hasChildRestraint: boolean;
 }
 
 interface ProductItem {
@@ -123,10 +125,12 @@ const EditProduct2Page = () => {
     stitchPattern: [],
     seatItemType: [],
     seatStyle: [],
+    relaxor: [],
     color: [],
     enablePriceTiers: false,
     isActive: true,
     isCustomize3dProduct: false,
+    hasChildRestraint: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -153,6 +157,7 @@ const EditProduct2Page = () => {
   const [stitchPatterns, setStitchPatterns] = useState<{ id: number; name: string; price: number }[]>([]);
   const [seatItemTypes, setSeatItemTypes] = useState<{ id: number; name: string; price: number }[]>([]);
   const [seatStyles, setSeatStyles] = useState<{ id: number; name: string; price: number }[]>([]);
+  const [relaxors, setRelaxors] = useState<{ id: number; name: string; price: number }[]>([]);
   const [colors, setColors] = useState<{ id: number; name: string; price: number }[]>([]);
   
   // Vehicle data state
@@ -214,6 +219,7 @@ const EditProduct2Page = () => {
         stitchPatternsRes,
         seatItemTypesRes,
         seatStylesRes,
+        relaxorsRes,
         colorsRes,
         vehicleMakesRes,
         productRes,
@@ -228,6 +234,7 @@ const EditProduct2Page = () => {
         productApi.getStitchPatterns(),
         productApi.getItemTypes().catch(() => apiService.getItemTypes()),
         productApi.getSeatStyles().catch(() => apiService.getSeatStyles()),
+        productApi.getRelaxors().catch(() => []),
         productApi.getColors(),
         apiService.getVehicleMakes(),
         productApi.getProduct(parseInt(id)),
@@ -252,6 +259,7 @@ const EditProduct2Page = () => {
       setStitchPatterns(convertToFormFormat(stitchPatternsRes));
       setSeatItemTypes(convertToFormFormat(seatItemTypesRes));
       setSeatStyles(convertToFormFormat(seatStylesRes, false)); // Seat styles don't have price
+      setRelaxors(convertToFormFormat(relaxorsRes, true)); // Relaxors have price
       setColors(convertToFormFormat(colorsRes));
       
       // Set vehicle makes data
@@ -379,6 +387,7 @@ const EditProduct2Page = () => {
           (productWithImages.seat_stitch_patterns && productWithImages.seat_stitch_patterns.length > 0) ||
           (productWithImages.item_types && productWithImages.item_types.length > 0) ||
           (productWithImages.seat_styles && productWithImages.seat_styles.length > 0) ||
+          (productWithImages.relaxors && productWithImages.relaxors.length > 0) ||
           (productWithImages.colors && productWithImages.colors.length > 0);
 
         setFormData({
@@ -403,10 +412,12 @@ const EditProduct2Page = () => {
           stitchPattern: shouldShowNone(productWithImages.seat_stitch_patterns) ? ['None'] : extractNamesFromArray(productWithImages.seat_stitch_patterns || []),
           seatItemType: shouldShowNone(productWithImages.item_types) ? ['None'] : extractNamesFromArray(productWithImages.item_types || []),
           seatStyle: shouldShowNone(productWithImages.seat_styles) ? ['None'] : extractNamesFromArray(productWithImages.seat_styles || []),
+          relaxor: shouldShowNone(productWithImages.relaxors) ? ['None'] : extractNamesFromArray(productWithImages.relaxors || []),
           color: shouldShowNone(productWithImages.colors) ? ['None'] : extractNamesFromArray(productWithImages.colors || []),
           enablePriceTiers: hasPriceTiers, // Enable if price tiers exist
           isActive: productRes.is_active ?? true,
           isCustomize3dProduct: productRes.is_customize_3d_product ?? false,
+          hasChildRestraint: (productRes as any).has_child_restraint ?? false,
         });
         
         // Load 3D customization data
@@ -977,6 +988,7 @@ const EditProduct2Page = () => {
         stock: formData.stock,
         is_active: formData.isActive,
         is_customize_3d_product: formData.isCustomize3dProduct,
+        has_child_restraint: formData.hasChildRestraint,
         show_on_special_shop: formData.showOnSpecialShop,
         category_id: categoryId,
         images: formData.images, // Only send new images like create page
@@ -1009,6 +1021,7 @@ const EditProduct2Page = () => {
         seat_stitch_pattern_ids: formData.enableVariations ? mapNamesToIds(formData.stitchPattern, stitchPatterns) : undefined,
         item_type_ids: formData.enableVariations ? mapNamesToIds(formData.seatItemType, seatItemTypes) : undefined,
         seat_style_ids: formData.enableVariations ? mapNamesToIds(formData.seatStyle, seatStyles) : undefined,
+        relaxor_ids: formData.enableVariations ? mapNamesToIds(formData.relaxor, relaxors) : undefined,
         color_ids: formData.enableVariations ? mapNamesToIds(formData.color, colors) : undefined,
         
         // Price tiers - new schema
@@ -1244,6 +1257,25 @@ const EditProduct2Page = () => {
                         />
                       }
                       label="Enable 3D Customization"
+                      labelPlacement="start"
+                      sx={{ 
+                        gap: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.hasChildRestraint}
+                          onChange={handleSwitchChange('hasChildRestraint')}
+                          color="primary"
+                        />
+                      }
+                      label="Has Child Restraint"
                       labelPlacement="start"
                       sx={{ 
                         gap: 1,
@@ -1687,6 +1719,10 @@ const EditProduct2Page = () => {
 
                       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
                         {renderMultiSelectField('seatStyle', 'Seat Style', seatStyles)}
+                        {renderMultiSelectField('relaxor', 'Relaxor', relaxors)}
+                      </Box>
+
+                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
                         {renderMultiSelectField('color', 'Color', colors)}
                       </Box>
                     </Box>

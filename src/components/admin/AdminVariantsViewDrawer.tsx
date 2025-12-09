@@ -14,6 +14,7 @@ export interface VariantSelections {
 	seatType?: string | number;
 	itemType?: string | number;
 	seatStyle?: string | number;
+	relaxor?: string | number;
 	armType?: string | number;
 	// 3D customization colors
 	externalStitchColor?: string;
@@ -96,6 +97,7 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 					arm_types: product.arm_types || [],
 					seat_types: product.seat_types || [],
 					seat_styles: product.seat_styles || [],
+					relaxors: product.relaxors || [],
 					item_types: product.item_types || [],
 				});
 				if (initialSelections) {
@@ -106,10 +108,11 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 						reclineType: initialSelections.reclineType || '',
 						lumbarType: initialSelections.lumbarType || '',
 						heatOption: initialSelections.heatOption || '',
-						seatType: initialSelections.seatType || '',
-						itemType: initialSelections.itemType || '',
-						seatStyle: initialSelections.seatStyle || '',
-						armType: initialSelections.armType || '',
+					seatType: initialSelections.seatType || '',
+					itemType: initialSelections.itemType || '',
+					seatStyle: initialSelections.seatStyle || '',
+					relaxor: initialSelections.relaxor || '',
+					armType: initialSelections.armType || '',
 						...parseCustomizationData(initialSelections),
 					});
 				}
@@ -147,6 +150,7 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 			seatType: variations.seat_types || [],
 			itemType: variations.item_types || [],
 			seatStyle: variations.seat_styles || [],
+			relaxor: variations.relaxors || [],
 			armType: variations.arm_types || [],
 		};
 		const variantsSum = (Object.keys(selections) as (keyof VariantSelections)[]).reduce((sum, key) => {
@@ -292,6 +296,10 @@ const AdminVariantsViewDrawer: React.FC<AdminVariantsDrawerProps> = ({
 								<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 									<Typography variant="body2">Seat Style:</Typography>
 									<Typography variant="body2" fontWeight={600}>{getName(variations?.seat_styles || [], selections.seatStyle)}</Typography>
+								</Box>
+								<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+									<Typography variant="body2">Relaxor:</Typography>
+									<Typography variant="body2" fontWeight={600}>{getName(variations?.relaxors || [], selections.relaxor)}</Typography>
 								</Box>
 								<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 									<Typography variant="body2">Arm Type:</Typography>

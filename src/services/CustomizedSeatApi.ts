@@ -239,6 +239,20 @@ export interface SeatStyle {
   updated_at: string;
 }
 
+export interface Relaxor {
+  id: number;
+  name: string;
+  description: string;
+  image?: string | null;
+  image_url?: string | null;
+  cost?: string | number | null;
+  price?: string | number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  price_tiers?: any[];
+}
+
 export interface ItemType {
   id: number;
   name: string;
@@ -292,6 +306,7 @@ export interface Product {
   arm_types: ArmType[];
   seat_types: SeatType[];
   seat_styles: SeatStyle[];
+  relaxors: Relaxor[];
   item_types: ItemType[];
 }
 

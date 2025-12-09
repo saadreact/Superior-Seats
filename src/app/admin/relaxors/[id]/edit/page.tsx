@@ -73,6 +73,14 @@ const EditRelaxorPage = () => {
       setError(null);
       
       const relaxor = await relaxorsService.getRelaxor(parseInt(id));
+      
+      // Debug: Log the relaxor data to see what we're getting
+      console.log('🔍 Relaxor data from API:', relaxor);
+      console.log('🔍 Relaxor image:', relaxor.image);
+      console.log('🔍 Relaxor price:', relaxor.price);
+      console.log('🔍 Relaxor cost:', relaxor.cost);
+      console.log('🔍 Relaxor price_tiers:', relaxor.price_tiers);
+      
       const priceTierIds = relaxor.price_tiers?.map((tier: any) => tier.id) || [];
       
       // Initialize calculated price tiers from existing data using multiplier logic
@@ -115,7 +123,10 @@ const EditRelaxorPage = () => {
       setPriceInput(initialPrice > 0 ? initialPrice.toString() : '');
       setEnablePriceTiers(priceTierIds.length > 0);
       setCalculatedPriceTiers(initialCalculatedTiers);
-      setCurrentImage(relaxor.image);
+      
+      // Handle image - check both direct image field and primary_image from relationship
+      const imagePath = relaxor.image || relaxor.primary_image?.image_path || null;
+      setCurrentImage(imagePath);
       
       // Set up price overrides and inputs from calculated tiers
       const priceOverrides: Record<string, number> = {};

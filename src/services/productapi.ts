@@ -152,6 +152,7 @@ export interface ProductData {
   material_type_ids?: number[];
   seat_stitch_pattern_ids?: number[]; // Updated field name
   seat_style_ids?: number[]; // New field from Swagger
+  relaxor_ids?: number[]; // Relaxor field
   item_type_ids?: number[]; // Updated field name
   color_ids?: number[];
   
@@ -354,6 +355,11 @@ class ProductApi {
       if (data.seat_style_ids && data.seat_style_ids.length > 0) {
         data.seat_style_ids.forEach((id: number) => {
           formData.append("seat_style_ids[]", id.toString());
+        });
+      }
+      if (data.relaxor_ids && data.relaxor_ids.length > 0) {
+        data.relaxor_ids.forEach((id: number) => {
+          formData.append("relaxor_ids[]", id.toString());
         });
       }
       if (data.item_type_ids && data.item_type_ids.length > 0) {
@@ -584,6 +590,11 @@ class ProductApi {
       if (data.seat_style_ids && data.seat_style_ids.length > 0) {
         data.seat_style_ids.forEach((id: number) => {
           formData.append("seat_style_ids[]", id.toString());
+        });
+      }
+      if (data.relaxor_ids && data.relaxor_ids.length > 0) {
+        data.relaxor_ids.forEach((id: number) => {
+          formData.append("relaxor_ids[]", id.toString());
         });
       }
       if (data.item_type_ids && data.item_type_ids.length > 0) {
@@ -956,6 +967,37 @@ class ProductApi {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || "Failed to fetch seat styles"
+      );
+    }
+  }
+
+  /**
+   * Get relaxors
+   */
+  async getRelaxors(
+    params?: Record<string, any>
+  ): Promise<VariationOption[]> {
+    try {
+      const response = await api.get("/relaxors", { params });
+
+      // Handle multiple possible response structures (matching the working relaxors page)
+      let data = response.data;
+
+      // Check for triple nested structure first
+      if (data?.data?.data) {
+        data = data.data.data;
+      } else if (data?.data) {
+        data = data.data;
+      }
+
+      // Ensure we have an array
+      if (!Array.isArray(data)) {
+        return [];
+      }
+      return data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch relaxors"
       );
     }
   }

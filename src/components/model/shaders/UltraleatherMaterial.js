@@ -9,7 +9,9 @@ export const createUltraleatherMaterial = (fabricColor, stitchColor, textures, a
   // ✅ Load fine-grain procedural bump texture for extra realism
   const leatherGrainTexture = new THREE.TextureLoader().load('/assets/fabrics/UltraLeather.png');
   leatherGrainTexture.wrapS = leatherGrainTexture.wrapT = THREE.RepeatWrapping;
-  leatherGrainTexture.anisotropy = 8;
+  leatherGrainTexture.anisotropy = 16; // Increased for better texture quality
+  leatherGrainTexture.minFilter = THREE.LinearMipmapLinearFilter; // Better filtering
+  leatherGrainTexture.magFilter = THREE.LinearFilter;
 
   const vertexShader = `
     varying vec2 vUv;
@@ -81,47 +83,78 @@ export const createUltraleatherMaterial = (fabricColor, stitchColor, textures, a
       // Generate organic leather texture - no repetitive patterns
       float grain = naturalLeatherGrain(vUv);
 
-      // ✅ Blend in procedural grain texture for realistic bumpiness
-      vec3 grainSample = texture2D(grainMap, vUv * 30.0).rgb;
-      float fineGrain = dot(grainSample, vec3(0.333));
-      grain = mix(grain, fineGrain, 0.6); // blend strength controls realism
+      // ✅ Enhanced fabric texture visibility for ultra leather
+      vec3 grainSample = texture2D(grainMap, vUv * 25.0).rgb; // Slightly larger scale
+      float fineGrain = dot(grainSample, vec3(0.299, 0.587, 0.114)); // Luminance for better contrast
       
-      // Create natural leather variation
-      vec3 naturalLeather = baseLeatherColor * (0.8 + 0.2 * grain);
+      // Increase texture contrast for better visibility
+      fineGrain = pow(fineGrain, 0.7); // Increase contrast
+      fineGrain = fineGrain * 1.2 - 0.1; // Brighten and enhance range
+      fineGrain = clamp(fineGrain, 0.0, 1.0);
       
-      // Add subtle darker areas for depth (leather valleys)
+      // Blend procedural and texture grain - increase texture contribution
+      grain = mix(grain, fineGrain, 0.85); // Increased from 0.6 to 0.85
+      
+      // Create natural leather variation with enhanced texture visibility
+      vec3 naturalLeather = baseLeatherColor * (0.75 + 0.25 * grain); // Increased variation range
+      
+      // Add more prominent darker areas for depth
       float darkness = 1.0 - grain;
-      naturalLeather = mix(naturalLeather, baseLeatherColor * 0.7, darkness * 0.15);
+      naturalLeather = mix(naturalLeather, baseLeatherColor * 0.65, darkness * 0.25); // Increased from 0.15 to 0.25
       
-      // Enhanced natural leather lighting - matches reference contrast
+      // Enhanced lighting with texture-based normal variation
       vec3 normal = normalize(vNormal);
       vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
       vec3 viewDir = normalize(cameraPosition - vWorldPosition);
       
-      // Natural leather lighting with organic grain variation
-      float NdotL = max(dot(normal, lightDir), 0.0);
-      float grainLighting = 0.85 + 0.15 * grain; // Subtle grain-based lighting
-      vec3 diffuse = naturalLeather * NdotL * grainLighting * 0.8;
+      vec3 grainNormal = texture2D(grainMap, vUv * 25.0).rgb;
+      float grainNormalStrength = (grainNormal.r - 0.5) * 0.3; // Subtle normal variation
+      vec3 enhancedNormal = normalize(normal + grainNormalStrength * normalize(vNormal));
+      
+      // Enhanced lighting with texture-based variation
+      float NdotL = max(dot(enhancedNormal, lightDir), 0.0);
+      float grainLighting = 0.8 + 0.2 * grain; // Increased grain influence
+      vec3 diffuse = naturalLeather * NdotL * grainLighting * 0.9; // Increased from 0.8 to 0.9
       
       // Warm ambient for natural leather feel (dynamically adjusted)
-      vec3 ambient = naturalLeather * ambientStrength;
-      
-      // Apply dark color visibility boost BEFORE adding specular
+      // Reduce ambient for dark colors to prevent flat, cartoonish look
       float fabricLuminance = dot(baseLeatherColor, vec3(0.299, 0.587, 0.114));
-      float darkBoost = 1.0;
+      float adjustedAmbientStrength = fabricLuminance < 0.15 ? ambientStrength * 0.3 : ambientStrength;
+      vec3 ambient = naturalLeather * adjustedAmbientStrength;
+      
+      // Enhanced specular with texture-based variation
+      vec3 reflectDir = reflect(-lightDir, enhancedNormal);
+      float specPower = specularPower + 10.0 * grain; // Increased grain influence
+      float spec = pow(max(dot(viewDir, reflectDir), 0.0), specPower);
+      // Use grain texture to modulate specular for more realistic material appearance
+      float grainSpecMod = texture2D(grainMap, vUv * 25.0).r;
+      vec3 specular = vec3(specularIntensity) * spec * (0.65 + 0.35 * grain) * (0.9 + 0.1 * grainSpecMod);
+      
+      // ✅ DARK MATERIAL ENHANCEMENTS: Prevent flat black appearance
+      if (fabricLuminance < 0.2) {
+        float darkBoost = 1.0 + (0.2 - fabricLuminance) * 3.0;
+        specular *= darkBoost;
+        specular = min(specular, vec3(2.0));
+      }
+      float fresnel = 1.0 - max(dot(viewDir, enhancedNormal), 0.0);
+      fresnel = pow(fresnel, 2.0);
+      vec3 rimLight = vec3(0.0);
+      if (fabricLuminance < 0.2) {
+        float rimIntensity = (0.2 - fabricLuminance) * 0.15;
+        rimLight = vec3(rimIntensity) * fresnel * (0.3 + 0.7 * NdotL);
+      }
+      vec3 colorVariation = baseLeatherColor;
       if (fabricLuminance < 0.15) {
-        darkBoost = 1.0 + (0.15 - fabricLuminance) * 3.0;
+        vec3 darkTint = vec3(0.95, 0.97, 1.0);
+        colorVariation = mix(baseLeatherColor, baseLeatherColor * darkTint, grain * 0.1);
+      }
+      if (fabricLuminance < 0.2) {
+        float textureBoost = 1.0 + (0.2 - fabricLuminance) * 0.5;
+        naturalLeather = mix(naturalLeather, colorVariation * (0.7 + 0.3 * grain * textureBoost), 0.3);
       }
       
-      vec3 boostedDiffuse = (ambient + diffuse) * darkBoost;
-      
-      // Material-specific specular (ultraleather has good sheen)
-      vec3 reflectDir = reflect(-lightDir, normal);
-      float specPower = specularPower + 8.0 * grain;
-      float spec = pow(max(dot(viewDir, reflectDir), 0.0), specPower);
-      vec3 specular = vec3(specularIntensity) * spec * (0.7 + 0.3 * grain);
-      
-      vec3 leatherBase = boostedDiffuse + specular;
+      // Combine ambient, diffuse, specular, and rim lighting
+      vec3 leatherBase = ambient + diffuse + specular + rimLight;
       
       // Apply AO with natural leather characteristics
       // In single-tone mode, flip Y for correct orientation; in two-tone, use direct UVs
@@ -129,7 +162,9 @@ export const createUltraleatherMaterial = (fabricColor, stitchColor, textures, a
       vec2 aoUV = vec2(vUv.x, aoY);
       vec4 aoSample = texture2D(aoMap, aoUV);
       float aoIntensity = aoSample.r;
-      vec3 afterAO = leatherBase * mix(0.5, 1.0, aoIntensity);
+      // Dynamic AO strength based on fabric darkness - dark colors need deeper shadows for realism
+      float aoMin = fabricLuminance < 0.15 ? 0.15 : 0.4; // Darker fabrics = deeper shadows (15% min vs 40% min)
+      vec3 afterAO = leatherBase * mix(aoMin, 1.0, aoIntensity);
       
       // Apply Dynamic Pattern layer (pattern overlay) - skip if noStitching is true
       vec3 afterDiamond = afterAO;

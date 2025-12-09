@@ -17,6 +17,7 @@ export interface VariantSelections {
 	seatType?: string | number;
 	itemType?: string | number;
 	seatStyle?: string | number;
+	relaxor?: string | number;
 	armType?: string | number;
 	// 3D customization colors
 	externalStitchColor?: string;
@@ -117,6 +118,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 					arm_types: product.arm_types || [],
 					seat_types: product.seat_types || [],
 					seat_styles: product.seat_styles || [],
+					relaxors: product.relaxors || [],
 					item_types: product.item_types || [],
 				});
 				const tiersPayload = (tiersRes as any)?.data ?? tiersRes ?? [];
@@ -131,10 +133,11 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 						reclineType: initialSelections.reclineType || '',
 						lumbarType: initialSelections.lumbarType || '',
 						heatOption: initialSelections.heatOption || '',
-						seatType: initialSelections.seatType || '',
-						itemType: initialSelections.itemType || '',
-						seatStyle: initialSelections.seatStyle || '',
-						armType: initialSelections.armType || '',
+					seatType: initialSelections.seatType || '',
+					itemType: initialSelections.itemType || '',
+					seatStyle: initialSelections.seatStyle || '',
+					relaxor: initialSelections.relaxor || '',
+					armType: initialSelections.armType || '',
 						...parseCustomizationData(initialSelections),
 					});
 				}
@@ -175,6 +178,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 			seatType: variations.seat_types,
 			itemType: variations.item_types,
 			seatStyle: variations.seat_styles,
+			relaxor: variations.relaxors,
 			armType: variations.arm_types,
 		};
 		const list = maps[key] || [];
@@ -191,7 +195,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 		const variantRetail = [
 			'materialType', 'color', 'seatStitchPattern', 'reclineType', 
 			'lumbarType', 'heatOption', 'seatType', 'itemType', 
-			'seatStyle', 'armType'
+			'seatStyle', 'relaxor', 'armType'
 		].reduce((sum, key) => sum + getVariantPrice(key as keyof VariantSelections), 0);
 		return Math.max(0, basePrice + variantRetail);
 	}, [variations, selections, basePrice]);
@@ -572,6 +576,7 @@ const AdminVariantsDrawer: React.FC<AdminVariantsDrawerProps> = ({
 								{renderSelect('seatType', 'Seat Type', variations?.seat_types || [])}
 								{renderSelect('itemType', 'Item Type', variations?.item_types || [])}
 								{renderSelect('seatStyle', 'Seat Style', variations?.seat_styles || [])}
+								{renderSelect('relaxor', 'Relaxor', variations?.relaxors || [])}
 								{renderSelect('armType', 'Arm Type', variations?.arm_types || [])}
 							</Box>
 						</Box>
